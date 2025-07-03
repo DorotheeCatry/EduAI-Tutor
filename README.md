@@ -99,3 +99,26 @@ Le tout est développé avec **Django** et intègre des composants IA générati
 - Je m’entraîne avec des QCM (seul ou à plusieurs)
 - Je consulte mes résultats et erreurs
 - Je révise avec des cartes et quizz ciblés
+- 
+
+## Structure du Projet
+eduai-tutor/
+│
+├── apps/
+│   ├── core/             ← Authentification, pages générales, layout
+│   ├── courses/          ← Génération + affichage de cours (Agent Chercheur + Pédagogue)
+│   ├── quiz/             ← QCM, complétion de code, multi-joueur (Agent Coach)
+│   ├── revision/         ← Révision intelligente, cartes Anki, feedback (Agent Coach + Surveillant)
+│   ├── agents/           ← Logique multi-agents : prompts, orchestrations, LangChain
+│   ├── rag/              ← Embeddings, VectorStore, gestion documents pour RAG
+│   ├── chat/             ← Chatbot pédagogique (interface + appels RAG)
+│   ├── tracker/          ← Suivi des réponses, score, erreurs (Agent Surveillant)
+│   └── users/            ← Gestion des utilisateurs (profils, rôles)
+│
+├── eduai_project/        ← Fichiers settings Django, URLs racine
+│
+├── db.sqlite3            ← (à remplacer par PostgreSQL en prod)
+├── manage.py
+├── pyproject.toml        ← Tu utilises Poetry 👍
+├── poetry.lock
+└── .gitignore
