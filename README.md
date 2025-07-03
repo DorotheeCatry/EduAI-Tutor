@@ -58,7 +58,7 @@ Le tout est développé avec **Django** et intègre des composants IA générati
 ---
 
 ## 🏗️ Structure Django prévue
-
+```
 eduai-tutor/
 │
 ├── apps/
@@ -79,7 +79,7 @@ eduai-tutor/
 ├── pyproject.toml # Dépendances gérées avec Poetry
 ├── poetry.lock
 └── .gitignore
-
+```
 ---
 
 ### 📂 Détail des apps
