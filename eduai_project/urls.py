@@ -16,13 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.i18n import set_language
+
 
 urlpatterns = [
+    path('i18n/setlang/', set_language, name='set_language'),  # 💬 Vue pour changer la langue
+]
+
+urlpatterns += [
     path('admin/', admin.site.urls),
+    path("__reload__/", include("django_browser_reload.urls")),
 
     # Routes des apps personnalisées
-    path('', include('apps.core.urls')),     # page d'accueil ou layout général
-    #path('users/', include('apps.users.urls')),   # inscription, connexion, profil
+    path('', include('apps.core.urls')),                # page d'accueil ou layout général
+    #path('users/', include('apps.users.urls')),        # inscription, connexion, profil
     #path('courses/', include('apps.courses.urls')),
     #path('quiz/', include('apps.quiz.urls')),
     #path('revision/', include('apps.revision.urls')),
