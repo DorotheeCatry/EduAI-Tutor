@@ -59,16 +59,42 @@ Le tout est développé avec **Django** et intègre des composants IA générati
 
 ## 🏗️ Structure Django prévue
 
-| App Django | Rôle |
-|------------|------|
-| `core`     | Authentification, interface utilisateur |
-| `courses`  | Génération et affichage de cours        |
-| `quiz`     | Gestion des QCM (solo & multi-joueurs)  |
-| `revision` | Révision intelligente personnalisée      |
-| `agents`   | Orchestration des agents IA (LangChain) |
-| `rag`      | Embeddings, vector store, RAG           |
-| `chat`     | Interface de recherche intelligente      |
-| `tracker`  | Suivi de progression et erreurs         |
+eduai-tutor/
+│
+├── apps/
+│ ├── core/ # Pages générales, accueil, layout, base.html, etc.
+│ ├── users/ # Gestion des utilisateurs, rôles, profils
+│ ├── courses/ # Génération + affichage des cours (Agent Chercheur + Pédagogue)
+│ ├── quiz/ # QCM, complétion de code, multi-joueur (Agent Coach IA)
+│ ├── revision/ # Révision intelligente, cartes Anki, feedback (Coach + Surveillant)
+│ ├── agents/ # Orchestration IA multi-agents, prompts, logique LangChain
+│ ├── rag/ # Recherche vectorielle, embeddings, gestion documents RAG
+│ ├── chat/ # Chatbot pédagogique (interface + moteur RAG)
+│ ├── tracker/ # Suivi de progression, score, erreurs (Agent Surveillant)
+│
+├── eduai_project/ # Fichiers de config Django (settings.py, urls.py, wsgi.py)
+│
+├── db.sqlite3 # Base de données locale (à remplacer par PostgreSQL)
+├── manage.py # Commande de gestion Django
+├── pyproject.toml # Dépendances gérées avec Poetry
+├── poetry.lock
+└── .gitignore
+
+---
+
+### 📂 Détail des apps
+
+| Dossier      | Rôle |
+|--------------|------|
+| `core/`      | Pages génériques, layout, accueil |
+| `users/`     | Authentification, rôles (étudiant, formateur), profils |
+| `courses/`   | Génération automatique de cours par IA |
+| `quiz/`      | QCM et exercices générés dynamiquement |
+| `revision/`  | Révision personnalisée (Anki-like, quiz ciblés) |
+| `agents/`    | Appels LLM, prompts, coordination des agents IA |
+| `rag/`       | Recherche documentaire vectorielle (LangChain + FAISS/Chroma) |
+| `chat/`      | Interface du chatbot IA éducatif |
+| `tracker/`   | Suivi de progression et erreurs apprenant |
 
 ---
 
@@ -99,26 +125,3 @@ Le tout est développé avec **Django** et intègre des composants IA générati
 - Je m’entraîne avec des QCM (seul ou à plusieurs)
 - Je consulte mes résultats et erreurs
 - Je révise avec des cartes et quizz ciblés
-- 
-
-## Structure du Projet
-eduai-tutor/
-│
-├── apps/
-│   ├── core/             ← Authentification, pages générales, layout
-│   ├── courses/          ← Génération + affichage de cours (Agent Chercheur + Pédagogue)
-│   ├── quiz/             ← QCM, complétion de code, multi-joueur (Agent Coach)
-│   ├── revision/         ← Révision intelligente, cartes Anki, feedback (Agent Coach + Surveillant)
-│   ├── agents/           ← Logique multi-agents : prompts, orchestrations, LangChain
-│   ├── rag/              ← Embeddings, VectorStore, gestion documents pour RAG
-│   ├── chat/             ← Chatbot pédagogique (interface + appels RAG)
-│   ├── tracker/          ← Suivi des réponses, score, erreurs (Agent Surveillant)
-│   └── users/            ← Gestion des utilisateurs (profils, rôles)
-│
-├── eduai_project/        ← Fichiers settings Django, URLs racine
-│
-├── db.sqlite3            ← (à remplacer par PostgreSQL en prod)
-├── manage.py
-├── pyproject.toml        ← Tu utilises Poetry 👍
-├── poetry.lock
-└── .gitignore
