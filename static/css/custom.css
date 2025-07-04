@@ -142,18 +142,57 @@ html, body {
 }
 
 /* ===== TAB BAR FIXES ===== */
-.h-10 {
-    height: 2.5rem !important;
+/* ===== TAB BAR EXACT KODATHEME STYLE ===== */
+.h-8 {
+    height: 2rem !important;
 }
 
-.text-sm {
-    font-size: 0.875rem !important;
-    line-height: 1.25rem !important;
+.text-xs {
+    font-size: 0.75rem !important;
+    line-height: 1rem !important;
 }
 
-.px-4 {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+.px-3 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
+
+/* Largeur maximale pour le texte des onglets */
+.max-w-28 {
+    max-width: 7rem !important;
+}
+
+/* Empêcher le retour à la ligne */
+.whitespace-nowrap {
+    white-space: nowrap !important;
+}
+
+/* Flex-shrink pour le bouton de fermeture */
+.flex-shrink-0 {
+    flex-shrink: 0 !important;
+}
+
+/* Padding réduit pour le bouton X */
+.p-0\.5 {
+    padding: 0.125rem !important;
+}
+
+/* Taille réduite pour l'icône X */
+.w-3 {
+    width: 0.75rem !important;
+}
+
+.h-3 {
+    height: 0.75rem !important;
+}
+
+/* Gestion de l'overflow pour les onglets */
+.overflow-hidden {
+    overflow: hidden !important;
+}
+
+.min-w-0 {
+    min-width: 0 !important;
 }
 
 /* ===== SIDEBAR EXACT KODATHEME STYLE ===== */

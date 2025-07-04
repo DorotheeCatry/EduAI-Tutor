@@ -1,11 +1,11 @@
 <!-- Tab Bar Component - Exact KodaTheme Design -->
-<div class="h-10 bg-gray-800 border-b border-gray-700 flex items-center">
-    <div class="flex">
+<div class="h-8 bg-gray-800 border-b border-gray-700 flex items-center overflow-hidden">
+    <div class="flex h-full">
         <!-- Onglet Générateur de Cours -->
         {% if 'courses' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Générateur de Cours</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+        <div class="h-8 px-3 flex items-center text-xs border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white min-w-0">
+            <span class="mr-2 truncate max-w-28 whitespace-nowrap">Générateur de Cours</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 hover:bg-gray-600 rounded flex-shrink-0" onclick="closeTab(event)" title="Fermer l'onglet">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
@@ -13,9 +13,9 @@
         
         <!-- Onglet Recherche IA -->
         {% if 'chat' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Recherche IA</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+        <div class="h-8 px-3 flex items-center text-xs border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white min-w-0">
+            <span class="mr-2 truncate max-w-28 whitespace-nowrap">Recherche IA</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 hover:bg-gray-600 rounded flex-shrink-0" onclick="closeTab(event)" title="Fermer l'onglet">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
@@ -23,9 +23,9 @@
         
         <!-- Onglet Quiz & QCM -->
         {% if 'quiz' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Quiz & QCM</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+        <div class="h-8 px-3 flex items-center text-xs border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white min-w-0">
+            <span class="mr-2 truncate max-w-28 whitespace-nowrap">Quiz & QCM</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 hover:bg-gray-600 rounded flex-shrink-0" onclick="closeTab(event)" title="Fermer l'onglet">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
@@ -33,9 +33,9 @@
         
         <!-- Onglet Performances -->
         {% if 'tracker' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Performances</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+        <div class="h-8 px-3 flex items-center text-xs border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white min-w-0">
+            <span class="mr-2 truncate max-w-28 whitespace-nowrap">Performances</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 hover:bg-gray-600 rounded flex-shrink-0" onclick="closeTab(event)" title="Fermer l'onglet">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
@@ -43,9 +43,9 @@
         
         <!-- Onglet Révision -->
         {% if 'revision' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Révision</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+        <div class="h-8 px-3 flex items-center text-xs border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white min-w-0">
+            <span class="mr-2 truncate max-w-28 whitespace-nowrap">Révision</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 hover:bg-gray-600 rounded flex-shrink-0" onclick="closeTab(event)" title="Fermer l'onglet">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
@@ -56,6 +56,14 @@
 <script>
 function closeTab(event) {
     event.stopPropagation();
+    // Rediriger vers la page d'accueil ou fermer l'onglet
     window.location.href = "{% url 'courses:generator' %}";
 }
+
+// Initialiser les icônes Lucide après le chargement
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
 </script>
