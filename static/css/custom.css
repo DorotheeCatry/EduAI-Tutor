@@ -132,14 +132,6 @@ html, body {
 }
 
 /* ===== SIDEBAR FIXES ===== */
-.sidebar-nav-btn {
-    position: relative;
-}
-
-.sidebar-nav-btn:focus {
-    outline: none;
-}
-
 /* Suppression des lignes blanches */
 .border-gray-800 {
     border-color: #1F2937 !important;
@@ -150,18 +142,73 @@ html, body {
 }
 
 /* ===== TAB BAR FIXES ===== */
+.h-10 {
+    height: 2.5rem !important;
+}
+
+.text-sm {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+}
+
+.px-4 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* ===== SIDEBAR EXACT KODATHEME STYLE ===== */
+.w-16 {
+    width: 4rem !important;
+}
+
+.py-4 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.space-y-2 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.5rem !important;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem !important;
+}
+
+.w-8 {
+    width: 2rem !important;
+}
+
 .h-8 {
     height: 2rem !important;
 }
 
-.text-xs {
-    font-size: 0.75rem !important;
-    line-height: 1rem !important;
+.w-12 {
+    width: 3rem !important;
 }
 
-.px-3 {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
+.h-12 {
+    height: 3rem !important;
+}
+
+.w-5 {
+    width: 1.25rem !important;
+}
+
+.h-5 {
+    height: 1.25rem !important;
+}
+
+/* Couleurs exactes KodaTheme */
+.text-gray-400 {
+    color: #9CA3AF !important;
+}
+
+.hover\:text-white:hover {
+    color: #FFFFFF !important;
+}
+
+.hover\:bg-gray-800:hover {
+    background-color: #1F2937 !important;
 }
 /* ===== NOTIFICATION STYLES ===== */
 .notification {
