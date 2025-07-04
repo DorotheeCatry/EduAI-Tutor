@@ -30,12 +30,9 @@ urlpatterns += [
 
     # Routes des apps personnalisées
     path('', include('apps.core.urls')),                # page d'accueil ou layout général
-    #path('users/', include('apps.users.urls')),        # inscription, connexion, profil
-    #path('courses/', include('apps.courses.urls')),
-    #path('quiz/', include('apps.quiz.urls')),
-    #path('revision/', include('apps.revision.urls')),
-    #path('agents/', include('apps.agents.urls')),
-    #path('rag/', include('apps.rag.urls')),
-    #path('chat/', include('apps.chat.urls')),
-    #path('tracker/', include('apps.tracker.urls')),
+    path('courses/', include('apps.courses.urls')),
+    path('quiz/', include('apps.quiz.urls')),
+    path('revision/', include('apps.revision.urls')),
+    path('chat/', include('apps.chat.urls')),
+    path('tracker/', include('apps.tracker.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

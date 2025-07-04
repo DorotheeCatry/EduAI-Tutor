@@ -1,0 +1,181 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Quiz en cours - EduAI Tutor{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <svg class="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            <h1 class="text-2xl font-bold text-white">Quiz en cours</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-blue-500 font-mono text-lg" id="timer">30s</span>
+            </div>
+            <div class="text-white">
+                Question <span id="current-question">1</span>/2
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-8 border border-gray-700">
+        <div class="mb-8">
+            <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
+                <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-6" id="question-text">
+                Quelle est la différence entre POST et PUT ?
+            </h2>
+        </div>
+
+        <div class="space-y-4" id="options-container">
+            <button class="quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-green-500 hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">A</div>
+                    <span>POST crée, PUT modifie</span>
+                </div>
+            </button>
+            <button class="quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-green-500 hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="1">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">B</div>
+                    <span>POST modifie, PUT crée</span>
+                </div>
+            </button>
+            <button class="quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-green-500 hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="2">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">C</div>
+                    <span>Aucune différence</span>
+                </div>
+            </button>
+            <button class="quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-green-500 hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">D</div>
+                    <span>POST est plus sécurisé</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center">
+        <a href="{% url 'quiz:lobby' %}" class="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+            Retour
+        </a>
+        <div class="text-white font-semibold">
+            Score: <span id="score">0</span>/2
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentQuestion = 1;
+    let score = 0;
+    let timeLeft = 30;
+    let timer;
+
+    const questions = [
+        {
+            text: "Quelle est la différence entre POST et PUT ?",
+            options: [
+                "POST crée, PUT modifie",
+                "POST modifie, PUT crée", 
+                "Aucune différence",
+                "POST est plus sécurisé"
+            ],
+            correct: 0
+        },
+        {
+            text: "Qu'est-ce qu'une closure en JavaScript ?",
+            options: [
+                "Une fonction qui ferme le navigateur",
+                "Une fonction qui a accès aux variables de son scope parent",
+                "Une fonction anonyme",
+                "Une fonction récursive"
+            ],
+            correct: 1
+        }
+    ];
+
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft + 's';
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                nextQuestion();
+            }
+        }, 1000);
+    }
+
+    function nextQuestion() {
+        clearInterval(timer);
+        
+        if (currentQuestion < questions.length) {
+            currentQuestion++;
+            timeLeft = 30;
+            updateQuestion();
+            startTimer();
+        } else {
+            // Quiz terminé
+            alert(`Quiz terminé ! Score final: ${score}/${questions.length}`);
+            window.location.href = "{% url 'quiz:lobby' %}";
+        }
+    }
+
+    function updateQuestion() {
+        const question = questions[currentQuestion - 1];
+        document.getElementById('current-question').textContent = currentQuestion;
+        document.getElementById('question-text').textContent = question.text;
+        document.getElementById('progress-bar').style.width = (currentQuestion / questions.length) * 100 + '%';
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        
+        question.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-green-500 hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]';
+            button.setAttribute('data-answer', index);
+            button.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">${String.fromCharCode(65 + index)}</div>
+                    <span>${option}</span>
+                </div>
+            `;
+            button.addEventListener('click', () => handleAnswer(index));
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function handleAnswer(answerIndex) {
+        const question = questions[currentQuestion - 1];
+        
+        if (answerIndex === question.correct) {
+            score++;
+            document.getElementById('score').textContent = score;
+        }
+        
+        // Disable all options
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.disabled = true;
+            option.classList.add('opacity-50');
+        });
+        
+        setTimeout(nextQuestion, 1000);
+    }
+
+    // Initialize quiz
+    startTimer();
+    document.querySelectorAll('.quiz-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const answerIndex = parseInt(e.currentTarget.getAttribute('data-answer'));
+            handleAnswer(answerIndex);
+        });
+    });
+</script>
+{% endblock %}

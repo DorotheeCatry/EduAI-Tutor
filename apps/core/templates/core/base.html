@@ -1,0 +1,166 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduAI Tutor - Plateforme d'apprentissage intelligente{% endblock %}</title>
+    <meta name="description" content="Plateforme d'apprentissage avec IA pour générer des cours, quiz et révisions personnalisées">
+    {% tailwind_css %}
+    <style>
+        .animate-bounce-delay-1 { animation-delay: 0.1s; }
+        .animate-bounce-delay-2 { animation-delay: 0.2s; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div class="flex flex-1">
+        <!-- Sidebar -->
+        <div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-2">
+            <div class="mb-6">
+                <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+            </div>
+            
+            <!-- Menu Items -->
+            <a href="{% url 'courses:generator' %}" class="sidebar-item {% if request.resolver_match.url_name == 'generator' %}active{% endif %}" title="Cours">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+            </a>
+            
+            <a href="{% url 'chat:search' %}" class="sidebar-item {% if request.resolver_match.url_name == 'search' %}active{% endif %}" title="Recherche">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </a>
+            
+            <a href="{% url 'quiz:lobby' %}" class="sidebar-item {% if request.resolver_match.url_name == 'lobby' %}active{% endif %}" title="Quiz">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                </svg>
+            </a>
+            
+            <a href="{% url 'tracker:dashboard' %}" class="sidebar-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" title="Performances">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </a>
+            
+            <a href="{% url 'revision:flashcards' %}" class="sidebar-item {% if request.resolver_match.url_name == 'flashcards' %}active{% endif %}" title="Révision">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </a>
+            
+            <a href="#" class="sidebar-item" title="Paramètres">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </a>
+        </div>
+        
+        <div class="flex-1 flex flex-col">
+            <!-- Tab Bar -->
+            <div id="tab-bar" class="h-10 bg-gray-800 border-b border-gray-700 flex items-center">
+                <div class="flex">
+                    <!-- Tabs will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex-1 overflow-hidden">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Bar -->
+    <div class="h-6 bg-blue-600 text-white text-xs flex items-center justify-between px-4">
+        <div class="flex items-center space-x-4">
+            <span class="flex items-center space-x-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Session: 2h 34m</span>
+            </span>
+            <span>Niveau: Intermédiaire</span>
+            <span class="text-green-400">● En ligne</span>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+            <span id="current-time"></span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+            </svg>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 011 1v1a1 1 0 01-1 1v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7a1 1 0 01-1-1V5a1 1 0 011-1h4zM9 3v1h6V3H9zm3 6v7m-3-4h6"></path>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Tab management
+        const tabBar = document.getElementById('tab-bar').querySelector('.flex');
+        const tabs = new Set();
+
+        function addTab(title, url, isActive = false) {
+            if (tabs.has(url)) return;
+            
+            tabs.add(url);
+            const tab = document.createElement('div');
+            tab.className = `h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative ${
+                isActive ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
+            }`;
+            
+            tab.innerHTML = `
+                <span class="mr-2 truncate max-w-32">${title}</span>
+                <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab('${url}', this)">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            tab.onclick = (e) => {
+                if (!e.target.closest('button')) {
+                    window.location.href = url;
+                }
+            };
+            
+            tabBar.appendChild(tab);
+        }
+
+        function closeTab(url, button) {
+            tabs.delete(url);
+            button.closest('.h-10').remove();
+        }
+
+        // Add current page tab
+        const currentPath = window.location.pathname;
+        const pageTitle = document.title.split(' - ')[0] || 'EduAI Tutor';
+        addTab(pageTitle, currentPath, true);
+    </script>
+
+    <style>
+        .sidebar-item {
+            @apply w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
+        }
+        .sidebar-item.active {
+            @apply bg-green-500 bg-opacity-20 text-green-500 border border-green-500 border-opacity-30;
+        }
+        .gray-750 {
+            background-color: #3F3F46;
+        }
+    </style>
+</body>
+</html>
