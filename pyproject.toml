@@ -12,7 +12,8 @@ dependencies = [
     "django >=5.2.4,<6.0.0",
     "djangorestframework >=3.16.0,<4.0.0",
     "django-tailwind[reload] (>=4.0.1,<5.0.0)",
-    "pillow (>=11.3.0,<12.0.0)"
+    "pillow (>=11.3.0,<12.0.0)",
+    "django-widget-tweaks (>=1.5.0,<2.0.0)"
 ]
 
 [build-system]

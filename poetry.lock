@@ -72,6 +72,18 @@ django-browser-reload = {version = ">=1.18.0,<2.0.0", optional = true, markers =
 reload = ["django-browser-reload (>=1.18.0,<2.0.0)"]
 
 [[package]]
+name = "django-widget-tweaks"
+version = "1.5.0"
+description = "Tweak the form field rendering in templates, not in python-level form definitions."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "django-widget-tweaks-1.5.0.tar.gz", hash = "sha256:1c2180681ebb994e922c754804c7ffebbe1245014777ac47897a81f57cc629c7"},
+    {file = "django_widget_tweaks-1.5.0-py3-none-any.whl", hash = "sha256:a41b7b2f05bd44d673d11ebd6c09a96f1d013ee98121cb98c384fe84e33b881e"},
+]
+
+[[package]]
 name = "djangorestframework"
 version = "3.16.0"
 description = "Web APIs for Django, made easy."
@@ -243,4 +255,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "9302d8b27d8a1a320440511a13c0e24038f2dee59942d2b5db2a9bf127215472"
+content-hash = "63709bb18d9e29ad18f36a7daf30bfc21a914610b2ccd6eece7532fd997ee899"
