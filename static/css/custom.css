@@ -51,15 +51,20 @@ html, body {
 
 /* Styles pour les tabs */
 .tab-item {
-    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative;
+    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-800 text-gray-300;
 }
 
 .tab-item.active {
-    @apply bg-gray-900 text-white;
+    @apply bg-gray-900 text-white !important;
 }
 
 .tab-item:not(.active) {
-    @apply bg-gray-800 text-gray-300 hover:bg-gray-750;
+    @apply hover:bg-gray-750;
+}
+
+/* Correction pour la hauteur de la sidebar */
+.sidebar-container {
+    height: calc(100vh - 1.5rem); /* Hauteur totale moins la status bar */
 }
 
 /* Styles pour les quiz */
