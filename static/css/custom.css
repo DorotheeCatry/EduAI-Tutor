@@ -5,22 +5,17 @@ html, body {
     background-color: #111827 !important; /* gray-900 */
     color: white !important;
     min-height: 100vh;
+    overflow: hidden;
 }
 
-/* Assurer que tous les conteneurs principaux ont le bon fond */
-.bg-gray-900 {
-    background-color: #111827 !important;
-}
-
-.bg-gray-800 {
-    background-color: #1F2937 !important;
-}
-
+/* Variables CSS personnalisées */
 :root {
     --primary-rose: #C586C0;
     --primary-blue: #007ACC;
     --primary-green: #4CAF50;
     --primary-gray: #D4D4D4;
+    --gray-750: #3F3F46;
+    --gray-850: #1F2937;
 }
 
 /* Classes utilitaires personnalisées */
@@ -31,53 +26,53 @@ html, body {
 .text-primary-blue { color: var(--primary-blue); }
 .text-primary-green { color: var(--primary-green); }
 .text-primary-gray { color: var(--primary-gray); }
+.bg-gray-750 { background-color: var(--gray-750); }
+.bg-gray-850 { background-color: var(--gray-850); }
 
 .border-primary-green { border-color: var(--primary-green); }
 .border-primary-blue { border-color: var(--primary-blue); }
 .border-primary-rose { border-color: var(--primary-rose); }
 
-/* Animations personnalisées */
-.animate-bounce-delay-1 { animation-delay: 0.1s; }
-.animate-bounce-delay-2 { animation-delay: 0.2s; }
-
-/* Styles pour la sidebar */
-.sidebar-item {
-    @apply w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
+/* ===== SIDEBAR STYLES ===== */
+.sidebar-nav-item {
+    @apply w-14 h-14 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800 relative;
 }
 
-.sidebar-item.active {
+.sidebar-nav-item.active {
     @apply bg-green-500 bg-opacity-20 text-green-500 border border-green-500 border-opacity-30;
 }
 
-/* Styles pour les tabs */
-.tab-item {
-    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-800 text-gray-300 hover:bg-gray-750;
+.sidebar-nav-item:hover::after {
+    content: attr(data-tooltip);
+    @apply absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none;
 }
 
-.tab-item.active {
-    @apply bg-gray-900 text-white !important;
+/* ===== TAB BAR STYLES ===== */
+.tab-nav-item {
+    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-all duration-150 group relative bg-gray-800 text-gray-300 hover:bg-gray-750 min-w-max;
 }
 
-/* Correction pour la hauteur de la sidebar */
-.sidebar-container {
-    height: calc(100vh - 1.5rem); /* Hauteur totale moins la status bar */
+.tab-nav-item.active {
+    @apply bg-gray-900 text-white;
 }
 
-/* Classe utilitaire pour gray-750 */
-.bg-gray-750 {
-    background-color: #3F3F46;
+.tab-title {
+    @apply mr-2 truncate max-w-32 select-none;
 }
 
-/* Styles pour les quiz */
-.quiz-option {
-    @apply w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01];
+.tab-close-btn {
+    @apply opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded flex items-center justify-center;
 }
 
-.quiz-option:disabled {
-    @apply opacity-50 cursor-not-allowed;
+.tab-close-btn:hover {
+    @apply bg-gray-600;
 }
 
-/* Styles pour les cartes */
+/* ===== ANIMATIONS ===== */
+.animate-bounce-delay-1 { animation-delay: 0.1s; }
+.animate-bounce-delay-2 { animation-delay: 0.2s; }
+
+/* ===== CONTENT STYLES ===== */
 .card {
     @apply bg-gray-800 rounded-lg p-6 border border-gray-700;
 }
@@ -86,7 +81,7 @@ html, body {
     @apply flex items-center space-x-3 mb-4;
 }
 
-/* Styles pour les boutons */
+/* ===== BUTTON STYLES ===== */
 .btn-primary {
     @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-primary-green text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98];
 }
@@ -99,12 +94,12 @@ html, body {
     @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-primary-blue text-white hover:bg-blue-600;
 }
 
-/* Styles pour les inputs */
+/* ===== INPUT STYLES ===== */
 .input-field {
     @apply w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors;
 }
 
-/* Styles pour les progress bars */
+/* ===== PROGRESS BAR STYLES ===== */
 .progress-bar {
     @apply w-full bg-gray-700 rounded-full h-2;
 }
@@ -113,25 +108,19 @@ html, body {
     @apply bg-primary-green h-2 rounded-full transition-all duration-300;
 }
 
-/* Responsive utilities */
-@media (max-width: 768px) {
-    .sidebar-item {
-        @apply w-12 h-12;
-    }
-    
-    .tab-item {
-        @apply px-2;
-    }
+/* ===== QUIZ STYLES ===== */
+.quiz-option {
+    @apply w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01];
 }
 
-/* Dark theme overrides */
-.dark {
-    color-scheme: dark;
+.quiz-option:disabled {
+    @apply opacity-50 cursor-not-allowed;
 }
 
-/* Scrollbar styling */
+/* ===== SCROLLBAR STYLING ===== */
 ::-webkit-scrollbar {
     width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -145,4 +134,85 @@ html, body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .sidebar-nav-item {
+        @apply w-12 h-12;
+    }
+    
+    .tab-nav-item {
+        @apply px-2;
+    }
+    
+    .tab-title {
+        @apply max-w-20;
+    }
+}
+
+/* ===== DARK THEME OVERRIDES ===== */
+.dark {
+    color-scheme: dark;
+}
+
+/* ===== LAYOUT FIXES ===== */
+.bg-gray-900 {
+    background-color: #111827 !important;
+}
+
+.bg-gray-800 {
+    background-color: #1F2937 !important;
+}
+
+/* ===== NOTIFICATION STYLES ===== */
+.notification {
+    @apply fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform;
+}
+
+.notification.success {
+    @apply bg-green-500 text-white;
+}
+
+.notification.error {
+    @apply bg-red-500 text-white;
+}
+
+.notification.warning {
+    @apply bg-yellow-500 text-black;
+}
+
+.notification.info {
+    @apply bg-blue-500 text-white;
+}
+
+/* ===== MODAL STYLES ===== */
+.modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50;
+}
+
+.modal-content {
+    @apply bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700;
+}
+
+/* ===== LOADING STATES ===== */
+.loading {
+    @apply opacity-50 pointer-events-none;
+}
+
+.spinner {
+    @apply animate-spin;
+}
+
+/* ===== HOVER EFFECTS ===== */
+.hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+}
+
+.hover-glow {
+    @apply transition-all duration-200;
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
 }

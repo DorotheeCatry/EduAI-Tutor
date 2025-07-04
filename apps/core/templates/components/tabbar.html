@@ -1,0 +1,49 @@
+<!-- Tab Bar Component -->
+<div class="h-10 bg-gray-800 border-b border-gray-700 flex items-center overflow-x-auto">
+    <div class="flex min-w-max" id="tabs-container">
+        <!-- Onglet Générateur de Cours -->
+        <div class="tab-nav-item {% if 'courses' in request.path %}active{% endif %}" 
+             data-url="{% url 'courses:generator' %}">
+            <span class="tab-title">Générateur de Cours</span>
+            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'courses:generator' %}')">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        
+        <!-- Onglet Recherche IA -->
+        <div class="tab-nav-item {% if 'chat' in request.path %}active{% endif %}" 
+             data-url="{% url 'chat:search' %}">
+            <span class="tab-title">Recherche IA</span>
+            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'chat:search' %}')">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        
+        <!-- Onglet Quiz & QCM -->
+        <div class="tab-nav-item {% if 'quiz' in request.path %}active{% endif %}" 
+             data-url="{% url 'quiz:lobby' %}">
+            <span class="tab-title">Quiz & QCM</span>
+            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'quiz:lobby' %}')">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        
+        <!-- Onglet Performances -->
+        <div class="tab-nav-item {% if 'tracker' in request.path %}active{% endif %}" 
+             data-url="{% url 'tracker:dashboard' %}">
+            <span class="tab-title">Performances</span>
+            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'tracker:dashboard' %}')">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        
+        <!-- Onglet Révision -->
+        <div class="tab-nav-item {% if 'revision' in request.path %}active{% endif %}" 
+             data-url="{% url 'revision:flashcards' %}">
+            <span class="tab-title">Révision</span>
+            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'revision:flashcards' %}')">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+    </div>
+</div>
