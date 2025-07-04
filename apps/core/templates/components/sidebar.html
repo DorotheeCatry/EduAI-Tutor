@@ -7,31 +7,31 @@
     
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-2">
-        <button onclick="openTab('courses', 'Générateur de Cours', '{% url 'courses:generator' %}')" 
+        <button onclick="navigateToPage('{% url 'courses:generator' %}')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Cours">
             <i data-lucide="book-open" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="openTab('chat', 'Recherche IA', '{% url 'chat:search' %}')" 
+        <button onclick="navigateToPage('{% url 'chat:search' %}')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Recherche">
             <i data-lucide="search" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="openTab('quiz', 'Quiz & QCM', '{% url 'quiz:lobby' %}')" 
+        <button onclick="navigateToPage('{% url 'quiz:lobby' %}')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Quiz">
             <i data-lucide="brain" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="openTab('tracker', 'Performances', '{% url 'tracker:dashboard' %}')" 
+        <button onclick="navigateToPage('{% url 'tracker:dashboard' %}')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Performances">
             <i data-lucide="bar-chart-3" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="openTab('revision', 'Révision', '{% url 'revision:flashcards' %}')" 
+        <button onclick="navigateToPage('{% url 'revision:flashcards' %}')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Révision">
             <i data-lucide="rotate-ccw" class="w-5 h-5 relative z-10"></i>
@@ -46,90 +46,11 @@
 </div>
 
 <script>
-// Gestion des onglets ouverts
-let openTabs = JSON.parse(localStorage.getItem('openTabs') || '[]');
-let activeTab = localStorage.getItem('activeTab') || '';
-
-function openTab(tabId, tabTitle, tabUrl) {
-    // Vérifier si l'onglet est déjà ouvert
-    const existingTab = openTabs.find(tab => tab.id === tabId);
-    
-    if (!existingTab) {
-        // Ajouter le nouvel onglet
-        openTabs.push({
-            id: tabId,
-            title: tabTitle,
-            url: tabUrl
-        });
-        localStorage.setItem('openTabs', JSON.stringify(openTabs));
-    }
-    
-    // Définir comme onglet actif
-    activeTab = tabId;
-    localStorage.setItem('activeTab', activeTab);
-    
-    // Naviguer vers l'URL
-    window.location.href = tabUrl;
-}
-
-function closeTab(tabId) {
-    // Retirer l'onglet de la liste
-    openTabs = openTabs.filter(tab => tab.id !== tabId);
-    localStorage.setItem('openTabs', JSON.stringify(openTabs));
-    
-    // Si c'était l'onglet actif, basculer vers le premier disponible
-    if (activeTab === tabId) {
-        if (openTabs.length > 0) {
-            activeTab = openTabs[0].id;
-            localStorage.setItem('activeTab', activeTab);
-            window.location.href = openTabs[0].url;
-        } else {
-            // Aucun onglet ouvert, aller à la page d'accueil
-            activeTab = '';
-            localStorage.setItem('activeTab', activeTab);
-            window.location.href = "{% url 'courses:generator' %}";
-        }
-    }
-}
-
-function switchToTab(tabId) {
-    const tab = openTabs.find(t => t.id === tabId);
-    if (tab) {
-        activeTab = tabId;
-        localStorage.setItem('activeTab', activeTab);
-        window.location.href = tab.url;
-    }
+function navigateToPage(url) {
+    window.location.href = url;
 }
 
 function showSettings() {
     alert('Paramètres - Fonctionnalité en cours de développement');
 }
-
-// Initialiser avec l'onglet actuel si aucun onglet n'est ouvert
-document.addEventListener('DOMContentLoaded', function() {
-    if (openTabs.length === 0) {
-        // Détecter l'onglet actuel basé sur l'URL
-        const currentPath = window.location.pathname;
-        let currentTab = null;
-        
-        if (currentPath.includes('/courses/')) {
-            currentTab = { id: 'courses', title: 'Générateur de Cours', url: '{% url "courses:generator" %}' };
-        } else if (currentPath.includes('/chat/')) {
-            currentTab = { id: 'chat', title: 'Recherche IA', url: '{% url "chat:search" %}' };
-        } else if (currentPath.includes('/quiz/')) {
-            currentTab = { id: 'quiz', title: 'Quiz & QCM', url: '{% url "quiz:lobby" %}' };
-        } else if (currentPath.includes('/tracker/')) {
-            currentTab = { id: 'tracker', title: 'Performances', url: '{% url "tracker:dashboard" %}' };
-        } else if (currentPath.includes('/revision/')) {
-            currentTab = { id: 'revision', title: 'Révision', url: '{% url "revision:flashcards" %}' };
-        }
-        
-        if (currentTab) {
-            openTabs = [currentTab];
-            activeTab = currentTab.id;
-            localStorage.setItem('openTabs', JSON.stringify(openTabs));
-            localStorage.setItem('activeTab', activeTab);
-        }
-    }
-});
 </script>

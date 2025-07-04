@@ -1,78 +1,61 @@
 <!-- Tab Bar Component - Exact KodaTheme Design -->
 <div class="h-10 bg-gray-800 border-b border-gray-700 flex items-center">
     <div class="flex">
-        <!-- Les onglets seront générés dynamiquement par JavaScript -->
-        <div id="tabs-container"></div>
+        <!-- Onglet Générateur de Cours -->
+        {% if 'courses' in request.path %}
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
+            <span class="mr-2 truncate max-w-32">Générateur de Cours</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        {% endif %}
+        
+        <!-- Onglet Recherche IA -->
+        {% if 'chat' in request.path %}
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
+            <span class="mr-2 truncate max-w-32">Recherche IA</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        {% endif %}
+        
+        <!-- Onglet Quiz & QCM -->
+        {% if 'quiz' in request.path %}
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
+            <span class="mr-2 truncate max-w-32">Quiz & QCM</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        {% endif %}
+        
+        <!-- Onglet Performances -->
+        {% if 'tracker' in request.path %}
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
+            <span class="mr-2 truncate max-w-32">Performances</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        {% endif %}
+        
+        <!-- Onglet Révision -->
+        {% if 'revision' in request.path %}
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
+            <span class="mr-2 truncate max-w-32">Révision</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    renderTabs();
-    lucide.createIcons();
-});
-
-function renderTabs() {
-    const tabsContainer = document.getElementById('tabs-container');
-    const openTabs = JSON.parse(localStorage.getItem('openTabs') || '[]');
-    const activeTab = localStorage.getItem('activeTab') || '';
-    
-    tabsContainer.innerHTML = '';
-    
-    openTabs.forEach(tab => {
-        const isActive = tab.id === activeTab;
-        
-        const tabElement = document.createElement('div');
-        tabElement.className = `h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative ${
-            isActive ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
-        }`;
-        
-        tabElement.innerHTML = `
-            <span class="mr-2 truncate max-w-32">${tab.title}</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTabById('${tab.id}', event)">
-                <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-        `;
-        
-        // Ajouter l'événement de clic pour basculer vers l'onglet
-        tabElement.addEventListener('click', (e) => {
-            if (!e.target.closest('button')) {
-                switchToTab(tab.id);
-            }
-        });
-        
-        tabsContainer.appendChild(tabElement);
-    });
-    
-    // Réinitialiser les icônes Lucide
-    lucide.createIcons();
-}
-
-function closeTabById(tabId, event) {
-    if (event) {
-        event.stopPropagation();
-    }
-    
-    // Utiliser la fonction closeTab du sidebar
-    if (typeof closeTab === 'function') {
-        closeTab(tabId);
-    }
-}
-
-// Écouter les changements dans localStorage pour mettre à jour les onglets
-window.addEventListener('storage', function(e) {
-    if (e.key === 'openTabs' || e.key === 'activeTab') {
-        renderTabs();
-    }
-});
-
-// Mettre à jour les onglets quand la page change
-window.addEventListener('beforeunload', function() {
-    renderTabs();
-});
-
-// Fonction globale pour que le sidebar puisse déclencher le re-rendu
-window.updateTabs = function() {
-    renderTabs();
+function closeTab(event) {
+    event.stopPropagation();
+    window.location.href = "{% url 'courses:generator' %}";
 }
 </script>

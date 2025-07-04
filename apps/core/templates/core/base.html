@@ -38,11 +38,6 @@
             // Mettre à jour l'heure
             updateTime();
             setInterval(updateTime, 1000);
-            
-            // Mettre à jour les onglets au chargement de la page
-            if (typeof updateTabs === 'function') {
-                updateTabs();
-            }
         });
 
         function updateTime() {
