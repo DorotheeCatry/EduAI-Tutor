@@ -1,5 +1,21 @@
 /* Styles personnalisés pour EduAI Tutor */
 
+/* Force le fond sombre sur tout le document */
+html, body {
+    background-color: #111827 !important; /* gray-900 */
+    color: white !important;
+    min-height: 100vh;
+}
+
+/* Assurer que tous les conteneurs principaux ont le bon fond */
+.bg-gray-900 {
+    background-color: #111827 !important;
+}
+
+.bg-gray-800 {
+    background-color: #1F2937 !important;
+}
+
 :root {
     --primary-rose: #C586C0;
     --primary-blue: #007ACC;
