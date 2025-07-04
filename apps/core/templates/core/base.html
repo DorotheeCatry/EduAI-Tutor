@@ -13,43 +13,76 @@
 <body class="min-h-screen bg-gray-900 text-white flex flex-col">
     <div class="flex flex-1">
         <!-- Sidebar -->
-        <div class="w-20 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-6 space-y-4 flex-shrink-0">
-            <div class="mb-8">
-                <i data-lucide="code" class="w-10 h-10 text-primary-green"></i>
+        <div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-2 flex-shrink-0">
+            <div class="mb-6">
+                <i data-lucide="code" class="w-8 h-8 text-primary-green"></i>
             </div>
             
             <!-- Menu Items -->
             <a href="{% url 'courses:generator' %}" class="sidebar-item {% if 'courses' in request.path %}active{% endif %}" title="Cours">
-                <i data-lucide="book-open" class="w-6 h-6"></i>
+                <i data-lucide="book-open" class="w-5 h-5"></i>
             </a>
             
             <a href="{% url 'chat:search' %}" class="sidebar-item {% if 'chat' in request.path %}active{% endif %}" title="Recherche">
-                <i data-lucide="search" class="w-6 h-6"></i>
+                <i data-lucide="search" class="w-5 h-5"></i>
             </a>
             
             <a href="{% url 'quiz:lobby' %}" class="sidebar-item {% if 'quiz' in request.path %}active{% endif %}" title="Quiz">
-                <i data-lucide="brain" class="w-6 h-6"></i>
+                <i data-lucide="brain" class="w-5 h-5"></i>
             </a>
             
             <a href="{% url 'tracker:dashboard' %}" class="sidebar-item {% if 'tracker' in request.path %}active{% endif %}" title="Performances">
-                <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
             </a>
             
             <a href="{% url 'revision:flashcards' %}" class="sidebar-item {% if 'revision' in request.path %}active{% endif %}" title="Révision">
-                <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+                <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
             </a>
             
             <a href="#" class="sidebar-item" title="Paramètres">
-                <i data-lucide="settings" class="w-6 h-6"></i>
+                <i data-lucide="settings" class="w-5 h-5"></i>
             </a>
         </div>
         
         <div class="flex-1 flex flex-col">
             <!-- Tab Bar -->
-            <div id="tab-bar" class="h-10 bg-gray-800 border-b border-gray-700 flex items-center">
+            <div class="h-10 bg-gray-800 border-b border-gray-700 flex items-center">
                 <div class="flex" id="tabs-container">
-                    <div class="tab-item active">
+                    <!-- Onglet Générateur de Cours -->
+                    <div class="tab-item {% if 'courses' in request.path %}active{% endif %}">
                         <span class="mr-2 truncate max-w-32">Générateur de Cours</span>
+                        <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Onglet Recherche IA -->
+                    <div class="tab-item {% if 'chat' in request.path %}active{% endif %}">
+                        <span class="mr-2 truncate max-w-32">Recherche IA</span>
+                        <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Onglet Quiz & QCM -->
+                    <div class="tab-item {% if 'quiz' in request.path %}active{% endif %}">
+                        <span class="mr-2 truncate max-w-32">Quiz & QCM</span>
+                        <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Onglet Performances -->
+                    <div class="tab-item {% if 'tracker' in request.path %}active{% endif %}">
+                        <span class="mr-2 truncate max-w-32">Performances</span>
+                        <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Onglet Révision -->
+                    <div class="tab-item {% if 'revision' in request.path %}active{% endif %}">
+                        <span class="mr-2 truncate max-w-32">Révision</span>
                         <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded">
                             <i data-lucide="x" class="w-3 h-3"></i>
                         </button>
@@ -58,7 +91,7 @@
             </div>
             
             <!-- Main Content -->
-            <div class="flex-1 bg-gray-900">
+            <div class="flex-1 bg-gray-900 overflow-hidden">
                 {% block content %}{% endblock %}
             </div>
         </div>
@@ -83,5 +116,43 @@
     </div>
 
     <script src="{% static 'js/app.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // Gestion des clics sur les onglets
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    if (e.target.closest('button')) return; // Ignore les clics sur le bouton fermer
+                    
+                    // Déterminer l'URL basée sur le texte de l'onglet
+                    const tabText = this.querySelector('span').textContent.trim();
+                    let url = '';
+                    
+                    switch(tabText) {
+                        case 'Générateur de Cours':
+                            url = "{% url 'courses:generator' %}";
+                            break;
+                        case 'Recherche IA':
+                            url = "{% url 'chat:search' %}";
+                            break;
+                        case 'Quiz & QCM':
+                            url = "{% url 'quiz:lobby' %}";
+                            break;
+                        case 'Performances':
+                            url = "{% url 'tracker:dashboard' %}";
+                            break;
+                        case 'Révision':
+                            url = "{% url 'revision:flashcards' %}";
+                            break;
+                    }
+                    
+                    if (url) {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

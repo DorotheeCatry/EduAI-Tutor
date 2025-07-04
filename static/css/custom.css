@@ -42,7 +42,7 @@ html, body {
 
 /* Styles pour la sidebar */
 .sidebar-item {
-    @apply w-14 h-14 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
+    @apply w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
 }
 
 .sidebar-item.active {
@@ -51,20 +51,21 @@ html, body {
 
 /* Styles pour les tabs */
 .tab-item {
-    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-800 text-gray-300;
+    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-800 text-gray-300 hover:bg-gray-750;
 }
 
 .tab-item.active {
     @apply bg-gray-900 text-white !important;
 }
 
-.tab-item:not(.active) {
-    @apply hover:bg-gray-750;
-}
-
 /* Correction pour la hauteur de la sidebar */
 .sidebar-container {
     height: calc(100vh - 1.5rem); /* Hauteur totale moins la status bar */
+}
+
+/* Classe utilitaire pour gray-750 */
+.bg-gray-750 {
+    background-color: #3F3F46;
 }
 
 /* Styles pour les quiz */
