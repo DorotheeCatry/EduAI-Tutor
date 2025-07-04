@@ -8,39 +8,39 @@
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-2">
         <button onclick="navigateToPage('{% url 'courses:generator' %}')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Cours">
-            <i data-lucide="book-open" class="w-5 h-5"></i>
+            <i data-lucide="book-open" class="w-5 h-5 relative z-10"></i>
         </button>
         
         <button onclick="navigateToPage('{% url 'chat:search' %}')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Recherche">
-            <i data-lucide="search" class="w-5 h-5"></i>
+            <i data-lucide="search" class="w-5 h-5 relative z-10"></i>
         </button>
         
         <button onclick="navigateToPage('{% url 'quiz:lobby' %}')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Quiz">
-            <i data-lucide="brain" class="w-5 h-5"></i>
+            <i data-lucide="brain" class="w-5 h-5 relative z-10"></i>
         </button>
         
         <button onclick="navigateToPage('{% url 'tracker:dashboard' %}')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Performances">
-            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+            <i data-lucide="bar-chart-3" class="w-5 h-5 relative z-10"></i>
         </button>
         
         <button onclick="navigateToPage('{% url 'revision:flashcards' %}')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Révision">
-            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+            <i data-lucide="rotate-ccw" class="w-5 h-5 relative z-10"></i>
         </button>
         
         <button onclick="showSettings()" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800" 
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative text-gray-400 hover:text-white hover:bg-gray-800" 
                 title="Paramètres">
-            <i data-lucide="settings" class="w-5 h-5"></i>
+            <i data-lucide="settings" class="w-5 h-5 relative z-10"></i>
         </button>
     </nav>
 </div>

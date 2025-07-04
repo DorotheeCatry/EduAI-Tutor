@@ -210,6 +210,35 @@ html, body {
 .hover\:bg-gray-800:hover {
     background-color: #1F2937 !important;
 }
+
+/* ===== SIDEBAR ACTIVE STATE FIXES ===== */
+/* Assurer que les icônes restent visibles avec z-index */
+.relative.z-10 {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Fond vert semi-transparent exact comme KodaTheme */
+.bg-primary-green.bg-opacity-20 {
+    background-color: rgba(76, 175, 80, 0.2) !important;
+}
+
+/* Bordure verte avec opacité comme KodaTheme */
+.border-primary-green.border-opacity-30 {
+    border-color: rgba(76, 175, 80, 0.3) !important;
+}
+
+/* Assurer que le texte vert reste visible */
+.text-primary-green {
+    color: #4CAF50 !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Transition douce pour l'état actif */
+.transition-all.duration-200 {
+    transition: all 0.2s ease-in-out !important;
+}
 /* ===== NOTIFICATION STYLES ===== */
 .notification {
     @apply fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform;
