@@ -30,14 +30,10 @@
     <!-- Status Bar -->
     {% include 'components/statusbar.html' %}
 
-    <script src="{% static 'js/navigation.js' %}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialiser les icônes Lucide
             lucide.createIcons();
-            
-            // Initialiser la navigation
-            Navigation.init();
             
             // Mettre à jour l'heure
             updateTime();
@@ -50,11 +46,6 @@
                 const now = new Date();
                 timeElement.textContent = now.toLocaleTimeString();
             }
-        }
-
-        function closeTab(event, url) {
-            event.stopPropagation();
-            Navigation.closeTab(url);
         }
     </script>
 </body>

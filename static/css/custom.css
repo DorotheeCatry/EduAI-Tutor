@@ -131,6 +131,38 @@ html, body {
     background-color: #1F2937 !important;
 }
 
+/* ===== SIDEBAR FIXES ===== */
+.sidebar-nav-btn {
+    position: relative;
+}
+
+.sidebar-nav-btn:focus {
+    outline: none;
+}
+
+/* Suppression des lignes blanches */
+.border-gray-800 {
+    border-color: #1F2937 !important;
+}
+
+.border-gray-700 {
+    border-color: #374151 !important;
+}
+
+/* ===== TAB BAR FIXES ===== */
+.h-8 {
+    height: 2rem !important;
+}
+
+.text-xs {
+    font-size: 0.75rem !important;
+    line-height: 1rem !important;
+}
+
+.px-3 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
 /* ===== NOTIFICATION STYLES ===== */
 .notification {
     @apply fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform;

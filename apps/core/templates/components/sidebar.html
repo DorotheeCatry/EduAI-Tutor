@@ -1,52 +1,71 @@
 <!-- Sidebar Component -->
 <div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-6 space-y-6 flex-shrink-0">
     <!-- Logo -->
-    <div class="mb-6">
+    <div class="mb-0">
         <i data-lucide="code" class="w-6 h-6 text-primary-green"></i>
     </div>
     
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-6">
-        <a href="{% url 'courses:generator' %}" 
-           class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
-           title="Cours"
-           data-tooltip="Cours">
+        <button onclick="navigateToPage('{% url 'courses:generator' %}')" 
+                class="sidebar-nav-btn w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
+                title="Cours"
+                data-page="courses">
             <i data-lucide="book-open" class="w-5 h-5"></i>
-        </a>
+        </button>
         
-        <a href="{% url 'chat:search' %}" 
-           class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
-           title="Recherche"
-           data-tooltip="Recherche">
+        <button onclick="navigateToPage('{% url 'chat:search' %}')" 
+                class="sidebar-nav-btn w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
+                title="Recherche"
+                data-page="search">
             <i data-lucide="search" class="w-5 h-5"></i>
-        </a>
+        </button>
         
-        <a href="{% url 'quiz:lobby' %}" 
-           class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
-           title="Quiz"
-           data-tooltip="Quiz">
+        <button onclick="navigateToPage('{% url 'quiz:lobby' %}')" 
+                class="sidebar-nav-btn w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
+                title="Quiz"
+                data-page="quiz">
             <i data-lucide="brain" class="w-5 h-5"></i>
-        </a>
+        </button>
         
-        <a href="{% url 'tracker:dashboard' %}" 
-           class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
-           title="Performances"
-           data-tooltip="Performances">
+        <button onclick="navigateToPage('{% url 'tracker:dashboard' %}')" 
+                class="sidebar-nav-btn w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
+                title="Performances"
+                data-page="performance">
             <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-        </a>
+        </button>
         
-        <a href="{% url 'revision:flashcards' %}" 
-           class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
-           title="Révision"
-           data-tooltip="Révision">
+        <button onclick="navigateToPage('{% url 'revision:flashcards' %}')" 
+                class="sidebar-nav-btn w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-500 hover:text-gray-300 hover:bg-gray-800{% endif %}" 
+                title="Révision"
+                data-page="revision">
             <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-        </a>
+        </button>
         
-        <a href="#" 
-           class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative text-gray-500 hover:text-gray-300 hover:bg-gray-800" 
-           title="Paramètres"
-           data-tooltip="Paramètres">
+        <button onclick="showSettings()" 
+                class="sidebar-nav-btn w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative text-gray-500 hover:text-gray-300 hover:bg-gray-800" 
+                title="Paramètres"
+                data-page="settings">
             <i data-lucide="settings" class="w-5 h-5"></i>
-        </a>
+        </button>
     </nav>
 </div>
+
+<script>
+function navigateToPage(url) {
+    // Ajouter un état de chargement
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'fixed top-0 left-0 w-full h-1 bg-primary-green z-50';
+    loadingIndicator.innerHTML = '<div class="h-full bg-primary-green animate-pulse"></div>';
+    document.body.appendChild(loadingIndicator);
+    
+    // Naviguer vers la page
+    setTimeout(() => {
+        window.location.href = url;
+    }, 100);
+}
+
+function showSettings() {
+    alert('Paramètres - Fonctionnalité en cours de développement');
+}
+</script>
