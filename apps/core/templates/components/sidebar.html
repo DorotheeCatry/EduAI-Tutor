@@ -7,31 +7,31 @@
     
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-2">
-        <button onclick="navigateToPage('{% url 'courses:generator' %}')" 
+        <button onclick="openTab('courses')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Cours">
             <i data-lucide="book-open" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="navigateToPage('{% url 'chat:search' %}')" 
+        <button onclick="openTab('chat')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Recherche">
             <i data-lucide="search" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="navigateToPage('{% url 'quiz:lobby' %}')" 
+        <button onclick="openTab('quiz')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Quiz">
             <i data-lucide="brain" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="navigateToPage('{% url 'tracker:dashboard' %}')" 
+        <button onclick="openTab('tracker')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Performances">
             <i data-lucide="bar-chart-3" class="w-5 h-5 relative z-10"></i>
         </button>
         
-        <button onclick="navigateToPage('{% url 'revision:flashcards' %}')" 
+        <button onclick="openTab('revision')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Révision">
             <i data-lucide="rotate-ccw" class="w-5 h-5 relative z-10"></i>
@@ -46,10 +46,6 @@
 </div>
 
 <script>
-function navigateToPage(url) {
-    window.location.href = url;
-}
-
 function showSettings() {
     alert('Paramètres - Fonctionnalité en cours de développement');
 }

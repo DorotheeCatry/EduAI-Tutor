@@ -1,61 +1,146 @@
-<!-- Tab Bar Component - Exact KodaTheme Design -->
+<!-- Tab Bar Component - Exact KodaTheme Design with Dynamic Behavior -->
 <div class="h-10 bg-gray-800 border-b border-gray-700 flex items-center">
-    <div class="flex">
-        <!-- Onglet Générateur de Cours -->
-        {% if 'courses' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Générateur de Cours</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
-                <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-        </div>
-        {% endif %}
-        
-        <!-- Onglet Recherche IA -->
-        {% if 'chat' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Recherche IA</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
-                <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-        </div>
-        {% endif %}
-        
-        <!-- Onglet Quiz & QCM -->
-        {% if 'quiz' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Quiz & QCM</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
-                <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-        </div>
-        {% endif %}
-        
-        <!-- Onglet Performances -->
-        {% if 'tracker' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Performances</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
-                <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-        </div>
-        {% endif %}
-        
-        <!-- Onglet Révision -->
-        {% if 'revision' in request.path %}
-        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative bg-gray-900 text-white">
-            <span class="mr-2 truncate max-w-32">Révision</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event)">
-                <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-        </div>
-        {% endif %}
+    <div class="flex" id="tabs-container">
+        <!-- Les onglets seront ajoutés dynamiquement ici -->
     </div>
 </div>
 
 <script>
-function closeTab(event) {
-    event.stopPropagation();
-    window.location.href = "{% url 'courses:generator' %}";
+// Gestion dynamique des onglets
+let openTabs = new Set();
+
+// Configuration des onglets disponibles
+const availableTabs = {
+    'courses': {
+        title: 'Générateur de Cours',
+        url: "{% url 'courses:generator' %}"
+    },
+    'chat': {
+        title: 'Recherche IA',
+        url: "{% url 'chat:search' %}"
+    },
+    'quiz': {
+        title: 'Quiz & QCM',
+        url: "{% url 'quiz:lobby' %}"
+    },
+    'tracker': {
+        title: 'Performances',
+        url: "{% url 'tracker:dashboard' %}"
+    },
+    'revision': {
+        title: 'Révision',
+        url: "{% url 'revision:flashcards' %}"
+    }
+};
+
+// Détecter l'onglet actuel basé sur l'URL
+function getCurrentTab() {
+    const path = window.location.pathname;
+    if (path.includes('courses')) return 'courses';
+    if (path.includes('chat')) return 'chat';
+    if (path.includes('quiz')) return 'quiz';
+    if (path.includes('tracker')) return 'tracker';
+    if (path.includes('revision')) return 'revision';
+    return 'courses'; // par défaut
 }
+
+// Ajouter un onglet
+function addTab(tabId) {
+    if (!availableTabs[tabId] || openTabs.has(tabId)) return;
+    
+    openTabs.add(tabId);
+    renderTabs();
+}
+
+// Fermer un onglet
+function closeTab(event, tabId) {
+    event.stopPropagation();
+    
+    openTabs.delete(tabId);
+    
+    // Si on ferme l'onglet actuel et qu'il y en a d'autres, aller au premier
+    const currentTab = getCurrentTab();
+    if (tabId === currentTab && openTabs.size > 0) {
+        const firstTab = Array.from(openTabs)[0];
+        window.location.href = availableTabs[firstTab].url;
+    } else if (openTabs.size === 0) {
+        // Si plus d'onglets, aller à l'accueil
+        window.location.href = "{% url 'courses:generator' %}";
+    } else {
+        renderTabs();
+    }
+}
+
+// Naviguer vers un onglet
+function navigateToTab(tabId) {
+    window.location.href = availableTabs[tabId].url;
+}
+
+// Rendre les onglets
+function renderTabs() {
+    const container = document.getElementById('tabs-container');
+    const currentTab = getCurrentTab();
+    
+    container.innerHTML = '';
+    
+    Array.from(openTabs).forEach(tabId => {
+        const tab = availableTabs[tabId];
+        const isActive = tabId === currentTab;
+        
+        const tabElement = document.createElement('div');
+        tabElement.className = `h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative ${
+            isActive ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
+        }`;
+        
+        tabElement.innerHTML = `
+            <span class="mr-2 truncate max-w-32">${tab.title}</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event, '${tabId}')">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+        `;
+        
+        tabElement.addEventListener('click', () => navigateToTab(tabId));
+        container.appendChild(tabElement);
+    });
+    
+    // Réinitialiser les icônes Lucide
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Initialiser au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    // Ajouter l'onglet actuel
+    const currentTab = getCurrentTab();
+    addTab(currentTab);
+    
+    // Récupérer les onglets ouverts depuis le localStorage
+    const savedTabs = localStorage.getItem('openTabs');
+    if (savedTabs) {
+        try {
+            const tabsArray = JSON.parse(savedTabs);
+            tabsArray.forEach(tabId => {
+                if (availableTabs[tabId]) {
+                    openTabs.add(tabId);
+                }
+            });
+        } catch (e) {
+            console.log('Erreur lors du chargement des onglets sauvegardés');
+        }
+    }
+    
+    renderTabs();
+});
+
+// Sauvegarder les onglets ouverts
+window.addEventListener('beforeunload', function() {
+    localStorage.setItem('openTabs', JSON.stringify(Array.from(openTabs)));
+});
+
+// Fonction globale pour ouvrir un onglet depuis la sidebar
+window.openTab = function(tabId) {
+    addTab(tabId);
+    navigateToTab(tabId);
+};
 </script>
