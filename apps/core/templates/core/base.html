@@ -13,40 +13,34 @@
 <body class="min-h-screen bg-gray-900 text-white flex flex-col">
     <div class="flex flex-1">
         <!-- Sidebar -->
-        <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col py-4 flex-shrink-0">
-            <div class="mb-6 px-4">
+        <div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-2 flex-shrink-0">
+            <div class="mb-6">
                 <i data-lucide="code" class="w-8 h-8 text-primary-green"></i>
             </div>
             
             <!-- Menu Items -->
-            <a href="{% url 'courses:generator' %}" class="sidebar-menu-item {% if 'courses' in request.path %}active{% endif %}">
+            <a href="{% url 'courses:generator' %}" class="sidebar-item {% if 'courses' in request.path %}active{% endif %}" title="Cours">
                 <i data-lucide="book-open" class="w-5 h-5"></i>
-                <span>Cours</span>
             </a>
             
-            <a href="{% url 'chat:search' %}" class="sidebar-menu-item {% if 'chat' in request.path %}active{% endif %}">
+            <a href="{% url 'chat:search' %}" class="sidebar-item {% if 'chat' in request.path %}active{% endif %}" title="Recherche">
                 <i data-lucide="search" class="w-5 h-5"></i>
-                <span>Recherche</span>
             </a>
             
-            <a href="{% url 'quiz:lobby' %}" class="sidebar-menu-item {% if 'quiz' in request.path %}active{% endif %}">
+            <a href="{% url 'quiz:lobby' %}" class="sidebar-item {% if 'quiz' in request.path %}active{% endif %}" title="Quiz">
                 <i data-lucide="brain" class="w-5 h-5"></i>
-                <span>Quiz</span>
             </a>
             
-            <a href="{% url 'tracker:dashboard' %}" class="sidebar-menu-item {% if 'tracker' in request.path %}active{% endif %}">
+            <a href="{% url 'tracker:dashboard' %}" class="sidebar-item {% if 'tracker' in request.path %}active{% endif %}" title="Performances">
                 <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                <span>Performances</span>
             </a>
             
-            <a href="{% url 'revision:flashcards' %}" class="sidebar-menu-item {% if 'revision' in request.path %}active{% endif %}">
+            <a href="{% url 'revision:flashcards' %}" class="sidebar-item {% if 'revision' in request.path %}active{% endif %}" title="Révision">
                 <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-                <span>Révision</span>
             </a>
             
-            <a href="#" class="sidebar-menu-item">
+            <a href="#" class="sidebar-item" title="Paramètres">
                 <i data-lucide="settings" class="w-5 h-5"></i>
-                <span>Paramètres</span>
             </a>
         </div>
         
