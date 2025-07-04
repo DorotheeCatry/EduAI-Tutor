@@ -42,7 +42,7 @@ html, body {
 
 /* Styles pour la sidebar */
 .sidebar-item {
-    @apply w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
+    @apply w-14 h-14 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
 }
 
 .sidebar-item.active {
@@ -115,7 +115,7 @@ html, body {
 /* Responsive utilities */
 @media (max-width: 768px) {
     .sidebar-item {
-        @apply w-10 h-10;
+        @apply w-12 h-12;
     }
     
     .tab-item {
