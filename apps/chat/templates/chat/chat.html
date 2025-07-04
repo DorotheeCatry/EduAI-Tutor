@@ -7,7 +7,7 @@
     <div class="p-4 border-b border-gray-700">
         <div class="flex items-center space-x-3">
             <i data-lucide="search" class="w-6 h-6 text-primary-blue"></i>
-            <h1 class="text-2xl font-bold text-white">Recherche Intelligente</h1>
+            <h1 class="text-xl font-bold text-white">Recherche Intelligente</h1>
         </div>
     </div>
 
@@ -18,7 +18,7 @@
             </div>
             
             <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700">
-                <p class="text-sm">Bonjour ! Je suis votre assistant IA. Posez-moi vos questions sur la programmation, les concepts techniques, ou tout autre sujet d'apprentissage.</p>
+                <p class="text-xs">Bonjour ! Je suis votre assistant IA. Posez-moi vos questions sur la programmation, les concepts techniques, ou tout autre sujet d'apprentissage.</p>
                 <p class="text-xs opacity-70 mt-1" id="initial-time"></p>
             </div>
         </div>
@@ -32,7 +32,7 @@
                 id="message-input"
                 name="message"
                 placeholder="Posez votre question..."
-                class="flex-1 px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors"
+                class="flex-1 px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors"
                 required
             />
             <button
@@ -94,7 +94,7 @@
                 <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
                     isUser ? 'bg-primary-green text-white' : 'bg-gray-800 text-gray-100 border border-gray-700'
                 }">
-                    <p class="text-sm">${text}</p>
+                    <p class="text-xs">${text}</p>
                     <p class="text-xs opacity-70 mt-1">${time}</p>
                 </div>
 

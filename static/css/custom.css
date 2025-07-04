@@ -48,29 +48,29 @@ html, body {
 
 /* ===== PAGE TITLE STYLES ===== */
 .page-title {
-    @apply text-xl font-bold text-white mb-4;
+    @apply text-lg font-bold text-white mb-4;
 }
 
 .page-subtitle {
-    @apply text-sm text-gray-400 mb-6;
+    @apply text-xs text-gray-400 mb-6;
 }
 
 /* ===== BUTTON STYLES ===== */
 .btn-primary {
-    @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-primary-green text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98];
+    @apply py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-green text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98];
 }
 
 .btn-secondary {
-    @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-gray-700 text-white hover:bg-gray-600;
+    @apply py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-700 text-white hover:bg-gray-600;
 }
 
 .btn-blue {
-    @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-primary-blue text-white hover:bg-blue-600;
+    @apply py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-blue text-white hover:bg-blue-600;
 }
 
 /* ===== INPUT STYLES ===== */
 .input-field {
-    @apply w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors;
+    @apply w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors;
 }
 
 /* ===== PROGRESS BAR STYLES ===== */
@@ -84,7 +84,7 @@ html, body {
 
 /* ===== QUIZ STYLES ===== */
 .quiz-option {
-    @apply w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01];
+    @apply w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01];
 }
 
 .quiz-option:disabled {
