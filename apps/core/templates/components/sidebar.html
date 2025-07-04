@@ -1,52 +1,52 @@
 <!-- Sidebar Component -->
-<div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-4 flex-shrink-0">
+<div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-6 space-y-6 flex-shrink-0">
     <!-- Logo -->
-    <div class="mb-4">
-        <i data-lucide="code" class="w-8 h-8 text-primary-green"></i>
+    <div class="mb-2">
+        <i data-lucide="code" class="w-6 h-6 text-primary-green"></i>
     </div>
     
     <!-- Navigation Items -->
-    <nav class="flex flex-col space-y-3">
+    <nav class="flex flex-col space-y-6">
         <a href="{% url 'courses:generator' %}" 
            class="sidebar-nav-item {% if 'courses' in request.path %}active{% endif %}" 
            title="Cours"
            data-tooltip="Cours">
-            <i data-lucide="book-open" class="w-6 h-6"></i>
+            <i data-lucide="book-open" class="w-5 h-5"></i>
         </a>
         
         <a href="{% url 'chat:search' %}" 
            class="sidebar-nav-item {% if 'chat' in request.path %}active{% endif %}" 
            title="Recherche"
            data-tooltip="Recherche">
-            <i data-lucide="search" class="w-6 h-6"></i>
+            <i data-lucide="search" class="w-5 h-5"></i>
         </a>
         
         <a href="{% url 'quiz:lobby' %}" 
            class="sidebar-nav-item {% if 'quiz' in request.path %}active{% endif %}" 
            title="Quiz"
            data-tooltip="Quiz">
-            <i data-lucide="brain" class="w-6 h-6"></i>
+            <i data-lucide="brain" class="w-5 h-5"></i>
         </a>
         
         <a href="{% url 'tracker:dashboard' %}" 
            class="sidebar-nav-item {% if 'tracker' in request.path %}active{% endif %}" 
            title="Performances"
            data-tooltip="Performances">
-            <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
         </a>
         
         <a href="{% url 'revision:flashcards' %}" 
            class="sidebar-nav-item {% if 'revision' in request.path %}active{% endif %}" 
            title="Révision"
            data-tooltip="Révision">
-            <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
         </a>
         
         <a href="#" 
            class="sidebar-nav-item" 
            title="Paramètres"
            data-tooltip="Paramètres">
-            <i data-lucide="settings" class="w-6 h-6"></i>
+            <i data-lucide="settings" class="w-5 h-5"></i>
         </a>
     </nav>
 </div>

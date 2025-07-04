@@ -35,7 +35,7 @@ html, body {
 
 /* ===== SIDEBAR STYLES ===== */
 .sidebar-nav-item {
-    @apply w-14 h-14 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800 relative;
+    @apply w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-500 hover:text-gray-300 hover:bg-gray-800 relative;
 }
 
 .sidebar-nav-item.active {
@@ -49,7 +49,7 @@ html, body {
 
 /* ===== TAB BAR STYLES ===== */
 .tab-nav-item {
-    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-all duration-150 group relative bg-gray-800 text-gray-300 hover:bg-gray-750 min-w-max;
+    @apply h-8 px-3 flex items-center text-xs border-r border-gray-700 cursor-pointer transition-all duration-150 group relative bg-gray-800 text-gray-300 hover:bg-gray-750 min-w-max;
 }
 
 .tab-nav-item.active {
@@ -57,11 +57,11 @@ html, body {
 }
 
 .tab-title {
-    @apply mr-2 truncate max-w-32 select-none;
+    @apply mr-1 truncate max-w-24 select-none text-xs;
 }
 
 .tab-close-btn {
-    @apply opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded flex items-center justify-center;
+    @apply opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-0.5 hover:bg-gray-600 rounded flex items-center justify-center;
 }
 
 .tab-close-btn:hover {
@@ -79,6 +79,15 @@ html, body {
 
 .card-header {
     @apply flex items-center space-x-3 mb-4;
+}
+
+/* ===== PAGE TITLE STYLES ===== */
+.page-title {
+    @apply text-xl font-bold text-white mb-4;
+}
+
+.page-subtitle {
+    @apply text-sm text-gray-400 mb-6;
 }
 
 /* ===== BUTTON STYLES ===== */
@@ -139,15 +148,15 @@ html, body {
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .sidebar-nav-item {
-        @apply w-12 h-12;
+        @apply w-10 h-10;
     }
     
     .tab-nav-item {
-        @apply px-2;
+        @apply px-2 text-xs;
     }
     
     .tab-title {
-        @apply max-w-20;
+        @apply max-w-16 text-xs;
     }
 }
 
