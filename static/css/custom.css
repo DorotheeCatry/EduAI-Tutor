@@ -1,0 +1,126 @@
+/* Styles personnalisés pour EduAI Tutor */
+
+:root {
+    --primary-rose: #C586C0;
+    --primary-blue: #007ACC;
+    --primary-green: #4CAF50;
+    --primary-gray: #D4D4D4;
+}
+
+/* Classes utilitaires personnalisées */
+.bg-primary-rose { background-color: var(--primary-rose); }
+.bg-primary-blue { background-color: var(--primary-blue); }
+.bg-primary-green { background-color: var(--primary-green); }
+.text-primary-rose { color: var(--primary-rose); }
+.text-primary-blue { color: var(--primary-blue); }
+.text-primary-green { color: var(--primary-green); }
+.text-primary-gray { color: var(--primary-gray); }
+
+.border-primary-green { border-color: var(--primary-green); }
+.border-primary-blue { border-color: var(--primary-blue); }
+.border-primary-rose { border-color: var(--primary-rose); }
+
+/* Animations personnalisées */
+.animate-bounce-delay-1 { animation-delay: 0.1s; }
+.animate-bounce-delay-2 { animation-delay: 0.2s; }
+
+/* Styles pour la sidebar */
+.sidebar-item {
+    @apply w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
+}
+
+.sidebar-item.active {
+    @apply bg-green-500 bg-opacity-20 text-green-500 border border-green-500 border-opacity-30;
+}
+
+/* Styles pour les tabs */
+.tab-item {
+    @apply h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative;
+}
+
+.tab-item.active {
+    @apply bg-gray-900 text-white;
+}
+
+.tab-item:not(.active) {
+    @apply bg-gray-800 text-gray-300 hover:bg-gray-750;
+}
+
+/* Styles pour les quiz */
+.quiz-option {
+    @apply w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01];
+}
+
+.quiz-option:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+/* Styles pour les cartes */
+.card {
+    @apply bg-gray-800 rounded-lg p-6 border border-gray-700;
+}
+
+.card-header {
+    @apply flex items-center space-x-3 mb-4;
+}
+
+/* Styles pour les boutons */
+.btn-primary {
+    @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-primary-green text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98];
+}
+
+.btn-secondary {
+    @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-gray-700 text-white hover:bg-gray-600;
+}
+
+.btn-blue {
+    @apply py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-primary-blue text-white hover:bg-blue-600;
+}
+
+/* Styles pour les inputs */
+.input-field {
+    @apply w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors;
+}
+
+/* Styles pour les progress bars */
+.progress-bar {
+    @apply w-full bg-gray-700 rounded-full h-2;
+}
+
+.progress-fill {
+    @apply bg-primary-green h-2 rounded-full transition-all duration-300;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+    .sidebar-item {
+        @apply w-10 h-10;
+    }
+    
+    .tab-item {
+        @apply px-2;
+    }
+}
+
+/* Dark theme overrides */
+.dark {
+    color-scheme: dark;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #6B7280;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+}

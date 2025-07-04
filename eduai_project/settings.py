@@ -149,6 +149,17 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Pour la production
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # Dossier pour les fichiers statiques globaux
+]
+
+# Finders pour les fichiers statiques
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 # Media files (User-uploaded content)
 MEDIA_URL = "/media/"

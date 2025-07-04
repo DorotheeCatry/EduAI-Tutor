@@ -7,36 +7,8 @@
     <title>{% block title %}EduAI Tutor - Plateforme d'apprentissage intelligente{% endblock %}</title>
     <meta name="description" content="Plateforme d'apprentissage avec IA pour générer des cours, quiz et révisions personnalisées">
     {% tailwind_css %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <style>
-        :root {
-            --primary-rose: #C586C0;
-            --primary-blue: #007ACC;
-            --primary-green: #4CAF50;
-            --primary-gray: #D4D4D4;
-        }
-        
-        .animate-bounce-delay-1 { animation-delay: 0.1s; }
-        .animate-bounce-delay-2 { animation-delay: 0.2s; }
-        
-        .bg-primary-rose { background-color: var(--primary-rose); }
-        .bg-primary-blue { background-color: var(--primary-blue); }
-        .bg-primary-green { background-color: var(--primary-green); }
-        .text-primary-rose { color: var(--primary-rose); }
-        .text-primary-blue { color: var(--primary-blue); }
-        .text-primary-green { color: var(--primary-green); }
-        .text-primary-gray { color: var(--primary-gray); }
-        
-        .gray-750 { background-color: #3F3F46; }
-        .gray-850 { background-color: #1F2937; }
-        
-        .sidebar-item {
-            @apply w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 text-gray-400 hover:text-white hover:bg-gray-800;
-        }
-        .sidebar-item.active {
-            @apply bg-green-500 bg-opacity-20 text-green-500 border border-green-500 border-opacity-30;
-        }
-    </style>
 </head>
 <body class="min-h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
     <div class="flex flex-1">
@@ -105,98 +77,6 @@
         </div>
     </div>
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-        
-        // Update time
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('current-time').textContent = now.toLocaleTimeString();
-        }
-        updateTime();
-        setInterval(updateTime, 1000);
-
-        // Tab management
-        const tabsContainer = document.getElementById('tabs-container');
-        const openTabs = new Map();
-
-        function addTab(title, url, isActive = false) {
-            if (openTabs.has(url)) {
-                if (isActive) {
-                    setActiveTab(url);
-                }
-                return;
-            }
-            
-            const tab = document.createElement('div');
-            tab.className = `h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative ${
-                isActive ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
-            }`;
-            tab.dataset.url = url;
-            
-            tab.innerHTML = `
-                <span class="mr-2 truncate max-w-32">${title}</span>
-                <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab('${url}', event)">
-                    <i data-lucide="x" class="w-3 h-3"></i>
-                </button>
-            `;
-            
-            tab.onclick = (e) => {
-                if (!e.target.closest('button')) {
-                    window.location.href = url;
-                }
-            };
-            
-            tabsContainer.appendChild(tab);
-            openTabs.set(url, { element: tab, title, isActive });
-            
-            // Re-initialize Lucide icons for the new tab
-            lucide.createIcons();
-            
-            if (isActive) {
-                setActiveTab(url);
-            }
-        }
-
-        function setActiveTab(url) {
-            openTabs.forEach((tab, tabUrl) => {
-                if (tabUrl === url) {
-                    tab.element.className = tab.element.className.replace('bg-gray-800 text-gray-300', 'bg-gray-900 text-white');
-                    tab.isActive = true;
-                } else {
-                    tab.element.className = tab.element.className.replace('bg-gray-900 text-white', 'bg-gray-800 text-gray-300');
-                    tab.isActive = false;
-                }
-            });
-        }
-
-        function closeTab(url, event) {
-            event.stopPropagation();
-            const tab = openTabs.get(url);
-            if (tab) {
-                tab.element.remove();
-                openTabs.delete(url);
-                
-                // If closing active tab and there are other tabs, activate the first one
-                if (tab.isActive && openTabs.size > 0) {
-                    const firstTab = openTabs.entries().next().value;
-                    window.location.href = firstTab[0];
-                }
-            }
-        }
-
-        // Add current page tab
-        const currentPath = window.location.pathname;
-        let pageTitle = 'EduAI Tutor';
-        
-        if (currentPath.includes('courses')) pageTitle = 'Générateur de Cours';
-        else if (currentPath.includes('chat')) pageTitle = 'Recherche IA';
-        else if (currentPath.includes('quiz')) pageTitle = 'Quiz & QCM';
-        else if (currentPath.includes('tracker')) pageTitle = 'Performances';
-        else if (currentPath.includes('revision')) pageTitle = 'Révision';
-        
-        addTab(pageTitle, currentPath, true);
-    </script>
+    <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>
