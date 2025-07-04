@@ -61,16 +61,14 @@ class NavigationManager {
 
     setActiveTab(tabElement) {
         // Remove active class from all tabs
-        const allTabs = this.tabsContainer?.querySelectorAll('.tab-nav-item');
+        const allTabs = this.tabsContainer?.querySelectorAll('[data-url]');
         allTabs?.forEach(tab => {
-            tab.classList.remove('active');
             tab.classList.add('bg-gray-800', 'text-gray-300');
             tab.classList.remove('bg-gray-900', 'text-white');
         });
 
         // Add active class to current tab
         if (tabElement) {
-            tabElement.classList.add('active');
             tabElement.classList.remove('bg-gray-800', 'text-gray-300');
             tabElement.classList.add('bg-gray-900', 'text-white');
         }
@@ -87,7 +85,7 @@ class NavigationManager {
 
         // If we closed the active tab, navigate to the first remaining tab
         if (isActive) {
-            const remainingTabs = this.tabsContainer?.querySelectorAll('.tab-nav-item');
+            const remainingTabs = this.tabsContainer?.querySelectorAll('[data-url]');
             if (remainingTabs && remainingTabs.length > 0) {
                 const firstTab = remainingTabs[0];
                 const firstTabUrl = firstTab.dataset.url;
@@ -144,12 +142,12 @@ class NavigationManager {
         }
 
         const tab = document.createElement('div');
-        tab.className = `tab-nav-item ${isActive ? 'active' : ''}`;
+        tab.className = `h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative ${isActive ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-750'}`;
         tab.dataset.url = url;
         
         tab.innerHTML = `
-            <span class="tab-title">${title}</span>
-            <button class="tab-close-btn" onclick="Navigation.closeTab('${url}')">
+            <span class="mr-2 truncate max-w-32">${title}</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="Navigation.closeTab('${url}')">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         `;

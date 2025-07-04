@@ -1,52 +1,52 @@
 <!-- Tab Bar Component -->
-<div class="h-8 bg-gray-800 border-b border-gray-700 flex items-center overflow-x-auto">
+<div class="h-10 bg-gray-800 border-b border-gray-700 flex items-center overflow-x-auto">
     <div class="flex min-w-max" id="tabs-container">
         <!-- Onglet Générateur de Cours -->
-        <div class="tab-nav-item {% if 'courses' in request.path %}active{% endif %}" 
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative {% if 'courses' in request.path %}bg-gray-900 text-white{% else %}bg-gray-800 text-gray-300 hover:bg-gray-750{% endif %}" 
              data-url="{% url 'courses:generator' %}"
              onclick="window.location.href='{% url 'courses:generator' %}'">
-            <span class="tab-title">Générateur de Cours</span>
-            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'courses:generator' %}')">
+            <span class="mr-2 truncate max-w-32">Générateur de Cours</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event, '{% url 'courses:generator' %}')">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
         
         <!-- Onglet Recherche IA -->
-        <div class="tab-nav-item {% if 'chat' in request.path %}active{% endif %}" 
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative {% if 'chat' in request.path %}bg-gray-900 text-white{% else %}bg-gray-800 text-gray-300 hover:bg-gray-750{% endif %}" 
              data-url="{% url 'chat:search' %}"
              onclick="window.location.href='{% url 'chat:search' %}'">
-            <span class="tab-title">Recherche IA</span>
-            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'chat:search' %}')">
+            <span class="mr-2 truncate max-w-32">Recherche IA</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event, '{% url 'chat:search' %}')">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
         
         <!-- Onglet Quiz & QCM -->
-        <div class="tab-nav-item {% if 'quiz' in request.path %}active{% endif %}" 
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative {% if 'quiz' in request.path %}bg-gray-900 text-white{% else %}bg-gray-800 text-gray-300 hover:bg-gray-750{% endif %}" 
              data-url="{% url 'quiz:lobby' %}"
              onclick="window.location.href='{% url 'quiz:lobby' %}'">
-            <span class="tab-title">Quiz & QCM</span>
-            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'quiz:lobby' %}')">
+            <span class="mr-2 truncate max-w-32">Quiz & QCM</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event, '{% url 'quiz:lobby' %}')">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
         
         <!-- Onglet Performances -->
-        <div class="tab-nav-item {% if 'tracker' in request.path %}active{% endif %}" 
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative {% if 'tracker' in request.path %}bg-gray-900 text-white{% else %}bg-gray-800 text-gray-300 hover:bg-gray-750{% endif %}" 
              data-url="{% url 'tracker:dashboard' %}"
              onclick="window.location.href='{% url 'tracker:dashboard' %}'">
-            <span class="tab-title">Performances</span>
-            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'tracker:dashboard' %}')">
+            <span class="mr-2 truncate max-w-32">Performances</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event, '{% url 'tracker:dashboard' %}')">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>
         
         <!-- Onglet Révision -->
-        <div class="tab-nav-item {% if 'revision' in request.path %}active{% endif %}" 
+        <div class="h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative {% if 'revision' in request.path %}bg-gray-900 text-white{% else %}bg-gray-800 text-gray-300 hover:bg-gray-750{% endif %}" 
              data-url="{% url 'revision:flashcards' %}"
              onclick="window.location.href='{% url 'revision:flashcards' %}'">
-            <span class="tab-title">Révision</span>
-            <button class="tab-close-btn" onclick="closeTab(event, '{% url 'revision:flashcards' %}')">
+            <span class="mr-2 truncate max-w-32">Révision</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event, '{% url 'revision:flashcards' %}')">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         </div>

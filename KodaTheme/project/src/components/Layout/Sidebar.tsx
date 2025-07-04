@@ -25,9 +25,9 @@ const menuItems = [
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   return (
-    <div className="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-2">
+    <div className="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-6 space-y-6">
       <div className="mb-6">
-        <Code className="w-8 h-8 text-primary-green" />
+        <Code className="w-6 h-6 text-primary-green" />
       </div>
       
       {menuItems.map((item) => {
@@ -39,10 +39,10 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             key={item.id}
             onClick={() => onTabChange(item.id)}
             className={`
-              w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200
+              w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative
               ${isActive 
                 ? 'bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30' 
-                : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
               }
             `}
             title={item.label}
