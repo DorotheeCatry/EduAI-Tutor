@@ -1,14 +1,25 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import CustomUser
+from .models import KodaUser
 
-@admin.register(CustomUser)
-class CustomUserAdmin(UserAdmin):
-    model = CustomUser
+@admin.register(KodaUser)
+class KodaUserAdmin(UserAdmin):
+    list_display = ("username", "email", "role", "is_staff", "xp", "level_display")
 
+    # On regroupe les champs dans des sections
     fieldsets = UserAdmin.fieldsets + (
-        (_("Extra info"), {"fields": ("role", "bio")}),
+        (_("Profil utilisateur"), {
+            "fields": ("bio", "avatar", "language_preference"),
+        }),
+        (_("Progression"), {
+            "fields": ("role", "xp"),
+        }),
     )
 
-    list_display = ("username", "email", "role", "is_staff")
+    # On rend certains champs non modifiables
+    readonly_fields = ("bio", "avatar", "language_preference")
+
+    def level_display(self, obj):
+        return obj.level
+    level_display.short_description = _("Level")

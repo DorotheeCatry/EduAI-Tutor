@@ -1,17 +1,17 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-class CustomUser(AbstractUser):
+class KodaUser(AbstractUser):
     class Role(models.TextChoices):
         STUDENT = 'student', _('Student')
-        TEACHER = 'teacher', _('Teacher')
         ADMIN = 'admin', _('Administrator')
 
     role = models.CharField(
         max_length=10,
         choices=Role.choices,
-        default=Role.STUDENT
+        default=Role.STUDENT,
+        verbose_name=_("Role")
     )
 
     bio = models.TextField(
@@ -21,7 +21,34 @@ class CustomUser(AbstractUser):
         help_text=_("A short biography of the user.")
     )
 
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        null=True,
+        blank=True,
+        verbose_name=_("Avatar")
+    )
+
+    LANGUAGE_CHOICES = [
+        ("en", _("English")),
+        ("fr", _("French")),
+    ]
+
+    language_preference = models.CharField(
+        max_length=2,
+        choices=LANGUAGE_CHOICES,
+        default="fr",
+        verbose_name=_("Preferred language")
+    )
+
+    xp = models.PositiveIntegerField(
+        default=0,
+        verbose_name=_("Experience Points"),
+        help_text=_("Total experience points gained by the student.")
+    )
+
+    @property
+    def level(self):
+        return self.xp // 100 + 1  # Exemple : 100 XP = 1 niveau
+
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
-    
-    
