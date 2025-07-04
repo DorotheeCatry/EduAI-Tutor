@@ -5,14 +5,12 @@
 {% block content %}
 <div class="p-6 space-y-6">
     <div class="flex items-center space-x-3 mb-6">
-        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-        </svg>
+        <i data-lucide="book-open" class="w-6 h-6 text-primary-green"></i>
         <h1 class="text-2xl font-bold text-white">Génération de Cours</h1>
     </div>
 
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <form method="post" class="space-y-4">
+        <form method="post" class="space-y-4" id="course-form">
             {% csrf_token %}
             <div>
                 <label class="block text-sm font-medium text-gray-300 mb-2">
@@ -21,8 +19,9 @@
                 <input
                     type="text"
                     name="topic"
+                    id="topic-input"
                     placeholder="Ex: Les décorateurs Python, API REST avec FastAPI..."
-                    class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors"
+                    class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
                     required
                 />
             </div>
@@ -33,7 +32,8 @@
                 </label>
                 <select
                     name="difficulty"
-                    class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors"
+                    id="difficulty-select"
+                    class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
                 >
                     <option value="beginner">Débutant</option>
                     <option value="intermediate" selected>Intermédiaire</option>
@@ -43,12 +43,11 @@
 
             <button
                 type="submit"
-                class="w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-green-500 text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98]"
+                id="generate-btn"
+                class="w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 bg-primary-green text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98]"
             >
                 <div class="flex items-center justify-center space-x-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
                     <span>Générer le cours</span>
                 </div>
             </button>
@@ -58,9 +57,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
-                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                <i data-lucide="play" class="w-5 h-5 text-primary-blue"></i>
                 <h3 class="text-lg font-semibold text-white">Cours Récents</h3>
             </div>
             <div class="space-y-3">
@@ -70,7 +67,7 @@
                         <span class="text-xs text-gray-400">85%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 85%"></div>
+                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 85%"></div>
                     </div>
                 </div>
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
@@ -79,7 +76,7 @@
                         <span class="text-xs text-gray-400">60%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 60%"></div>
+                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 60%"></div>
                     </div>
                 </div>
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
@@ -88,7 +85,7 @@
                         <span class="text-xs text-gray-400">45%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 45%"></div>
+                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 45%"></div>
                     </div>
                 </div>
             </div>
@@ -96,29 +93,55 @@
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
-                <svg class="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
+                <i data-lucide="clock" class="w-5 h-5 text-primary-rose"></i>
                 <h3 class="text-lg font-semibold text-white">Temps d'étude</h3>
             </div>
             <div class="text-center">
-                <div class="text-3xl font-bold text-pink-500 mb-2">2h 34m</div>
+                <div class="text-3xl font-bold text-primary-rose mb-2">2h 34m</div>
                 <div class="text-sm text-gray-400">Aujourd'hui</div>
             </div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
-                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
+                <i data-lucide="bar-chart" class="w-5 h-5 text-primary-blue"></i>
                 <h3 class="text-lg font-semibold text-white">Progression</h3>
             </div>
             <div class="text-center">
-                <div class="text-3xl font-bold text-blue-500 mb-2">67%</div>
+                <div class="text-3xl font-bold text-primary-blue mb-2">67%</div>
                 <div class="text-sm text-gray-400">Moyenne générale</div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+        
+        const form = document.getElementById('course-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const topicInput = document.getElementById('topic-input');
+        
+        form.addEventListener('submit', function(e) {
+            if (!topicInput.value.trim()) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Show loading state
+            generateBtn.innerHTML = `
+                <div class="flex items-center justify-center space-x-2">
+                    <i data-lucide="sparkles" class="w-5 h-5 animate-spin"></i>
+                    <span>Génération en cours...</span>
+                </div>
+            `;
+            generateBtn.disabled = true;
+            generateBtn.classList.add('bg-gray-600', 'text-gray-400', 'cursor-not-allowed');
+            generateBtn.classList.remove('bg-primary-green', 'hover:bg-green-600');
+            
+            lucide.createIcons();
+        });
+    });
+</script>
 {% endblock %}
