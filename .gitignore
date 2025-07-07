@@ -216,3 +216,6 @@ theme/static_src/package-lock.json
 theme/static_src/package.json
 theme/static_src/.gitignore
 theme/static_src/postcss.config.js
+
+data
+data/
