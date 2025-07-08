@@ -27,6 +27,71 @@
                 <form method="post" enctype="multipart/form-data" class="space-y-4">
                     {% csrf_token %}
                     
+                    <!-- Section Avatar avec recadrage -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-300 mb-4">Avatar</label>
+                        <div class="flex items-start space-x-6">
+                            <!-- Aperçu actuel -->
+                            <div class="text-center">
+                                <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-3">
+                                    {% if user.avatar %}
+                                        <img id="current-avatar" src="{{ user.avatar.url }}" alt="Avatar actuel" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <img id="current-avatar" src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-full h-full object-cover">
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs text-gray-400">Avatar actuel</p>
+                            </div>
+                            
+                            <!-- Zone de recadrage -->
+                            <div class="flex-1">
+                                <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
+                                    <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
+                                    <button type="button" onclick="document.getElementById('avatar-input').click()" 
+                                            class="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                                        <i data-lucide="upload" class="w-4 h-4 inline mr-2"></i>
+                                        Choisir une nouvelle image
+                                    </button>
+                                    <p class="text-xs text-gray-400 mt-2">JPG, PNG, GIF (max 2MB)</p>
+                                </div>
+                                
+                                <!-- Zone de prévisualisation et recadrage -->
+                                <div id="crop-container" class="hidden mt-4">
+                                    <div class="bg-gray-900 rounded-lg p-4">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="text-sm font-medium text-white">Ajuster votre avatar</h4>
+                                            <div class="flex space-x-2">
+                                                <button type="button" id="crop-save" class="px-3 py-1 bg-primary-green text-white rounded text-xs hover:bg-green-600">
+                                                    Valider
+                                                </button>
+                                                <button type="button" id="crop-cancel" class="px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-500">
+                                                    Annuler
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Canvas pour le recadrage -->
+                                        <div class="relative bg-black rounded-lg overflow-hidden" style="height: 300px;">
+                                            <canvas id="crop-canvas" class="max-w-full max-h-full"></canvas>
+                                        </div>
+                                        
+                                        <!-- Contrôles de zoom et position -->
+                                        <div class="mt-3 space-y-2">
+                                            <div class="flex items-center space-x-3">
+                                                <label class="text-xs text-gray-400 w-12">Zoom:</label>
+                                                <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" 
+                                                       class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                                            </div>
+                                            <p class="text-xs text-gray-400">
+                                                💡 Utilisez la molette de la souris pour zoomer, cliquez et glissez pour déplacer l'image
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
@@ -65,14 +130,8 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                            Avatar
-                        </label>
-                        <input type="file" name="avatar" accept="image/*"
-                               class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-primary-green file:text-white hover:file:bg-green-600 transition-colors">
-                        <p class="text-xs text-gray-400 mt-1">Formats acceptés : JPG, PNG, GIF (max 2MB)</p>
-                    </div>
+                    <!-- Champ caché pour l'avatar recadré -->
+                    <input type="hidden" id="cropped-avatar" name="cropped_avatar">
 
                     <div class="flex justify-end space-x-4">
                         <a href="{% url 'courses:generator' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
@@ -93,9 +152,9 @@
                 
                 <div class="text-center">
                     {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover mx-auto mb-4">
+                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover mx-auto mb-4 border-2 border-gray-600">
                     {% else %}
-                        <img src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-20 h-20 rounded-full object-cover mx-auto mb-4">
+                        <img src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-20 h-20 rounded-full object-cover mx-auto mb-4 border-2 border-gray-600">
                     {% endif %}
                     
                     <h4 class="text-lg font-bold text-white">{{ user.username }}</h4>
@@ -136,8 +195,163 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+    
+    let canvas, ctx, img;
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    let lastX, lastY;
+    
+    const avatarInput = document.getElementById('avatar-input');
+    const cropContainer = document.getElementById('crop-container');
+    const cropCanvas = document.getElementById('crop-canvas');
+    const zoomSlider = document.getElementById('zoom-slider');
+    const cropSave = document.getElementById('crop-save');
+    const cropCancel = document.getElementById('crop-cancel');
+    const currentAvatar = document.getElementById('current-avatar');
+    
+    canvas = cropCanvas;
+    ctx = canvas.getContext('2d');
+    
+    // Gestion du fichier sélectionné
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                img = new Image();
+                img.onload = function() {
+                    initCrop();
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
     });
+    
+    function initCrop() {
+        cropContainer.classList.remove('hidden');
+        canvas.width = 300;
+        canvas.height = 300;
+        
+        // Calculer l'échelle initiale pour que l'image rentre dans le canvas
+        const maxDim = Math.max(img.width, img.height);
+        scale = 300 / maxDim;
+        
+        // Centrer l'image
+        offsetX = (canvas.width - img.width * scale) / 2;
+        offsetY = (canvas.height - img.height * scale) / 2;
+        
+        zoomSlider.value = scale;
+        drawImage();
+    }
+    
+    function drawImage() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Dessiner l'image
+        ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+        
+        // Dessiner le cercle de recadrage
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+        
+        // Dessiner le contour du cercle
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, 2 * Math.PI);
+        ctx.stroke();
+    }
+    
+    // Gestion du zoom
+    zoomSlider.addEventListener('input', function() {
+        scale = parseFloat(this.value);
+        drawImage();
+    });
+    
+    // Gestion du zoom avec la molette
+    canvas.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        scale = Math.max(0.5, Math.min(3, scale + delta));
+        zoomSlider.value = scale;
+        drawImage();
+    });
+    
+    // Gestion du drag
+    canvas.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+    });
+    
+    canvas.addEventListener('mousemove', function(e) {
+        if (isDragging) {
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+            
+            offsetX += currentX - lastX;
+            offsetY += currentY - lastY;
+            
+            lastX = currentX;
+            lastY = currentY;
+            
+            drawImage();
+        }
+    });
+    
+    canvas.addEventListener('mouseup', function() {
+        isDragging = false;
+    });
+    
+    // Sauvegarder le recadrage
+    cropSave.addEventListener('click', function() {
+        // Créer un canvas temporaire pour l'avatar final
+        const finalCanvas = document.createElement('canvas');
+        const finalCtx = finalCanvas.getContext('2d');
+        finalCanvas.width = 240;
+        finalCanvas.height = 240;
+        
+        // Dessiner l'image recadrée
+        finalCtx.drawImage(img, 
+            (offsetX - (canvas.width / 2 - 120)) / scale, 
+            (offsetY - (canvas.height / 2 - 120)) / scale,
+            240 / scale, 
+            240 / scale,
+            0, 0, 240, 240
+        );
+        
+        // Convertir en blob et mettre à jour l'aperçu
+        finalCanvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            currentAvatar.src = url;
+            
+            // Stocker les données pour l'envoi
+            const reader = new FileReader();
+            reader.onload = function() {
+                document.getElementById('cropped-avatar').value = reader.result;
+            };
+            reader.readAsDataURL(blob);
+        }, 'image/jpeg', 0.9);
+        
+        cropContainer.classList.add('hidden');
+    });
+    
+    // Annuler le recadrage
+    cropCancel.addEventListener('click', function() {
+        cropContainer.classList.add('hidden');
+        avatarInput.value = '';
+    });
+});
 </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-<!-- Sidebar Component - Exact KodaTheme Design avec Profil Utilisateur -->
+<!-- Sidebar Component - Exact KodaTheme Design avec Profil en première position -->
 <div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-2">
     <!-- Logo -->
     <div class="mb-6">
@@ -7,6 +7,47 @@
     
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-2 flex-1">
+        <!-- Profil utilisateur en première position -->
+        <div class="relative">
+            <button onclick="toggleProfileMenu()" 
+                    class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'profile' in request.path %}bg-primary-green bg-opacity-20 border border-primary-green border-opacity-30{% else %}hover:bg-gray-800{% endif %}" 
+                    title="Profil" id="profile-button">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
+                {% else %}
+                    <img src="{% load static %}{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
+                {% endif %}
+            </button>
+            
+            <!-- Menu déroulant du profil -->
+            <div id="profile-menu" class="absolute top-0 left-16 ml-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden z-50">
+                <div class="p-3 border-b border-gray-700">
+                    <div class="flex items-center space-x-3">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                        {% else %}
+                            <img src="{% load static %}{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover">
+                        {% endif %}
+                        <div>
+                            <div class="text-sm font-medium text-white">{{ user.username }}</div>
+                            <div class="text-xs text-gray-400">{{ user.email }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="py-1">
+                    <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
+                        <i data-lucide="user" class="w-4 h-4 mr-3"></i>
+                        Modifier le profil
+                    </button>
+                    <a href="{% url 'users:logout' %}" class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
+                        <i data-lucide="log-out" class="w-4 h-4 mr-3"></i>
+                        Se déconnecter
+                    </a>
+                </div>
+            </div>
+        </div>
+        
         <button onclick="openTab('courses')" 
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
                 title="Cours">
@@ -37,47 +78,6 @@
             <i data-lucide="rotate-ccw" class="w-5 h-5 relative z-10"></i>
         </button>
     </nav>
-    
-    <!-- Profil utilisateur en bas -->
-    <div class="relative">
-        <button onclick="toggleProfileMenu()" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative text-gray-400 hover:text-white hover:bg-gray-800" 
-                title="Profil" id="profile-button">
-            {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
-            {% else %}
-                <img src="{% load static %}{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover">
-            {% endif %}
-        </button>
-        
-        <!-- Menu déroulant du profil -->
-        <div id="profile-menu" class="absolute bottom-0 left-16 mb-0 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden z-50">
-            <div class="p-3 border-b border-gray-700">
-                <div class="flex items-center space-x-3">
-                    {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
-                    {% else %}
-                        <img src="{% load static %}{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover">
-                    {% endif %}
-                    <div>
-                        <div class="text-sm font-medium text-white">{{ user.username }}</div>
-                        <div class="text-xs text-gray-400">{{ user.email }}</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="py-1">
-                <a href="{% url 'users:profile' %}" class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                    <i data-lucide="user" class="w-4 h-4 mr-3"></i>
-                    Modifier le profil
-                </a>
-                <a href="{% url 'users:logout' %}" class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                    <i data-lucide="log-out" class="w-4 h-4 mr-3"></i>
-                    Se déconnecter
-                </a>
-            </div>
-        </div>
-    </div>
 </div>
 
 <script>

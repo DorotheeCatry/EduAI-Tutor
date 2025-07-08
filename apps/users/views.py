@@ -5,6 +5,9 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.files.base import ContentFile
+import base64
+import uuid
 from .forms import RegisterForm, LoginForm
 from .models import KodaUser
 
@@ -70,5 +73,14 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return self.request.user
     
     def form_valid(self, form):
+        # Gérer l'avatar recadré si présent
+        cropped_avatar = self.request.POST.get('cropped_avatar')
+        if cropped_avatar:
+            # Décoder l'image base64
+            format, imgstr = cropped_avatar.split(';base64,')
+            ext = format.split('/')[-1]
+            data = ContentFile(base64.b64decode(imgstr), name=f'avatar_{uuid.uuid4()}.{ext}')
+            form.instance.avatar = data
+        
         messages.success(self.request, 'Profil mis à jour avec succès !')
         return super().form_valid(form)
