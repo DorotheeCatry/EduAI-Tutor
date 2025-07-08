@@ -7,6 +7,18 @@ class KodaUser(AbstractUser):
         STUDENT = 'student', _('Student')
         ADMIN = 'admin', _('Administrator')
 
+    # Les champs username et email sont déjà inclus dans AbstractUser
+    # On peut les personnaliser si nécessaire
+    email = models.EmailField(
+        _('Email address'),
+        unique=True,
+        help_text=_('Required. Enter a valid email address.')
+    )
+    
+    # Permettre la connexion par email ou username
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     role = models.CharField(
         max_length=10,
         choices=Role.choices,

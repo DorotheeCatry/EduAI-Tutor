@@ -30,6 +30,7 @@ urlpatterns += [
 
     # Routes des apps personnalisées
     path('', include('apps.core.urls')),                # page d'accueil ou layout général
+    path('auth/', include('apps.users.urls')),          # authentification
     path('courses/', include('apps.courses.urls')),
     path('quiz/', include('apps.quiz.urls')),
     path('revision/', include('apps.revision.urls')),

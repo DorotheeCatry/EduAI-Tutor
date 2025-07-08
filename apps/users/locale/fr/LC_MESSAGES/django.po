@@ -34,38 +34,58 @@ msgstr "E-mail"
 msgid "Role"
 msgstr "Rôle"
 
+#: apps/users/models.py:12
+msgid "Email address"
+msgstr "Adresse email"
+
+#: apps/users/models.py:14
+msgid "Required. Enter a valid email address."
+msgstr "Requis. Entrez une adresse email valide."
+
 #: apps/users/models.py:7
 msgid "Student"
 msgstr "Étudiant"
 
 #: apps/users/models.py:8
-msgid "Teacher"
-msgstr "Enseignant"
-
-#: apps/users/models.py:9
 msgid "Administrator"
 msgstr "Administrateur"
 
-#: apps/users/models.py:21
+#: apps/users/models.py:31
 msgid "Biography"
 msgstr "Biographie"
 
-#: apps/users/models.py:22
+#: apps/users/models.py:32
 msgid "A short biography of the user."
 msgstr "Une courte biographie de l'utilisateur."
 
-#: apps/users/models.py:29
+#: apps/users/models.py:39
 msgid "Avatar"
 msgstr "Avatar"
 
-#: apps/users/models.py:33
+#: apps/users/models.py:43
 msgid "English"
 msgstr "Anglais"
 
-#: apps/users/models.py:34
+#: apps/users/models.py:44
 msgid "French"
 msgstr "Français"
 
-#: apps/users/models.py:41
+#: apps/users/models.py:51
 msgid "Preferred language"
 msgstr "Langue préférée"
+
+#: apps/users/models.py:54
+msgid "Experience Points"
+msgstr "Points d'expérience"
+
+#: apps/users/models.py:55
+msgid "Total experience points gained by the student."
+msgstr "Total des points d'expérience gagnés par l'étudiant."
+
+#: apps/users/forms.py:42
+msgid "Email ou nom d'utilisateur"
+msgstr "Email ou nom d'utilisateur"
+
+#: apps/users/forms.py:48
+msgid "Mot de passe"
+msgstr "Mot de passe"
