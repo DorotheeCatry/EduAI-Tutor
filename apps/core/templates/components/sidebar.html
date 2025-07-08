@@ -20,7 +20,7 @@
             </button>
             
             <!-- Menu déroulant du profil -->
-            <div id="profile-menu" class="absolute top-0 left-16 ml-2 w-56 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden z-50">
+            <div id="profile-menu" class="absolute top-0 left-16 ml-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden z-50">
                 <div class="p-3 border-b border-gray-700">
                     <div class="flex items-center space-x-3">
                         {% if user.avatar %}
@@ -36,13 +36,16 @@
                 
                 <div class="py-1">
                     <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                        <i data-lucide="user" class="w-4 h-4 mr-3"></i>
-                        Modifier le profil
+                        <i data-lucide="user" class="w-4 h-4 mr-4"></i>
+                        Edit Profile
                     </button>
-                    <a href="{% url 'users:logout' %}" class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                        <i data-lucide="log-out" class="w-4 h-4 mr-3"></i>
-                        Se déconnecter
-                    </a>
+                    <form method="post" action="{% url 'users:logout' %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
+                            <i data-lucide="log-out" class="w-4 h-4 mr-4"></i>
+                            Sign Out
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

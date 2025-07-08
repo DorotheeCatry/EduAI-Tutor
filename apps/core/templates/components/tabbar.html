@@ -12,27 +12,27 @@ let openTabsOrder = []; // Array pour maintenir l'ordre d'ouverture
 // Configuration des onglets disponibles
 const availableTabs = {
     'profile': {
-        title: 'Profil',
+        title: 'Profile',
         url: "{% url 'users:profile' %}"
     },
     'courses': {
-        title: 'Générateur de Cours',
+        title: 'Course Generator',
         url: "{% url 'courses:generator' %}"
     },
     'chat': {
-        title: 'Recherche IA',
+        title: 'AI Search',
         url: "{% url 'chat:search' %}"
     },
     'quiz': {
-        title: 'Quiz & QCM',
+        title: 'Quiz & MCQ',
         url: "{% url 'quiz:lobby' %}"
     },
     'tracker': {
-        title: 'Performances',
+        title: 'Performance',
         url: "{% url 'tracker:dashboard' %}"
     },
     'revision': {
-        title: 'Révision',
+        title: 'Revision',
         url: "{% url 'revision:flashcards' %}"
     }
 };
