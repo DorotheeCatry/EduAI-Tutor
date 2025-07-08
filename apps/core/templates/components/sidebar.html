@@ -1,100 +1,133 @@
-<!-- Sidebar Component - Exact KodaTheme Design avec Profil en première position -->
+<!-- Sidebar Component - KodaTheme avec Profil en haut -->
 <div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-2">
     <!-- Logo -->
     <div class="mb-6">
         <i data-lucide="code" class="w-8 h-8 text-primary-green"></i>
     </div>
-    
+
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-2 flex-1">
-        <!-- Profil utilisateur en première position -->
+        <!-- Bouton Profil -->
         <div class="relative">
             <button onclick="toggleProfileMenu()" 
-                    class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'profile' in request.path %}bg-primary-green bg-opacity-20 border border-primary-green border-opacity-30{% else %}hover:bg-gray-800{% endif %}" 
-                    title="Profil" id="profile-button">
+                    id="profile-button"
+                    title="Profil"
+                    class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
+                           {% if 'profile' in request.path %}bg-primary-green bg-opacity-20 border border-primary-green border-opacity-30{% else %}hover:bg-gray-800{% endif %}">
                 {% if user.avatar %}
                     <img src="{{ user.avatar.url }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
                 {% else %}
                     <img src="{% load static %}{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
                 {% endif %}
             </button>
-            
+
             <!-- Menu déroulant du profil -->
             <div id="profile-menu" class="absolute top-0 left-16 ml-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden z-50">
+                <!-- Header du menu -->
                 <div class="p-3 border-b border-gray-700">
                     <div class="flex items-center space-x-3">
                         {% if user.avatar %}
                             <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                         {% else %}
-                            <img src="{% load static %}{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover">
+                            <img src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover">
                         {% endif %}
                         <div>
                             <div class="text-sm font-medium text-white">{{ user.username }}</div>
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- Liens d'action -->
                 <div class="py-1">
+                    <!-- Bouton Edit Profile -->
                     <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                        <i data-lucide="user" class="w-4 h-4 mr-6"></i>
-                        Edit Profile
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            data-lucide="user"
+                            class="lucide lucide-user w-4 h-4"></svg>
+                        <span class="ml-2">Edit Profile</span>
                     </button>
-                    <form method="post" action="{% url 'users:logout' %}" class="m-0">
-                        {% csrf_token %}
+
+                    <!-- Form Logout -->
+                    <form method="post" action="/auth/logout/" class="m-0">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="...">
                         <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                            <i data-lucide="log-out" class="w-4 h-4 mr-6"></i>
-                            Sign Out
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                data-lucide="log-out"
+                                class="lucide lucide-log-out w-4 h-4"></svg>
+                            <span class="ml-2">Sign Out</span>
                         </button>
                     </form>
                 </div>
             </div>
         </div>
-        
-        <button onclick="openTab('courses')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
-                title="Cours">
+        <!-- Autres boutons de navigation -->
+        <button onclick="openTab('courses')" title="Cours"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
+                       {% if 'courses' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
             <i data-lucide="book-open" class="w-5 h-5 relative z-10"></i>
         </button>
-        
-        <button onclick="openTab('chat')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
-                title="Recherche">
+
+        <button onclick="openTab('chat')" title="Recherche"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
+                       {% if 'chat' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
             <i data-lucide="search" class="w-5 h-5 relative z-10"></i>
         </button>
-        
-        <button onclick="openTab('quiz')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
-                title="Quiz">
+
+        <button onclick="openTab('quiz')" title="Quiz"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
+                       {% if 'quiz' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
             <i data-lucide="brain" class="w-5 h-5 relative z-10"></i>
         </button>
-        
-        <button onclick="openTab('tracker')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
-                title="Performances">
+
+        <button onclick="openTab('tracker')" title="Performances"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
+                       {% if 'tracker' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
             <i data-lucide="bar-chart-3" class="w-5 h-5 relative z-10"></i>
         </button>
-        
-        <button onclick="openTab('revision')" 
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}" 
-                title="Révision">
+
+        <button onclick="openTab('revision')" title="Révision"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
+                       {% if 'revision' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
             <i data-lucide="rotate-ccw" class="w-5 h-5 relative z-10"></i>
         </button>
     </nav>
 </div>
 
+<!-- JS pour menu profil + icônes Lucide -->
 <script>
 function toggleProfileMenu() {
     const menu = document.getElementById('profile-menu');
     menu.classList.toggle('hidden');
 }
 
-// Fermer le menu si on clique ailleurs
 document.addEventListener('click', function(event) {
     const profileButton = document.getElementById('profile-button');
     const profileMenu = document.getElementById('profile-menu');
-    
+
     if (!profileButton.contains(event.target) && !profileMenu.contains(event.target)) {
         profileMenu.classList.add('hidden');
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.lucide) {
+        lucide.createIcons();
     }
 });
 </script>
