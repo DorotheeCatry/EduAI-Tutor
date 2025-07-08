@@ -30,18 +30,17 @@
                         {% endif %}
                         <div>
                             <div class="text-sm font-medium text-white">{{ user.username }}</div>
-                            <div class="text-xs text-gray-400">{{ user.email }}</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="py-1">
                     <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                        <i data-lucide="user" class="w-4 h-4 mr-3"></i>
+                        <i data-lucide="user" class="w-4 h-4 mr-4"></i>
                         Modifier le profil
                     </button>
                     <a href="{% url 'users:logout' %}" class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                        <i data-lucide="log-out" class="w-4 h-4 mr-3"></i>
+                        <i data-lucide="log-out" class="w-4 h-4 mr-4"></i>
                         Se déconnecter
                     </a>
                 </div>

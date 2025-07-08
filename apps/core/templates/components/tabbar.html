@@ -40,12 +40,13 @@ const availableTabs = {
 // Détecter l'onglet actuel basé sur l'URL
 function getCurrentTab() {
     const path = window.location.pathname;
+    if (path.includes('profile')) return 'profile';
     if (path.includes('courses')) return 'courses';
     if (path.includes('chat')) return 'chat';
     if (path.includes('quiz')) return 'quiz';
     if (path.includes('tracker')) return 'tracker';
     if (path.includes('revision')) return 'revision';
-    return 'courses'; // par défaut
+    return null; // pas d'onglet par défaut si on ne reconnaît pas l'URL
 }
 
 // Ajouter un onglet dans l'ordre chronologique

@@ -71,7 +71,7 @@
                                         </div>
                                         
                                         <!-- Canvas pour le recadrage -->
-                                        <div class="relative bg-black rounded-lg overflow-hidden" style="height: 300px;">
+                                        <div class="relative bg-black rounded-lg overflow-hidden flex items-center justify-center" style="height: 300px;">
                                             <canvas id="crop-canvas" class="max-w-full max-h-full"></canvas>
                                         </div>
                                         
@@ -252,15 +252,30 @@ document.addEventListener('DOMContentLoaded', function() {
     function drawImage() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
+        // Fond noir pour le canvas
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
         // Dessiner l'image
         ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
         
-        // Dessiner le cercle de recadrage
+        // Créer un masque circulaire
         ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = 'destination-in';
         ctx.beginPath();
         ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.restore();
+        
+        // Redessiner l'image dans le cercle
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, 2 * Math.PI);
+        ctx.clip();
+        ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
         ctx.restore();
         
         // Dessiner le contour du cercle
@@ -316,18 +331,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Sauvegarder le recadrage
     cropSave.addEventListener('click', function() {
-        // Créer un canvas temporaire pour l'avatar final
+        // Créer un canvas temporaire pour l'avatar final (rond)
         const finalCanvas = document.createElement('canvas');
         const finalCtx = finalCanvas.getContext('2d');
         finalCanvas.width = 240;
         finalCanvas.height = 240;
         
-        // Dessiner l'image recadrée
+        // Créer un cercle parfait
+        finalCtx.beginPath();
+        finalCtx.arc(120, 120, 120, 0, 2 * Math.PI);
+        finalCtx.clip();
+        
+        // Calculer les coordonnées pour centrer l'image dans le cercle
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const sourceX = (centerX - 120 - offsetX) / scale;
+        const sourceY = (centerY - 120 - offsetY) / scale;
+        const sourceSize = 240 / scale;
+        
+        // Dessiner l'image recadrée et centrée
         finalCtx.drawImage(img, 
-            (offsetX - (canvas.width / 2 - 120)) / scale, 
-            (offsetY - (canvas.height / 2 - 120)) / scale,
-            240 / scale, 
-            240 / scale,
+            sourceX, sourceY, sourceSize, sourceSize,
             0, 0, 240, 240
         );
         
