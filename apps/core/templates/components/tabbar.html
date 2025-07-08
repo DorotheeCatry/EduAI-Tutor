@@ -87,6 +87,36 @@ function closeTab(event, tabId) {
 
 // Naviguer vers un onglet
 function navigateToTab(tabId) {
+    // Précharger la page pour éviter les sauts visuels
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = availableTabs[tabId].url;
+    document.head.appendChild(link);
+    
+    // Navigation avec transition fluide
+    setTimeout(() => {
+        window.location.href = availableTabs[tabId].url;
+    }, 50);
+}
+
+// Optimiser les transitions entre pages
+function smoothNavigate(url) {
+    const main = document.querySelector('main.tab-content');
+    if (main) {
+        main.style.opacity = '0.95';
+        main.style.transform = 'translate3d(0, 0, 0) scale(0.99)';
+        main.style.transition = 'opacity 0.1s ease-out, transform 0.1s ease-out';
+        
+        setTimeout(() => {
+            window.location.href = url;
+        }, 100);
+    } else {
+        window.location.href = url;
+    }
+}
+
+// Remplacer la navigation standard
+function navigateToTab(tabId) {
     window.location.href = availableTabs[tabId].url;
 }
 

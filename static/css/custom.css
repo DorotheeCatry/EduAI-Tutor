@@ -30,20 +30,37 @@ html, body {
 .bg-gray-850 { background-color: var(--gray-850); }
 
 /* Transitions fluides pour les changements de page */
-main {
-    transition: opacity 0.2s ease-in-out;
-}
-
-/* Éviter les sauts lors des changements d'onglets */
 .tab-content {
     min-height: calc(100vh - 120px);
-    opacity: 1;
-    transition: opacity 0.15s ease-in-out;
+    position: relative;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
-/* Stabiliser la hauteur du contenu */
-.flex-1.bg-gray-900.overflow-auto {
-    position: relative;
+/* Stabiliser le layout pour éviter les repaints */
+main.tab-content {
+    contain: layout style paint;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
+}
+
+/* Optimisation GPU pour les transitions */
+.flex-1 {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* Éviter les reflows lors des changements de contenu */
+.p-6 {
+    contain: layout;
+}
+
+/* Stabiliser les dimensions pour éviter les sauts */
+.space-y-6 {
+    contain: layout;
 }
 
 .border-primary-green { border-color: var(--primary-green); }
