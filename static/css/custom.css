@@ -29,6 +29,23 @@ html, body {
 .bg-gray-750 { background-color: var(--gray-750); }
 .bg-gray-850 { background-color: var(--gray-850); }
 
+/* Transitions fluides pour les changements de page */
+main {
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Éviter les sauts lors des changements d'onglets */
+.tab-content {
+    min-height: calc(100vh - 120px);
+    opacity: 1;
+    transition: opacity 0.15s ease-in-out;
+}
+
+/* Stabiliser la hauteur du contenu */
+.flex-1.bg-gray-900.overflow-auto {
+    position: relative;
+}
+
 .border-primary-green { border-color: var(--primary-green); }
 .border-primary-blue { border-color: var(--primary-blue); }
 .border-primary-rose { border-color: var(--primary-rose); }

@@ -1,13 +1,13 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Recherche Intelligente - EduAI Tutor{% endblock %}
+{% block title %}Intelligent Search - EduAI Tutor{% endblock %}
 
 {% block content %}
 <div class="flex flex-col h-full">
     <div class="p-4 border-b border-gray-700">
         <div class="flex items-center space-x-3">
             <i data-lucide="search" class="w-6 h-6 text-primary-blue"></i>
-            <h1 class="text-xl font-bold text-white">Recherche Intelligente</h1>
+            <h1 class="text-xl font-bold text-white">Intelligent Search</h1>
         </div>
     </div>
 
@@ -18,7 +18,7 @@
             </div>
             
             <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700">
-                <p class="text-xs">Bonjour ! Je suis votre assistant IA. Posez-moi vos questions sur la programmation, les concepts techniques, ou tout autre sujet d'apprentissage.</p>
+                <p class="text-xs">Hello! I'm your AI assistant. Ask me questions about programming, technical concepts, or any other learning topic.</p>
                 <p class="text-xs opacity-70 mt-1" id="initial-time"></p>
             </div>
         </div>
@@ -31,7 +31,7 @@
                 type="text"
                 id="message-input"
                 name="message"
-                placeholder="Posez votre question..."
+                placeholder="Ask your question..."
                 class="flex-1 px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors"
                 required
             />
@@ -74,7 +74,7 @@
             // Simulate AI response (replace with actual API call)
             setTimeout(() => {
                 hideLoading();
-                addMessage('Je comprends votre question. Voici une explication détaillée avec des exemples pratiques...', false);
+                addMessage('I understand your question. Here is a detailed explanation with practical examples...', false);
             }, 1500);
         });
 

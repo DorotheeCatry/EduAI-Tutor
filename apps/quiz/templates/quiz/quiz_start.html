@@ -1,13 +1,13 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Quiz en cours - EduAI Tutor{% endblock %}
+{% block title %}Quiz in Progress - EduAI Tutor{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6">
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
             <i data-lucide="brain" class="w-6 h-6 text-primary-rose"></i>
-            <h1 class="text-xl font-bold text-white">Quiz en cours</h1>
+            <h1 class="text-xl font-bold text-white">Quiz in Progress</h1>
         </div>
         <div class="flex items-center space-x-4">
             <div class="flex items-center space-x-2">
@@ -15,7 +15,7 @@
                 <span class="text-primary-blue font-mono text-lg" id="timer">30s</span>
             </div>
             <div class="text-white">
-                Question <span id="current-question">1</span>/2
+                Question <span id="current-question">1</span> of 2
             </div>
         </div>
     </div>
@@ -26,7 +26,7 @@
                 <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
             </div>
             <h2 class="text-lg font-bold text-white mb-6" id="question-text">
-                Quelle est la différence entre POST et PUT ?
+                What is the difference between POST and PUT?
             </h2>
         </div>
 
@@ -34,25 +34,25 @@
             <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="0">
                 <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">A</div>
-                    <span>POST crée, PUT modifie</span>
+                    <span>POST creates, PUT modifies</span>
                 </div>
             </button>
             <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="1">
                 <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">B</div>
-                    <span>POST modifie, PUT crée</span>
+                    <span>POST modifies, PUT creates</span>
                 </div>
             </button>
             <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="2">
                 <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">C</div>
-                    <span>Aucune différence</span>
+                    <span>No difference</span>
                 </div>
             </button>
             <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="3">
                 <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">D</div>
-                    <span>POST est plus sécurisé</span>
+                    <span>POST is more secure</span>
                 </div>
             </button>
         </div>
@@ -60,10 +60,10 @@
 
     <div class="flex justify-between items-center">
         <a href="{% url 'quiz:lobby' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-            Retour
+            Back
         </a>
         <div class="text-sm text-white font-semibold">
-            Score: <span id="score">0</span>/2
+            Score: <span id="score">0</span> / 2
         </div>
     </div>
 </div>
@@ -79,22 +79,22 @@
 
         const questions = [
             {
-                text: "Quelle est la différence entre POST et PUT ?",
+                text: "What is the difference between POST and PUT?",
                 options: [
-                    "POST crée, PUT modifie",
-                    "POST modifie, PUT crée", 
-                    "Aucune différence",
-                    "POST est plus sécurisé"
+                    "POST creates, PUT modifies",
+                    "POST modifies, PUT creates", 
+                    "No difference",
+                    "POST is more secure"
                 ],
                 correct: 0
             },
             {
-                text: "Qu'est-ce qu'une closure en JavaScript ?",
+                text: "What is a closure in JavaScript?",
                 options: [
-                    "Une fonction qui ferme le navigateur",
-                    "Une fonction qui a accès aux variables de son scope parent",
-                    "Une fonction anonyme",
-                    "Une fonction récursive"
+                    "A function that closes the browser",
+                    "A function that has access to variables from its parent scope",
+                    "An anonymous function",
+                    "A recursive function"
                 ],
                 correct: 1
             }
@@ -122,7 +122,7 @@
                 startTimer();
             } else {
                 // Quiz terminé
-                alert(`Quiz terminé ! Score final: ${score}/${questions.length}`);
+                alert(`Quiz completed! Final score: ${score}/${questions.length}`);
                 window.location.href = "{% url 'quiz:lobby' %}";
             }
         }

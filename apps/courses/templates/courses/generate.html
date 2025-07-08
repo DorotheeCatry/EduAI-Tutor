@@ -1,12 +1,12 @@
 {% extends 'core/base.html' %}
 
-{% block title %}Générateur de Cours - EduAI Tutor{% endblock %}
+{% block title %}Course Generator - EduAI Tutor{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6 h-full overflow-auto">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="book-open" class="w-6 h-6 text-primary-green"></i>
-        <h1 class="text-xl font-bold text-white">Génération de Cours</h1>
+        <h1 class="text-xl font-bold text-white">Course Generation</h1>
     </div>
 
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -14,13 +14,13 @@
             {% csrf_token %}
             <div>
                 <label class="block text-xs font-medium text-gray-300 mb-2">
-                    Sujet du cours
+                    Course topic
                 </label>
                 <input
                     type="text"
                     name="topic"
                     id="topic-input"
-                    placeholder="Ex: Les décorateurs Python, API REST avec FastAPI..."
+                    placeholder="Ex: Python decorators, REST API with FastAPI..."
                     class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
                     required
                 />
@@ -28,16 +28,16 @@
 
             <div>
                 <label class="block text-xs font-medium text-gray-300 mb-2">
-                    Niveau de difficulté
+                    Difficulty level
                 </label>
                 <select
                     name="difficulty"
                     id="difficulty-select"
                     class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
                 >
-                    <option value="beginner">Débutant</option>
-                    <option value="intermediate" selected>Intermédiaire</option>
-                    <option value="advanced">Avancé</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate" selected>Intermediate</option>
+                    <option value="advanced">Advanced</option>
                 </select>
             </div>
 
@@ -48,7 +48,7 @@
             >
                 <div class="flex items-center justify-center space-x-2">
                     <i data-lucide="sparkles" class="w-5 h-5"></i>
-                    <span>Générer le cours</span>
+                    <span>Generate course</span>
                 </div>
             </button>
         </form>
@@ -58,12 +58,12 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
                 <i data-lucide="play" class="w-5 h-5 text-primary-blue"></i>
-                <h3 class="text-base font-bold text-white">Cours Récents</h3>
+                <h3 class="text-base font-bold text-white">Recent Courses</h3>
             </div>
             <div class="space-y-3">
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-white">Décorateurs Python</span>
+                        <span class="text-xs font-bold text-white">Python Decorators</span>
                         <span class="text-xs text-gray-400">85%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
@@ -72,7 +72,7 @@
                 </div>
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-white">API REST</span>
+                        <span class="text-xs font-bold text-white">REST API</span>
                         <span class="text-xs text-gray-400">60%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
@@ -94,22 +94,22 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
                 <i data-lucide="clock" class="w-5 h-5 text-primary-rose"></i>
-                <h3 class="text-base font-bold text-white">Temps d'étude</h3>
+                <h3 class="text-base font-bold text-white">Study Time</h3>
             </div>
             <div class="text-center">
                 <div class="text-2xl font-bold text-primary-rose mb-2">2h 34m</div>
-                <div class="text-sm text-gray-400">Aujourd'hui</div>
+                <div class="text-sm text-gray-400">Today</div>
             </div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
                 <i data-lucide="bar-chart" class="w-5 h-5 text-primary-blue"></i>
-                <h3 class="text-base font-bold text-white">Progression</h3>
+                <h3 class="text-base font-bold text-white">Progress</h3>
             </div>
             <div class="text-center">
                 <div class="text-2xl font-bold text-primary-blue mb-2">67%</div>
-                <div class="text-sm text-gray-400">Moyenne générale</div>
+                <div class="text-sm text-gray-400">Overall average</div>
             </div>
         </div>
     </div>
@@ -133,7 +133,7 @@
             generateBtn.innerHTML = `
                 <div class="flex items-center justify-center space-x-2">
                     <i data-lucide="sparkles" class="w-5 h-5 animate-spin"></i>
-                    <span>Génération en cours...</span>
+                    <span>Generating...</span>
                 </div>
             `;
             generateBtn.disabled = true;
