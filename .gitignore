@@ -222,7 +222,17 @@ data/
 
 KodaTheme
 KodaTheme/
+**/KodaTheme/
 
 staticfiles
 staticfiles/
 
+*/locale/
+*/locale/*
+*/locale/*/LC_MESSAGES/*
+
+**/migrations/
+!*/migrations/__init__.py
+
+__init__.py
+*__init__.py
