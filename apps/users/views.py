@@ -54,7 +54,9 @@ class CustomLogoutView(LogoutView):
     """
     Vue de déconnexion personnalisée.
     """
-    next_page = reverse_lazy('users:login')
+    
+    def get_next_page(self):
+        return reverse_lazy('users:login')
     
     def dispatch(self, request, *args, **kwargs):
         messages.info(request, 'Vous avez été déconnecté avec succès.')

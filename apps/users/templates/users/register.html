@@ -40,10 +40,10 @@
                 
                 <h2 class="text-3xl font-bold text-white mb-2">Créer un compte</h2>
                 <p class="text-gray-400 mb-6">
-                    Commencez votre parcours d'apprentissage dès maintenant. 
-                    Déjà un compte ? 
+                    Start your learning journey now. 
+                    Already have an account? 
                     <a href="{% url 'users:login' %}" class="text-primary-blue hover:text-blue-400 transition-colors">
-                        Connectez-vous
+                        Sign in
                     </a>
                 </p>
             </div>
@@ -55,7 +55,7 @@
                     <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4">
                         <div class="flex items-center space-x-2">
                             <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                            <span class="text-red-400 text-sm">Erreurs dans le formulaire</span>
+                            <span class="text-red-400 text-sm">Form errors</span>
                         </div>
                         {% for field, errors in form.errors.items %}
                             {% for error in errors %}
@@ -74,7 +74,7 @@
                     </div>
                     <div>
                         <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                            Nom d'utilisateur
+                            Username
                         </label>
                         {{ form.username }}
                     </div>
@@ -83,13 +83,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                            Mot de passe
+                            Password
                         </label>
                         {{ form.password1 }}
                     </div>
                     <div>
                         <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                            Confirmer le mot de passe
+                            Confirm password
                         </label>
                         {{ form.password2 }}
                     </div>
@@ -98,15 +98,15 @@
                 <div class="flex items-center">
                     <input type="checkbox" required class="w-4 h-4 text-primary-green bg-gray-700 border-gray-600 rounded focus:ring-primary-green focus:ring-2">
                     <span class="ml-2 text-sm text-gray-300">
-                        J'accepte les 
-                        <a href="#" class="text-primary-blue hover:text-blue-400 transition-colors">conditions d'utilisation</a>
-                        et la 
-                        <a href="#" class="text-primary-blue hover:text-blue-400 transition-colors">politique de confidentialité</a>
+                        I accept the 
+                        <a href="#" class="text-primary-blue hover:text-blue-400 transition-colors">terms of service</a>
+                        and 
+                        <a href="#" class="text-primary-blue hover:text-blue-400 transition-colors">privacy policy</a>
                     </span>
                 </div>
 
                 <button type="submit" class="w-full py-3 px-4 bg-primary-green text-white rounded-lg font-medium hover:bg-green-600 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2">
-                    <span>Créer mon compte</span>
+                    <span>Create my account</span>
                     <i data-lucide="user-plus" class="w-5 h-5"></i>
                 </button>
             </form>

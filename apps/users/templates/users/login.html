@@ -67,14 +67,14 @@
 
                 <div>
                     <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                        Email ou nom d'utilisateur
+                        Email or username
                     </label>
                     {{ form.username }}
                 </div>
 
                 <div>
                     <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                        Mot de passe
+                        Password
                     </label>
                     {{ form.password }}
                 </div>
@@ -82,16 +82,16 @@
                 <div class="flex items-center justify-between">
                     <label class="flex items-center">
                         <input type="checkbox" name="remember_me" class="w-4 h-4 text-primary-green bg-gray-700 border-gray-600 rounded focus:ring-primary-green focus:ring-2">
-                        <span class="ml-2 text-sm text-gray-300">Se souvenir de moi</span>
+                        <span class="ml-2 text-sm text-gray-300">Remember me</span>
                     </label>
                     <a href="#" class="text-sm text-primary-blue hover:text-blue-400 transition-colors">
-                        Mot de passe oublié ?
+                        Forgot password?
                     </a>
                 </div>
 
                 <div class="space-y-4">
                     <button type="submit" class="w-full py-3 px-4 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2">
-                        <span>Se connecter</span>
+                        <span>Sign in</span>
                         <i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </button>
                     
@@ -100,18 +100,18 @@
                             <div class="w-full border-t border-gray-600"></div>
                         </div>
                         <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-gray-800 text-gray-400">ou</span>
+                            <span class="px-2 bg-gray-800 text-gray-400">or</span>
                         </div>
                     </div>
                     
                     <button type="button" class="w-full py-3 px-4 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2 border border-gray-600">
                         <i data-lucide="github" class="w-5 h-5"></i>
-                        <span>Continuer avec GitHub</span>
+                        <span>Continue with GitHub</span>
                     </button>
                     
                     <button type="button" class="w-full py-3 px-4 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2 border border-gray-600">
                         <i data-lucide="mail" class="w-5 h-5"></i>
-                        <span>Continuer avec Google</span>
+                        <span>Continue with Google</span>
                     </button>
                 </div>
             </form>

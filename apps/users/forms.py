@@ -49,14 +49,14 @@ class LoginForm(AuthenticationForm):
     Form for user login with email or username.
     """
     username = forms.CharField(
-        label=_("Email ou nom d'utilisateur"),
+        label=_("Email or username"),
         widget=forms.TextInput(attrs={
             'class': 'w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors',
-            'placeholder': 'votre@email.com ou nom d\'utilisateur'
+            'placeholder': 'your@email.com or username'
         })
     )
     password = forms.CharField(
-        label=_("Mot de passe"),
+        label=_("Password"),
         widget=forms.PasswordInput(attrs={
             'class': 'w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors',
             'placeholder': '••••••••'
