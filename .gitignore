@@ -219,3 +219,10 @@ theme/static_src/postcss.config.js
 
 data
 data/
+
+KodaTheme
+KodaTheme/
+
+staticfiles
+staticfiles/
+
