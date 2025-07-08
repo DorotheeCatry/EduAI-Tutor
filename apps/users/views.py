@@ -3,7 +3,8 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import RegisterForm, LoginForm
 from .models import KodaUser
 
@@ -55,3 +56,19 @@ class CustomLogoutView(LogoutView):
     def dispatch(self, request, *args, **kwargs):
         messages.info(request, 'Vous avez été déconnecté avec succès.')
         return super().dispatch(request, *args, **kwargs)
+
+class ProfileView(LoginRequiredMixin, UpdateView):
+    """
+    Vue de modification du profil utilisateur.
+    """
+    model = KodaUser
+    fields = ['username', 'email', 'bio', 'avatar', 'language_preference']
+    template_name = 'users/profile.html'
+    success_url = reverse_lazy('users:profile')
+    
+    def get_object(self):
+        return self.request.user
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Profil mis à jour avec succès !')
+        return super().form_valid(form)

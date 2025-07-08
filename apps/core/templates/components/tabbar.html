@@ -11,6 +11,10 @@ let openTabsOrder = []; // Array pour maintenir l'ordre d'ouverture
 
 // Configuration des onglets disponibles
 const availableTabs = {
+    'profile': {
+        title: 'Profil',
+        url: "{% url 'users:profile' %}"
+    },
     'courses': {
         title: 'Générateur de Cours',
         url: "{% url 'courses:generator' %}"
