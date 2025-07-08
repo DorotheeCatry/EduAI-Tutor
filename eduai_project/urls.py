@@ -17,9 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.i18n import set_language
+from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
 
+def redirect_to_login(request):
+    """Redirige vers la page de connexion par défaut"""
+    return redirect('users:login')
 urlpatterns = [
     path('i18n/setlang/', set_language, name='set_language'),  # 💬 Vue pour changer la langue
 ]
@@ -29,7 +33,8 @@ urlpatterns += [
     path("__reload__/", include("django_browser_reload.urls")),
 
     # Routes des apps personnalisées
-    path('', include('apps.core.urls')),                # page d'accueil ou layout général
+    path('', redirect_to_login),                        # Redirection vers login par défaut
+    path('dashboard/', include('apps.core.urls')),      # pages principales protégées
     path('auth/', include('apps.users.urls')),          # authentification
     path('courses/', include('apps.courses.urls')),
     path('quiz/', include('apps.quiz.urls')),

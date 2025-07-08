@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 import json
 
+@login_required
 def course_generator(request):
     if request.method == 'POST':
         topic = request.POST.get('topic')
@@ -22,6 +24,7 @@ def course_generator(request):
     
     return render(request, 'courses/generate.html')
 
+@login_required
 def course_detail(request, course_id):
     # Logique pour afficher un cours spécifique
     context = {

@@ -130,6 +130,10 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+# URLs de redirection pour l'authentification
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/courses/generator/'
+LOGOUT_REDIRECT_URL = '/auth/login/'
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
