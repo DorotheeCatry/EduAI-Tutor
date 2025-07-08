@@ -36,6 +36,8 @@ class RegisterView(CreateView):
     success_url = reverse_lazy('users:login')
     
     def form_valid(self, form):
+        # Forcer le rôle étudiant pour tous les nouveaux utilisateurs
+        form.instance.role = KodaUser.Role.STUDENT
         response = super().form_valid(form)
         messages.success(self.request, 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
         return response
