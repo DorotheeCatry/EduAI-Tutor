@@ -35,7 +35,7 @@
                     <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Zone d'upload compacte -->
                         <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-4">Avatar</label>
+                            <label class="block text-sm font-medium text-gray-300 mb-4">Avatar</label>
                             <div class="text-center mb-4">
                                 <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-2 mx-auto">
                                     {% if user.avatar %}
@@ -48,30 +48,15 @@
                             </div>
                             
                             <div class="border-2 border-dashed border-gray-600 rounded-lg p-3 text-center">
-                                    <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
-                                    <div class="flex flex-col items-center space-y-2">
-                                        <i data-lucide="upload" class="w-6 h-6 text-gray-400"></i>
-                                        <button type="button" onclick="document.getElementById('avatar-input').click()" 
-                                                class="px-3 py-1 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                                            Choose new image
-                                        </button>
-                                    </div>
-                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF (max 2MB)</p>
+                                <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
+                                <div class="flex flex-col items-center space-y-2">
+                                    <i data-lucide="upload" class="w-6 h-6 text-gray-400"></i>
+                                    <button type="button" onclick="document.getElementById('avatar-input').click()" 
+                                            class="px-3 py-1 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                                        Choose new image
+                                    </button>
                                 </div>
-                        </div>
-                        
-                        <!-- Zone de prévisualisation et recadrage -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-4">Preview</label>
-                            <div class="bg-gray-900 rounded-lg p-4 text-center">
-                                <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mx-auto mb-3">
-                                    {% if user.avatar %}
-                                        <img id="preview-avatar" src="{{ user.avatar.url }}" alt="Preview" class="w-full h-full object-cover">
-                                    {% else %}
-                                        <img id="preview-avatar" src="{% static 'img/KodaPerso.png' %}" alt="Preview" class="w-full h-full object-cover">
-                                    {% endif %}
-                                </div>
-                                <p class="text-xs text-gray-400">How it will appear</p>
+                                <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF (max 2MB)</p>
                             </div>
                         </div>
                     </div>
