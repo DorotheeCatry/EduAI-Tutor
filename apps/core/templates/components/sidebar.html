@@ -39,16 +39,38 @@
 
                 <!-- Liens d'action -->
                 <div class="py-1">
+                    <!-- Bouton Edit Profile -->
                     <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                        <i data-lucide="user" class="w-4 h-4"></i>
-                        <span class="ml-3">Edit Profile</span>
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            data-lucide="user"
+                            class="lucide lucide-user w-4 h-4"></svg>
+                        <span class="ml-2">Edit Profile</span>
                     </button>
 
+                    <!-- Form Logout -->
                     <form method="post" action="/auth/logout/" class="m-0">
-                        {% csrf_token %}
+                        <input type="hidden" name="csrfmiddlewaretoken" value="...">
                         <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                            <i data-lucide="log-out" class="w-4 h-4"></i>
-                            <span class="ml-3">Sign Out</span>
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                data-lucide="log-out"
+                                class="lucide lucide-log-out w-4 h-4"></svg>
+                            <span class="ml-2">Sign Out</span>
                         </button>
                     </form>
                 </div>
