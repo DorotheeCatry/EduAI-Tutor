@@ -94,13 +94,16 @@
 <script>
 function toggleProfileMenu() {
     const menu = document.getElementById('profile-menu');
-    const button = document.getElementById('profile-button');
-    const rect = button.getBoundingClientRect();
-    
-    // Positionner le menu par rapport au bouton
-    menu.style.top = rect.top + 'px';
-    menu.style.left = (rect.right + 8) + 'px';
-    
+    if (menu) {
+        const button = document.getElementById('profile-button');
+        if (button) {
+            const rect = button.getBoundingClientRect();
+            
+            // Positionner le menu par rapport au bouton
+            menu.style.top = rect.top + 'px';
+            menu.style.left = (rect.right + 8) + 'px';
+        }
+    }
     menu.classList.toggle('hidden');
 }
 
@@ -108,7 +111,9 @@ document.addEventListener('click', function(event) {
     const profileButton = document.getElementById('profile-button');
     const profileMenu = document.getElementById('profile-menu');
 
-    if (!profileButton.contains(event.target) && !profileMenu.contains(event.target)) {
+    if (profileButton && profileMenu && 
+        !profileButton.contains(event.target) && 
+        !profileMenu.contains(event.target)) {
         profileMenu.classList.add('hidden');
     }
 });
