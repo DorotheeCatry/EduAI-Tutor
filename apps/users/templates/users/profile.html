@@ -12,7 +12,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Informations du profil -->
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-2 space-y-6">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h2 class="text-lg font-bold text-white mb-4">Personal Information</h2>
                 
@@ -32,36 +32,51 @@
                     {% csrf_token %}
                     
                     <!-- Section Avatar avec recadrage -->
-                    <div class="mb-6">
+                    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Zone d'upload compacte -->
+                        <div>
                         <label class="block text-sm font-medium text-gray-300 mb-4">Avatar</label>
-                        <div class="flex items-start space-x-6">
-                            <!-- Aperçu actuel -->
-                            <div class="text-center">
-                                <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-3">
+                            <div class="text-center mb-4">
+                                <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-2 mx-auto">
                                     {% if user.avatar %}
                                         <img id="current-avatar" src="{{ user.avatar.url }}" alt="Avatar actuel" class="w-full h-full object-cover">
                                     {% else %}
                                         <img id="current-avatar" src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-full h-full object-cover">
                                     {% endif %}
                                 </div>
-                                <p class="text-xs text-gray-400">Avatar actuel</p>
+                                <p class="text-xs text-gray-400">Current avatar</p>
                             </div>
                             
-                            <!-- Zone de recadrage -->
-                            <div class="flex-1">
-                                <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
+                            <div class="border-2 border-dashed border-gray-600 rounded-lg p-3 text-center">
                                     <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
-                                    <div class="flex flex-col items-center space-y-3">
-                                        <i data-lucide="upload" class="w-8 h-8 text-gray-400"></i>
+                                    <div class="flex flex-col items-center space-y-2">
+                                        <i data-lucide="upload" class="w-6 h-6 text-gray-400"></i>
                                         <button type="button" onclick="document.getElementById('avatar-input').click()" 
-                                                class="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                                                class="px-3 py-1 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
                                             Choose new image
                                         </button>
                                     </div>
-                                    <p class="text-xs text-gray-400 mt-2">JPG, PNG, GIF (max 2MB)</p>
+                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF (max 2MB)</p>
                                 </div>
+                        </div>
+                        
+                        <!-- Zone de prévisualisation et recadrage -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-4">Preview</label>
+                            <div class="bg-gray-900 rounded-lg p-4 text-center">
+                                <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mx-auto mb-3">
+                                    {% if user.avatar %}
+                                        <img id="preview-avatar" src="{{ user.avatar.url }}" alt="Preview" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <img id="preview-avatar" src="{% static 'img/KodaPerso.png' %}" alt="Preview" class="w-full h-full object-cover">
+                                    {% endif %}
+                                </div>
+                                <p class="text-xs text-gray-400">How it will appear</p>
+                            </div>
+                        </div>
+                    </div>
                                 
-                                <!-- Zone de prévisualisation et recadrage -->
+                    <!-- Zone de recadrage (cachée par défaut) -->
                                 <div id="crop-container" class="hidden mt-4">
                                     <div class="bg-gray-900 rounded-lg p-4">
                                         <div class="flex items-center justify-between mb-3">
@@ -94,9 +109,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -152,15 +164,15 @@
         </div>
 
         <!-- Aperçu du profil -->
-        <div class="space-y-6">
+        <div class="space-y-4">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h3 class="text-lg font-bold text-white mb-4">Preview</h3>
                 
                 <div class="text-center">
                     {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover mx-auto mb-4 border-2 border-gray-600">
+                        <img id="sidebar-preview" src="{{ user.avatar.url }}" alt="Avatar" class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-2 border-gray-600">
                     {% else %}
-                        <img src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-20 h-20 rounded-full object-cover mx-auto mb-4 border-2 border-gray-600">
+                        <img id="sidebar-preview" src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-2 border-gray-600">
                     {% endif %}
                     
                     <h4 class="text-lg font-bold text-white">{{ user.username }}</h4>
@@ -365,6 +377,8 @@ document.addEventListener('DOMContentLoaded', function() {
         finalCanvas.toBlob(function(blob) {
             const url = URL.createObjectURL(blob);
             currentAvatar.src = url;
+            document.getElementById('preview-avatar').src = url;
+            document.getElementById('sidebar-preview').src = url;
             
             // Stocker les données pour l'envoi
             const reader = new FileReader();
