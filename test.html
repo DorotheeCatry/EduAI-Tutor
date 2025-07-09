@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Menu Déroulant</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+  <script>
+    function toggleProfileMenu() {
+      const menu = document.getElementById('profile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function (event) {
+      const button = document.getElementById('profile-button');
+      const menu = document.getElementById('profile-menu');
+      if (!button.contains(event.target) && !menu.contains(event.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+  <!-- Sidebar simulée -->
+  <div class="flex">
+    <div class="w-16 bg-gray-800 min-h-screen flex flex-col items-center py-4 space-y-2">
+      <!-- Bouton profil -->
+      <div class="relative">
+        <button id="profile-button" onclick="toggleProfileMenu()" class="w-12 h-12 rounded-full border-2 border-gray-600 overflow-hidden">
+          <img src="https://i.pravatar.cc/300" alt="avatar" class="w-full h-full object-cover" />
+        </button>
+
+        <!-- Menu déroulant -->
+        <div id="profile-menu" class="absolute top-0 left-16 ml-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden z-[9999]">
+          <div class="p-3 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+              <img src="https://i.pravatar.cc/300" alt="avatar" class="w-8 h-8 rounded-full" />
+              <div>
+                <div class="text-sm font-medium">Dorothée</div>
+              </div>
+            </div>
+          </div>
+          <div class="py-1">
+            <button class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
+              <i data-lucide="user" class="w-4 h-4 mr-4"></i>
+              Edit Profile
+            </button>
+            <button class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
+              <i data-lucide="log-out" class="w-4 h-4 mr-4"></i>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu -->
+    <div class="flex-1 p-6">
+      <h1 class="text-2xl font-bold">Contenu de test</h1>
+      <p class="mt-4">Clique sur l'avatar pour ouvrir le menu. Il DOIT passer devant ce texte !</p>
+    </div>
+  </div>
+
+</body>
+</html>
