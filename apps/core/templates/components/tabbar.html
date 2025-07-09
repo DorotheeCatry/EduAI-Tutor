@@ -137,7 +137,7 @@ function renderTabs() {
         const tabElement = document.createElement('div');
         tabElement.className = `h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative ${
             isActive ? 'bg-gray-900 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
-        }`;
+        } z-10`;
         
         tabElement.innerHTML = `
             <span class="mr-2 truncate max-w-32">${tab.title}</span>
