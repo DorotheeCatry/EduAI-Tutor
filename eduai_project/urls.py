@@ -24,6 +24,13 @@ from django.conf.urls.static import static
 def redirect_to_login(request):
     """Redirige vers la page de connexion par défaut"""
     return redirect('users:login')
+
+def redirect_to_courses(request):
+    """Redirige vers les cours si connecté, sinon vers login"""
+    if request.user.is_authenticated:
+        return redirect('courses:generator')
+    return redirect('users:login')
+
 urlpatterns = [
     path('i18n/setlang/', set_language, name='set_language'),  # 💬 Vue pour changer la langue
 ]
@@ -33,7 +40,7 @@ urlpatterns += [
     path("__reload__/", include("django_browser_reload.urls")),
 
     # Routes des apps personnalisées
-    path('', redirect_to_login),                        # Redirection vers login par défaut
+    path('', redirect_to_courses),                      # Redirection intelligente
     path('dashboard/', include('apps.core.urls')),      # pages principales protégées
     path('auth/', include('apps.users.urls')),          # authentification
     path('courses/', include('apps.courses.urls')),

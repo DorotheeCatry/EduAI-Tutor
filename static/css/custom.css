@@ -175,6 +175,17 @@ main.tab-content {
     border-color: #374151 !important;
 }
 
+/* ===== DROPDOWN MENU Z-INDEX FIX ===== */
+#profile-menu {
+    z-index: 9999 !important;
+    position: absolute !important;
+}
+
+/* Assurer que le menu passe au-dessus de tout */
+.z-\[9999\] {
+    z-index: 9999 !important;
+}
+
 /* ===== TAB BAR FIXES ===== */
 .h-10 {
     height: 2.5rem !important;

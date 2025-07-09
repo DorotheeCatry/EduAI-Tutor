@@ -54,11 +54,8 @@ class CustomLogoutView(LogoutView):
     """
     Vue de déconnexion personnalisée.
     """
-    next_page = '/auth/login/'
+    next_page = reverse_lazy('users:login')
     
-    def post(self, request, *args, **kwargs):
-        """Force logout and redirect without messages"""
-        return super().post(request, *args, **kwargs)
 
 class ProfileView(LoginRequiredMixin, UpdateView):
     """
