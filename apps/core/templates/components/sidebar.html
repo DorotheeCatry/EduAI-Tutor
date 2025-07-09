@@ -13,7 +13,7 @@
                     id="profile-button"
                     title="Profil"
                     class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
-                           {% if 'profile' in request.path %}bg-primary-green bg-opacity-20 border border-primary-green border-opacity-30{% else %}hover:bg-gray-800{% endif %}">
+                           {% if 'profile' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
                 {% if user.avatar %}
                     <img src="{{ user.avatar.url }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
                 {% else %}
@@ -22,7 +22,7 @@
             </button>
 
             <!-- Menu déroulant du profil -->
-            <div id="profile-menu" class="fixed top-[70px] left-[80px] w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden z-[9999]">
+            <div id="profile-menu" class="fixed w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden" style="z-index: 99999 !important;">
                 <!-- Header du menu -->
                 <div class="p-3 border-b border-gray-700">
                     <div class="flex items-center space-x-3">
@@ -40,35 +40,15 @@
                 <!-- Liens d'action -->
                 <div class="py-1">
                     <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            data-lucide="user"
-                            class="lucide lucide-user w-4 h-4"></svg>
-                        <span class="ml-4">Edit Profile</span>
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                        <span class="ml-3">Edit Profile</span>
                     </button>
 
                     <form method="post" action="/auth/logout/" class="m-0">
                         {% csrf_token %}
                         <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                data-lucide="log-out"
-                                class="lucide lucide-log-out w-4 h-4"></svg>
-                            <span class="ml-4">Sign Out</span>
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            <span class="ml-3">Sign Out</span>
                         </button>
                     </form>
                 </div>
@@ -112,6 +92,7 @@
 <script>
 function toggleProfileMenu() {
     const menu = document.getElementById('profile-menu');
+    const button = document.getElementById('profile-button');
     menu.classList.toggle('hidden');
 }
 
@@ -120,6 +101,13 @@ document.addEventListener('click', function(event) {
     const profileMenu = document.getElementById('profile-menu');
     
     if (!profileButton.contains(event.target) && !profileMenu.contains(event.target)) {
+        // Calculer la position du menu par rapport au bouton
+        if (button) {
+            const buttonRect = button.getBoundingClientRect();
+            menu.style.top = buttonRect.top + 'px';
+            menu.style.left = (buttonRect.right + 10) + 'px';
+        }
+        
         profileMenu.classList.add('hidden');
     }
 });
