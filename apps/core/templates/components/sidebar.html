@@ -22,7 +22,7 @@
             </button>
 
             <!-- Menu déroulant du profil -->
-            <div id="profile-menu" class="fixed w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden" style="z-index: 99999 !important;">
+            <div id="profile-menu" class="absolute left-16 top-0 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden" style="z-index: 99999 !important;">
                 <!-- Header du menu -->
                 <div class="p-3 border-b border-gray-700">
                     <div class="flex items-center space-x-3">
@@ -92,7 +92,6 @@
 <script>
 function toggleProfileMenu() {
     const menu = document.getElementById('profile-menu');
-    const button = document.getElementById('profile-button');
     menu.classList.toggle('hidden');
 }
 
@@ -101,13 +100,6 @@ document.addEventListener('click', function(event) {
     const profileMenu = document.getElementById('profile-menu');
     
     if (!profileButton.contains(event.target) && !profileMenu.contains(event.target)) {
-        // Calculer la position du menu par rapport au bouton
-        if (button) {
-            const buttonRect = button.getBoundingClientRect();
-            menu.style.top = buttonRect.top + 'px';
-            menu.style.left = (buttonRect.right + 10) + 'px';
-        }
-        
         profileMenu.classList.add('hidden');
     }
 });
