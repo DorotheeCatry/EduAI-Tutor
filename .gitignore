@@ -236,3 +236,10 @@ staticfiles/
 
 key_groq.txt
 .env
+
+test-agents.ipynb
+
+
+apps/rag/chroma/
+apps/rag/chroma/*
+apps/rag/chroma/**/*
