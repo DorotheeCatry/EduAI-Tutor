@@ -1,9 +1,14 @@
+# agents/tools/agent_researcher.py
+
 from langchain.chains import RetrievalQA
 from apps.agents.tools.llm_loader import get_llm
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from apps.rag.utils import load_embedding_function
 
-def get_researcher_chain():
+def get_researcher_chain(model_name="meta-llama/llama-guard-4-12b"):
+    """
+    Initialise le Chercheur RAG, compatible Groq (ou Ollama fallback).
+    """
     embedding_fn = load_embedding_function()
     vectorstore = Chroma(
         persist_directory="apps/rag/chroma",
@@ -11,7 +16,7 @@ def get_researcher_chain():
     )
 
     retriever = vectorstore.as_retriever()
-    llm = get_llm(model_name="mistral-7b")  # ou "mixtral-8x7b-32768" pour test Groq
+    llm = get_llm(model_name=model_name)
 
     return RetrievalQA.from_chain_type(
         llm=llm,

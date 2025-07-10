@@ -1,16 +1,25 @@
-import os
-from langchain.chat_models import ChatOllama
-from langchain.chat_models import ChatGroq
+# agents/tools/llm_loader.py
 
-def get_llm(model_name="mistral"):
+import os
+from dotenv import load_dotenv
+from langchain_community.chat_models import ChatOllama
+from langchain_groq import ChatGroq
+
+
+load_dotenv()
+
+def get_llm(model_name=None):
     """
-    Retourne un LLM LangChain compatible, prioritairement via Groq (cloud), sinon Ollama (local).
+    Retourne un LLM LangChain compatible.
+    Si model_name est None, on prend DEFAULT_LLM_MODEL de l'environnement.
+    Priorité Groq, sinon Ollama.
     """
-    groq_key = os.environ.get("GROQ_API_KEY")
-    
+    model_name = model_name or os.getenv("DEFAULT_LLM_MODEL", "mistral")
+    groq_key = os.getenv("GROQ_API_KEY")
+
     if groq_key:
-        print("🔗 Using Groq API")
+        print(f"🔗 Using Groq API ({model_name})")
         return ChatGroq(model_name=model_name, api_key=groq_key)
     else:
-        print("💻 Using local Ollama")
+        print(f"💻 Using local Ollama ({model_name})")
         return ChatOllama(model=model_name)

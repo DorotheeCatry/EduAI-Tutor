@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'apps.revision',
     'apps.agents',
     'apps.chat',
+    'apps.rag',
     'apps.tracker',
     'theme',
 
