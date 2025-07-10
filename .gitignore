@@ -233,3 +233,6 @@ staticfiles/
 
 **/migrations/
 !*/migrations/__init__.py
+
+key_groq.txt
+.env
