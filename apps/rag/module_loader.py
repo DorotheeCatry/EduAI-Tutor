@@ -25,6 +25,26 @@ class ModuleLoader:
         
         # Scanner tous les fichiers JSON dans le dossier index
         for json_file in self.index_folder.glob("*_index.json"):
+            # Vérifier que le fichier n'est pas vide et est valide
+            try:
+                if json_file.stat().st_size == 0:
+                    print(f"⚠️ Fichier vide ignoré : {json_file.name}")
+                    continue
+                    
+                # Test de lecture pour vérifier la validité du JSON
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    test_data = json.load(f)
+                    if not test_data:  # Fichier JSON vide ou null
+                        print(f"⚠️ Fichier JSON vide ignoré : {json_file.name}")
+                        continue
+                        
+            except (json.JSONDecodeError, FileNotFoundError, PermissionError) as e:
+                print(f"❌ Fichier JSON invalide ignoré {json_file.name}: {e}")
+                continue
+            except Exception as e:
+                print(f"❌ Erreur lors de la vérification de {json_file.name}: {e}")
+                continue
+                
             module_name = json_file.stem.replace("_index", "")
             module_map[module_name] = json_file.name
             print(f"📚 Module détecté : {module_name} → {json_file.name}")
@@ -72,8 +92,20 @@ class ModuleLoader:
         index_file = self.index_folder / self.module_index_map[module_key]
         
         try:
+            # Vérifier que le fichier existe et n'est pas vide
+            if not index_file.exists():
+                print(f"❌ Fichier d'index non trouvé : {index_file}")
+                return None
+                
+            if index_file.stat().st_size == 0:
+                print(f"❌ Fichier d'index vide : {index_file}")
+                return None
+                
             with open(index_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+                if not data:
+                    print(f"❌ Données JSON vides dans : {index_file}")
+                    return None
                 self._modules_cache[module_key] = data
                 return data
         except Exception as e:

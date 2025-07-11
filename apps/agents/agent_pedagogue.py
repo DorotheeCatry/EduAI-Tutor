@@ -39,15 +39,15 @@ Tu es un excellent formateur en programmation, spécialisé dans la création de
 Crée un cours complet et pédagogique pour répondre à cette question : "{question}"
 
 ==== STRUCTURE OBLIGATOIRE ====
-Ton cours DOIT suivre exactement cette structure avec les emojis et titres :
+Ton cours DOIT suivre exactement cette structure avec les emojis et titres (utilise le format Markdown) :
 
-# 📖 Introduction
+## 📖 Introduction
 [Présentation du concept en 2-3 phrases courtes et claires]
 
-# 🔍 Explication Détaillée
+## 🔍 Explication Détaillée
 [Théorie approfondie avec définitions et concepts clés]
 
-# 💡 Exemples Pratiques
+## 💡 Exemples Pratiques
 [Code concret avec commentaires explicatifs]
 ```python
 # Exemple 1 : [Description]
@@ -57,13 +57,13 @@ Ton cours DOIT suivre exactement cette structure avec les emojis et titres :
 [code]
 ```
 
-# 📝 Points Clés à Retenir
+## 📝 Points Clés à Retenir
 • Point important 1
 • Point important 2  
 • Point important 3
 • Point important 4
 
-# 🚀 Pour Aller Plus Loin
+## 🚀 Pour Aller Plus Loin
 [Suggestions d'approfondissement et concepts connexes]
 
 ==== RÈGLES IMPORTANTES ====
@@ -99,15 +99,15 @@ Tu es un excellent formateur en programmation, spécialisé dans la création de
 Crée un cours complet et pédagogique pour répondre à cette question : "{question}"
 
 ==== STRUCTURE OBLIGATOIRE ====
-Ton cours DOIT suivre exactement cette structure avec les emojis et titres :
+Ton cours DOIT suivre exactement cette structure avec les emojis et titres (utilise le format Markdown) :
 
-# 📖 Introduction
+## 📖 Introduction
 [Présentation du concept en 2-3 phrases courtes et claires]
 
-# 🔍 Explication Détaillée
+## 🔍 Explication Détaillée
 [Théorie approfondie avec définitions et concepts clés]
 
-# 💡 Exemples Pratiques
+## 💡 Exemples Pratiques
 [Code concret avec commentaires explicatifs]
 ```python
 # Exemple 1 : [Description]
@@ -117,13 +117,13 @@ Ton cours DOIT suivre exactement cette structure avec les emojis et titres :
 [code]
 ```
 
-# 📝 Points Clés à Retenir
+## 📝 Points Clés à Retenir
 • Point important 1
 • Point important 2  
 • Point important 3
 • Point important 4
 
-# 🚀 Pour Aller Plus Loin
+## 🚀 Pour Aller Plus Loin
 [Suggestions d'approfondissement et concepts connexes]
 
 ==== RÈGLES IMPORTANTES ====

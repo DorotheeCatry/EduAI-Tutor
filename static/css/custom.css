@@ -351,15 +351,24 @@ main.tab-content {
 }
 
 .course-content h1 {
-    @apply text-xl font-bold text-white mt-6 mb-4 flex items-center;
+    @apply text-xl font-bold text-white mt-6 mb-4;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .course-content h2 {
     @apply text-lg font-semibold text-gray-200 mt-5 mb-3;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .course-content h3 {
     @apply text-base font-medium text-gray-300 mt-4 mb-2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .course-content p {
@@ -386,7 +395,48 @@ main.tab-content {
     @apply bg-transparent text-gray-300 px-0 py-0;
 }
 
-/* Styling pour les emojis dans les titres */
+/* Formatage automatique des titres avec emojis */
 .course-content h1:first-child {
     @apply mt-0;
+}
+
+/* Amélioration du rendu des blocs de code */
+.course-content pre {
+    position: relative;
+}
+
+.course-content pre::before {
+    content: "Python";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    background: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Espacement amélioré pour les sections */
+.course-content h1 + p,
+.course-content h2 + p,
+.course-content h3 + p {
+    margin-top: 0.5rem;
+}
+
+/* Styling pour les emojis dans les titres */
+.course-content h1,
+.course-content h2,
+.course-content h3 {
+    word-break: break-word;
+}
+
+/* Amélioration des listes à puces */
+.course-content ul li {
+    margin-bottom: 0.25rem;
+    padding-left: 0.5rem;
+}
+
+.course-content ul li::marker {
+    color: #4CAF50;
 }

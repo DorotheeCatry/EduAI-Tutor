@@ -31,13 +31,38 @@ def course_generator(request):
         result = orchestrator.generate_course(full_topic, difficulty)
         
         if result['success']:
+            # Convertir le contenu Markdown en HTML pour un meilleur rendu
+            import re
+            content = result['content']
+            
+            # Convertir les titres Markdown en HTML
+            content = re.sub(r'^## (.*?)$', r'<h2>\1</h2>', content, flags=re.MULTILINE)
+            content = re.sub(r'^### (.*?)$', r'<h3>\1</h3>', content, flags=re.MULTILINE)
+            
+            # Convertir les blocs de code
+            content = re.sub(r'```python\n(.*?)\n```', r'<pre><code>\1</code></pre>', content, flags=re.DOTALL)
+            content = re.sub(r'```\n(.*?)\n```', r'<pre><code>\1</code></pre>', content, flags=re.DOTALL)
+            
+            # Convertir les listes à puces
+            content = re.sub(r'^• (.*?)$', r'<li>\1</li>', content, flags=re.MULTILINE)
+            content = re.sub(r'(<li>.*?</li>)', r'<ul>\1</ul>', content, flags=re.DOTALL)
+            content = re.sub(r'</ul>\s*<ul>', '', content)  # Fusionner les listes consécutives
+            
+            # Convertir les paragraphes
+            content = re.sub(r'\n\n', '</p><p>', content)
+            content = f'<p>{content}</p>'
+            
+            # Nettoyer les balises vides
+            content = re.sub(r'<p></p>', '', content)
+            content = re.sub(r'<p>\s*</p>', '', content)
+            
             context = {
                 'generated_course': {
                     'topic': topic,
                     'module': module,
                     'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
                     'difficulty': result['difficulty'],
-                    'content': result['content'],
+                    'content': content,
                     'sources': result['sources']
                 },
                 'modules': module_loader.get_available_modules()

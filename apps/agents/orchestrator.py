@@ -64,7 +64,8 @@ class AIOrchestrator:
                         metadata={'difficulty': difficulty}
                     )
                 except Exception as e:
-                    print(f"Erreur tracking session : {e}")
+                    print(f"⚠️ Tracking désactivé (table manquante) : {e}")
+                    # Continuer sans tracking si les tables n'existent pas encore
             
             return {
                 'success': True,
@@ -114,7 +115,8 @@ class AIOrchestrator:
                         metadata={'question': question}
                     )
                 except Exception as e:
-                    print(f"Erreur tracking session : {e}")
+                    print(f"⚠️ Tracking désactivé (table manquante) : {e}")
+                    # Continuer sans tracking si les tables n'existent pas encore
             
             return {
                 'success': True,
