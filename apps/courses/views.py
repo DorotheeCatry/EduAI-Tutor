@@ -9,6 +9,7 @@ from apps.rag.module_loader import module_loader
 from .models import Course
 import json
 import re
+import unicodedata
 
 @login_required
 def course_generator(request):
@@ -34,6 +35,36 @@ def course_generator(request):
                 content = result['content']
                 print(f"🔍 Contenu brut reçu: {content[:500]}...")
                 
+                # Fonction pour nettoyer le JSON des caractères de contrôle
+                def clean_json_string(json_str):
+                    """Nettoie le JSON des caractères de contrôle invalides"""
+                    if isinstance(json_str, dict):
+                        return json_str
+                    
+                    # Convertir en string si nécessaire
+                    json_str = str(json_str)
+                    
+                    # Supprimer les caractères de contrôle invalides
+                    # Garder seulement \n, \r, \t qui sont valides en JSON
+                    cleaned = ""
+                    for char in json_str:
+                        if ord(char) < 32:  # Caractères de contrôle
+                            if char in ['\n', '\r', '\t']:
+                                cleaned += char
+                            else:
+                                cleaned += ' '  # Remplacer par un espace
+                        else:
+                            cleaned += char
+                    
+                    # Nettoyer les guillemets problématiques
+                    cleaned = cleaned.replace('"', '"').replace('"', '"')
+                    cleaned = cleaned.replace(''', "'").replace(''', "'")
+                    
+                    # Supprimer les caractères Unicode problématiques
+                    cleaned = unicodedata.normalize('NFKD', cleaned)
+                    
+                    return cleaned
+                
                 # Essayer de parser le JSON directement
                 course_data = None
                 try:
@@ -42,24 +73,32 @@ def course_generator(request):
                         course_data = content
                         print("✅ Contenu déjà en format dict")
                     else:
+                        # Nettoyer le contenu avant parsing
+                        cleaned_content = clean_json_string(content)
+                        print(f"🧹 Contenu nettoyé: {cleaned_content[:200]}...")
+                        
                         # Essayer de parser comme JSON
-                        course_data = json.loads(content)
+                        course_data = json.loads(cleaned_content)
                         print("✅ JSON parsé directement")
                 except (json.JSONDecodeError, TypeError):
-                    print("❌ Parsing JSON direct échoué, tentative d'extraction...")
+                    print(f"❌ Parsing JSON direct échoué ({e}), tentative d'extraction...")
                     
                     # Extraire le JSON avec regex plus robuste
+                    cleaned_content = clean_json_string(content)
                     json_patterns = [
+                        r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',
                         r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',
                         r'\{.*?"title".*?"sections".*?\[.*?\].*?\}',
                         r'\{(?:[^{}]|{[^{}]*})*\}',
                     ]
                     
                     for pattern in json_patterns:
-                        json_match = re.search(pattern, str(content), re.DOTALL)
+                        json_match = re.search(pattern, cleaned_content, re.DOTALL)
                         if json_match:
                             try:
                                 json_str = json_match.group()
+                                # Nettoyer encore le JSON extrait
+                                json_str = clean_json_string(json_str)
                                 print(f"🔍 JSON extrait: {json_str[:200]}...")
                                 course_data = json.loads(json_str)
                                 print(f"✅ JSON parsé avec regex: {list(course_data.keys())}")
@@ -139,7 +178,10 @@ def create_fallback_course(content, topic):
     """Crée un cours de fallback bien structuré même si le JSON parsing échoue"""
     
     # Nettoyer le contenu
-    clean_content = str(content).replace('```json', '').replace('```', '')
+    clean_content = str(content).replace('```json', '').replace('```', '').replace('\n', ' ').replace('\r', ' ')
+    
+    # Supprimer les caractères de contrôle
+    clean_content = ''.join(char if ord(char) >= 32 or char in ['\n', '\r', '\t'] else ' ' for char in clean_content)
     
     # Essayer d'extraire des sections basiques
     sections = []
@@ -148,11 +190,17 @@ def create_fallback_course(content, topic):
     sections.append({
         'type': 'introduction',
         'title': '📖 Introduction',
-        'content': f'<p>Dans ce cours, nous allons explorer <strong>{topic}</strong> en détail.</p>'
+        'content': f'<p>Dans ce cours, nous allons explorer <span class="keyword">{topic}</span> en detail.</p>'
     })
     
     # Section principale avec le contenu
-    processed_content = process_section_content(clean_content)
+    # Limiter le contenu pour éviter l'affichage de JSON brut
+    if len(clean_content) > 500 and ('{' in clean_content or '"type"' in clean_content):
+        # Si ça ressemble à du JSON, créer un contenu générique
+        processed_content = f'<p>Ce cours couvre les aspects essentiels de <span class="keyword">{topic}</span>.</p><p>Nous explorerons les concepts fondamentaux, la syntaxe, et des exemples pratiques.</p>'
+    else:
+        processed_content = process_section_content(clean_content[:500])
+    
     sections.append({
         'type': 'content',
         'title': '🔍 Contenu Principal',
@@ -160,11 +208,27 @@ def create_fallback_course(content, topic):
     })
     
     # Section exemples si on trouve du code
-    if 'def ' in clean_content or '=' in clean_content:
+    if any(keyword in clean_content.lower() for keyword in ['def ', 'print(', 'import ', '=']):
         sections.append({
             'type': 'examples',
             'title': '💡 Exemples',
-            'content': '<p>Voici quelques exemples pratiques :</p>'
+            'content': f'''
+            <p>Voici quelques exemples pratiques :</p>
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-language">🐍 Python</span>
+                    <button class="copy-btn" onclick="copyCode(this)">
+                        <i data-lucide="copy"></i> Copier
+                    </button>
+                </div>
+                <pre><code class="language-python"># Exemple de base pour {topic}
+print("Hello, {topic}!")
+
+# Voici un exemple simple
+variable = "exemple"
+print(variable)</code></pre>
+            </div>
+            '''
         })
     
     return sections

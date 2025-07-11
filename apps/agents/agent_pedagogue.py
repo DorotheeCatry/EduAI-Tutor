@@ -155,10 +155,11 @@ Utilise EXACTEMENT cette structure avec le format JSON suivant :
 2. **UTILISE LE FORMAT JSON** exact ci-dessus
 3. **INCLUS DU CODE PYTHON** dans chaque section d'exemples
 4. **UTILISE LE GRAS** pour les mots-clés importants (**def**, **return**, etc.)
-5. **COMMENTE TON CODE** de manière pédagogique
+      "content": "Les fonctions sont des blocs de code reutilisables..."
 6. **RESTE FOCALISÉ** sur le sujet demandé
 
 IMPORTANT: Réponds UNIQUEMENT avec le JSON, rien d'autre.
+ATTENTION: N'utilise JAMAIS de caractères spéciaux comme les guillemets courbes (" "), apostrophes courbes (' '), ou autres caractères Unicode dans le JSON. Utilise uniquement des guillemets droits (") et apostrophes droites (').
 """
         )
         return LLMChain(llm=llm, prompt=simple_prompt)
