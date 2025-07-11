@@ -13,8 +13,14 @@ def search_chat(request):
 @login_required
 def send_message(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        message = data.get('message')
+        try:
+            data = json.loads(request.body)
+            message = data.get('message')
+            
+            if not message:
+                return JsonResponse({'error': 'Message vide'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Format JSON invalide'}, status=400)
         
         # Utiliser l'orchestrateur IA pour répondre
         orchestrator = get_orchestrator(request.user)
@@ -29,6 +35,7 @@ def send_message(request):
         else:
             response = {
                 'response': f"Désolé, je n'ai pas pu traiter votre question : {result.get('error', 'Erreur inconnue')}",
+                'sources': [],
                 'timestamp': '12:34:56'
             }
         

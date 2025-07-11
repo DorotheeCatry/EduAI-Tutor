@@ -11,25 +11,55 @@
         <h1 class="text-2xl font-bold text-white">
             {% if generated_course %}
                 {{ generated_course.topic }}
+                {% if generated_course.module and generated_course.module != 'general' %}
+                    <span class="text-lg text-gray-400 ml-2">({{ generated_course.module }})</span>
+                {% endif %}
             {% else %}
                 {{ course.title }}
             {% endif %}
         </h1>
     </div>
 
+    {% if error %}
+        <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4 mb-6">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
+                <span class="text-red-400 text-sm font-medium">Erreur</span>
+            </div>
+            <p class="text-red-400 text-sm mt-2">{{ error }}</p>
+        </div>
+    {% endif %}
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
         {% if generated_course %}
             <div class="mb-4">
-                <span class="inline-block px-3 py-1 bg-blue-500 bg-opacity-20 text-blue-400 rounded-full text-sm">
-                    Niveau: {{ generated_course.difficulty|capfirst }}
-                </span>
+                <div class="flex flex-wrap gap-2">
+                    <span class="inline-block px-3 py-1 bg-blue-500 bg-opacity-20 text-blue-400 rounded-full text-sm">
+                        Niveau: {{ generated_course.difficulty|capfirst }}
+                    </span>
+                    {% if generated_course.sources %}
+                        <span class="inline-block px-3 py-1 bg-green-500 bg-opacity-20 text-green-400 rounded-full text-sm">
+                            {{ generated_course.sources|length }} source{{ generated_course.sources|length|pluralize }}
+                        </span>
+                    {% endif %}
+                </div>
             </div>
             <div class="prose prose-invert max-w-none">
-                <p class="text-gray-300">{{ generated_course.content }}</p>
+                <div class="text-gray-300 whitespace-pre-line">{{ generated_course.content }}</div>
             </div>
+            
+            {% if generated_course.sources %}
+                <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-600">
+                    <h4 class="text-sm font-medium text-gray-300 mb-2">Sources utilisées :</h4>
+                    <div class="flex flex-wrap gap-2">
+                        {% for source in generated_course.sources %}
+                            <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">{{ source }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         {% else %}
             <div class="prose prose-invert max-w-none">
-                <p class="text-gray-300">{{ course.content }}</p>
+                <div class="text-gray-300">{{ course.content }}</div>
             </div>
         {% endif %}
     </div>

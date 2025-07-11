@@ -25,32 +25,45 @@ class AIOrchestrator:
         Génère un cours complet en utilisant Chercheur + Pédagogue
         """
         try:
-            # 1. Recherche de ressources pertinentes
-            research_result = self.researcher.invoke(topic)
+            print(f"🎓 Génération de cours sur : {topic} (niveau: {difficulty})")
             
-            # 2. Génération du cours structuré
-            course_result = self.pedagogue.invoke({"query": topic})
+            # 1. Génération du cours structuré
+            try:
+                course_result = self.pedagogue.invoke({"query": topic})
+                content = course_result.get('result', course_result)
+                sources = [doc.metadata.get('source', 'Unknown') for doc in course_result.get('source_documents', [])]
+            except Exception as e:
+                print(f"Erreur avec RAG, utilisation du fallback : {e}")
+                # Fallback sans RAG
+                course_result = self.pedagogue.invoke({"question": topic})
+                content = course_result.get('text', str(course_result))
+                sources = ["IA générative"]
             
             # 3. Tracking de la session si utilisateur connecté
             session = None
             if self.user:
-                session = self.watcher.track_session(
-                    topic=topic,
-                    activity_type='course_generation',
-                    metadata={'difficulty': difficulty}
-                )
+                try:
+                    session = self.watcher.track_session(
+                        topic=topic,
+                        activity_type='course_generation',
+                        metadata={'difficulty': difficulty}
+                    )
+                except Exception as e:
+                    print(f"Erreur tracking session : {e}")
             
             return {
                 'success': True,
                 'topic': topic,
                 'difficulty': difficulty,
-                'content': course_result['result'],
-                'sources': [doc.metadata.get('source', 'Unknown') for doc in course_result.get('source_documents', [])],
+                'content': content,
+                'sources': sources,
                 'session_id': session.id if session else None
             }
             
         except Exception as e:
             print(f"Erreur lors de la génération du cours : {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'success': False,
                 'error': str(e),
@@ -62,28 +75,44 @@ class AIOrchestrator:
         Répond à une question en utilisant le système RAG
         """
         try:
+            print(f"🔍 Recherche pour : {question}")
+            
             # Utiliser le chercheur pour trouver et synthétiser la réponse
-            result = self.researcher.invoke(question)
+            try:
+                result = self.researcher.invoke(question)
+                answer = result.get('result', result)
+                sources = [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])]
+            except Exception as e:
+                print(f"Erreur avec RAG, utilisation du fallback : {e}")
+                # Fallback sans RAG
+                result = self.researcher.invoke({"question": question})
+                answer = result.get('text', str(result))
+                sources = ["IA générative"]
             
             # Tracking de la session si utilisateur connecté
             session = None
             if self.user:
-                session = self.watcher.track_session(
-                    topic=question[:100],  # Limiter la longueur
-                    activity_type='chat',
-                    metadata={'question': question}
-                )
+                try:
+                    session = self.watcher.track_session(
+                        topic=question[:100],  # Limiter la longueur
+                        activity_type='chat',
+                        metadata={'question': question}
+                    )
+                except Exception as e:
+                    print(f"Erreur tracking session : {e}")
             
             return {
                 'success': True,
                 'question': question,
-                'answer': result['result'],
-                'sources': [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])],
+                'answer': answer,
+                'sources': sources,
                 'session_id': session.id if session else None
             }
             
         except Exception as e:
             print(f"Erreur lors de la réponse à la question : {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'success': False,
                 'error': str(e),
