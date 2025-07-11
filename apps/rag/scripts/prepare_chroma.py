@@ -8,7 +8,7 @@ import pytesseract
 from langchain_community.document_loaders import TextLoader, NotebookLoader, PyPDFLoader
 from langchain.schema import Document
 
-from apps.rag.utils import load_embedding_function, get_chroma_collection
+from apps.rag.utils import load_embedding_function, get_chroma_collection_native
 from apps.rag.splitter import get_splitter
 from apps.rag.module_index_map import MODULE_INDEX_MAP
 
@@ -151,8 +151,7 @@ def process_directory(path: Path, collection, splitter, file_type: str):
 
 # === POINT D’ENTRÉE ===
 def main():
-    embedding_fn = load_embedding_function()
-    collection = get_chroma_collection(embedding_fn)
+    collection = get_chroma_collection_native()
     splitter = get_splitter()
 
     for module_dir in MODULE_INDEX_MAP.keys():
