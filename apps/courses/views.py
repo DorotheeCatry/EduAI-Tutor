@@ -33,7 +33,7 @@ def course_generator(request):
             try:
                 # Nettoyer et parser le JSON retourné par l'IA
                 content = result['content']
-                print(f"🔍 Contenu brut reçu: {content[:500]}...")
+                print(f"🔍 Contenu brut reçu: {str(content)[:500]}...")
                 
                 # Fonction pour nettoyer le JSON des caractères de contrôle
                 def clean_json_string(json_str):
@@ -43,6 +43,13 @@ def course_generator(request):
                     
                     # Convertir en string si nécessaire
                     json_str = str(json_str)
+                    
+                    # Extraire le JSON des blocs markdown si présent
+                    if '```' in json_str:
+                        json_blocks = re.findall(r'```(?:json)?\s*\n?(.*?)\n?```', json_str, re.DOTALL)
+                        if json_blocks:
+                            json_str = json_blocks[0].strip()
+                            print(f"🔍 JSON extrait des blocs markdown")
                     
                     # Supprimer les caractères de contrôle invalides
                     # Garder seulement \n, \r, \t qui sont valides en JSON
@@ -61,7 +68,10 @@ def course_generator(request):
                     cleaned = cleaned.replace(''', "'").replace(''', "'")
                     
                     # Supprimer les caractères Unicode problématiques
-                    cleaned = unicodedata.normalize('NFKD', cleaned)
+                    try:
+                        cleaned = unicodedata.normalize('NFKD', cleaned)
+                    except Exception as normalize_error:
+                        print(f"⚠️ Erreur normalisation Unicode: {normalize_error}")
                     
                     return cleaned
                 
@@ -80,32 +90,35 @@ def course_generator(request):
                         # Essayer de parser comme JSON
                         course_data = json.loads(cleaned_content)
                         print("✅ JSON parsé directement")
-                except (json.JSONDecodeError, TypeError):
-                    print(f"❌ Parsing JSON direct échoué: {e}, tentative d'extraction...")
+                        
+                except (json.JSONDecodeError, TypeError) as direct_parse_error:
+                    print(f"❌ Parsing JSON direct échoué: {direct_parse_error}, tentative d'extraction...")
                     
                     # Extraire le JSON avec regex plus robuste
-                    cleaned_content = clean_json_string(content)
-                    json_patterns = [
-                        r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',
-                        r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',
-                        r'\{.*?"title".*?"sections".*?\[.*?\].*?\}',
-                        r'\{(?:[^{}]|{[^{}]*})*\}',
-                    ]
-                    
-                    for pattern in json_patterns:
-                        json_match = re.search(pattern, cleaned_content, re.DOTALL)
-                        if json_match:
-                            try:
-                                json_str = json_match.group()
-                                # Nettoyer encore le JSON extrait
-                                json_str = clean_json_string(json_str)
-                                print(f"🔍 JSON extrait: {json_str[:200]}...")
-                                course_data = json.loads(json_str)
-                                print(f"✅ JSON parsé avec regex: {list(course_data.keys())}")
-                                break
-                            except json.JSONDecodeError as parse_error:
-                                print(f"❌ Erreur parsing avec regex: {parse_error}")
-                                continue
+                    try:
+                        cleaned_content = clean_json_string(content)
+                        json_patterns = [
+                            r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',
+                            r'\{.*?"title".*?"sections".*?\[.*?\].*?\}',
+                            r'\{(?:[^{}]|{[^{}]*})*\}',
+                        ]
+                        
+                        for pattern in json_patterns:
+                            json_match = re.search(pattern, cleaned_content, re.DOTALL)
+                            if json_match:
+                                try:
+                                    json_str = json_match.group()
+                                    # Nettoyer encore le JSON extrait
+                                    json_str = clean_json_string(json_str)
+                                    print(f"🔍 JSON extrait: {json_str[:200]}...")
+                                    course_data = json.loads(json_str)
+                                    print(f"✅ JSON parsé avec regex: {list(course_data.keys())}")
+                                    break
+                                except json.JSONDecodeError as regex_parse_error:
+                                    print(f"❌ Erreur parsing avec regex: {regex_parse_error}")
+                                    continue
+                    except Exception as extraction_error:
+                        print(f"❌ Erreur lors de l'extraction: {extraction_error}")
                 
                 # Si on a réussi à parser le JSON
                 if course_data and isinstance(course_data, dict) and 'sections' in course_data:
@@ -141,8 +154,8 @@ def course_generator(request):
                     print("❌ Structure JSON invalide, utilisation du fallback")
                     raise ValueError("Structure JSON invalide")
                     
-            except Exception as e:
-                print(f"❌ Erreur complète de parsing: {e}")
+            except Exception as main_error:
+                print(f"❌ Erreur complète de parsing: {main_error}")
                 # Fallback complet - créer un cours simple mais bien formaté
                 processed_content = create_fallback_course(result['content'], topic)
                 context = {
@@ -368,9 +381,9 @@ def save_course(request):
             messages.success(request, f'✨ Cours "{course.title}" sauvegardé avec succès !')
             return redirect('courses:detail', course_id=course.id)
             
-        except Exception as e:
-            print(f"❌ Erreur lors de la sauvegarde : {e}")
-            messages.error(request, f'❌ Erreur lors de la sauvegarde : {e}')
+        except Exception as save_error:
+            print(f"❌ Erreur lors de la sauvegarde : {save_error}")
+            messages.error(request, f'❌ Erreur lors de la sauvegarde : {save_error}')
             return redirect('courses:generator')
     
     return redirect('courses:generator')
@@ -453,7 +466,7 @@ def delete_course(request, course_id):
             messages.success(request, f'🗑️ Cours "{course_title}" supprimé avec succès !')
         except Course.DoesNotExist:
             messages.error(request, '❌ Cours non trouvé.')
-        except Exception as e:
-            messages.error(request, f'❌ Erreur lors de la suppression : {e}')
+        except Exception as delete_error:
+            messages.error(request, f'❌ Erreur lors de la suppression : {delete_error}')
     
     return redirect('courses:my_courses')
