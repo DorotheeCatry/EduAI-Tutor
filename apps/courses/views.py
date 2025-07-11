@@ -18,12 +18,16 @@ def course_generator(request):
         if module and module != 'general':
             module_info = next((m for m in module_loader.get_available_modules() if m['id'] == module), None)
             module_name = module_info['name'] if module_info else module
-            full_topic = f"{topic} (contexte: {module_name})"
+            full_topic = f"{topic}"
         else:
             full_topic = topic
         
         # Utiliser l'orchestrateur IA pour générer le cours
         orchestrator = get_orchestrator(request.user)
+        # Passer le contexte du module à l'orchestrateur
+        if module and module != 'general':
+            orchestrator.current_module = module_info['name'] if module_info else module
+        
         result = orchestrator.generate_course(full_topic, difficulty)
         
         if result['success']:

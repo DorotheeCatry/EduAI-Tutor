@@ -27,15 +27,30 @@ class AIOrchestrator:
         try:
             print(f"🎓 Génération de cours sur : {topic} (niveau: {difficulty})")
             
+            # Améliorer le prompt avec le contexte du module
+            enhanced_topic = topic
+            if hasattr(self, 'current_module') and self.current_module:
+                enhanced_topic = f"{topic} (dans le contexte de {self.current_module})"
+            
             # 1. Génération du cours structuré
             try:
-                course_result = self.pedagogue.invoke({"query": topic})
+                # Améliorer le contexte pour le pédagogue
+                if hasattr(self.pedagogue, 'invoke'):
+                    # Avec RAG
+                    course_result = self.pedagogue.invoke({"query": enhanced_topic})
+                else:
+                    # Sans RAG
+                    course_result = self.pedagogue.invoke({"question": enhanced_topic})
+                    
                 content = course_result.get('result', course_result)
                 sources = [doc.metadata.get('source', 'Unknown') for doc in course_result.get('source_documents', [])]
             except Exception as e:
                 print(f"Erreur avec RAG, utilisation du fallback : {e}")
                 # Fallback sans RAG
-                course_result = self.pedagogue.invoke({"question": topic})
+                try:
+                    course_result = self.pedagogue.invoke({"question": enhanced_topic})
+                except:
+                    course_result = self.pedagogue.run(question=enhanced_topic)
                 content = course_result.get('text', str(course_result))
                 sources = ["IA générative"]
             

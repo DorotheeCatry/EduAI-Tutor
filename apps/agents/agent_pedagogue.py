@@ -18,7 +18,7 @@ def get_pedagogue_chain(model_name="llama3-70b-8192"):
             embedding_function=embedding_fn,
             collection_name="eduai_knowledge_base"
         )
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
         llm = get_llm(model_name=model_name)
     except Exception as e:
         print(f"Erreur lors de l'initialisation du pédagogue : {e}")
@@ -26,27 +26,57 @@ def get_pedagogue_chain(model_name="llama3-70b-8192"):
         llm = get_llm(model_name=model_name)
         retriever = None
 
-    # Prompt de synthèse structuré
+    # Prompt de synthèse structuré et amélioré
     prompt = PromptTemplate(
         input_variables=["context", "question"],
         template="""
-Tu es un excellent pédagogue. À partir du contenu suivant, génère un mini-cours structuré.
+Tu es un excellent formateur en programmation, spécialisé dans la création de cours pédagogiques clairs et structurés.
 
-==== CONTEXTE ====
+==== CONTEXTE DOCUMENTAIRE ====
 {context}
 
-==== INSTRUCTION ====
-Écris une leçon pédagogique claire et concise pour répondre à la question suivante :
-{question}
+==== MISSION ====
+Crée un cours complet et pédagogique pour répondre à cette question : "{question}"
 
-Ta réponse doit inclure :
-- 📖 **Introduction** : Présentation du concept
-- 🔍 **Explication détaillée** : Théorie et fonctionnement
-- 💡 **Exemples pratiques** : Code et cas d'usage concrets
-- 📝 **Points clés à retenir** : Résumé des éléments essentiels
-- 🚀 **Pour aller plus loin** : Suggestions d'approfondissement
+==== STRUCTURE OBLIGATOIRE ====
+Ton cours DOIT suivre exactement cette structure avec les emojis et titres :
 
-Utilise un ton pédagogique et structure bien ton contenu avec des sections claires.
+# 📖 Introduction
+[Présentation du concept en 2-3 phrases courtes et claires]
+
+# 🔍 Explication Détaillée
+[Théorie approfondie avec définitions et concepts clés]
+
+# 💡 Exemples Pratiques
+[Code concret avec commentaires explicatifs]
+```python
+# Exemple 1 : [Description]
+[code]
+
+# Exemple 2 : [Description] 
+[code]
+```
+
+# 📝 Points Clés à Retenir
+• Point important 1
+• Point important 2  
+• Point important 3
+• Point important 4
+
+# 🚀 Pour Aller Plus Loin
+[Suggestions d'approfondissement et concepts connexes]
+
+==== RÈGLES IMPORTANTES ====
+- Réponds PRÉCISÉMENT à la question posée
+- Utilise un langage simple et pédagogique
+- Inclus TOUJOURS du code Python commenté
+- Reste focalisé sur le sujet demandé
+- Évite les digressions
+- Utilise les informations du contexte si pertinentes
+- Si le contexte ne correspond pas à la question, base-toi sur tes connaissances
+
+==== EXEMPLE DE QUALITÉ ====
+Si la question est "Explique la POO en Python", ne parle PAS de notebooks ou d'introduction générale, mais UNIQUEMENT de classes, objets, héritage, etc.
 """
     )
 
@@ -58,22 +88,53 @@ Utilise un ton pédagogique et structure bien ton contenu avec des sections clai
             chain_type_kwargs={"prompt": prompt}
         )
     else:
-        # Fallback sans RAG
+        # Fallback sans RAG avec prompt amélioré
         from langchain.chains import LLMChain
         simple_prompt = PromptTemplate(
             input_variables=["question"],
             template="""
-Tu es un excellent pédagogue en programmation. Génère un mini-cours structuré sur le sujet suivant :
-{question}
+Tu es un excellent formateur en programmation, spécialisé dans la création de cours pédagogiques clairs et structurés.
 
-Ta réponse doit inclure :
-- 📖 **Introduction** : Présentation du concept
-- 🔍 **Explication détaillée** : Théorie et fonctionnement  
-- 💡 **Exemples pratiques** : Code et cas d'usage concrets
-- 📝 **Points clés à retenir** : Résumé des éléments essentiels
-- 🚀 **Pour aller plus loin** : Suggestions d'approfondissement
+==== MISSION ====
+Crée un cours complet et pédagogique pour répondre à cette question : "{question}"
 
-Utilise un ton pédagogique et structure bien ton contenu avec des sections claires.
+==== STRUCTURE OBLIGATOIRE ====
+Ton cours DOIT suivre exactement cette structure avec les emojis et titres :
+
+# 📖 Introduction
+[Présentation du concept en 2-3 phrases courtes et claires]
+
+# 🔍 Explication Détaillée
+[Théorie approfondie avec définitions et concepts clés]
+
+# 💡 Exemples Pratiques
+[Code concret avec commentaires explicatifs]
+```python
+# Exemple 1 : [Description]
+[code]
+
+# Exemple 2 : [Description] 
+[code]
+```
+
+# 📝 Points Clés à Retenir
+• Point important 1
+• Point important 2  
+• Point important 3
+• Point important 4
+
+# 🚀 Pour Aller Plus Loin
+[Suggestions d'approfondissement et concepts connexes]
+
+==== RÈGLES IMPORTANTES ====
+- Réponds PRÉCISÉMENT à la question posée
+- Utilise un langage simple et pédagogique
+- Inclus TOUJOURS du code Python commenté
+- Reste focalisé sur le sujet demandé
+- Évite les digressions
+
+==== EXEMPLE DE QUALITÉ ====
+Si la question est "Explique la POO en Python", ne parle PAS de notebooks ou d'introduction générale, mais UNIQUEMENT de classes, objets, héritage, encapsulation, polymorphisme avec des exemples de code.
 """
         )
         return LLMChain(llm=llm, prompt=simple_prompt)

@@ -44,7 +44,9 @@
                 </div>
             </div>
             <div class="prose prose-invert max-w-none">
-                <div class="text-gray-300 whitespace-pre-line">{{ generated_course.content }}</div>
+                <div class="text-gray-300 course-content">
+                    {{ generated_course.content|safe|linebreaks }}
+                </div>
             </div>
             
             {% if generated_course.sources %}
