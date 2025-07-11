@@ -177,11 +177,40 @@ def course_generator(request):
 def create_fallback_course(content, topic):
     """Crée un cours de fallback bien structuré même si le JSON parsing échoue"""
     
-    # Nettoyer le contenu
-    clean_content = str(content).replace('```json', '').replace('```', '').replace('\n', ' ').replace('\r', ' ')
+    # Nettoyer le contenu et extraire le JSON si dans des blocs markdown
+    clean_content = str(content)
+    
+    # Extraire le JSON des blocs markdown si présent
+    if '```' in clean_content:
+        json_blocks = re.findall(r'```(?:json)?\s*\n?(.*?)\n?```', clean_content, re.DOTALL)
+        if json_blocks:
+            clean_content = json_blocks[0].strip()
+            print(f"🔍 Fallback: JSON extrait des blocs markdown")
+    
+    # Nettoyer les caractères de contrôle
+    clean_content = clean_content.replace('\n', ' ').replace('\r', ' ')
     
     # Supprimer les caractères de contrôle
     clean_content = ''.join(char if ord(char) >= 32 or char in ['\n', '\r', '\t'] else ' ' for char in clean_content)
+    
+    # Essayer une dernière fois de parser le JSON nettoyé
+    try:
+        if clean_content.strip().startswith('{') and '"title"' in clean_content and '"sections"' in clean_content:
+            course_data = json.loads(clean_content)
+            if isinstance(course_data, dict) and 'sections' in course_data:
+                print("✅ Fallback: JSON parsé avec succès !")
+                processed_sections = []
+                for section in course_data.get('sections', []):
+                    if isinstance(section, dict):
+                        processed_content = process_section_content(section.get('content', ''))
+                        processed_sections.append({
+                            'type': section.get('type', 'section'),
+                            'title': section.get('title', 'Section'),
+                            'content': processed_content
+                        })
+                return processed_sections
+    except Exception as e:
+        print(f"❌ Fallback JSON parsing échoué: {e}")
     
     # Essayer d'extraire des sections basiques
     sections = []

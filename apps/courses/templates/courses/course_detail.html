@@ -98,7 +98,11 @@
                 <div class="sources-grid">
                     {% for source in generated_course.sources %}
                         <div class="source-card">
-                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                                {% if section.content %}
+                                    {{ section.content|safe }}
+                                {% else %}
+                                    <p class="content-text">Contenu en cours de génération...</p>
+                                {% endif %}
                             <span>{{ source }}</span>
                         </div>
                     {% endfor %}

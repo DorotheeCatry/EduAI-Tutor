@@ -160,6 +160,7 @@ Utilise EXACTEMENT cette structure avec le format JSON suivant :
 
 IMPORTANT: Réponds UNIQUEMENT avec le JSON, rien d'autre.
 ATTENTION: N'utilise JAMAIS de caractères spéciaux comme les guillemets courbes (" "), apostrophes courbes (' '), ou autres caractères Unicode dans le JSON. Utilise uniquement des guillemets droits (") et apostrophes droites (').
+CRITIQUE: Ne mets PAS le JSON dans des blocs de code markdown (```). Réponds directement avec le JSON brut.
 """
         )
         return LLMChain(llm=llm, prompt=simple_prompt)
