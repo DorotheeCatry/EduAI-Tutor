@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/sections/<str:module_id>/', views.get_sections_api, name='sections_api'),
     path('detail/<int:course_id>/', views.course_detail, name='detail'),
     path('my-courses/', views.my_courses, name='my_courses'),
+    path('delete/<int:course_id>/', views.delete_course, name='delete'),
 ]

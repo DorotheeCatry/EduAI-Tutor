@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -32,24 +32,37 @@ def course_generator(request):
             try:
                 # Nettoyer et parser le JSON retourné par l'IA
                 content = result['content']
-                print(f"🔍 Contenu brut reçu: {content[:200]}...")
+                print(f"🔍 Contenu brut reçu: {content[:500]}...")
                 
-                # Extraire le JSON de la réponse
-                json_match = re.search(r'\{.*\}', content, re.DOTALL)
-                if json_match:
-                    json_str = json_match.group()
-                    print(f"🔍 JSON extrait: {json_str[:200]}...")
-                    
-                    course_data = json.loads(json_str)
-                    print(f"🔍 Données parsées: {course_data.keys()}")
-                    
+                # Extraire le JSON de la réponse avec regex plus robuste
+                json_patterns = [
+                    r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',  # Pattern simple
+                    r'\{.*?"title".*?"sections".*?\[.*?\].*?\}',  # Pattern avec lazy matching
+                    r'\{(?:[^{}]|{[^{}]*})*\}',  # Pattern récursif
+                ]
+                
+                course_data = None
+                for pattern in json_patterns:
+                    json_match = re.search(pattern, content, re.DOTALL)
+                    if json_match:
+                        try:
+                            json_str = json_match.group()
+                            print(f"🔍 JSON extrait avec pattern: {json_str[:200]}...")
+                            course_data = json.loads(json_str)
+                            print(f"✅ JSON parsé avec succès: {list(course_data.keys())}")
+                            break
+                        except json.JSONDecodeError as e:
+                            print(f"❌ Erreur parsing avec ce pattern: {e}")
+                            continue
+                
+                if course_data and 'sections' in course_data:
                     # Traiter chaque section
                     processed_sections = []
                     for section in course_data.get('sections', []):
-                        processed_content = process_section_content(section['content'])
+                        processed_content = process_section_content(section.get('content', ''))
                         processed_sections.append({
-                            'type': section['type'],
-                            'title': section['title'],
+                            'type': section.get('type', 'general'),
+                            'title': section.get('title', 'Section'),
                             'content': processed_content
                         })
                     
@@ -66,21 +79,32 @@ def course_generator(request):
                         'modules': module_loader.get_available_modules()
                     }
                 else:
-                    print("❌ Aucun JSON trouvé dans la réponse")
+                    print("❌ Aucun JSON valide trouvé, utilisation du fallback")
                     raise ValueError("Format JSON non trouvé dans la réponse")
                     
             except (json.JSONDecodeError, ValueError, KeyError) as e:
                 print(f"❌ Erreur parsing JSON : {e}")
-                # Fallback vers l'ancien système
+                # Fallback vers l'ancien système avec contenu structuré
                 processed_content = process_fallback_content(result['content'])
                 context = {
                     'generated_course': {
-                        'title': topic,
+                        'title': topic.title(),
                         'topic': topic,
                         'module': module,
                         'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
                         'difficulty': result['difficulty'],
-                        'sections': [{'title': '📖 Cours', 'content': processed_content, 'type': 'general'}],
+                        'sections': [
+                            {
+                                'title': '📖 Introduction', 
+                                'content': f"<p>Dans ce cours, nous allons explorer <strong>{topic}</strong> en détail.</p>",
+                                'type': 'introduction'
+                            },
+                            {
+                                'title': '🔍 Contenu du Cours', 
+                                'content': processed_content, 
+                                'type': 'content'
+                            }
+                        ],
                         'sources': result['sources']
                     },
                     'modules': module_loader.get_available_modules()
@@ -102,21 +126,26 @@ def course_generator(request):
 
 
 def process_section_content(content):
-    """Convertit le contenu d'une section en HTML formaté"""
+    """Convertit le contenu d'une section en HTML formaté magnifiquement"""
     
-    # Convertir les blocs de code Python
+    # Convertir les blocs de code Python avec header magnifique
     def replace_code_block(match):
         code_content = match.group(1).strip()
         return f'''
-        <div class="code-block-container">
+        <div class="code-container">
             <div class="code-header">
-                <span class="code-language">Python</span>
-                <button class="copy-btn" onclick="copyCode(this)">
+                <div class="code-language-badge">
+                    <i class="code-icon">🐍</i>
+                    <span>Python</span>
+                </div>
+                <button class="copy-button" onclick="copyCode(this)">
                     <i data-lucide="copy" class="w-4 h-4"></i>
-                    Copier
+                    <span>Copier</span>
                 </button>
             </div>
-            <pre class="code-block"><code class="language-python">{code_content}</code></pre>
+            <div class="code-content">
+                <pre><code class="language-python">{code_content}</code></pre>
+            </div>
         </div>
         '''
     
@@ -124,22 +153,22 @@ def process_section_content(content):
     content = re.sub(r'```python\n(.*?)\n```', replace_code_block, content, flags=re.DOTALL)
     content = re.sub(r'```\n(.*?)\n```', replace_code_block, content, flags=re.DOTALL)
     
-    # Convertir les mots en gras avec couleur
+    # Convertir les mots en gras avec style magnifique
     content = re.sub(r'\*\*(.*?)\*\*', r'<span class="keyword-highlight">\1</span>', content)
     
-    # Convertir les listes à puces
-    content = re.sub(r'^• (.*?)$', r'<li class="bullet-item">\1</li>', content, flags=re.MULTILINE)
+    # Convertir les listes à puces avec style moderne
+    content = re.sub(r'^• (.*?)$', r'<li class="modern-list-item">\1</li>', content, flags=re.MULTILINE)
     
-    # Grouper les listes
+    # Grouper les listes avec container moderne
     lines = content.split('\n')
     processed_lines = []
     in_list = False
     
     for line in lines:
         line = line.strip()
-        if line.startswith('<li class="bullet-item">'):
+        if line.startswith('<li class="modern-list-item">'):
             if not in_list:
-                processed_lines.append('<ul class="custom-list">')
+                processed_lines.append('<ul class="modern-list">')
                 in_list = True
             processed_lines.append(line)
         else:
@@ -147,7 +176,7 @@ def process_section_content(content):
                 processed_lines.append('</ul>')
                 in_list = False
             if line:
-                processed_lines.append(f'<p class="content-paragraph">{line}</p>')
+                processed_lines.append(f'<p class="content-text">{line}</p>')
     
     if in_list:
         processed_lines.append('</ul>')
@@ -156,11 +185,11 @@ def process_section_content(content):
 
 
 def process_fallback_content(content):
-    """Traite le contenu en cas d'échec du parsing JSON"""
+    """Traite le contenu en cas d'échec du parsing JSON avec style moderne"""
     
-    # Convertir les titres avec emojis
-    content = re.sub(r'^## (.*?)$', r'<h2 class="section-title">\1</h2>', content, flags=re.MULTILINE)
-    content = re.sub(r'^# (.*?)$', r'<h1 class="main-title">\1</h1>', content, flags=re.MULTILINE)
+    # Convertir les titres avec style moderne
+    content = re.sub(r'^## (.*?)$', r'<h2 class="section-subtitle">\1</h2>', content, flags=re.MULTILINE)
+    content = re.sub(r'^# (.*?)$', r'<h1 class="section-title">\1</h1>', content, flags=re.MULTILINE)
     
     # Traiter le reste comme une section normale
     return process_section_content(content)
@@ -168,7 +197,7 @@ def process_fallback_content(content):
 
 @login_required
 def save_course(request):
-    """Sauvegarde un cours généré"""
+    """Sauvegarde un cours généré avec style"""
     if request.method == 'POST':
         try:
             # Récupérer les données du formulaire
@@ -181,8 +210,8 @@ def save_course(request):
             
             # Parser les données JSON
             try:
-                sections = json.loads(sections_data)
-                sources_list = json.loads(sources)
+                sections = json.loads(sections_data) if sections_data != '[]' else []
+                sources_list = json.loads(sources) if sources != '[]' else []
             except json.JSONDecodeError:
                 sections = []
                 sources_list = []
@@ -198,12 +227,12 @@ def save_course(request):
                 created_by=request.user
             )
             
-            messages.success(request, f'Cours "{course.title}" sauvegardé avec succès !')
+            messages.success(request, f'✨ Cours "{course.title}" sauvegardé avec succès !')
             return redirect('courses:detail', course_id=course.id)
             
         except Exception as e:
             print(f"❌ Erreur lors de la sauvegarde : {e}")
-            messages.error(request, f'Erreur lors de la sauvegarde : {e}')
+            messages.error(request, f'❌ Erreur lors de la sauvegarde : {e}')
             return redirect('courses:generator')
     
     return redirect('courses:generator')
@@ -211,16 +240,16 @@ def save_course(request):
 
 @login_required
 def course_detail(request, course_id):
-    """Affiche un cours sauvegardé"""
+    """Affiche un cours sauvegardé avec style magnifique"""
     try:
-        course = Course.objects.get(id=course_id, created_by=request.user)
+        course = get_object_or_404(Course, id=course_id, created_by=request.user)
         course.increment_view_count()
         
         # Parser le contenu JSON
         try:
             sections = json.loads(course.content)
         except:
-            sections = [{'title': 'Contenu', 'content': course.content, 'type': 'general'}]
+            sections = [{'title': '📖 Contenu', 'content': course.content, 'type': 'general'}]
         
         context = {
             'course': course,
@@ -234,7 +263,7 @@ def course_detail(request, course_id):
             }
         }
     except Course.DoesNotExist:
-        messages.error(request, 'Cours non trouvé.')
+        messages.error(request, '❌ Cours non trouvé.')
         return redirect('courses:generator')
     
     return render(request, 'courses/course_detail.html', context)
@@ -267,10 +296,26 @@ def get_sections_api(request, module_id):
 
 @login_required
 def my_courses(request):
-    """Liste des cours sauvegardés de l'utilisateur"""
+    """Liste des cours sauvegardés de l'utilisateur avec style moderne"""
     courses = Course.objects.filter(created_by=request.user).order_by('-created_at')
     
     context = {
         'courses': courses
     }
     return render(request, 'courses/my_courses.html', context)
+
+@login_required
+def delete_course(request, course_id):
+    """Supprime un cours sauvegardé"""
+    if request.method == 'POST':
+        try:
+            course = get_object_or_404(Course, id=course_id, created_by=request.user)
+            course_title = course.title
+            course.delete()
+            messages.success(request, f'🗑️ Cours "{course_title}" supprimé avec succès !')
+        except Course.DoesNotExist:
+            messages.error(request, '❌ Cours non trouvé.')
+        except Exception as e:
+            messages.error(request, f'❌ Erreur lors de la suppression : {e}')
+    
+    return redirect('courses:my_courses')

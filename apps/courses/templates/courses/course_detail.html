@@ -4,105 +4,105 @@
 {% block title %}{{ generated_course.title|default:"Cours généré" }} - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="course-container">
-    <!-- Header du cours -->
-    <div class="course-header">
-        <div class="course-title-section">
-            <div class="course-icon">
-                <i data-lucide="book-open" class="w-8 h-8 text-primary-green"></i>
+<div class="course-page">
+    <!-- Header magnifique du cours -->
+    <div class="course-hero">
+        <div class="course-hero-content">
+            <div class="course-icon-container">
+                <div class="course-icon">
+                    <i data-lucide="book-open" class="w-8 h-8"></i>
+                </div>
+                <div class="course-glow"></div>
             </div>
-            <div class="course-info">
-                <h1 class="course-main-title">
+            
+            <div class="course-header-info">
+                <h1 class="course-title">
                     {% if generated_course %}
                         {{ generated_course.title }}
                     {% else %}
                         {{ course.title }}
                     {% endif %}
                 </h1>
+                
                 {% if generated_course and generated_course.module_name and generated_course.module != 'general' %}
-                    <p class="course-module">{{ generated_course.module_name }}</p>
+                    <p class="course-subtitle">{{ generated_course.module_name }}</p>
                 {% endif %}
+                
+                <div class="course-meta">
+                    {% if generated_course %}
+                        <span class="meta-badge difficulty-{{ generated_course.difficulty }}">
+                            <i data-lucide="target" class="w-4 h-4"></i>
+                            {{ generated_course.difficulty|capfirst }}
+                        </span>
+                        {% if generated_course.sources %}
+                            <span class="meta-badge sources">
+                                <i data-lucide="book" class="w-4 h-4"></i>
+                                {{ generated_course.sources|length }} source{{ generated_course.sources|length|pluralize }}
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
             </div>
-        </div>
-        
-        <!-- Badges et métadonnées -->
-        <div class="course-badges">
-            {% if generated_course %}
-                <span class="badge badge-difficulty">
-                    <i data-lucide="target" class="w-4 h-4"></i>
-                    {{ generated_course.difficulty|capfirst }}
-                </span>
-                {% if generated_course.sources %}
-                    <span class="badge badge-sources">
-                        <i data-lucide="book" class="w-4 h-4"></i>
-                        {{ generated_course.sources|length }} source{{ generated_course.sources|length|pluralize }}
-                    </span>
-                {% endif %}
-            {% endif %}
         </div>
     </div>
 
     {% if error %}
-        <div class="error-container">
-            <div class="error-content">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                <span class="error-title">Erreur</span>
+        <div class="error-alert">
+            <div class="error-icon">
+                <i data-lucide="alert-circle" class="w-6 h-6"></i>
             </div>
-            <p class="error-message">{{ error }}</p>
+            <div class="error-content">
+                <h3 class="error-title">Erreur</h3>
+                <p class="error-message">{{ error }}</p>
+            </div>
         </div>
     {% endif %}
 
-    <!-- Contenu du cours -->
+    <!-- Contenu du cours avec sections magnifiques -->
     {% if generated_course %}
         <div class="course-content">
             {% for section in generated_course.sections %}
-                <div class="course-section">
-                    <!-- Header de section -->
+                <div class="course-section" data-section-type="{{ section.type }}">
                     <div class="section-header">
                         <h2 class="section-title">{{ section.title }}</h2>
-                        <div class="section-divider"></div>
+                        <div class="section-line"></div>
                     </div>
                     
-                    <!-- Contenu de section -->
-                    <div class="section-content">
+                    <div class="section-body">
                         {{ section.content|safe }}
                     </div>
                 </div>
             {% endfor %}
         </div>
         
-        <!-- Sources utilisées -->
+        <!-- Sources avec style moderne -->
         {% if generated_course.sources %}
-            <div class="sources-section">
-                <h4 class="sources-title">
-                    <i data-lucide="book" class="w-4 h-4"></i>
-                    Sources utilisées
-                </h4>
-                <div class="sources-list">
+            <div class="sources-container">
+                <div class="sources-header">
+                    <i data-lucide="book" class="w-5 h-5"></i>
+                    <h3>Sources utilisées</h3>
+                </div>
+                <div class="sources-grid">
                     {% for source in generated_course.sources %}
-                        <span class="source-tag">{{ source }}</span>
+                        <div class="source-card">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span>{{ source }}</span>
+                        </div>
                     {% endfor %}
                 </div>
             </div>
         {% endif %}
-    {% else %}
-        <!-- Cours existant -->
-        <div class="course-section">
-            <div class="section-content">
-                {{ course.content|safe }}
-            </div>
-        </div>
     {% endif %}
 
-    <!-- Actions -->
+    <!-- Actions avec style moderne -->
     <div class="course-actions">
-        <a href="{% url 'courses:generator' %}" class="btn btn-secondary">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <a href="{% url 'courses:generator' %}" class="action-btn secondary">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
             <span>Retour au générateur</span>
         </a>
         
         {% if generated_course %}
-        <div class="action-buttons">
+        <div class="action-group">
             <form method="post" action="{% url 'courses:save' %}" class="save-form">
                 {% csrf_token %}
                 <input type="hidden" name="title" value="{{ generated_course.title }}">
@@ -112,14 +112,14 @@
                 <input type="hidden" name="sections_data" value="{{ generated_course.sections|safe }}">
                 <input type="hidden" name="sources" value="{{ generated_course.sources|safe }}">
                 
-                <button type="submit" class="btn btn-primary">
-                    <i data-lucide="save" class="w-4 h-4"></i>
-                    <span>Sauvegarder le cours</span>
+                <button type="submit" class="action-btn primary">
+                    <i data-lucide="save" class="w-5 h-5"></i>
+                    <span>Sauvegarder</span>
                 </button>
             </form>
             
-            <a href="{% url 'quiz:start' %}?topic={{ generated_course.topic }}" class="btn btn-blue">
-                <i data-lucide="brain" class="w-4 h-4"></i>
+            <a href="{% url 'quiz:start' %}?topic={{ generated_course.topic }}" class="action-btn blue">
+                <i data-lucide="brain" class="w-5 h-5"></i>
                 <span>Créer un quiz</span>
             </a>
         </div>
@@ -141,28 +141,42 @@
             Prism.highlightAll();
         }
         
+        // Animation d'apparition des sections
+        const sections = document.querySelectorAll('.course-section');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        sections.forEach(section => observer.observe(section));
+        
         // Fonction pour copier le code
         window.copyCode = function(button) {
-            const codeBlock = button.closest('.code-block-container').querySelector('code');
-            const text = codeBlock.textContent;
+            const codeContainer = button.closest('.code-container');
+            const codeElement = codeContainer.querySelector('code');
+            const text = codeElement.textContent;
             
             navigator.clipboard.writeText(text).then(() => {
                 const icon = button.querySelector('i');
-                const span = button.querySelector('span') || button;
+                const span = button.querySelector('span');
+                const originalIcon = icon.getAttribute('data-lucide');
                 const originalText = span.textContent;
                 
-                // Changer l'icône et le texte
+                // Animation de succès
+                button.classList.add('copied');
                 icon.setAttribute('data-lucide', 'check');
                 span.textContent = 'Copié !';
-                button.classList.add('copied');
                 
                 // Réinitialiser les icônes
                 lucide.createIcons();
                 
                 setTimeout(() => {
-                    icon.setAttribute('data-lucide', 'copy');
-                    span.textContent = originalText;
                     button.classList.remove('copied');
+                    icon.setAttribute('data-lucide', originalIcon);
+                    span.textContent = originalText;
                     lucide.createIcons();
                 }, 2000);
             }).catch(err => {
