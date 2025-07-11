@@ -56,8 +56,8 @@
                     </button>
 
                     <!-- Form Logout -->
-                    <form method="post" action="/auth/logout/" class="m-0">
-                        <input type="hidden" name="csrfmiddlewaretoken" value="...">
+                    <form method="post" action="{% url 'users:logout' %}" class="m-0">
+                        {% csrf_token %}
                         <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors text-left">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 width="24"

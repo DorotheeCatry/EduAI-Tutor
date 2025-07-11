@@ -69,6 +69,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'middleware.AuthenticationMiddleware',  # Notre middleware personnalisé
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
@@ -132,6 +133,10 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # URLs de redirection pour l'authentification
+LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = '/courses/generator/'
+LOGOUT_REDIRECT_URL = '/auth/login/'
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 

@@ -41,7 +41,6 @@ urlpatterns += [
 
     # Routes des apps personnalisées
     path('', redirect_to_courses),                      # Redirection intelligente
-    path('dashboard/', include('apps.core.urls')),      # pages principales protégées
     path('auth/', include('apps.users.urls')),          # authentification
     path('courses/', include('apps.courses.urls')),
     path('quiz/', include('apps.quiz.urls')),
