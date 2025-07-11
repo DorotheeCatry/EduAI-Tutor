@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from apps.agents.orchestrator import get_orchestrator
 import json
 
 @login_required
@@ -10,16 +11,26 @@ def course_generator(request):
         topic = request.POST.get('topic')
         difficulty = request.POST.get('difficulty')
         
-        # Ici vous pourrez intégrer votre logique IA pour générer le cours
-        # Pour l'instant, on simule une réponse
+        # Utiliser l'orchestrateur IA pour générer le cours
+        orchestrator = get_orchestrator(request.user)
+        result = orchestrator.generate_course(topic, difficulty)
         
-        context = {
-            'generated_course': {
-                'topic': topic,
-                'difficulty': difficulty,
-                'content': f"Cours généré sur {topic} (niveau {difficulty})"
+        if result['success']:
+            context = {
+                'generated_course': {
+                    'topic': result['topic'],
+                    'difficulty': result['difficulty'],
+                    'content': result['content'],
+                    'sources': result['sources']
+                }
             }
-        }
+        else:
+            context = {
+                'error': result.get('error', 'Erreur lors de la génération du cours'),
+                'topic': topic,
+                'difficulty': difficulty
+            }
+            
         return render(request, 'courses/course_detail.html', context)
     
     return render(request, 'courses/generate.html')

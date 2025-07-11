@@ -71,18 +71,43 @@
             // Show loading
             showLoading();
             
-            // Simulate AI response (replace with actual API call)
-            setTimeout(() => {
+            // Send to AI backend
+            try {
+                const response = await fetch('{% url "chat:send_message" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
                 hideLoading();
-                addMessage('I understand your question. Here is a detailed explanation with practical examples...', false);
-            }, 1500);
+                
+                if (data.response) {
+                    addMessage(data.response, false);
+                    
+                    // Afficher les sources si disponibles
+                    if (data.sources && data.sources.length > 0) {
+                        const sourcesText = `Sources: ${data.sources.join(', ')}`;
+                        addMessage(sourcesText, false, true);
+                    }
+                } else {
+                    addMessage('Désolé, une erreur est survenue.', false);
+                }
+            } catch (error) {
+                hideLoading();
+                addMessage('Erreur de connexion. Veuillez réessayer.', false);
+            }
         });
 
-        function addMessage(text, isUser) {
+        function addMessage(text, isUser, isSource = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `flex items-start space-x-3 ${isUser ? 'justify-end' : 'justify-start'}`;
             
             const time = new Date().toLocaleTimeString();
+            const messageClass = isSource ? 'text-xs text-gray-500 italic' : 'text-xs';
             
             messageDiv.innerHTML = `
                 ${!isUser ? `
@@ -92,9 +117,11 @@
                 ` : ''}
                 
                 <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                    isUser ? 'bg-primary-green text-white' : 'bg-gray-800 text-gray-100 border border-gray-700'
+                    isUser ? 'bg-primary-green text-white' : 
+                    isSource ? 'bg-gray-900 text-gray-400 border border-gray-600' :
+                    'bg-gray-800 text-gray-100 border border-gray-700'
                 }">
-                    <p class="text-xs">${text}</p>
+                    <p class="${messageClass}">${text}</p>
                     <p class="text-xs opacity-70 mt-1">${time}</p>
                 </div>
 

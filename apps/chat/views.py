@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from apps.agents.orchestrator import get_orchestrator
 import json
 
 @login_required
@@ -15,13 +16,21 @@ def send_message(request):
         data = json.loads(request.body)
         message = data.get('message')
         
-        # Ici vous pourrez intégrer votre logique IA pour répondre
-        # Pour l'instant, on simule une réponse
+        # Utiliser l'orchestrateur IA pour répondre
+        orchestrator = get_orchestrator(request.user)
+        result = orchestrator.answer_question(message)
         
-        response = {
-            'response': f"Réponse IA à: {message}",
-            'timestamp': '12:34:56'
-        }
+        if result['success']:
+            response = {
+                'response': result['answer'],
+                'sources': result['sources'],
+                'timestamp': '12:34:56'
+            }
+        else:
+            response = {
+                'response': f"Désolé, je n'ai pas pu traiter votre question : {result.get('error', 'Erreur inconnue')}",
+                'timestamp': '12:34:56'
+            }
         
         return JsonResponse(response)
     
