@@ -81,7 +81,7 @@ def course_generator(request):
                         course_data = json.loads(cleaned_content)
                         print("✅ JSON parsé directement")
                 except (json.JSONDecodeError, TypeError):
-                    print(f"❌ Parsing JSON direct échoué ({e}), tentative d'extraction...")
+                    print(f"❌ Parsing JSON direct échoué: {e}, tentative d'extraction...")
                     
                     # Extraire le JSON avec regex plus robuste
                     cleaned_content = clean_json_string(content)
@@ -103,8 +103,8 @@ def course_generator(request):
                                 course_data = json.loads(json_str)
                                 print(f"✅ JSON parsé avec regex: {list(course_data.keys())}")
                                 break
-                            except json.JSONDecodeError as e:
-                                print(f"❌ Erreur parsing avec regex: {e}")
+                            except json.JSONDecodeError as parse_error:
+                                print(f"❌ Erreur parsing avec regex: {parse_error}")
                                 continue
                 
                 # Si on a réussi à parser le JSON
@@ -142,7 +142,7 @@ def course_generator(request):
                     raise ValueError("Structure JSON invalide")
                     
             except Exception as e:
-                print(f"❌ Erreur complète de parsing : {e}")
+                print(f"❌ Erreur complète de parsing: {e}")
                 # Fallback complet - créer un cours simple mais bien formaté
                 processed_content = create_fallback_course(result['content'], topic)
                 context = {
@@ -209,8 +209,8 @@ def create_fallback_course(content, topic):
                             'content': processed_content
                         })
                 return processed_sections
-    except Exception as e:
-        print(f"❌ Fallback JSON parsing échoué: {e}")
+    except Exception as fallback_error:
+        print(f"❌ Fallback JSON parsing échoué: {fallback_error}")
     
     # Essayer d'extraire des sections basiques
     sections = []
