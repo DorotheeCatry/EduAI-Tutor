@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from apps.agents.orchestrator import get_orchestrator
+from apps.rag.module_loader import module_loader
 import json
 
 @login_required
@@ -14,7 +16,9 @@ def course_generator(request):
         
         # Construire le sujet complet
         if module and module != 'general':
-            full_topic = f"{topic} (module: {module})"
+            module_info = next((m for m in module_loader.get_available_modules() if m['id'] == module), None)
+            module_name = module_info['name'] if module_info else module
+            full_topic = f"{topic} (contexte: {module_name})"
         else:
             full_topic = topic
         
@@ -27,40 +31,29 @@ def course_generator(request):
                 'generated_course': {
                     'topic': topic,
                     'module': module,
+                    'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
                     'difficulty': result['difficulty'],
                     'content': result['content'],
                     'sources': result['sources']
                 },
-                'modules': get_available_modules()
+                'modules': module_loader.get_available_modules()
             }
         else:
             context = {
                 'error': result.get('error', 'Erreur lors de la génération du cours'),
                 'topic': topic,
                 'difficulty': difficulty,
-                'modules': get_available_modules()
+                'modules': module_loader.get_available_modules()
             }
             
         return render(request, 'courses/course_detail.html', context)
     
     context = {
-        'modules': get_available_modules()
+        'modules': module_loader.get_available_modules()
     }
     return render(request, 'courses/generate.html', context)
 
-def get_available_modules():
-    """Retourne la liste des modules disponibles"""
-    return [
-        {'id': 'general', 'name': 'Général', 'description': 'Concepts généraux'},
-        {'id': 'python_basics', 'name': 'Python - Bases', 'description': 'Variables, types, conditions, boucles'},
-        {'id': 'python_functions', 'name': 'Python - Fonctions', 'description': 'Fonctions, décorateurs, lambda'},
-        {'id': 'python_oop', 'name': 'Python - POO', 'description': 'Classes, héritage, polymorphisme'},
-        {'id': 'python_advanced', 'name': 'Python - Avancé', 'description': 'Métaclasses, descripteurs, async'},
-        {'id': 'web_apis', 'name': 'APIs Web', 'description': 'REST, FastAPI, Django REST'},
-        {'id': 'databases', 'name': 'Bases de données', 'description': 'SQL, ORM, migrations'},
-        {'id': 'testing', 'name': 'Tests', 'description': 'Unittest, pytest, TDD'},
-        {'id': 'deployment', 'name': 'Déploiement', 'description': 'Docker, CI/CD, cloud'},
-    ]
+
 @login_required
 def course_detail(request, course_id):
     # Logique pour afficher un cours spécifique
@@ -72,3 +65,29 @@ def course_detail(request, course_id):
         }
     }
     return render(request, 'courses/course_detail.html', context)
+
+@require_http_methods(["GET"])
+def get_modules_api(request):
+    """API pour récupérer la liste des modules disponibles"""
+    modules = module_loader.get_available_modules()
+    return JsonResponse({'modules': modules})
+
+@require_http_methods(["GET"])
+def get_sections_api(request, module_id):
+    """API pour récupérer les sections d'un module"""
+    sections = module_loader.get_module_sections(module_id)
+    
+    # Formater les sections pour l'API
+    formatted_sections = []
+    for section_key, files in sections.items():
+        formatted_sections.append({
+            'id': section_key,
+            'name': section_key.replace('_', ' ').replace(section_key.split('_')[0] + '_', '').title(),
+            'files_count': len(files),
+            'files': files
+        })
+    
+    return JsonResponse({
+        'module_id': module_id,
+        'sections': formatted_sections
+    })

@@ -11,8 +11,8 @@
         <h1 class="text-2xl font-bold text-white">
             {% if generated_course %}
                 {{ generated_course.topic }}
-                {% if generated_course.module and generated_course.module != 'general' %}
-                    <span class="text-lg text-gray-400 ml-2">({{ generated_course.module }})</span>
+                {% if generated_course.module_name and generated_course.module != 'general' %}
+                    <span class="text-lg text-gray-400 ml-2">({{ generated_course.module_name }})</span>
                 {% endif %}
             {% else %}
                 {{ course.title }}

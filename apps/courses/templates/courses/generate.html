@@ -14,30 +14,35 @@
             {% csrf_token %}
             <div>
                 <label class="block text-xs font-medium text-gray-300 mb-2">
-                    Module / Subject
+                    Module / Sujet
                 </label>
                 <select
                     name="module"
                     id="module-select"
-                    class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors mb-4"
+                    class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
                 >
                     {% for module in modules %}
                         <option value="{{ module.id }}" {% if module.id == 'general' %}selected{% endif %}>
-                            {{ module.name }} - {{ module.description }}
+                            {{ module.name }}{% if module.sections_count > 0 %} ({{ module.sections_count }} sections){% endif %}
                         </option>
                     {% endfor %}
                 </select>
+                
+                <!-- Affichage des sections du module sélectionné -->
+                <div id="sections-info" class="mt-2 text-xs text-gray-400 hidden">
+                    <div id="sections-list"></div>
+                </div>
             </div>
 
             <div>
                 <label class="block text-xs font-medium text-gray-300 mb-2">
-                    Specific topic or question
+                    Question ou sujet spécifique
                 </label>
                 <input
                     type="text"
                     name="topic"
                     id="topic-input"
-                    placeholder="Ex: How do decorators work? Explain list comprehensions..."
+                    placeholder="Ex: Comment fonctionnent les décorateurs ? Expliquez les list comprehensions..."
                     class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
                     required
                 />
@@ -45,16 +50,16 @@
 
             <div>
                 <label class="block text-xs font-medium text-gray-300 mb-2">
-                    Difficulty level
+                    Niveau de difficulté
                 </label>
                 <select
                     name="difficulty"
                     id="difficulty-select"
                     class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
                 >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate" selected>Intermediate</option>
-                    <option value="advanced">Advanced</option>
+                    <option value="beginner">Débutant</option>
+                    <option value="intermediate" selected>Intermédiaire</option>
+                    <option value="advanced">Avancé</option>
                 </select>
             </div>
 
@@ -65,7 +70,7 @@
             >
                 <div class="flex items-center justify-center space-x-2">
                     <i data-lucide="sparkles" class="w-5 h-5"></i>
-                    <span>Generate course</span>
+                    <span>Générer le cours</span>
                 </div>
             </button>
         </form>
@@ -139,6 +144,47 @@
         const form = document.getElementById('course-form');
         const generateBtn = document.getElementById('generate-btn');
         const topicInput = document.getElementById('topic-input');
+        const moduleSelect = document.getElementById('module-select');
+        const sectionsInfo = document.getElementById('sections-info');
+        const sectionsList = document.getElementById('sections-list');
+        
+        // Charger les sections quand le module change
+        moduleSelect.addEventListener('change', function() {
+            const moduleId = this.value;
+            
+            if (moduleId === 'general') {
+                sectionsInfo.classList.add('hidden');
+                return;
+            }
+            
+            // Charger les sections du module
+            fetch(`/courses/api/sections/${moduleId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sections && data.sections.length > 0) {
+                        const sectionsHtml = data.sections.map(section => 
+                            `<span class="inline-block bg-gray-700 text-gray-300 px-2 py-1 rounded text-xs mr-1 mb-1">${section.name} (${section.files_count})</span>`
+                        ).join('');
+                        
+                        sectionsList.innerHTML = `
+                            <div class="mb-1">Sections disponibles :</div>
+                            ${sectionsHtml}
+                        `;
+                        sectionsInfo.classList.remove('hidden');
+                    } else {
+                        sectionsInfo.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des sections:', error);
+                    sectionsInfo.classList.add('hidden');
+                });
+        });
+        
+        // Charger les sections du module par défaut
+        if (moduleSelect.value !== 'general') {
+            moduleSelect.dispatchEvent(new Event('change'));
+        }
         
         form.addEventListener('submit', function(e) {
             if (!topicInput.value.trim()) {
@@ -150,7 +196,7 @@
             generateBtn.innerHTML = `
                 <div class="flex items-center justify-center space-x-2">
                     <i data-lucide="sparkles" class="w-5 h-5 animate-spin"></i>
-                    <span>Generating...</span>
+                    <span>Génération en cours...</span>
                 </div>
             `;
             generateBtn.disabled = true;
