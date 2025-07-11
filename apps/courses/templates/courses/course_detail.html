@@ -69,10 +69,23 @@
                     </div>
                     
                     <div class="section-body">
-                        {{ section.content|safe }}
+                        {% if section.content %}
+                            {{ section.content|safe }}
+                        {% else %}
+                            <p class="content-text">Contenu en cours de génération...</p>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}
+        {% else %}
+            <div class="course-section">
+                <div class="section-header">
+                    <h2 class="section-title">⚠️ Erreur de génération</h2>
+                </div>
+                <div class="section-body">
+                    <p class="content-text">Le cours n'a pas pu être généré correctement. Veuillez réessayer.</p>
+                </div>
+            </div>
         </div>
         
         <!-- Sources avec style moderne -->

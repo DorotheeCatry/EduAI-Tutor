@@ -34,41 +34,60 @@ def course_generator(request):
                 content = result['content']
                 print(f"🔍 Contenu brut reçu: {content[:500]}...")
                 
-                # Extraire le JSON de la réponse avec regex plus robuste
-                json_patterns = [
-                    r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',  # Pattern simple
-                    r'\{.*?"title".*?"sections".*?\[.*?\].*?\}',  # Pattern avec lazy matching
-                    r'\{(?:[^{}]|{[^{}]*})*\}',  # Pattern récursif
-                ]
-                
+                # Essayer de parser le JSON directement
                 course_data = None
-                for pattern in json_patterns:
-                    json_match = re.search(pattern, content, re.DOTALL)
-                    if json_match:
-                        try:
-                            json_str = json_match.group()
-                            print(f"🔍 JSON extrait avec pattern: {json_str[:200]}...")
-                            course_data = json.loads(json_str)
-                            print(f"✅ JSON parsé avec succès: {list(course_data.keys())}")
-                            break
-                        except json.JSONDecodeError as e:
-                            print(f"❌ Erreur parsing avec ce pattern: {e}")
-                            continue
+                try:
+                    # Si c'est déjà un dict (cas où l'IA retourne directement du JSON)
+                    if isinstance(content, dict):
+                        course_data = content
+                        print("✅ Contenu déjà en format dict")
+                    else:
+                        # Essayer de parser comme JSON
+                        course_data = json.loads(content)
+                        print("✅ JSON parsé directement")
+                except (json.JSONDecodeError, TypeError):
+                    print("❌ Parsing JSON direct échoué, tentative d'extraction...")
+                    
+                    # Extraire le JSON avec regex plus robuste
+                    json_patterns = [
+                        r'\{[^{}]*"title"[^{}]*"sections"[^{}]*\[[^\]]*\][^{}]*\}',
+                        r'\{.*?"title".*?"sections".*?\[.*?\].*?\}',
+                        r'\{(?:[^{}]|{[^{}]*})*\}',
+                    ]
+                    
+                    for pattern in json_patterns:
+                        json_match = re.search(pattern, str(content), re.DOTALL)
+                        if json_match:
+                            try:
+                                json_str = json_match.group()
+                                print(f"🔍 JSON extrait: {json_str[:200]}...")
+                                course_data = json.loads(json_str)
+                                print(f"✅ JSON parsé avec regex: {list(course_data.keys())}")
+                                break
+                            except json.JSONDecodeError as e:
+                                print(f"❌ Erreur parsing avec regex: {e}")
+                                continue
                 
-                if course_data and 'sections' in course_data:
+                # Si on a réussi à parser le JSON
+                if course_data and isinstance(course_data, dict) and 'sections' in course_data:
+                    print(f"✅ Structure JSON valide trouvée avec {len(course_data['sections'])} sections")
+                    
                     # Traiter chaque section
                     processed_sections = []
-                    for section in course_data.get('sections', []):
-                        processed_content = process_section_content(section.get('content', ''))
-                        processed_sections.append({
-                            'type': section.get('type', 'general'),
-                            'title': section.get('title', 'Section'),
-                            'content': processed_content
-                        })
+                    for i, section in enumerate(course_data.get('sections', [])):
+                        if isinstance(section, dict):
+                            processed_content = process_section_content(section.get('content', ''))
+                            processed_sections.append({
+                                'type': section.get('type', f'section_{i}'),
+                                'title': section.get('title', f'Section {i+1}'),
+                                'content': processed_content
+                            })
+                        else:
+                            print(f"⚠️ Section {i} n'est pas un dict: {type(section)}")
                     
                     context = {
                         'generated_course': {
-                            'title': course_data.get('title', topic),
+                            'title': course_data.get('title', topic.title()),
                             'topic': topic,
                             'module': module,
                             'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
@@ -78,37 +97,28 @@ def course_generator(request):
                         },
                         'modules': module_loader.get_available_modules()
                     }
+                    print(f"✅ Cours structuré créé avec {len(processed_sections)} sections")
                 else:
-                    print("❌ Aucun JSON valide trouvé, utilisation du fallback")
-                    raise ValueError("Format JSON non trouvé dans la réponse")
+                    print("❌ Structure JSON invalide, utilisation du fallback")
+                    raise ValueError("Structure JSON invalide")
                     
-            except (json.JSONDecodeError, ValueError, KeyError) as e:
-                print(f"❌ Erreur parsing JSON : {e}")
-                # Fallback vers l'ancien système avec contenu structuré
-                processed_content = process_fallback_content(result['content'])
+            except Exception as e:
+                print(f"❌ Erreur complète de parsing : {e}")
+                # Fallback complet - créer un cours simple mais bien formaté
+                processed_content = create_fallback_course(result['content'], topic)
                 context = {
                     'generated_course': {
-                        'title': topic.title(),
+                        'title': f"Cours sur {topic.title()}",
                         'topic': topic,
                         'module': module,
                         'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
                         'difficulty': result['difficulty'],
-                        'sections': [
-                            {
-                                'title': '📖 Introduction', 
-                                'content': f"<p>Dans ce cours, nous allons explorer <strong>{topic}</strong> en détail.</p>",
-                                'type': 'introduction'
-                            },
-                            {
-                                'title': '🔍 Contenu du Cours', 
-                                'content': processed_content, 
-                                'type': 'content'
-                            }
-                        ],
+                        'sections': processed_content,
                         'sources': result['sources']
                     },
                     'modules': module_loader.get_available_modules()
                 }
+                print("✅ Fallback course créé")
         else:
             context = {
                 'error': result.get('error', 'Erreur lors de la génération du cours'),
@@ -125,10 +135,47 @@ def course_generator(request):
     return render(request, 'courses/generate.html', context)
 
 
-def process_section_content(content):
-    """Convertit le contenu d'une section en HTML formaté magnifiquement"""
+def create_fallback_course(content, topic):
+    """Crée un cours de fallback bien structuré même si le JSON parsing échoue"""
     
-    # Convertir les blocs de code Python avec header magnifique
+    # Nettoyer le contenu
+    clean_content = str(content).replace('```json', '').replace('```', '')
+    
+    # Essayer d'extraire des sections basiques
+    sections = []
+    
+    # Section Introduction
+    sections.append({
+        'type': 'introduction',
+        'title': '📖 Introduction',
+        'content': f'<p>Dans ce cours, nous allons explorer <strong>{topic}</strong> en détail.</p>'
+    })
+    
+    # Section principale avec le contenu
+    processed_content = process_section_content(clean_content)
+    sections.append({
+        'type': 'content',
+        'title': '🔍 Contenu Principal',
+        'content': processed_content
+    })
+    
+    # Section exemples si on trouve du code
+    if 'def ' in clean_content or '=' in clean_content:
+        sections.append({
+            'type': 'examples',
+            'title': '💡 Exemples',
+            'content': '<p>Voici quelques exemples pratiques :</p>'
+        })
+    
+    return sections
+
+
+def process_section_content(content):
+    """Convertit le contenu d'une section en HTML formaté"""
+    if not content:
+        return '<p>Contenu en cours de génération...</p>'
+    
+    # Convertir les blocs de code Python
     def replace_code_block(match):
         code_content = match.group(1).strip()
         return f'''
@@ -153,13 +200,14 @@ def process_section_content(content):
     content = re.sub(r'```python\n(.*?)\n```', replace_code_block, content, flags=re.DOTALL)
     content = re.sub(r'```\n(.*?)\n```', replace_code_block, content, flags=re.DOTALL)
     
-    # Convertir les mots en gras avec style magnifique
+    # Convertir les mots en gras
     content = re.sub(r'\*\*(.*?)\*\*', r'<span class="keyword-highlight">\1</span>', content)
     
-    # Convertir les listes à puces avec style moderne
+    # Convertir les listes à puces
     content = re.sub(r'^• (.*?)$', r'<li class="modern-list-item">\1</li>', content, flags=re.MULTILINE)
+    content = re.sub(r'^\* (.*?)$', r'<li class="modern-list-item">\1</li>', content, flags=re.MULTILINE)
     
-    # Grouper les listes avec container moderne
+    # Grouper les listes
     lines = content.split('\n')
     processed_lines = []
     in_list = False
@@ -176,28 +224,25 @@ def process_section_content(content):
                 processed_lines.append('</ul>')
                 in_list = False
             if line:
-                processed_lines.append(f'<p class="content-text">{line}</p>')
+                # Éviter d'afficher du JSON brut
+                if not (line.startswith('{') or line.startswith('"') or 'type":' in line):
+                    processed_lines.append(f'<p class="content-text">{line}</p>')
     
     if in_list:
         processed_lines.append('</ul>')
     
-    return '\n'.join(processed_lines)
-
-
-def process_fallback_content(content):
-    """Traite le contenu en cas d'échec du parsing JSON avec style moderne"""
+    result = '\n'.join(processed_lines)
     
-    # Convertir les titres avec style moderne
-    content = re.sub(r'^## (.*?)$', r'<h2 class="section-subtitle">\1</h2>', content, flags=re.MULTILINE)
-    content = re.sub(r'^# (.*?)$', r'<h1 class="section-title">\1</h1>', content, flags=re.MULTILINE)
+    # Si le résultat est vide ou trop court, ajouter un contenu par défaut
+    if len(result.strip()) < 50:
+        result = '<p class="content-text">Contenu en cours de génération. Veuillez réessayer.</p>'
     
-    # Traiter le reste comme une section normale
-    return process_section_content(content)
+    return result
 
 
 @login_required
 def save_course(request):
-    """Sauvegarde un cours généré avec style"""
+    """Sauvegarde un cours généré"""
     if request.method == 'POST':
         try:
             # Récupérer les données du formulaire
@@ -240,7 +285,7 @@ def save_course(request):
 
 @login_required
 def course_detail(request, course_id):
-    """Affiche un cours sauvegardé avec style magnifique"""
+    """Affiche un cours sauvegardé"""
     try:
         course = get_object_or_404(Course, id=course_id, created_by=request.user)
         course.increment_view_count()
@@ -296,7 +341,7 @@ def get_sections_api(request, module_id):
 
 @login_required
 def my_courses(request):
-    """Liste des cours sauvegardés de l'utilisateur avec style moderne"""
+    """Liste des cours sauvegardés de l'utilisateur"""
     courses = Course.objects.filter(created_by=request.user).order_by('-created_at')
     
     context = {
