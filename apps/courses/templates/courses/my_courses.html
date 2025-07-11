@@ -1,0 +1,89 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Mes Cours - EduAI Tutor{% endblock %}
+
+{% block content %}
+<div class="course-container">
+    <div class="course-header">
+        <div class="course-title-section">
+            <div class="course-icon">
+                <i data-lucide="bookmark" class="w-8 h-8 text-primary-blue"></i>
+            </div>
+            <div class="course-info">
+                <h1 class="course-main-title">Mes Cours Sauvegardés</h1>
+                <p class="course-module">{{ courses.count }} cours personnalisé{{ courses.count|pluralize }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if courses %}
+        <div class="courses-grid">
+            {% for course in courses %}
+                <div class="course-card">
+                    <div class="course-card-header">
+                        <h3 class="course-card-title">{{ course.title }}</h3>
+                        <div class="course-card-badges">
+                            <span class="badge badge-difficulty">{{ course.get_difficulty_display }}</span>
+                            {% if course.module != 'general' %}
+                                <span class="badge badge-module">{{ course.module|title }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="course-card-content">
+                        <p class="course-card-topic">{{ course.topic }}</p>
+                        <div class="course-card-meta">
+                            <span class="meta-item">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                                {{ course.view_count }} vue{{ course.view_count|pluralize }}
+                            </span>
+                            <span class="meta-item">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                {{ course.created_at|date:"d M Y" }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="course-card-actions">
+                        <a href="{% url 'courses:detail' course.id %}" class="btn btn-primary btn-sm">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                            Ouvrir
+                        </a>
+                        <button class="btn btn-secondary btn-sm" onclick="deleteCourse({{ course.id }})">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            Supprimer
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i data-lucide="book-x" class="w-16 h-16 text-gray-500"></i>
+            </div>
+            <h3 class="empty-title">Aucun cours sauvegardé</h3>
+            <p class="empty-description">
+                Commencez par générer un cours et sauvegardez-le pour le retrouver ici.
+            </p>
+            <a href="{% url 'courses:generator' %}" class="btn btn-primary">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Créer mon premier cours
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+    });
+    
+    function deleteCourse(courseId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
+            // Implémenter la suppression
+            console.log('Suppression du cours', courseId);
+        }
+    }
+</script>
+{% endblock %}

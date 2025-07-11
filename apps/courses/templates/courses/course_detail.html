@@ -1,16 +1,18 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}{{ course.title|default:"Cours généré" }} - EduAI Tutor{% endblock %}
+{% block title %}{{ generated_course.title|default:"Cours généré" }} - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6">
+<div class="course-container">
     <!-- Header du cours -->
-    <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center space-x-3">
-            <i data-lucide="book-open" class="w-6 h-6 text-primary-green"></i>
-            <div>
-                <h1 class="text-2xl font-bold text-white">
+    <div class="course-header">
+        <div class="course-title-section">
+            <div class="course-icon">
+                <i data-lucide="book-open" class="w-8 h-8 text-primary-green"></i>
+            </div>
+            <div class="course-info">
+                <h1 class="course-main-title">
                     {% if generated_course %}
                         {{ generated_course.title }}
                     {% else %}
@@ -18,19 +20,21 @@
                     {% endif %}
                 </h1>
                 {% if generated_course and generated_course.module_name and generated_course.module != 'general' %}
-                    <p class="text-sm text-gray-400">{{ generated_course.module_name }}</p>
+                    <p class="course-module">{{ generated_course.module_name }}</p>
                 {% endif %}
             </div>
         </div>
         
         <!-- Badges et métadonnées -->
-        <div class="flex items-center space-x-3">
+        <div class="course-badges">
             {% if generated_course %}
-                <span class="inline-block px-3 py-1 bg-blue-500 bg-opacity-20 text-blue-400 rounded-full text-sm">
+                <span class="badge badge-difficulty">
+                    <i data-lucide="target" class="w-4 h-4"></i>
                     {{ generated_course.difficulty|capfirst }}
                 </span>
                 {% if generated_course.sources %}
-                    <span class="inline-block px-3 py-1 bg-green-500 bg-opacity-20 text-green-400 rounded-full text-sm">
+                    <span class="badge badge-sources">
+                        <i data-lucide="book" class="w-4 h-4"></i>
                         {{ generated_course.sources|length }} source{{ generated_course.sources|length|pluralize }}
                     </span>
                 {% endif %}
@@ -39,32 +43,29 @@
     </div>
 
     {% if error %}
-        <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4 mb-6">
-            <div class="flex items-center space-x-2">
+        <div class="error-container">
+            <div class="error-content">
                 <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                <span class="text-red-400 text-sm font-medium">Erreur</span>
+                <span class="error-title">Erreur</span>
             </div>
-            <p class="text-red-400 text-sm mt-2">{{ error }}</p>
+            <p class="error-message">{{ error }}</p>
         </div>
     {% endif %}
 
     <!-- Contenu du cours -->
     {% if generated_course %}
-        <div class="space-y-6">
+        <div class="course-content">
             {% for section in generated_course.sections %}
-                <div class="course-section bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                <div class="course-section">
                     <!-- Header de section -->
-                    <div class="section-header px-6 py-4 bg-gray-750 border-b border-gray-700">
-                        <h2 class="text-lg font-bold text-white flex items-center">
-                            {{ section.title }}
-                        </h2>
+                    <div class="section-header">
+                        <h2 class="section-title">{{ section.title }}</h2>
+                        <div class="section-divider"></div>
                     </div>
                     
                     <!-- Contenu de section -->
-                    <div class="section-content p-6">
-                        <div class="prose prose-invert max-w-none">
-                            {{ section.content|safe }}
-                        </div>
+                    <div class="section-content">
+                        {{ section.content|safe }}
                     </div>
                 </div>
             {% endfor %}
@@ -72,46 +73,52 @@
         
         <!-- Sources utilisées -->
         {% if generated_course.sources %}
-            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h4 class="text-sm font-medium text-gray-300 mb-3 flex items-center">
-                    <i data-lucide="book" class="w-4 h-4 mr-2"></i>
+            <div class="sources-section">
+                <h4 class="sources-title">
+                    <i data-lucide="book" class="w-4 h-4"></i>
                     Sources utilisées
                 </h4>
-                <div class="flex flex-wrap gap-2">
+                <div class="sources-list">
                     {% for source in generated_course.sources %}
-                        <span class="text-xs bg-gray-700 text-gray-300 px-3 py-1 rounded-full">{{ source }}</span>
+                        <span class="source-tag">{{ source }}</span>
                     {% endfor %}
                 </div>
             </div>
         {% endif %}
     {% else %}
         <!-- Cours existant -->
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div class="prose prose-invert max-w-none">
-                <div class="text-gray-300">{{ course.content|safe }}</div>
+        <div class="course-section">
+            <div class="section-content">
+                {{ course.content|safe }}
             </div>
         </div>
     {% endif %}
 
     <!-- Actions -->
-    <div class="flex justify-between items-center pt-6 border-t border-gray-700">
-        <a href="{% url 'courses:generator' %}" class="flex items-center space-x-2 px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+    <div class="course-actions">
+        <a href="{% url 'courses:generator' %}" class="btn btn-secondary">
             <i data-lucide="arrow-left" class="w-4 h-4"></i>
             <span>Retour au générateur</span>
         </a>
         
         {% if generated_course %}
-        <div class="flex space-x-4">
-            <form method="post" action="{% url 'courses:save' %}" class="inline">
+        <div class="action-buttons">
+            <form method="post" action="{% url 'courses:save' %}" class="save-form">
                 {% csrf_token %}
-                <input type="hidden" name="course_data" value="{{ generated_course|safe }}">
-                <button type="submit" class="flex items-center space-x-2 px-6 py-3 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                <input type="hidden" name="title" value="{{ generated_course.title }}">
+                <input type="hidden" name="topic" value="{{ generated_course.topic }}">
+                <input type="hidden" name="module" value="{{ generated_course.module }}">
+                <input type="hidden" name="difficulty" value="{{ generated_course.difficulty }}">
+                <input type="hidden" name="sections_data" value="{{ generated_course.sections|safe }}">
+                <input type="hidden" name="sources" value="{{ generated_course.sources|safe }}">
+                
+                <button type="submit" class="btn btn-primary">
                     <i data-lucide="save" class="w-4 h-4"></i>
                     <span>Sauvegarder le cours</span>
                 </button>
             </form>
             
-            <a href="{% url 'quiz:start' %}?topic={{ generated_course.topic }}" class="flex items-center space-x-2 px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors">
+            <a href="{% url 'quiz:start' %}?topic={{ generated_course.topic }}" class="btn btn-blue">
                 <i data-lucide="brain" class="w-4 h-4"></i>
                 <span>Créer un quiz</span>
             </a>
@@ -136,18 +143,30 @@
         
         // Fonction pour copier le code
         window.copyCode = function(button) {
-            const codeBlock = button.nextElementSibling.querySelector('code');
+            const codeBlock = button.closest('.code-block-container').querySelector('code');
             const text = codeBlock.textContent;
             
             navigator.clipboard.writeText(text).then(() => {
-                const originalText = button.textContent;
-                button.textContent = 'Copié !';
-                button.style.background = '#4CAF50';
+                const icon = button.querySelector('i');
+                const span = button.querySelector('span') || button;
+                const originalText = span.textContent;
+                
+                // Changer l'icône et le texte
+                icon.setAttribute('data-lucide', 'check');
+                span.textContent = 'Copié !';
+                button.classList.add('copied');
+                
+                // Réinitialiser les icônes
+                lucide.createIcons();
                 
                 setTimeout(() => {
-                    button.textContent = originalText;
-                    button.style.background = '#374151';
+                    icon.setAttribute('data-lucide', 'copy');
+                    span.textContent = originalText;
+                    button.classList.remove('copied');
+                    lucide.createIcons();
                 }, 2000);
+            }).catch(err => {
+                console.error('Erreur lors de la copie:', err);
             });
         };
     });

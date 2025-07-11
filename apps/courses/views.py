@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -18,37 +17,36 @@ def course_generator(request):
         difficulty = request.POST.get('difficulty')
         module = request.POST.get('module', '')
         
-        # Construire le sujet complet
-        if module and module != 'general':
-            module_info = next((m for m in module_loader.get_available_modules() if m['id'] == module), None)
-            module_name = module_info['name'] if module_info else module
-            full_topic = f"{topic}"
-        else:
-            full_topic = topic
-        
         # Utiliser l'orchestrateur IA pour générer le cours
         orchestrator = get_orchestrator(request.user)
+        
         # Passer le contexte du module à l'orchestrateur
         if module and module != 'general':
-            orchestrator.current_module = module_info['name'] if module_info else module
+            module_info = next((m for m in module_loader.get_available_modules() if m['id'] == module), None)
+            if module_info:
+                orchestrator.current_module = module_info['name']
         
-        result = orchestrator.generate_course(full_topic, difficulty)
+        result = orchestrator.generate_course(topic, difficulty)
         
         if result['success']:
-            # Parser le JSON retourné par l'IA
             try:
-                # Nettoyer le contenu pour extraire le JSON
+                # Nettoyer et parser le JSON retourné par l'IA
                 content = result['content']
+                print(f"🔍 Contenu brut reçu: {content[:200]}...")
                 
-                # Chercher le JSON dans la réponse
+                # Extraire le JSON de la réponse
                 json_match = re.search(r'\{.*\}', content, re.DOTALL)
                 if json_match:
-                    course_json = json.loads(json_match.group())
+                    json_str = json_match.group()
+                    print(f"🔍 JSON extrait: {json_str[:200]}...")
                     
-                    # Traiter chaque section pour convertir le Markdown en HTML
+                    course_data = json.loads(json_str)
+                    print(f"🔍 Données parsées: {course_data.keys()}")
+                    
+                    # Traiter chaque section
                     processed_sections = []
-                    for section in course_json.get('sections', []):
-                        processed_content = process_markdown_content(section['content'])
+                    for section in course_data.get('sections', []):
+                        processed_content = process_section_content(section['content'])
                         processed_sections.append({
                             'type': section['type'],
                             'title': section['title'],
@@ -57,7 +55,7 @@ def course_generator(request):
                     
                     context = {
                         'generated_course': {
-                            'title': course_json.get('title', topic),
+                            'title': course_data.get('title', topic),
                             'topic': topic,
                             'module': module,
                             'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
@@ -68,12 +66,13 @@ def course_generator(request):
                         'modules': module_loader.get_available_modules()
                     }
                 else:
+                    print("❌ Aucun JSON trouvé dans la réponse")
                     raise ValueError("Format JSON non trouvé dans la réponse")
                     
             except (json.JSONDecodeError, ValueError, KeyError) as e:
-                print(f"Erreur parsing JSON : {e}")
+                print(f"❌ Erreur parsing JSON : {e}")
                 # Fallback vers l'ancien système
-                processed_content = process_markdown_content(result['content'])
+                processed_content = process_fallback_content(result['content'])
                 context = {
                     'generated_course': {
                         'title': topic,
@@ -81,7 +80,7 @@ def course_generator(request):
                         'module': module,
                         'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
                         'difficulty': result['difficulty'],
-                        'sections': [{'title': 'Cours', 'content': processed_content, 'type': 'general'}],
+                        'sections': [{'title': '📖 Cours', 'content': processed_content, 'type': 'general'}],
                         'sources': result['sources']
                     },
                     'modules': module_loader.get_available_modules()
@@ -102,65 +101,69 @@ def course_generator(request):
     return render(request, 'courses/generate.html', context)
 
 
-def process_markdown_content(content):
-    """Convertit le contenu Markdown en HTML avec coloration syntaxique"""
+def process_section_content(content):
+    """Convertit le contenu d'une section en HTML formaté"""
     
-    # Convertir les titres
-    content = re.sub(r'^### (.*?)$', r'<h3>\1</h3>', content, flags=re.MULTILINE)
-    content = re.sub(r'^## (.*?)$', r'<h2>\1</h2>', content, flags=re.MULTILINE)
-    content = re.sub(r'^# (.*?)$', r'<h1>\1</h1>', content, flags=re.MULTILINE)
-    
-    # Convertir les blocs de code avec wrapper pour le bouton copy
+    # Convertir les blocs de code Python
     def replace_code_block(match):
-        code_content = match.group(1)
-        return f'''<div class="code-block-wrapper">
-            <button class="copy-code-btn" onclick="copyCode(this)">Copier</button>
-            <pre><code class="language-python">{code_content}</code></pre>
-        </div>'''
+        code_content = match.group(1).strip()
+        return f'''
+        <div class="code-block-container">
+            <div class="code-header">
+                <span class="code-language">Python</span>
+                <button class="copy-btn" onclick="copyCode(this)">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    Copier
+                </button>
+            </div>
+            <pre class="code-block"><code class="language-python">{code_content}</code></pre>
+        </div>
+        '''
     
+    # Remplacer les blocs de code
     content = re.sub(r'```python\n(.*?)\n```', replace_code_block, content, flags=re.DOTALL)
     content = re.sub(r'```\n(.*?)\n```', replace_code_block, content, flags=re.DOTALL)
     
-    # Convertir le texte en gras
-    content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
+    # Convertir les mots en gras avec couleur
+    content = re.sub(r'\*\*(.*?)\*\*', r'<span class="keyword-highlight">\1</span>', content)
     
     # Convertir les listes à puces
-    content = re.sub(r'^• (.*?)$', r'<li>\1</li>', content, flags=re.MULTILINE)
+    content = re.sub(r'^• (.*?)$', r'<li class="bullet-item">\1</li>', content, flags=re.MULTILINE)
     
-    # Grouper les listes consécutives
+    # Grouper les listes
     lines = content.split('\n')
     processed_lines = []
     in_list = False
     
     for line in lines:
-        if line.strip().startswith('<li>'):
+        line = line.strip()
+        if line.startswith('<li class="bullet-item">'):
             if not in_list:
-                processed_lines.append('<ul>')
+                processed_lines.append('<ul class="custom-list">')
                 in_list = True
             processed_lines.append(line)
         else:
             if in_list:
                 processed_lines.append('</ul>')
                 in_list = False
-            processed_lines.append(line)
+            if line:
+                processed_lines.append(f'<p class="content-paragraph">{line}</p>')
     
     if in_list:
         processed_lines.append('</ul>')
     
-    content = '\n'.join(processed_lines)
+    return '\n'.join(processed_lines)
+
+
+def process_fallback_content(content):
+    """Traite le contenu en cas d'échec du parsing JSON"""
     
-    # Convertir les paragraphes
-    paragraphs = content.split('\n\n')
-    processed_paragraphs = []
+    # Convertir les titres avec emojis
+    content = re.sub(r'^## (.*?)$', r'<h2 class="section-title">\1</h2>', content, flags=re.MULTILINE)
+    content = re.sub(r'^# (.*?)$', r'<h1 class="main-title">\1</h1>', content, flags=re.MULTILINE)
     
-    for para in paragraphs:
-        para = para.strip()
-        if para and not para.startswith('<') and not para.endswith('>'):
-            processed_paragraphs.append(f'<p>{para}</p>')
-        else:
-            processed_paragraphs.append(para)
-    
-    return '\n'.join(processed_paragraphs)
+    # Traiter le reste comme une section normale
+    return process_section_content(content)
 
 
 @login_required
@@ -168,16 +171,30 @@ def save_course(request):
     """Sauvegarde un cours généré"""
     if request.method == 'POST':
         try:
-            course_data = json.loads(request.POST.get('course_data', '{}'))
+            # Récupérer les données du formulaire
+            title = request.POST.get('title', 'Cours sans titre')
+            topic = request.POST.get('topic', '')
+            module = request.POST.get('module', 'general')
+            difficulty = request.POST.get('difficulty', 'intermediate')
+            sections_data = request.POST.get('sections_data', '[]')
+            sources = request.POST.get('sources', '[]')
+            
+            # Parser les données JSON
+            try:
+                sections = json.loads(sections_data)
+                sources_list = json.loads(sources)
+            except json.JSONDecodeError:
+                sections = []
+                sources_list = []
             
             # Créer le cours en base
             course = Course.objects.create(
-                title=course_data.get('title', 'Cours sans titre'),
-                topic=course_data.get('topic', ''),
-                module=course_data.get('module', 'general'),
-                difficulty=course_data.get('difficulty', 'intermediate'),
-                content=json.dumps(course_data.get('sections', [])),
-                sources=course_data.get('sources', []),
+                title=title,
+                topic=topic,
+                module=module,
+                difficulty=difficulty,
+                content=json.dumps(sections),
+                sources=sources_list,
                 created_by=request.user
             )
             
@@ -185,6 +202,7 @@ def save_course(request):
             return redirect('courses:detail', course_id=course.id)
             
         except Exception as e:
+            print(f"❌ Erreur lors de la sauvegarde : {e}")
             messages.error(request, f'Erreur lors de la sauvegarde : {e}')
             return redirect('courses:generator')
     
@@ -246,3 +264,13 @@ def get_sections_api(request, module_id):
         'module_id': module_id,
         'sections': formatted_sections
     })
+
+@login_required
+def my_courses(request):
+    """Liste des cours sauvegardés de l'utilisateur"""
+    courses = Course.objects.filter(created_by=request.user).order_by('-created_at')
+    
+    context = {
+        'courses': courses
+    }
+    return render(request, 'courses/my_courses.html', context)

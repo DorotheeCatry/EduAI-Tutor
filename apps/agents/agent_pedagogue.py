@@ -162,3 +162,10 @@ IMPORTANT: Réponds UNIQUEMENT avec le JSON, rien d'autre.
 """
         )
         return LLMChain(llm=llm, prompt=simple_prompt)
+
+def test_pedagogue_output():
+    """Fonction de test pour vérifier la sortie du pédagogue"""
+    chain = get_pedagogue_chain()
+    result = chain.invoke({"question": "les fonctions python"})
+    print("🔍 Test output:", result)
+    return result
