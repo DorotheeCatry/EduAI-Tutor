@@ -25,7 +25,7 @@ class AIOrchestrator:
         Génère un cours complet en utilisant Chercheur + Pédagogue
         """
         try:
-            print(f"🎓 Génération de cours sur : {topic} (niveau: {difficulty})")
+            print(f"🎓 Génération de cours sur : {topic}")
             
             # Améliorer le prompt avec le contexte du module
             enhanced_topic = topic
@@ -61,7 +61,7 @@ class AIOrchestrator:
                     session = self.watcher.track_session(
                         topic=topic,
                         activity_type='course_generation',
-                        metadata={'difficulty': difficulty}
+                        metadata={}
                     )
                 except Exception as e:
                     print(f"⚠️ Tracking désactivé (table manquante) : {e}")
@@ -70,7 +70,6 @@ class AIOrchestrator:
             return {
                 'success': True,
                 'topic': topic,
-                'difficulty': difficulty,
                 'content': content,
                 'sources': sources,
                 'session_id': session.id if session else None
@@ -141,7 +140,7 @@ class AIOrchestrator:
         Crée un quiz sur un sujet donné
         """
         try:
-            quiz_data = generate_quiz(topic, difficulty, num_questions)
+            quiz_data = generate_quiz(topic, num_questions)
             
             # Tracking de la session si utilisateur connecté
             session = None
@@ -150,7 +149,6 @@ class AIOrchestrator:
                     topic=topic,
                     activity_type='quiz',
                     metadata={
-                        'difficulty': difficulty,
                         'num_questions': num_questions
                     }
                 )
@@ -158,7 +156,6 @@ class AIOrchestrator:
             return {
                 'success': True,
                 'topic': topic,
-                'difficulty': difficulty,
                 'quiz': quiz_data,
                 'session_id': session.id if session else None
             }

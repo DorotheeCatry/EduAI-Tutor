@@ -613,12 +613,6 @@ main.tab-content {
 }
 
 .badge-difficulty {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60A5FA;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.badge-sources {
     background: rgba(76, 175, 80, 0.2);
     color: #4CAF50;
     border: 1px solid rgba(76, 175, 80, 0.3);

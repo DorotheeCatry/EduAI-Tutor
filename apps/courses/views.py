@@ -15,7 +15,6 @@ import unicodedata
 def course_generator(request):
     if request.method == 'POST':
         topic = request.POST.get('topic')
-        difficulty = request.POST.get('difficulty')
         module = request.POST.get('module', '')
         
         # Utiliser l'orchestrateur IA pour générer le cours
@@ -27,7 +26,7 @@ def course_generator(request):
             if module_info:
                 orchestrator.current_module = module_info['name']
         
-        result = orchestrator.generate_course(topic, difficulty)
+        result = orchestrator.generate_course(topic)
         
         if result['success']:
             try:
@@ -144,8 +143,6 @@ def course_generator(request):
                             'module': module,
                             'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
                             'difficulty': result['difficulty'],
-                            'sections': processed_sections,
-                            'sources': result['sources']
                         },
                         'modules': module_loader.get_available_modules()
                     }
@@ -175,7 +172,6 @@ def course_generator(request):
             context = {
                 'error': result.get('error', 'Erreur lors de la génération du cours'),
                 'topic': topic,
-                'difficulty': difficulty,
                 'modules': module_loader.get_available_modules()
             }
             
@@ -355,7 +351,6 @@ def save_course(request):
             title = request.POST.get('title', 'Cours sans titre')
             topic = request.POST.get('topic', '')
             module = request.POST.get('module', 'general')
-            difficulty = request.POST.get('difficulty', 'intermediate')
             sections_data = request.POST.get('sections_data', '[]')
             sources = request.POST.get('sources', '[]')
             
@@ -372,7 +367,6 @@ def save_course(request):
                 title=title,
                 topic=topic,
                 module=module,
-                difficulty=difficulty,
                 content=json.dumps(sections),
                 sources=sources_list,
                 created_by=request.user
@@ -408,7 +402,6 @@ def course_detail(request, course_id):
                 'title': course.title,
                 'topic': course.topic,
                 'module': course.module,
-                'difficulty': course.difficulty,
                 'sections': sections,
                 'sources': course.sources
             }

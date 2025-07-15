@@ -13,16 +13,14 @@ def quiz_lobby(request):
 def quiz_start(request):
     mode = request.GET.get('mode', 'solo')
     topic = request.GET.get('topic', 'Python général')
-    difficulty = request.GET.get('difficulty', 'intermediate')
     
     # Générer un quiz avec l'IA
     orchestrator = get_orchestrator(request.user)
-    result = orchestrator.create_quiz(topic, difficulty, 5)
+    result = orchestrator.create_quiz(topic, 5)
     
     context = {
         'mode': mode,
         'topic': topic,
-        'difficulty': difficulty,
         'quiz_data': result if result['success'] else None,
         'error': result.get('error') if not result['success'] else None
     }

@@ -30,10 +30,6 @@
                 
                 <div class="course-meta">
                     {% if generated_course %}
-                        <span class="meta-badge difficulty-{{ generated_course.difficulty }}">
-                            <i data-lucide="target" class="w-4 h-4"></i>
-                            {{ generated_course.difficulty|capfirst }}
-                        </span>
                         {% if generated_course.sources %}
                             <span class="meta-badge sources">
                                 <i data-lucide="book" class="w-4 h-4"></i>
@@ -125,7 +121,6 @@
                 <input type="hidden" name="title" value="{{ generated_course.title }}">
                 <input type="hidden" name="topic" value="{{ generated_course.topic }}">
                 <input type="hidden" name="module" value="{{ generated_course.module }}">
-                <input type="hidden" name="difficulty" value="{{ generated_course.difficulty }}">
                 <input type="hidden" name="sections_data" value="{{ generated_course.sections|safe }}">
                 <input type="hidden" name="sources" value="{{ generated_course.sources|safe }}">
                 

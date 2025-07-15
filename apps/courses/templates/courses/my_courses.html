@@ -23,7 +23,6 @@
                     <div class="course-card-header">
                         <h3 class="course-card-title">{{ course.title }}</h3>
                         <div class="course-card-badges">
-                            <span class="badge badge-difficulty">{{ course.get_difficulty_display }}</span>
                             {% if course.module != 'general' %}
                                 <span class="badge badge-module">{{ course.module|title }}</span>
                             {% endif %}

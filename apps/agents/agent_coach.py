@@ -16,22 +16,21 @@ def get_coach_chain(model_name="llama3-70b-8192"):
     
     # Prompt pour générer des QCM
     quiz_prompt = PromptTemplate(
-        input_variables=["topic", "difficulty", "num_questions"],
+        input_variables=["topic", "num_questions"],
         template="""
 Tu es un excellent formateur qui crée des QCM pédagogiques.
 
 SUJET : {topic}
-NIVEAU : {difficulty}
 NOMBRE DE QUESTIONS : {num_questions}
 
-Génère un QCM avec exactement {num_questions} questions sur le sujet "{topic}" au niveau {difficulty}.
+Génère un QCM avec exactement {num_questions} questions sur le sujet "{topic}".
 
 RÈGLES IMPORTANTES :
 - Chaque question doit avoir exactement 4 options (A, B, C, D)
 - Une seule bonne réponse par question
 - Les mauvaises réponses doivent être plausibles mais clairement incorrectes
 - Varie les types de questions : définitions, exemples pratiques, cas d'usage
-- Adapte la complexité au niveau demandé
+- Adapte la complexité à un niveau intermédiaire
 
 FORMAT DE RÉPONSE (JSON strict) :
 {{
@@ -63,14 +62,13 @@ def get_code_exercise_chain(model_name="llama3-70b-8192"):
     llm = get_llm(model_name=model_name)
     
     code_prompt = PromptTemplate(
-        input_variables=["topic", "difficulty"],
+        input_variables=["topic"],
         template="""
 Tu es un expert en programmation qui crée des exercices de code.
 
 SUJET : {topic}
-NIVEAU : {difficulty}
 
-Crée un exercice de code pratique sur "{topic}" au niveau {difficulty}.
+Crée un exercice de code pratique sur "{topic}" de niveau intermédiaire.
 
 L'exercice doit inclure :
 - Un énoncé clair
@@ -103,7 +101,6 @@ def generate_quiz(topic, difficulty="intermediate", num_questions=5):
         chain = get_coach_chain()
         result = chain.run(
             topic=topic,
-            difficulty=difficulty,
             num_questions=num_questions
         )
         
@@ -136,7 +133,7 @@ def generate_code_exercise(topic, difficulty="intermediate"):
     """
     try:
         chain = get_code_exercise_chain()
-        result = chain.run(topic=topic, difficulty=difficulty)
+        result = chain.run(topic=topic)
         
         # Parser le JSON
         exercise_data = json.loads(result)

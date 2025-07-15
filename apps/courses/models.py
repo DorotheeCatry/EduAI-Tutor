@@ -6,16 +6,9 @@ User = get_user_model()
 class Course(models.Model):
     """Modèle pour sauvegarder les cours générés"""
     
-    DIFFICULTY_CHOICES = [
-        ('beginner', 'Débutant'),
-        ('intermediate', 'Intermédiaire'),
-        ('advanced', 'Avancé'),
-    ]
-    
     title = models.CharField(max_length=200)
     topic = models.CharField(max_length=200)
     module = models.CharField(max_length=100, default='general')
-    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='intermediate')
     content = models.TextField()
     sources = models.JSONField(default=list, blank=True)
     
@@ -35,7 +28,7 @@ class Course(models.Model):
         verbose_name_plural = "Cours"
     
     def __str__(self):
-        return f"{self.title} ({self.get_difficulty_display()})"
+        return f"{self.title}"
     
     def increment_view_count(self):
         """Incrémente le compteur de vues"""
