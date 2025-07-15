@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from apps.agents.orchestrator import get_orchestrator
+from apps.agents.agent_orchestrator import get_orchestrator
 
 @login_required
 def dashboard(request):

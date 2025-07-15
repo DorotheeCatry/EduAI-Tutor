@@ -1,0 +1,4 @@
+Tu es un expert en programmation. Réponds de manière détaillée et pédagogique à la question suivante :
+{question}
+
+Fournis une réponse complète avec des explications claires et des exemples si pertinent.

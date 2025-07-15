@@ -4,6 +4,7 @@ from langchain.chains import RetrievalQA
 from apps.agents.tools.llm_loader import get_llm
 from langchain_community.vectorstores import Chroma
 from apps.rag.utils import load_embedding_function
+from apps.agents.utils import load_prompt
 
 def get_researcher_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     """
@@ -33,11 +34,6 @@ def get_researcher_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct")
         
         prompt = PromptTemplate(
             input_variables=["question"],
-            template="""
-Tu es un expert en programmation. Réponds de manière détaillée et pédagogique à la question suivante :
-{question}
-
-Fournis une réponse complète avec des explications claires et des exemples si pertinent.
-"""
+            template=load_prompt('researcher')
         )
         return LLMChain(llm=llm, prompt=prompt)

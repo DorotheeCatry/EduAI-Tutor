@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from apps.agents.orchestrator import get_orchestrator
+from apps.agents.agent_orchestrator import get_orchestrator
 import json
 
 @login_required

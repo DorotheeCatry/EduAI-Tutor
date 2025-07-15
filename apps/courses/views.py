@@ -4,7 +4,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from apps.agents.orchestrator import get_orchestrator
+from apps.agents.agent_orchestrator import get_orchestrator
 from apps.rag.module_loader import module_loader
 from .models import Course
 import json
