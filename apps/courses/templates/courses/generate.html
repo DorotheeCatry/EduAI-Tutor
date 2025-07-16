@@ -9,11 +9,15 @@
         <h1 class="text-xl font-bold text-white">Course Generation</h1>
     </div>
 
+    <!-- Formulaire de génération -->
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <form method="post" class="space-y-4" id="course-form">
+        <form method="post" class="space-y-6" id="course-form">
             {% csrf_token %}
+            
+            <!-- Sélection du module -->
             <div>
-                <label class="block text-xs font-medium text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <i data-lucide="folder" class="w-4 h-4 inline mr-2"></i>
                     Module / Sujet
                 </label>
                 <select
@@ -27,46 +31,81 @@
                         </option>
                     {% endfor %}
                 </select>
+            </div>
+
+            <!-- Sujet spécifique -->
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">
+                    <i data-lucide="message-circle" class="w-4 h-4 inline mr-2"></i>
+                    Question ou sujet spécifique
+                </label>
+                <textarea
+                    name="topic"
+                    id="topic-input"
+                    rows="3"
+                    placeholder="Ex: Comment fonctionnent les décorateurs Python ? Expliquez avec des exemples pratiques et des exercices..."
+                    class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors resize-none"
+                    required
+                ></textarea>
+            </div>
+
+            <!-- Options de personnalisation -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i data-lucide="target" class="w-4 h-4 inline mr-2"></i>
+                        Niveau
+                    </label>
+                    <select name="difficulty" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
+                        <option value="beginner">Débutant</option>
+                        <option value="intermediate" selected>Intermédiaire</option>
+                        <option value="advanced">Avancé</option>
+                    </select>
+                </div>
                 
-                <!-- Affichage des sections du module sélectionné -->
-                <div id="sections-info" class="mt-2 text-xs text-gray-400 hidden">
-                    <div id="sections-list"></div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i data-lucide="clock" class="w-4 h-4 inline mr-2"></i>
+                        Durée estimée
+                    </label>
+                    <select name="duration" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
+                        <option value="short">Court (15-30 min)</option>
+                        <option value="medium" selected>Moyen (30-60 min)</option>
+                        <option value="long">Long (1-2h)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i data-lucide="code" class="w-4 h-4 inline mr-2"></i>
+                        Focus
+                    </label>
+                    <select name="focus" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
+                        <option value="theory">Théorie</option>
+                        <option value="practical" selected>Pratique</option>
+                        <option value="mixed">Mixte</option>
+                    </select>
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-medium text-gray-300 mb-2">
-                    Question ou sujet spécifique
-                </label>
-                <input
-                    type="text"
-                    name="topic"
-                    id="topic-input"
-                    placeholder="Ex: Comment fonctionnent les décorateurs ? Expliquez les list comprehensions..."
-                    class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
-                    required
-                />
-            </div>
-
-
+            <!-- Bouton de génération -->
             <button
                 type="submit"
                 id="generate-btn"
-                class="w-full py-2 px-4 text-sm rounded-lg font-medium transition-all duration-200 bg-primary-green text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98]"
+                class="w-full py-3 px-4 text-sm rounded-lg font-medium transition-all duration-200 bg-primary-green text-white hover:bg-green-600 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
             >
-                <div class="flex items-center justify-center space-x-2">
-                    <i data-lucide="sparkles" class="w-5 h-5"></i>
-                    <span>Générer le cours</span>
-                </div>
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span>Générer le cours personnalisé</span>
             </button>
         </form>
     </div>
 
+    <!-- Statistiques rapides -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
-                <i data-lucide="play" class="w-5 h-5 text-primary-blue"></i>
-                <h3 class="text-base font-bold text-white">Recent Courses</h3>
+                <i data-lucide="book" class="w-5 h-5 text-primary-blue"></i>
+                <h3 class="text-base font-bold text-white">Cours récents</h3>
             </div>
             <div class="space-y-3">
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
@@ -87,37 +126,28 @@
                         <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 60%"></div>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-white">React Hooks</span>
-                        <span class="text-xs text-gray-400">45%</span>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 45%"></div>
-                    </div>
-                </div>
             </div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
                 <i data-lucide="clock" class="w-5 h-5 text-primary-rose"></i>
-                <h3 class="text-base font-bold text-white">Study Time</h3>
+                <h3 class="text-base font-bold text-white">Temps d'étude</h3>
             </div>
             <div class="text-center">
                 <div class="text-2xl font-bold text-primary-rose mb-2">2h 34m</div>
-                <div class="text-sm text-gray-400">Today</div>
+                <div class="text-sm text-gray-400">Aujourd'hui</div>
             </div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center space-x-3 mb-4">
                 <i data-lucide="bar-chart" class="w-5 h-5 text-primary-blue"></i>
-                <h3 class="text-base font-bold text-white">Progress</h3>
+                <h3 class="text-base font-bold text-white">Progression</h3>
             </div>
             <div class="text-center">
                 <div class="text-2xl font-bold text-primary-blue mb-2">67%</div>
-                <div class="text-sm text-gray-400">Overall average</div>
+                <div class="text-sm text-gray-400">Moyenne générale</div>
             </div>
         </div>
     </div>
@@ -130,47 +160,12 @@
         const form = document.getElementById('course-form');
         const generateBtn = document.getElementById('generate-btn');
         const topicInput = document.getElementById('topic-input');
-        const moduleSelect = document.getElementById('module-select');
-        const sectionsInfo = document.getElementById('sections-info');
-        const sectionsList = document.getElementById('sections-list');
         
-        // Charger les sections quand le module change
-        moduleSelect.addEventListener('change', function() {
-            const moduleId = this.value;
-            
-            if (moduleId === 'general') {
-                sectionsInfo.classList.add('hidden');
-                return;
-            }
-            
-            // Charger les sections du module
-            fetch(`/courses/api/sections/${moduleId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sections && data.sections.length > 0) {
-                        const sectionsHtml = data.sections.map(section => 
-                            `<span class="inline-block bg-gray-700 text-gray-300 px-2 py-1 rounded text-xs mr-1 mb-1">${section.name} (${section.files_count})</span>`
-                        ).join('');
-                        
-                        sectionsList.innerHTML = `
-                            <div class="mb-1">Sections disponibles :</div>
-                            ${sectionsHtml}
-                        `;
-                        sectionsInfo.classList.remove('hidden');
-                    } else {
-                        sectionsInfo.classList.add('hidden');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors du chargement des sections:', error);
-                    sectionsInfo.classList.add('hidden');
-                });
+        // Auto-resize textarea
+        topicInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
-        
-        // Charger les sections du module par défaut
-        if (moduleSelect.value !== 'general') {
-            moduleSelect.dispatchEvent(new Event('change'));
-        }
         
         form.addEventListener('submit', function(e) {
             if (!topicInput.value.trim()) {
@@ -181,7 +176,7 @@
             // Show loading state
             generateBtn.innerHTML = `
                 <div class="flex items-center justify-center space-x-2">
-                    <i data-lucide="sparkles" class="w-5 h-5 animate-spin"></i>
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
                     <span>Génération en cours...</span>
                 </div>
             `;
