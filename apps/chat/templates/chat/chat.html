@@ -3,48 +3,71 @@
 {% block title %}Intelligent Search - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="flex flex-col h-full">
-    <div class="p-4 border-b border-gray-700 flex-shrink-0">
-        <div class="flex items-center space-x-3">
-            <i data-lucide="search" class="w-6 h-6 text-primary-blue"></i>
-            <h1 class="text-xl font-bold text-white">Intelligent Search</h1>
-        </div>
+<div class="p-6 h-full flex flex-col">
+    <!-- Header -->
+    <div class="flex items-center space-x-3 mb-6">
+        <i data-lucide="search" class="w-6 h-6 text-primary-blue"></i>
+        <h1 class="text-xl font-bold text-white">Intelligent Search</h1>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
-        <div class="flex items-start space-x-3">
-            <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
-                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
-            </div>
-            
-            <div class="max-w-xs lg:max-w-2xl px-4 py-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700">
-                <div class="prose prose-sm max-w-none">
-                    <p class="text-sm mb-2">Hello! I'm your AI assistant. Ask me questions about programming, technical concepts, or any other learning topic.</p>
+    <!-- Chat Window Container -->
+    <div class="flex-1 bg-gray-800 rounded-lg border border-gray-700 flex flex-col overflow-hidden">
+        <!-- Chat Header -->
+        <div class="p-4 border-b border-gray-700 bg-gray-750 rounded-t-lg">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center">
+                    <i data-lucide="bot" class="w-5 h-5 text-white"></i>
                 </div>
-                <p class="text-xs opacity-70 mt-2" id="initial-time"></p>
+                <div>
+                    <h3 class="text-sm font-medium text-white">AI Assistant</h3>
+                    <p class="text-xs text-gray-400">Online • Ready to help</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="p-4 border-t border-gray-700 flex-shrink-0">
-        <form id="chat-form" class="flex space-x-2">
-            {% csrf_token %}
-            <input
-                type="text"
-                id="message-input"
-                name="message"
-                placeholder="Ask your question..."
-                class="flex-1 px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors"
-                required
-            />
-            <button
-                type="submit"
-                id="send-button"
-                class="p-3 rounded-lg transition-all duration-200 bg-primary-blue text-white hover:bg-blue-600 hover:scale-105 active:scale-95"
-            >
-                <i data-lucide="send" class="w-5 h-5"></i>
-            </button>
-        </form>
+        <!-- Messages Container - Zone scrollable -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-850" id="chat-messages" style="max-height: calc(100vh - 300px);">
+            <!-- Message initial -->
+            <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                </div>
+                
+                <div class="max-w-md px-4 py-3 rounded-lg bg-gray-700 text-gray-100 border border-gray-600">
+                    <div class="prose prose-sm max-w-none text-gray-100">
+                        <p class="text-sm mb-2">Hello! I'm your AI assistant. Ask me questions about programming, technical concepts, or any other learning topic.</p>
+                    </div>
+                    <p class="text-xs opacity-70 mt-2" id="initial-time"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area - Fixe en bas -->
+        <div class="p-4 border-t border-gray-700 bg-gray-750 rounded-b-lg">
+            <form id="chat-form" class="flex space-x-3">
+                {% csrf_token %}
+                <div class="flex-1 relative">
+                    <input
+                        type="text"
+                        id="message-input"
+                        name="message"
+                        placeholder="Type your question here..."
+                        class="w-full px-4 py-3 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 transition-all pr-12"
+                        required
+                    />
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">
+                        Enter ↵
+                    </div>
+                </div>
+                <button
+                    type="submit"
+                    id="send-button"
+                    class="px-4 py-3 rounded-lg transition-all duration-200 bg-primary-blue text-white hover:bg-blue-600 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -60,16 +83,25 @@
         const sendButton = document.getElementById('send-button');
         const chatMessages = document.getElementById('chat-messages');
 
-        // Auto-scroll function
+        // Auto-scroll function - FORCE le scroll
         function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
         }
+
+        // Test initial du scroll
+        scrollToBottom();
 
         chatForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const message = messageInput.value.trim();
             if (!message) return;
+
+            // Désactiver le bouton pendant l'envoi
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
 
             // Add user message
             addMessage(message, true);
@@ -95,11 +127,17 @@
                 if (data.response) {
                     addMessage(data.response, false);
                 } else {
-                    addMessage('Désolé, une erreur est survenue.', false);
+                    addMessage('Sorry, an error occurred.', false);
                 }
             } catch (error) {
                 hideLoading();
-                addMessage('Erreur de connexion. Veuillez réessayer.', false);
+                addMessage('Connection error. Please try again.', false);
+            } finally {
+                // Réactiver le bouton
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i>';
+                lucide.createIcons();
+                messageInput.focus();
             }
         });
 
@@ -111,9 +149,9 @@
             
             if (isUser) {
                 messageDiv.innerHTML = `
-                    <div class="max-w-xs lg:max-w-2xl px-4 py-3 rounded-lg bg-primary-green text-white">
-                        <p class="text-sm">${escapeHtml(text)}</p>
-                        <p class="text-xs opacity-70 mt-1">${time}</p>
+                    <div class="max-w-md px-4 py-3 rounded-lg bg-primary-green text-white shadow-lg">
+                        <p class="text-sm whitespace-pre-wrap">${escapeHtml(text)}</p>
+                        <p class="text-xs opacity-80 mt-1">${time}</p>
                     </div>
                     <div class="w-8 h-8 rounded-full bg-primary-rose flex items-center justify-center flex-shrink-0">
                         <i data-lucide="user" class="w-5 h-5 text-white"></i>
@@ -124,7 +162,7 @@
                     <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                         <i data-lucide="bot" class="w-5 h-5 text-white"></i>
                     </div>
-                    <div class="max-w-xs lg:max-w-2xl px-4 py-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700">
+                    <div class="max-w-md px-4 py-3 rounded-lg bg-gray-700 text-gray-100 border border-gray-600 shadow-lg">
                         <div class="prose prose-sm max-w-none text-gray-100">
                             ${formatResponse(text)}
                         </div>
@@ -142,25 +180,29 @@
             // Convertir le markdown basique en HTML
             let formatted = text
                 // Gras
-                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary-green">$1</strong>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary-green font-semibold">$1</strong>')
                 // Code inline
-                .replace(/`([^`]+)`/g, '<code class="bg-gray-900 text-primary-blue px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+                .replace(/`([^`]+)`/g, '<code class="bg-gray-900 text-primary-blue px-2 py-1 rounded text-xs font-mono border border-gray-600">$1</code>')
+                // Blocs de code
+                .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-900 text-gray-100 p-3 rounded border border-gray-600 overflow-x-auto my-2"><code class="text-sm font-mono">$1</code></pre>')
                 // Listes à puces
-                .replace(/^[\*\-\+]\s+(.+)$/gm, '<li class="ml-4 mb-1">• $1</li>')
+                .replace(/^[\*\-\+]\s+(.+)$/gm, '<li class="ml-4 mb-1 flex items-start"><span class="text-primary-green mr-2">•</span><span>$1</span></li>')
+                // Listes numérotées
+                .replace(/^\d+\.\s+(.+)$/gm, '<li class="ml-4 mb-1 flex items-start"><span class="text-primary-blue mr-2 font-mono text-xs">→</span><span>$1</span></li>')
                 // Paragraphes
-                .replace(/\n\n/g, '</p><p class="mb-2">')
+                .replace(/\n\n/g, '</p><p class="mb-3">')
                 // Sauts de ligne simples
                 .replace(/\n/g, '<br>');
 
             // Envelopper dans des paragraphes si nécessaire
-            if (!formatted.includes('<p>') && !formatted.includes('<li>')) {
+            if (!formatted.includes('<p>') && !formatted.includes('<li>') && !formatted.includes('<pre>')) {
                 formatted = `<p class="mb-2">${formatted}</p>`;
             } else if (formatted.includes('<li>')) {
-                formatted = formatted.replace(/(<li.*?<\/li>)/g, '<ul class="list-none mb-2">$1</ul>');
+                formatted = formatted.replace(/(<li.*?<\/li>)/g, '<ul class="list-none mb-3">$1</ul>');
             }
 
             // Nettoyer les balises vides
-            formatted = formatted.replace(/<p class="mb-2"><\/p>/g, '');
+            formatted = formatted.replace(/<p class="mb-[23]"><\/p>/g, '');
             
             return formatted;
         }
@@ -179,11 +221,14 @@
                 <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                     <i data-lucide="bot" class="w-5 h-5 text-white"></i>
                 </div>
-                <div class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3">
-                    <div class="flex space-x-1">
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                <div class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 shadow-lg">
+                    <div class="flex items-center space-x-2">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                        </div>
+                        <span class="text-xs text-gray-400">AI is thinking...</span>
                     </div>
                 </div>
             `;
@@ -206,21 +251,39 @@
         messageInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                chatForm.dispatchEvent(new Event('submit'));
+                if (!sendButton.disabled) {
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
             }
         });
+
+        // Ajouter quelques messages de test pour vérifier le scroll
+        setTimeout(() => {
+            for (let i = 1; i <= 3; i++) {
+                addMessage(`Test message ${i} - This is a longer message to test the scrolling functionality and see how it behaves with multiple messages.`, i % 2 === 0);
+            }
+        }, 1000);
     });
 </script>
 
 <style>
+/* Styles pour le chat */
+.bg-gray-750 {
+    background-color: #3F3F46;
+}
+
+.bg-gray-850 {
+    background-color: #1F2937;
+}
+
 /* Styles pour le prose dans les messages */
 .prose {
     color: inherit;
+    line-height: 1.6;
 }
 
 .prose p {
-    margin-bottom: 0.5rem;
-    line-height: 1.6;
+    margin-bottom: 0.75rem;
 }
 
 .prose strong {
@@ -232,8 +295,13 @@
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
 }
 
+.prose pre {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
 .prose ul {
-    margin: 0.5rem 0;
+    margin: 0.75rem 0;
 }
 
 .prose li {
@@ -255,22 +323,53 @@
 }
 
 /* Scrollbar personnalisée pour la zone de chat */
+#chat-messages {
+    scrollbar-width: thin;
+    scrollbar-color: #6B7280 #374151;
+}
+
 #chat-messages::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 
 #chat-messages::-webkit-scrollbar-track {
     background: #374151;
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 #chat-messages::-webkit-scrollbar-thumb {
     background: #6B7280;
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 #chat-messages::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
+}
+
+/* Assurer que le conteneur de chat prend toute la hauteur disponible */
+.h-full {
+    height: calc(100vh - 120px);
+}
+
+/* Animation de focus sur l'input */
+#message-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Style pour les messages */
+.shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .max-w-md {
+        max-width: calc(100vw - 120px);
+    }
+    
+    #chat-messages {
+        max-height: calc(100vh - 250px);
+    }
 }
 </style>
 {% endblock %}
