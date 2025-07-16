@@ -27,15 +27,14 @@ def send_message(request):
         result = orchestrator.answer_question(message)
         
         if result['success']:
+            # Ne pas inclure les sources dans la réponse
             response = {
                 'response': result['answer'],
-                'sources': result['sources'],
                 'timestamp': '12:34:56'
             }
         else:
             response = {
                 'response': f"Désolé, je n'ai pas pu traiter votre question : {result.get('error', 'Erreur inconnue')}",
-                'sources': [],
                 'timestamp': '12:34:56'
             }
         

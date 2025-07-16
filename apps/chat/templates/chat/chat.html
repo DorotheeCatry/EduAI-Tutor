@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="flex flex-col h-full">
-    <div class="p-4 border-b border-gray-700">
+    <div class="p-4 border-b border-gray-700 flex-shrink-0">
         <div class="flex items-center space-x-3">
             <i data-lucide="search" class="w-6 h-6 text-primary-blue"></i>
             <h1 class="text-xl font-bold text-white">Intelligent Search</h1>
@@ -13,18 +13,20 @@
 
     <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
         <div class="flex items-start space-x-3">
-            <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center">
+            <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                 <i data-lucide="bot" class="w-5 h-5 text-white"></i>
             </div>
             
-            <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700">
-                <p class="text-xs">Hello! I'm your AI assistant. Ask me questions about programming, technical concepts, or any other learning topic.</p>
-                <p class="text-xs opacity-70 mt-1" id="initial-time"></p>
+            <div class="max-w-xs lg:max-w-2xl px-4 py-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700">
+                <div class="prose prose-sm max-w-none">
+                    <p class="text-sm mb-2">Hello! I'm your AI assistant. Ask me questions about programming, technical concepts, or any other learning topic.</p>
+                </div>
+                <p class="text-xs opacity-70 mt-2" id="initial-time"></p>
             </div>
         </div>
     </div>
 
-    <div class="p-4 border-t border-gray-700">
+    <div class="p-4 border-t border-gray-700 flex-shrink-0">
         <form id="chat-form" class="flex space-x-2">
             {% csrf_token %}
             <input
@@ -58,6 +60,11 @@
         const sendButton = document.getElementById('send-button');
         const chatMessages = document.getElementById('chat-messages');
 
+        // Auto-scroll function
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
         chatForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -87,12 +94,6 @@
                 
                 if (data.response) {
                     addMessage(data.response, false);
-                    
-                    // Afficher les sources si disponibles
-                    if (data.sources && data.sources.length > 0) {
-                        const sourcesText = `Sources: ${data.sources.join(', ')}`;
-                        addMessage(sourcesText, false, true);
-                    }
                 } else {
                     addMessage('Désolé, une erreur est survenue.', false);
                 }
@@ -102,39 +103,72 @@
             }
         });
 
-        function addMessage(text, isUser, isSource = false) {
+        function addMessage(text, isUser) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `flex items-start space-x-3 ${isUser ? 'justify-end' : 'justify-start'}`;
             
             const time = new Date().toLocaleTimeString();
-            const messageClass = isSource ? 'text-xs text-gray-500 italic' : 'text-xs';
             
-            messageDiv.innerHTML = `
-                ${!isUser ? `
-                    <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center">
-                        <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+            if (isUser) {
+                messageDiv.innerHTML = `
+                    <div class="max-w-xs lg:max-w-2xl px-4 py-3 rounded-lg bg-primary-green text-white">
+                        <p class="text-sm">${escapeHtml(text)}</p>
+                        <p class="text-xs opacity-70 mt-1">${time}</p>
                     </div>
-                ` : ''}
-                
-                <div class="max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                    isUser ? 'bg-primary-green text-white' : 
-                    isSource ? 'bg-gray-900 text-gray-400 border border-gray-600' :
-                    'bg-gray-800 text-gray-100 border border-gray-700'
-                }">
-                    <p class="${messageClass}">${text}</p>
-                    <p class="text-xs opacity-70 mt-1">${time}</p>
-                </div>
-
-                ${isUser ? `
-                    <div class="w-8 h-8 rounded-full bg-primary-rose flex items-center justify-center">
+                    <div class="w-8 h-8 rounded-full bg-primary-rose flex items-center justify-center flex-shrink-0">
                         <i data-lucide="user" class="w-5 h-5 text-white"></i>
                     </div>
-                ` : ''}
-            `;
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div class="max-w-xs lg:max-w-2xl px-4 py-3 rounded-lg bg-gray-800 text-gray-100 border border-gray-700">
+                        <div class="prose prose-sm max-w-none text-gray-100">
+                            ${formatResponse(text)}
+                        </div>
+                        <p class="text-xs opacity-70 mt-2">${time}</p>
+                    </div>
+                `;
+            }
             
             chatMessages.appendChild(messageDiv);
             lucide.createIcons();
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            scrollToBottom();
+        }
+
+        function formatResponse(text) {
+            // Convertir le markdown basique en HTML
+            let formatted = text
+                // Gras
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary-green">$1</strong>')
+                // Code inline
+                .replace(/`([^`]+)`/g, '<code class="bg-gray-900 text-primary-blue px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+                // Listes à puces
+                .replace(/^[\*\-\+]\s+(.+)$/gm, '<li class="ml-4 mb-1">• $1</li>')
+                // Paragraphes
+                .replace(/\n\n/g, '</p><p class="mb-2">')
+                // Sauts de ligne simples
+                .replace(/\n/g, '<br>');
+
+            // Envelopper dans des paragraphes si nécessaire
+            if (!formatted.includes('<p>') && !formatted.includes('<li>')) {
+                formatted = `<p class="mb-2">${formatted}</p>`;
+            } else if (formatted.includes('<li>')) {
+                formatted = formatted.replace(/(<li.*?<\/li>)/g, '<ul class="list-none mb-2">$1</ul>');
+            }
+
+            // Nettoyer les balises vides
+            formatted = formatted.replace(/<p class="mb-2"><\/p>/g, '');
+            
+            return formatted;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function showLoading() {
@@ -142,20 +176,20 @@
             loadingDiv.id = 'loading-message';
             loadingDiv.className = 'flex items-start space-x-3';
             loadingDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center">
+                <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                     <i data-lucide="bot" class="w-5 h-5 text-white"></i>
                 </div>
                 <div class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3">
                     <div class="flex space-x-1">
                         <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce animate-bounce-delay-1"></div>
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce animate-bounce-delay-2"></div>
+                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
                     </div>
                 </div>
             `;
             chatMessages.appendChild(loadingDiv);
             lucide.createIcons();
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            scrollToBottom();
         }
 
         function hideLoading() {
@@ -164,6 +198,79 @@
                 loadingMessage.remove();
             }
         }
+
+        // Focus sur l'input au chargement
+        messageInput.focus();
+
+        // Raccourci clavier Enter pour envoyer
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
     });
 </script>
+
+<style>
+/* Styles pour le prose dans les messages */
+.prose {
+    color: inherit;
+}
+
+.prose p {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.prose strong {
+    font-weight: 600;
+}
+
+.prose code {
+    font-size: 0.875rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+}
+
+.prose ul {
+    margin: 0.5rem 0;
+}
+
+.prose li {
+    line-height: 1.5;
+}
+
+/* Animation pour les points de chargement */
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+/* Scrollbar personnalisée pour la zone de chat */
+#chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 3px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+    background: #6B7280;
+    border-radius: 3px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+}
+</style>
 {% endblock %}
