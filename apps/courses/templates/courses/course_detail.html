@@ -93,19 +93,14 @@
             
             let html = content.innerHTML;
             
-            // Headers avec design amélioré
-            html = html.replace(/^# (.*$)/gm, '<h1 class="course-main-header">$1</h1>');
-            html = html.replace(/^## (.*$)/gm, '<h2 class="course-section-header">$1</h2>');
-            html = html.replace(/^### (.*$)/gm, '<h3 class="course-subsection-header">$1</h3>');
-            html = html.replace(/^#### (.*$)/gm, '<h4 class="course-subheader">$1</h4>');
+            // Headers avec emojis et couleurs
+            html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0 flex items-center">$1</h1>');
+            html = html.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-primary-green mb-4 mt-6 flex items-center">$1</h2>');
+            html = html.replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
             
-            // Formatage spécial pour les exercices avec design amélioré
-            html = html.replace(/\*\*Énoncé\s*:\*\*/g, '<div class="exercise-statement-header"><div class="exercise-icon-statement"></div><span>Énoncé</span></div><div class="exercise-content">');
-            html = html.replace(/\*\*Solution\s*:\*\*/g, '</div><div class="exercise-solution-header"><div class="exercise-icon-solution"></div><span>Solution</span></div><div class="exercise-content">');
-            
-            // Ajouter des espaces dans les titres d'exemples et exercices
-            html = html.replace(/Exemple(\d+)/g, 'Exemple $1');
-            html = html.replace(/Exercice(\d+)/g, 'Exercice $1');
+            // Formatage spécial pour "Énoncé :" et "Solution :"
+            html = html.replace(/\*\*Énoncé\s*:\*\*/g, '<div class="exercise-label exercise-statement"><i data-lucide="file-text" class="w-4 h-4"></i><span>Énoncé</span></div>');
+            html = html.replace(/\*\*Solution\s*:\*\*/g, '<div class="exercise-label exercise-solution"><i data-lucide="check-circle" class="w-4 h-4"></i><span>Solution</span></div>');
             
             // Blocs de code avec header repositionné
             html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, lang, code) {
@@ -137,9 +132,6 @@
             html = html.replace(/(<li class="list-item">.*?<\/li>)/gs, function(match) {
                 return '<ul class="list-container mb-4">' + match + '</ul>';
             });
-            
-            // Fermer les divs d'exercices ouvertes
-            html = html.replace(/<\/div>$/, '</div></div>');
             
             // Paragraphes
             html = html.replace(/\n\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">');
