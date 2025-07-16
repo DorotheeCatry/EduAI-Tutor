@@ -10,72 +10,61 @@
         <h1 class="text-xl font-bold text-white">Intelligent Search</h1>
     </div>
 
-    <!-- Chat Container - Fenêtre moderne -->
+    <!-- Chat Container -->
     <div class="flex-1 p-6">
-        <div class="h-full max-w-5xl mx-auto bg-gray-800 rounded-2xl border border-gray-700 shadow-2xl flex flex-col overflow-hidden">
+        <div class="h-full max-w-4xl mx-auto bg-gray-800 rounded-lg border border-gray-700 flex flex-col">
             
             <!-- Chat Header -->
-            <div class="px-6 py-4 bg-gradient-to-r from-gray-750 to-gray-700 border-b border-gray-600">
+            <div class="px-6 py-4 bg-gray-750 border-b border-gray-600 rounded-t-lg">
                 <div class="flex items-center space-x-3">
-                    <div class="relative">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-blue to-blue-600 flex items-center justify-center shadow-lg">
-                            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800"></div>
+                    <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center">
+                        <i data-lucide="bot" class="w-4 h-4 text-white"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-semibold text-white">AI Assistant</h3>
-                        <p class="text-sm text-green-400 flex items-center">
-                            <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-                            Online • Ready to help
-                        </p>
+                        <h3 class="text-sm font-semibold text-white">AI Assistant</h3>
+                        <p class="text-xs text-green-400">Online • Ready to help</p>
                     </div>
                 </div>
             </div>
 
             <!-- Messages Container -->
-            <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-850" id="chat-messages" style="min-height: 0;">
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages" style="min-height: 400px; max-height: calc(100vh - 300px);">
                 <!-- Message initial -->
-                <div class="flex items-start space-x-4 animate-fade-in">
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary-blue to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                         <i data-lucide="bot" class="w-4 h-4 text-white"></i>
                     </div>
-                    
-                    <div class="flex-1 max-w-3xl">
-                        <div class="bg-gray-700 rounded-2xl rounded-tl-md px-5 py-4 shadow-lg border border-gray-600">
-                            <div class="text-gray-100 text-base leading-relaxed">
-                                <p class="mb-0">Hello! I'm your AI assistant. Ask me questions about programming, technical concepts, or any other learning topic.</p>
-                            </div>
+                    <div class="flex-1">
+                        <div class="bg-gray-700 rounded-lg px-4 py-3 max-w-2xl">
+                            <p class="text-white text-sm leading-relaxed">Hello! I'm your AI assistant. Ask me questions about programming, technical concepts, or any other learning topic.</p>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2 ml-1" id="initial-time"></p>
+                        <p class="text-xs text-gray-500 mt-1" id="initial-time"></p>
                     </div>
                 </div>
             </div>
 
             <!-- Input Area -->
-            <div class="p-6 bg-gray-750 border-t border-gray-600">
-                <form id="chat-form" class="flex items-end space-x-4">
+            <div class="p-4 bg-gray-750 border-t border-gray-600 rounded-b-lg">
+                <form id="chat-form" class="flex items-end space-x-3">
                     {% csrf_token %}
-                    <div class="flex-1 relative">
+                    <div class="flex-1">
                         <textarea
                             id="message-input"
                             name="message"
                             placeholder="Type your question here..."
                             rows="1"
-                            class="w-full px-5 py-4 text-base bg-gray-900 border border-gray-600 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue focus:ring-opacity-50 transition-all resize-none overflow-hidden"
-                            style="min-height: 56px; max-height: 120px;"
+                            class="w-full px-4 py-3 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue transition-colors resize-none"
+                            style="min-height: 44px; max-height: 120px;"
                             required
                         ></textarea>
-                        <div class="absolute right-4 bottom-4 text-xs text-gray-500 pointer-events-none">
-                            Press Enter to send
-                        </div>
                     </div>
                     <button
                         type="submit"
                         id="send-button"
-                        class="w-12 h-12 rounded-full transition-all duration-200 bg-gradient-to-br from-primary-blue to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
+                        class="px-4 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        style="min-width: 44px; height: 44px;"
                     >
-                        <i data-lucide="send" class="w-5 h-5"></i>
+                        <i data-lucide="send" class="w-4 h-4"></i>
                     </button>
                 </form>
             </div>
@@ -119,7 +108,7 @@
 
             // Disable button during send
             sendButton.disabled = true;
-            sendButton.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
+            sendButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
 
             // Add user message
             addMessage(message, true);
@@ -154,7 +143,7 @@
             } finally {
                 // Re-enable button
                 sendButton.disabled = false;
-                sendButton.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i>';
+                sendButton.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i>';
                 lucide.createIcons();
                 messageInput.focus();
             }
@@ -162,34 +151,34 @@
 
         function addMessage(text, isUser) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `flex items-start space-x-4 animate-fade-in ${isUser ? 'justify-end' : 'justify-start'}`;
+            messageDiv.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
             
             const time = new Date().toLocaleTimeString();
             
             if (isUser) {
                 messageDiv.innerHTML = `
-                    <div class="flex-1 max-w-3xl flex flex-col items-end">
-                        <div class="bg-gradient-to-br from-primary-green to-green-600 rounded-2xl rounded-tr-md px-5 py-4 shadow-lg">
-                            <p class="text-white text-base leading-relaxed whitespace-pre-wrap mb-0">${escapeHtml(text)}</p>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2 mr-1">${time}</p>
-                    </div>
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary-rose to-pink-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <div class="w-8 h-8 rounded-full bg-primary-green flex items-center justify-center flex-shrink-0">
                         <i data-lucide="user" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="flex-1 flex flex-col items-end">
+                        <div class="bg-primary-green rounded-lg px-4 py-3 max-w-2xl">
+                            <p class="text-white text-sm leading-relaxed">${escapeHtml(text)}</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">${time}</p>
                     </div>
                 `;
             } else {
                 messageDiv.innerHTML = `
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary-blue to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                         <i data-lucide="bot" class="w-4 h-4 text-white"></i>
                     </div>
-                    <div class="flex-1 max-w-3xl">
-                        <div class="bg-gray-700 rounded-2xl rounded-tl-md px-5 py-4 shadow-lg border border-gray-600">
-                            <div class="text-gray-100 text-base leading-relaxed">
+                    <div class="flex-1">
+                        <div class="bg-gray-700 rounded-lg px-4 py-3 max-w-2xl">
+                            <div class="text-white text-sm leading-relaxed">
                                 ${formatResponse(text)}
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2 ml-1">${time}</p>
+                        <p class="text-xs text-gray-500 mt-1">${time}</p>
                     </div>
                 `;
             }
@@ -200,33 +189,17 @@
         }
 
         function formatResponse(text) {
-            // Convert basic markdown to HTML with consistent styling
+            // Simple formatting for better readability
             let formatted = text
                 // Bold text
                 .replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary-green font-semibold">$1</strong>')
                 // Inline code
-                .replace(/`([^`]+)`/g, '<code class="bg-gray-900 text-primary-blue px-2 py-1 rounded text-sm font-mono border border-gray-600">$1</code>')
+                .replace(/`([^`]+)`/g, '<code class="bg-gray-900 text-primary-blue px-2 py-1 rounded text-xs font-mono">$1</code>')
                 // Code blocks
-                .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-900 text-gray-100 p-4 rounded-lg border border-gray-600 overflow-x-auto my-3 text-sm"><code class="font-mono">$1</code></pre>')
-                // Bullet points
-                .replace(/^[\*\-\+]\s+(.+)$/gm, '<li class="ml-4 mb-2 flex items-start text-base"><span class="text-primary-green mr-2 mt-1">•</span><span>$1</span></li>')
-                // Numbered lists
-                .replace(/^\d+\.\s+(.+)$/gm, '<li class="ml-4 mb-2 flex items-start text-base"><span class="text-primary-blue mr-2 font-mono text-sm mt-1">→</span><span>$1</span></li>')
-                // Paragraphs
-                .replace(/\n\n/g, '</p><p class="mb-3 text-base">')
+                .replace(/```([\s\S]*?)```/g, '<pre class="bg-gray-900 text-gray-100 p-3 rounded mt-2 mb-2 text-xs overflow-x-auto"><code class="font-mono">$1</code></pre>')
                 // Line breaks
                 .replace(/\n/g, '<br>');
 
-            // Wrap in paragraphs if needed
-            if (!formatted.includes('<p>') && !formatted.includes('<li>') && !formatted.includes('<pre>')) {
-                formatted = `<p class="mb-0 text-base">${formatted}</p>`;
-            } else if (formatted.includes('<li>')) {
-                formatted = formatted.replace(/(<li.*?<\/li>)/g, '<ul class="list-none mb-4">$1</ul>');
-            }
-
-            // Clean empty paragraphs
-            formatted = formatted.replace(/<p class="mb-[034] text-base"><\/p>/g, '');
-            
             return formatted;
         }
 
@@ -239,20 +212,20 @@
         function showLoading() {
             const loadingDiv = document.createElement('div');
             loadingDiv.id = 'loading-message';
-            loadingDiv.className = 'flex items-start space-x-4 animate-fade-in';
+            loadingDiv.className = 'flex items-start space-x-3';
             loadingDiv.innerHTML = `
-                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary-blue to-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                     <i data-lucide="bot" class="w-4 h-4 text-white"></i>
                 </div>
-                <div class="flex-1 max-w-3xl">
-                    <div class="bg-gray-700 rounded-2xl rounded-tl-md px-5 py-4 shadow-lg border border-gray-600">
-                        <div class="flex items-center space-x-3">
+                <div class="flex-1">
+                    <div class="bg-gray-700 rounded-lg px-4 py-3 max-w-2xl">
+                        <div class="flex items-center space-x-2">
                             <div class="flex space-x-1">
                                 <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce"></div>
                                 <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
                                 <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
                             </div>
-                            <span class="text-sm text-gray-400">AI is thinking...</span>
+                            <span class="text-xs text-gray-400">AI is thinking...</span>
                         </div>
                     </div>
                 </div>
@@ -281,44 +254,10 @@
                 }
             }
         });
-
-        // Remove test messages - they were causing issues
-        // The chat will start clean with just the welcome message
     });
 </script>
 
 <style>
-/* Modern chat styling */
-.bg-gray-750 {
-    background-color: #3F3F46;
-}
-
-.bg-gray-850 {
-    background-color: #1F2937;
-}
-
-/* Smooth animations */
-@keyframes fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-}
-
-/* Consistent text styling */
-.text-base {
-    font-size: 1rem !important;
-    line-height: 1.6 !important;
-}
-
 /* Scrollbar styling */
 #chat-messages {
     scrollbar-width: thin;
@@ -342,22 +281,13 @@
     background: #9CA3AF;
 }
 
-/* Message bubble improvements */
-.shadow-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+/* Consistent text sizing */
+.text-sm {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
 }
 
-/* Input focus styling */
-#message-input:focus {
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Button hover effects */
-#send-button:hover {
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-}
-
-/* Code block styling */
+/* Code styling */
 pre {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace !important;
 }
@@ -366,23 +296,7 @@ code {
     font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace !important;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .max-w-3xl {
-        max-width: calc(100vw - 120px);
-    }
-    
-    .p-6 {
-        padding: 1rem;
-    }
-    
-    .px-5 {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-}
-
-/* Loading animation */
+/* Animation for loading */
 @keyframes bounce {
     0%, 80%, 100% {
         transform: scale(0);
@@ -396,14 +310,11 @@ code {
     animation: bounce 1.4s infinite ease-in-out both;
 }
 
-/* Ensure consistent line height */
-p, div, span {
-    line-height: 1.6;
-}
-
-/* Message spacing */
-.space-y-6 > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 1.5rem;
+/* Responsive design */
+@media (max-width: 768px) {
+    .max-w-2xl {
+        max-width: calc(100vw - 120px);
+    }
 }
 </style>
 {% endblock %}
