@@ -4,75 +4,71 @@
 {% block title %}{{ generated_course.title|default:"Cours généré" }} - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="h-full flex flex-col overflow-hidden">
+<div class="p-6 space-y-6 h-full overflow-auto">
     <!-- Header du cours -->
-    <div class="flex-shrink-0 p-6 pb-4">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 bg-primary-green rounded-lg flex items-center justify-center">
-                    <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-white">
-                        {% if generated_course %}
-                            {{ generated_course.title }}
-                        {% else %}
-                            {{ course.title }}
-                        {% endif %}
-                    </h1>
-                    {% if generated_course and generated_course.module_name and generated_course.module != 'general' %}
-                        <p class="text-sm text-gray-400">{{ generated_course.module_name }}</p>
-                    {% endif %}
-                </div>
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-primary-green rounded-lg flex items-center justify-center">
+                <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
             </div>
-            
-            <!-- Actions rapides -->
-            <div class="flex items-center space-x-3">
-                {% if generated_course %}
-                    <form method="post" action="{% url 'courses:save' %}" class="inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="title" value="{{ generated_course.title }}">
-                        <input type="hidden" name="topic" value="{{ generated_course.topic }}">
-                        <input type="hidden" name="module" value="{{ generated_course.module }}">
-                        <input type="hidden" name="content" value="{{ generated_course.content }}">
-                        
-                        <button type="submit" class="px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
-                            <i data-lucide="save" class="w-4 h-4"></i>
-                            <span>Sauvegarder</span>
-                        </button>
-                    </form>
-                    
-                    <a href="{% url 'quiz:start' %}?topic={{ generated_course.topic }}" class="px-4 py-2 bg-primary-rose text-white rounded-lg hover:bg-pink-600 transition-colors flex items-center space-x-2">
-                        <i data-lucide="brain" class="w-4 h-4"></i>
-                        <span>Quiz</span>
-                    </a>
+            <div>
+                <h1 class="text-2xl font-bold text-white">
+                    {% if generated_course %}
+                        {{ generated_course.title }}
+                    {% else %}
+                        {{ course.title }}
+                    {% endif %}
+                </h1>
+                {% if generated_course and generated_course.module_name and generated_course.module != 'general' %}
+                    <p class="text-sm text-gray-400">{{ generated_course.module_name }}</p>
                 {% endif %}
-                
-                <a href="{% url 'courses:generator' %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span>Retour</span>
-                </a>
             </div>
         </div>
-
-        {% if error %}
-            <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4 mt-4">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                    <span class="text-red-400 font-medium">Erreur</span>
-                </div>
-                <p class="text-red-300 mt-2">{{ error }}</p>
-            </div>
-        {% endif %}
+        
+        <!-- Actions rapides -->
+        <div class="flex items-center space-x-3">
+            {% if generated_course %}
+                <form method="post" action="{% url 'courses:save' %}" class="inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="title" value="{{ generated_course.title }}">
+                    <input type="hidden" name="topic" value="{{ generated_course.topic }}">
+                    <input type="hidden" name="module" value="{{ generated_course.module }}">
+                    <input type="hidden" name="content" value="{{ generated_course.content }}">
+                    
+                    <button type="submit" class="px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>Sauvegarder</span>
+                    </button>
+                </form>
+                
+                <a href="{% url 'quiz:start' %}?topic={{ generated_course.topic }}" class="px-4 py-2 bg-primary-rose text-white rounded-lg hover:bg-pink-600 transition-colors flex items-center space-x-2">
+                    <i data-lucide="brain" class="w-4 h-4"></i>
+                    <span>Quiz</span>
+                </a>
+            {% endif %}
+            
+            <a href="{% url 'courses:generator' %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Retour</span>
+            </a>
+        </div>
     </div>
 
-    <!-- Contenu du cours avec scroll -->
+    {% if error %}
+        <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
+                <span class="text-red-400 font-medium">Erreur</span>
+            </div>
+            <p class="text-red-300 mt-2">{{ error }}</p>
+        </div>
+    {% endif %}
+
+    <!-- Contenu du cours -->
     {% if generated_course %}
-        <div class="flex-1 overflow-y-auto px-6 pb-6">
-            <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
-                <div class="course-content text-sm leading-relaxed" id="course-content">
-                    {{ generated_course.content|safe }}
-                </div>
+        <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+            <div class="course-content text-sm leading-relaxed" id="course-content">
+                {{ generated_course.content|safe }}
             </div>
         </div>
     {% endif %}
@@ -90,18 +86,18 @@
             let html = content.innerHTML;
             
             // Headers avec couleurs exactes du chat
-            html = html.replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold text-white mb-4 mt-6 first:mt-0">$1</h1>');
-            html = html.replace(/^## (.*$)/gm, '<h2 class="text-xl font-bold text-primary-green mb-3 mt-5">$1</h2>');
-            html = html.replace(/^### (.*$)/gm, '<h3 class="text-lg font-bold text-primary-blue mb-3 mt-4">$1</h3>');
+            html = html.replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold text-white mb-3 mt-4 first:mt-0">$1</h1>');
+            html = html.replace(/^## (.*$)/gm, '<h2 class="text-lg font-bold text-primary-green mb-2 mt-3">$1</h2>');
+            html = html.replace(/^### (.*$)/gm, '<h3 class="text-base font-bold text-primary-blue mb-2 mt-3">$1</h3>');
             
             // Blocs de code avec header EXACTEMENT comme le chat
             html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, lang, code) {
                 const language = lang || 'code';
-                return `<div class="code-block-container my-4">
+                return `<div class="code-block-container my-3">
                     <div class="code-header">
                         <span class="code-language">${language}</span>
                         <button class="copy-btn" onclick="copyCode(this)">
-                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <i data-lucide="copy" class="w-3 h-3"></i>
                             <span>Copy</span>
                         </button>
                     </div>
@@ -121,12 +117,12 @@
             
             // Grouper les listes
             html = html.replace(/(<li class="list-item">.*?<\/li>)/gs, function(match) {
-                return '<ul class="list-container mb-4">' + match + '</ul>';
+                return '<ul class="list-container mb-3">' + match + '</ul>';
             });
             
-            // Paragraphes
-            html = html.replace(/\n\n/g, '</p><p class="mb-3 text-gray-300 leading-relaxed">');
-            html = '<p class="mb-3 text-gray-300 leading-relaxed">' + html + '</p>';
+            // Paragraphes avec espacement réduit
+            html = html.replace(/\n\n/g, '</p><p class="mb-2 text-gray-300 leading-relaxed">');
+            html = '<p class="mb-2 text-gray-300 leading-relaxed">' + html + '</p>';
             
             content.innerHTML = html;
             lucide.createIcons();
@@ -198,7 +194,7 @@
     border: 1px solid #30363D;
     border-radius: 0.5rem;
     overflow: hidden;
-    margin: 1rem 0;
+    margin: 0.75rem 0;
 }
 
 .code-header {
@@ -264,7 +260,7 @@
 
 .list-item {
     position: relative;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     color: #E5E7EB;
     line-height: 1.6;
 }
@@ -275,29 +271,6 @@
     font-weight: bold;
     position: absolute;
     left: -1rem;
-}
-
-/* Scrollbar pour la zone de contenu */
-.overflow-y-auto {
-    scrollbar-width: thin;
-    scrollbar-color: #4B5563 #1F2937;
-}
-
-.overflow-y-auto::-webkit-scrollbar {
-    width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-    background: #1F2937;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-    background: #4B5563;
-    border-radius: 3px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-    background: #6B7280;
 }
 
 /* Responsive design */
