@@ -100,8 +100,8 @@
 
     <!-- Contenu du cours avec scroll fixe -->
     {% if generated_course %}
-        <div class="flex-1 overflow-hidden">
-            <div class="h-full overflow-y-auto px-6 pb-6" id="course-content-container">
+        <div class="flex-1 min-h-0">
+            <div class="h-full overflow-y-auto px-6 pb-6 max-h-full" id="course-content-container">
                 <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden mt-6">
                     <div class="p-6">
                         <div class="prose prose-invert max-w-none" id="course-content">
@@ -454,6 +454,7 @@
 #course-content-container {
     scrollbar-width: thin;
     scrollbar-color: #4B5563 #1F2937;
+    max-height: calc(100vh - 300px); /* Hauteur maximale pour forcer le scroll */
 }
 
 #course-content-container::-webkit-scrollbar {

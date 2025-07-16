@@ -5,7 +5,7 @@ html, body {
     background-color: #111827 !important; /* gray-900 */
     color: white !important;
     min-height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden; /* Empêche seulement le scroll horizontal */
 }
 
 /* Variables CSS personnalisées */
@@ -31,11 +31,12 @@ html, body {
 
 /* Transitions fluides pour les changements de page */
 .tab-content {
-    min-height: calc(100vh - 120px);
+    height: calc(100vh - 120px); /* Hauteur fixe au lieu de min-height */
     position: relative;
     will-change: transform;
     backface-visibility: hidden;
     transform: translateZ(0);
+    overflow-y: auto; /* Permet le scroll vertical */
 }
 
 /* Stabiliser le layout pour éviter les repaints */
@@ -45,12 +46,14 @@ main.tab-content {
     -webkit-transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     -webkit-perspective: 1000;
+    overflow-y: auto; /* Assure le scroll sur le main */
 }
 
 /* Optimisation GPU pour les transitions */
 .flex-1 {
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+    overflow-y: auto; /* Permet le scroll sur les conteneurs flex */
 }
 
 /* Éviter les reflows lors des changements de contenu */
