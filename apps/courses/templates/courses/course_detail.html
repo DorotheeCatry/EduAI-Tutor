@@ -64,6 +64,36 @@
         </div>
     {% endif %}
 
+    <!-- Options de personnalisation après génération -->
+    {% if generated_course %}
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i data-lucide="settings" class="w-5 h-5 text-primary-blue"></i>
+                    <span class="text-white font-medium">Personnaliser ce cours</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="customizeCourse('complexity')" class="px-3 py-1 bg-primary-green text-white rounded text-sm hover:bg-green-600 transition-colors">
+                        <i data-lucide="trending-up" class="w-4 h-4 inline mr-1"></i>
+                        Plus complexe
+                    </button>
+                    <button onclick="customizeCourse('examples')" class="px-3 py-1 bg-primary-blue text-white rounded text-sm hover:bg-blue-600 transition-colors">
+                        <i data-lucide="code" class="w-4 h-4 inline mr-1"></i>
+                        Plus d'exemples
+                    </button>
+                    <button onclick="customizeCourse('exercises')" class="px-3 py-1 bg-primary-rose text-white rounded text-sm hover:bg-pink-600 transition-colors">
+                        <i data-lucide="dumbbell" class="w-4 h-4 inline mr-1"></i>
+                        Plus d'exercices
+                    </button>
+                    <button onclick="customizeCourse('simplify')" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-500 transition-colors">
+                        <i data-lucide="trending-down" class="w-4 h-4 inline mr-1"></i>
+                        Simplifier
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     <!-- Contenu du cours -->
     {% if generated_course %}
         <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
@@ -76,23 +106,49 @@
     {% endif %}
 </div>
 
+<!-- Modal de personnalisation -->
+<div id="customization-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-white" id="modal-title">Personnaliser le cours</h3>
+            <button onclick="closeCustomizationModal()" class="text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="mb-4">
+            <p class="text-gray-300 text-sm" id="modal-description">Décrivez comment vous souhaitez adapter ce cours...</p>
+            <textarea id="customization-input" rows="3" placeholder="Ex: Ajouter plus d'exemples pratiques avec des cas d'usage réels..." 
+                      class="w-full mt-2 px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors resize-none"></textarea>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeCustomizationModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors">
+                Annuler
+            </button>
+            <button onclick="applyCustomization()" class="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                <i data-lucide="wand-2" class="w-4 h-4 inline mr-1"></i>
+                Appliquer
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
         
-        // Fonction pour formater le contenu markdown
+        // Fonction pour formater le contenu markdown (même que le chat)
         function formatMarkdownContent() {
             const content = document.getElementById('course-content');
             if (!content) return;
             
             let html = content.innerHTML;
             
-            // Headers avec emojis
-            html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0">$1</h1>');
+            // Headers avec emojis et couleurs
+            html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0 flex items-center">$1</h1>');
             html = html.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-primary-green mb-4 mt-6 flex items-center">$1</h2>');
             html = html.replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
             
-            // Blocs de code avec header
+            // Blocs de code avec header repositionné
             html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, lang, code) {
                 const language = lang || 'code';
                 return `<div class="code-block-container my-4">
@@ -168,10 +224,82 @@
         // Appliquer le formatage
         formatMarkdownContent();
     });
+
+    let currentCustomizationType = '';
+
+    function customizeCourse(type) {
+        currentCustomizationType = type;
+        const modal = document.getElementById('customization-modal');
+        const title = document.getElementById('modal-title');
+        const description = document.getElementById('modal-description');
+        const input = document.getElementById('customization-input');
+        
+        const customizations = {
+            'complexity': {
+                title: 'Rendre plus complexe',
+                description: 'Comment souhaitez-vous augmenter la complexité de ce cours ?',
+                placeholder: 'Ex: Ajouter des concepts avancés, des détails techniques approfondis...'
+            },
+            'examples': {
+                title: 'Ajouter des exemples',
+                description: 'Quels types d\'exemples souhaitez-vous ajouter ?',
+                placeholder: 'Ex: Plus d\'exemples pratiques, cas d\'usage réels, projets concrets...'
+            },
+            'exercises': {
+                title: 'Ajouter des exercices',
+                description: 'Quels exercices souhaitez-vous ajouter ?',
+                placeholder: 'Ex: Exercices pratiques, défis de codage, projets à réaliser...'
+            },
+            'simplify': {
+                title: 'Simplifier le cours',
+                description: 'Comment souhaitez-vous simplifier ce cours ?',
+                placeholder: 'Ex: Expliquer plus simplement, réduire la complexité, ajouter plus d\'explications...'
+            }
+        };
+        
+        const config = customizations[type];
+        title.textContent = config.title;
+        description.textContent = config.description;
+        input.placeholder = config.placeholder;
+        input.value = '';
+        
+        modal.classList.remove('hidden');
+        input.focus();
+    }
+
+    function closeCustomizationModal() {
+        document.getElementById('customization-modal').classList.add('hidden');
+    }
+
+    function applyCustomization() {
+        const input = document.getElementById('customization-input');
+        const customization = input.value.trim();
+        
+        if (!customization) {
+            alert('Veuillez décrire la personnalisation souhaitée');
+            return;
+        }
+        
+        // Ici on enverrait la demande de personnalisation au backend
+        console.log('Personnalisation:', currentCustomizationType, customization);
+        
+        // Pour l'instant, on ferme juste le modal
+        closeCustomizationModal();
+        
+        // TODO: Implémenter l'appel AJAX pour personnaliser le cours
+        alert('Fonctionnalité de personnalisation en cours de développement...');
+    }
+
+    // Fermer le modal en cliquant à l'extérieur
+    document.getElementById('customization-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeCustomizationModal();
+        }
+    });
 </script>
 
 <style>
-/* Styles pour le formatage du contenu */
+/* Styles pour le formatage du contenu (même que le chat) */
 .keyword-highlight {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: #FFFFFF;

@@ -14,9 +14,6 @@ def course_generator(request):
     if request.method == 'POST':
         topic = request.POST.get('topic')
         module = request.POST.get('module', '')
-        difficulty = request.POST.get('difficulty', 'intermediate')
-        duration = request.POST.get('duration', 'medium')
-        focus = request.POST.get('focus', 'practical')
         
         # Utiliser l'orchestrateur IA pour générer le cours
         orchestrator = get_orchestrator(request.user)
@@ -27,10 +24,7 @@ def course_generator(request):
             if module_info:
                 orchestrator.current_module = module_info['name']
         
-        # Enrichir le topic avec les paramètres de personnalisation
-        enhanced_topic = f"{topic}\n\nParamètres:\n- Niveau: {difficulty}\n- Durée: {duration}\n- Focus: {focus}"
-        
-        result = orchestrator.generate_course(enhanced_topic)
+        result = orchestrator.generate_course(topic)
         
         if result['success']:
             # Traitement direct du markdown
@@ -46,9 +40,6 @@ def course_generator(request):
                     'topic': topic,
                     'module': module,
                     'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
-                    'difficulty': difficulty,
-                    'duration': duration,
-                    'focus': focus,
                     'content': content,
                     'sources': result['sources']
                 },
