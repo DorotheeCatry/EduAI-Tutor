@@ -4,9 +4,9 @@
 {% block title %}{{ generated_course.title|default:"Cours généré" }} - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 h-full overflow-auto">
+<div class="flex flex-col h-full">
     <!-- Header du cours -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex-shrink-0 flex items-center justify-between p-6 border-b border-gray-700">
         <div class="flex items-center space-x-4">
             <div class="w-12 h-12 bg-primary-green rounded-lg flex items-center justify-center">
                 <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
@@ -55,51 +55,59 @@
     </div>
 
     {% if error %}
-        <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4 mb-6">
-            <div class="flex items-center space-x-2">
-                <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                <span class="text-red-400 font-medium">Erreur</span>
+        <div class="flex-shrink-0 p-6">
+            <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
+                    <span class="text-red-400 font-medium">Erreur</span>
+                </div>
+                <p class="text-red-300 mt-2">{{ error }}</p>
             </div>
-            <p class="text-red-300 mt-2">{{ error }}</p>
         </div>
     {% endif %}
 
     <!-- Options de personnalisation après génération -->
     {% if generated_course %}
-        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <i data-lucide="settings" class="w-5 h-5 text-primary-blue"></i>
-                    <span class="text-white font-medium">Personnaliser ce cours</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button onclick="customizeCourse('complexity')" class="px-3 py-1 bg-primary-green text-white rounded text-sm hover:bg-green-600 transition-colors">
-                        <i data-lucide="trending-up" class="w-4 h-4 inline mr-1"></i>
-                        Plus complexe
-                    </button>
-                    <button onclick="customizeCourse('examples')" class="px-3 py-1 bg-primary-blue text-white rounded text-sm hover:bg-blue-600 transition-colors">
-                        <i data-lucide="code" class="w-4 h-4 inline mr-1"></i>
-                        Plus d'exemples
-                    </button>
-                    <button onclick="customizeCourse('exercises')" class="px-3 py-1 bg-primary-rose text-white rounded text-sm hover:bg-pink-600 transition-colors">
-                        <i data-lucide="dumbbell" class="w-4 h-4 inline mr-1"></i>
-                        Plus d'exercices
-                    </button>
-                    <button onclick="customizeCourse('simplify')" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-500 transition-colors">
-                        <i data-lucide="trending-down" class="w-4 h-4 inline mr-1"></i>
-                        Simplifier
-                    </button>
+        <div class="flex-shrink-0 p-6 pb-0">
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="settings" class="w-5 h-5 text-primary-blue"></i>
+                        <span class="text-white font-medium">Personnaliser ce cours</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="customizeCourse('complexity')" class="px-3 py-1 bg-primary-green text-white rounded text-sm hover:bg-green-600 transition-colors flex items-center space-x-1">
+                            <i data-lucide="trending-up" class="w-4 h-4"></i>
+                            <span>Plus complexe</span>
+                        </button>
+                        <button onclick="customizeCourse('examples')" class="px-3 py-1 bg-primary-blue text-white rounded text-sm hover:bg-blue-600 transition-colors flex items-center space-x-1">
+                            <i data-lucide="code" class="w-4 h-4"></i>
+                            <span>Plus d'exemples</span>
+                        </button>
+                        <button onclick="customizeCourse('exercises')" class="px-3 py-1 bg-primary-rose text-white rounded text-sm hover:bg-pink-600 transition-colors flex items-center space-x-1">
+                            <i data-lucide="dumbbell" class="w-4 h-4"></i>
+                            <span>Plus d'exercices</span>
+                        </button>
+                        <button onclick="customizeCourse('simplify')" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-500 transition-colors flex items-center space-x-1">
+                            <i data-lucide="trending-down" class="w-4 h-4"></i>
+                            <span>Simplifier</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     {% endif %}
 
-    <!-- Contenu du cours -->
+    <!-- Contenu du cours avec scroll fixe -->
     {% if generated_course %}
-        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-            <div class="p-6">
-                <div class="prose prose-invert max-w-none" id="course-content">
-                    {{ generated_course.content|safe }}
+        <div class="flex-1 overflow-hidden">
+            <div class="h-full overflow-y-auto px-6 pb-6" id="course-content-container">
+                <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden mt-6">
+                    <div class="p-6">
+                        <div class="prose prose-invert max-w-none" id="course-content">
+                            {{ generated_course.content|safe }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,10 +132,20 @@
             <button onclick="closeCustomizationModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors">
                 Annuler
             </button>
-            <button onclick="applyCustomization()" class="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+            <button onclick="applyCustomization()" id="apply-btn" class="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
                 <i data-lucide="wand-2" class="w-4 h-4 inline mr-1"></i>
-                Appliquer
+                <span>Appliquer</span>
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div class="flex items-center space-x-3">
+            <i data-lucide="loader-2" class="w-6 h-6 text-primary-green animate-spin"></i>
+            <span class="text-white">Personnalisation en cours...</span>
         </div>
     </div>
 </div>
@@ -136,7 +154,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
         
-        // Fonction pour formater le contenu markdown (même que le chat)
+        // Fonction pour formater le contenu markdown
         function formatMarkdownContent() {
             const content = document.getElementById('course-content');
             if (!content) return;
@@ -280,14 +298,43 @@
             return;
         }
         
-        // Ici on enverrait la demande de personnalisation au backend
-        console.log('Personnalisation:', currentCustomizationType, customization);
-        
-        // Pour l'instant, on ferme juste le modal
+        // Fermer le modal et afficher le loading
         closeCustomizationModal();
+        document.getElementById('loading-overlay').classList.remove('hidden');
         
-        // TODO: Implémenter l'appel AJAX pour personnaliser le cours
-        alert('Fonctionnalité de personnalisation en cours de développement...');
+        // Préparer les données
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        formData.append('customization_type', currentCustomizationType);
+        formData.append('customization_request', customization);
+        formData.append('current_content', document.getElementById('course-content').textContent);
+        formData.append('topic', '{{ generated_course.topic|default:"" }}');
+        
+        // Envoyer la requête
+        fetch('{% url "courses:customize" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading-overlay').classList.add('hidden');
+            
+            if (data.success) {
+                // Mettre à jour le contenu
+                document.getElementById('course-content').innerHTML = data.content;
+                formatMarkdownContent();
+                
+                // Scroll vers le haut pour voir les changements
+                document.getElementById('course-content-container').scrollTop = 0;
+            } else {
+                alert('Erreur lors de la personnalisation: ' + (data.error || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading-overlay').classList.add('hidden');
+            console.error('Erreur:', error);
+            alert('Erreur de connexion lors de la personnalisation');
+        });
     }
 
     // Fermer le modal en cliquant à l'extérieur
@@ -401,6 +448,30 @@
     font-weight: bold;
     position: absolute;
     left: -1rem;
+}
+
+/* Scroll personnalisé pour le contenu */
+#course-content-container {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #1F2937;
+}
+
+#course-content-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+#course-content-container::-webkit-scrollbar-track {
+    background: #1F2937;
+    border-radius: 4px;
+}
+
+#course-content-container::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 4px;
+}
+
+#course-content-container::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
 }
 
 /* Responsive design */

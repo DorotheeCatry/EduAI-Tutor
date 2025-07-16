@@ -4,6 +4,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
 from apps.agents.agent_orchestrator import get_orchestrator
 from apps.rag.module_loader import module_loader
 from .models import Course
@@ -96,6 +97,58 @@ def save_course(request):
     return redirect('courses:generator')
 
 
+def customize_course(request):
+    """API endpoint pour personnaliser un cours existant"""
+    if request.method == 'POST':
+        try:
+            customization_type = request.POST.get('customization_type')
+            customization_request = request.POST.get('customization_request')
+            current_content = request.POST.get('current_content')
+            topic = request.POST.get('topic')
+            
+            if not all([customization_type, customization_request, current_content]):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Paramètres manquants'
+                })
+            
+            # Utiliser l'orchestrateur IA pour personnaliser le cours
+            orchestrator = get_orchestrator(request.user)
+            
+            # Créer un prompt de personnalisation
+            customization_prompts = {
+                'complexity': f"Rends ce cours plus complexe et technique. Ajoute des détails avancés, des concepts plus poussés. Demande spécifique: {customization_request}",
+                'examples': f"Ajoute plus d'exemples pratiques et concrets à ce cours. Demande spécifique: {customization_request}",
+                'exercises': f"Ajoute plus d'exercices pratiques et de défis à ce cours. Demande spécifique: {customization_request}",
+                'simplify': f"Simplifie ce cours pour le rendre plus accessible. Explique plus clairement. Demande spécifique: {customization_request}"
+            }
+            
+            prompt = customization_prompts.get(customization_type, customization_request)
+            full_prompt = f"{prompt}\n\nCours actuel à modifier:\n{current_content}"
+            
+            result = orchestrator.answer_question(full_prompt)
+            
+            if result['success']:
+                return JsonResponse({
+                    'success': True,
+                    'content': result['answer']
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': result.get('error', 'Erreur lors de la personnalisation')
+                })
+                
+        except Exception as e:
+            print(f"❌ Erreur lors de la personnalisation : {e}")
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+@login_required
 @login_required
 def course_detail(request, course_id):
     """Affiche un cours sauvegardé"""
