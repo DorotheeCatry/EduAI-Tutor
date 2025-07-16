@@ -1,0 +1,154 @@
+@@ .. @@
+         .course-content h4 {
+-            color: #10b981;
+-            font-size: 1.25rem;
+-            font-weight: 600;
+-            margin: 1.5rem 0 1rem 0;
+-            padding-bottom: 0.5rem;
+-            border-bottom: 2px solid #10b981;
++            color: #10b981 !important;
++            font-size: 1.5rem !important;
++            font-weight: 700 !important;
++            margin: 2rem 0 1.5rem 0 !important;
++            padding: 1rem 0 0.75rem 0 !important;
++            border-bottom: 3px solid #10b981 !important;
++            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)) !important;
++            border-radius: 8px 8px 0 0 !important;
++            padding-left: 1rem !important;
++            display: flex !important;
++            align-items: center !important;
++            gap: 0.75rem !important;
+         }
+ 
++        .course-content h4::before {
++            content: "▶";
++            color: #10b981;
++            font-size: 1.2rem;
++            font-weight: bold;
++        }
++
+         .course-content h5 {
+             color: #3b82f6;
+             font-size: 1.1rem;
+@@ .. @@
+         }
+ 
+         .example-section {
+-            background: linear-gradient(135deg, #fef3c7, #fde68a);
++            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+             border-left: 4px solid #f59e0b;
+             padding: 1.5rem;
+             margin: 1.5rem 0;
+             border-radius: 0 8px 8px 0;
++            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+         }
+ 
+         .example-title {
+-            color: #d97706;
+-            font-weight: 600;
+-            font-size: 1.1rem;
+-            margin-bottom: 1rem;
++            color: #d97706 !important;
++            font-weight: 700 !important;
++            font-size: 1.2rem !important;
++            margin-bottom: 1.5rem !important;
+             display: flex;
+             align-items: center;
+-            gap: 0.5rem;
++            gap: 0.75rem;
++            padding: 0.75rem 1rem;
++            background: rgba(251, 191, 36, 0.15);
++            border-radius: 6px;
++            border: 1px solid rgba(251, 191, 36, 0.3);
++        }
++
++        .example-title::before {
++            content: "💡";
++            font-size: 1.3rem;
+         }
+ 
+         .exercise-section {
+-            background: linear-gradient(135deg, #ddd6fe, #c4b5fd);
++            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05));
+             border-left: 4px solid #8b5cf6;
+             padding: 1.5rem;
+             margin: 1.5rem 0;
+             border-radius: 0 8px 8px 0;
++            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.1);
+         }
+ 
+         .exercise-title {
+-            color: #7c3aed;
+-            font-weight: 600;
+-            font-size: 1.1rem;
+-            margin-bottom: 1rem;
++            color: #7c3aed !important;
++            font-weight: 700 !important;
++            font-size: 1.2rem !important;
++            margin-bottom: 1.5rem !important;
+             display: flex;
+             align-items: center;
+-            gap: 0.5rem;
++            gap: 0.75rem;
++            padding: 0.75rem 1rem;
++            background: rgba(139, 92, 246, 0.15);
++            border-radius: 6px;
++            border: 1px solid rgba(139, 92, 246, 0.3);
++        }
++
++        .exercise-title::before {
++            content: "🎯";
++            font-size: 1.3rem;
+         }
+ 
+         .code-block {
+@@ .. @@
+             border-radius: 8px;
+             overflow-x: auto;
+             position: relative;
++            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+         }
+ 
+         .code-block::before {
+@@ .. @@
+             font-size: 0.8rem;
+             font-weight: 500;
+         }
++
++        /* Correction pour les balises HTML dans les cellules Python */
++        .code-block h1,
++        .code-block h2,
++        .code-block h3,
++        .code-block h4,
++        .code-block h5,
++        .code-block h6 {
++            display: none !important;
++        }
++
++        /* Style pour les sections principales */
++        .main-section {
++            background: rgba(16, 185, 129, 0.05);
++            border-radius: 12px;
++            padding: 2rem;
++            margin: 2rem 0;
++            border: 1px solid rgba(16, 185, 129, 0.2);
++        }
++
++        .main-section-title {
++            color: #10b981 !important;
++            font-size: 1.8rem !important;
++            font-weight: 800 !important;
++            margin-bottom: 1.5rem !important;
++            display: flex !important;
++            align-items: center !important;
++            gap: 1rem !important;
++            padding-bottom: 1rem !important;
++            border-bottom: 2px solid rgba(16, 185, 129, 0.3) !important;
++        }
++
++        .main-section-title::before {
++            content: "📚";
++            font-size: 1.5rem;
++        }
+     </style>
+ </head>
