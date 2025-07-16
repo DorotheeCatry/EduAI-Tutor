@@ -2,11 +2,12 @@
  COURSE_GENERATION_PROMPT = """
  Tu es un expert pédagogue en programmation. Génère un cours complet et structuré sur le sujet : "{topic}".
  
-+IMPORTANT - Règles de formatage strictes :
-+- Utilise UNIQUEMENT du markdown pur, JAMAIS de balises HTML
-+- Pour les titres, utilise : # ## ### #### 
-+- Dans les blocs de code Python, n'inclus JAMAIS de balises HTML
-+- Assure-toi que les numérotations ont des espaces : "Exemple 1", "Exercice 1" (pas "Exemple1")
+RÈGLES DE FORMATAGE CRITIQUES :
+- Utilise UNIQUEMENT du markdown pur
+- JAMAIS de balises HTML dans le contenu
+- Dans les blocs de code Python : AUCUNE balise HTML, AUCUN attribut class
+- Numérotations avec espaces obligatoires : "Exemple 1", "Exercice 1"
+- Titres d'exemples et exercices sur une ligne séparée
 +
  Structure obligatoire :
  1. **Introduction** (#### Introduction)
@@ -21,14 +22,32 @@
  4. **Exercices pratiques** (#### Exercices pratiques)
     - Au moins 2 exercices progressifs
 @@ .. @@
+   - Titre sur une ligne, description en dessous
  
  Consignes de style :
  - Utilise un ton pédagogique et encourageant
--- Code Python propre avec commentaires
+- Code Python PROPRE sans aucune balise HTML
 +- Code Python propre avec commentaires (SANS balises HTML)
  - Exemples concrets et variés
 -- Progression logique du simple au complexe
-+- Progression logique du simple vers le complexe
+- Titres d'exemples/exercices sur des lignes séparées
+
+EXEMPLE DE FORMATAGE CORRECT :
+
+#### Exemples pratiques
+
+Exemple 1 : Boucle simple
+
+Voici comment utiliser une boucle for basique :
+
+```python
+for i in range(5):
+    print(i)
+```
+
+Exercice 1 : Premier exercice
+
+Créez une boucle qui affiche les nombres de 1 à 10.
 +- Espaces obligatoires dans les numérotations
  
  Génère maintenant le cours complet :
