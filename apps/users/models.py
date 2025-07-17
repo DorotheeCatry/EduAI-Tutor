@@ -37,6 +37,7 @@ class KodaUser(AbstractUser):
         upload_to="avatars/",
         null=True,
         blank=True,
+        default="koda_base.png",
         verbose_name=_("Avatar")
     )
 

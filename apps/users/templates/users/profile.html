@@ -33,37 +33,84 @@
                     
                     <!-- Section Avatar avec recadrage -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-300 mb-4">Avatar</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-4">Choose your avatar</label>
                         
-                        <!-- Avatar actuel et upload côte à côte -->
-                        <div class="flex items-center space-x-6">
-                            <!-- Avatar actuel -->
-                            <div class="text-center">
-                                <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-2">
-                                    {% if user.avatar %}
-                                        <img id="current-avatar" src="{{ user.avatar.url }}" alt="Avatar actuel" class="w-full h-full object-cover">
-                                    {% else %}
-                                        <img id="current-avatar" src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-full h-full object-cover">
-                                    {% endif %}
-                                </div>
-                                <p class="text-xs text-gray-400">Current avatar</p>
+                        <!-- Avatar actuel -->
+                        <div class="text-center mb-6">
+                            <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-700 border-4 border-gray-600 mx-auto mb-3 shadow-lg">
+                                <img id="current-avatar" src="{{ current_avatar_url }}" alt="Avatar actuel" class="w-full h-full object-cover">
                             </div>
-                            
-                            <!-- Zone d'upload -->
-                            <div class="flex-1">
-                                <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                                    <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
-                                    <div class="flex flex-col items-center space-y-2">
-                                        <i data-lucide="upload" class="w-6 h-6 text-gray-400"></i>
-                                        <button type="button" onclick="document.getElementById('avatar-input').click()" 
-                                                class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                                            Choose new image
-                                        </button>
-                                        <p class="text-xs text-gray-400">JPG, PNG, GIF (max 2MB)</p>
+                            <p class="text-sm text-gray-400">Current avatar</p>
+                        </div>
+                        
+                        <!-- Onglets de sélection -->
+                        <div class="mb-4">
+                            <div class="flex border-b border-gray-600">
+                                <button type="button" id="koda-tab" class="px-4 py-2 text-sm font-medium text-gray-300 border-b-2 border-transparent hover:text-white hover:border-primary-green transition-colors tab-button active">
+                                    <i data-lucide="smile" class="w-4 h-4 inline mr-2"></i>
+                                    Koda Avatars
+                                </button>
+                                <button type="button" id="upload-tab" class="px-4 py-2 text-sm font-medium text-gray-300 border-b-2 border-transparent hover:text-white hover:border-primary-green transition-colors tab-button">
+                                    <i data-lucide="upload" class="w-4 h-4 inline mr-2"></i>
+                                    Upload Custom
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenu onglet Koda Avatars -->
+                        <div id="koda-content" class="tab-content">
+                            <div class="grid grid-cols-4 md:grid-cols-6 gap-3 max-h-64 overflow-y-auto p-2 bg-gray-900 rounded-lg border border-gray-700">
+                                {% for avatar in available_avatars %}
+                                    <div class="avatar-option relative cursor-pointer group" data-avatar="{{ avatar.filename }}">
+                                        <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-600 group-hover:border-primary-green transition-all duration-200 transform group-hover:scale-105 {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}border-primary-green ring-2 ring-primary-green ring-opacity-50{% endif %}">
+                                            <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            <div class="bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                                                {{ avatar.display_name }}
+                                            </div>
+                                        </div>
+                                        {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
+                                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-primary-green rounded-full flex items-center justify-center">
+                                                <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2 text-center">Click on an avatar to select it</p>
+                        </div>
+                        
+                        <!-- Contenu onglet Upload Custom -->
+                        <div id="upload-content" class="tab-content hidden">
+                            <!-- Avatar actuel -->
+                            <div class="flex items-center space-x-6">
+                                <div class="text-center">
+                                    <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-2">
+                                        <img id="upload-preview" src="{{ current_avatar_url }}" alt="Preview" class="w-full h-full object-cover">
+                                    </div>
+                                    <p class="text-xs text-gray-400">Preview</p>
+                                </div>
+                                
+                                <!-- Zone d'upload -->
+                                <div class="flex-1">
+                                    <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
+                                        <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
+                                        <div class="flex flex-col items-center space-y-2">
+                                            <i data-lucide="upload" class="w-6 h-6 text-gray-400"></i>
+                                            <button type="button" onclick="document.getElementById('avatar-input').click()" 
+                                                    class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                                                Choose new image
+                                            </button>
+                                            <p class="text-xs text-gray-400">JPG, PNG, GIF (max 2MB)</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Champ caché pour l'avatar Koda sélectionné -->
+                        <input type="hidden" id="selected-koda-avatar" name="selected_koda_avatar">
                     </div>
                                 
                     <!-- Zone de recadrage (cachée par défaut) -->
@@ -159,11 +206,7 @@
                 <h3 class="text-lg font-bold text-white mb-4">Preview</h3>
                 
                 <div class="text-center">
-                    {% if user.avatar %}
-                        <img id="sidebar-preview" src="{{ user.avatar.url }}" alt="Avatar" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-600 shadow-lg">
-                    {% else %}
-                        <img id="sidebar-preview" src="{% static 'img/KodaPerso.png' %}" alt="Avatar par défaut" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-600 shadow-lg">
-                    {% endif %}
+                    <img id="sidebar-preview" src="{{ current_avatar_url }}" alt="Avatar" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-600 shadow-lg">
                     
                     <h4 class="text-xl font-bold text-white mb-2">{{ user.username }}</h4>
                     <p class="text-sm text-gray-400 mb-4">{{ user.email }}</p>
@@ -206,6 +249,76 @@
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
     
+    // Gestion des onglets
+    const kodaTab = document.getElementById('koda-tab');
+    const uploadTab = document.getElementById('upload-tab');
+    const kodaContent = document.getElementById('koda-content');
+    const uploadContent = document.getElementById('upload-content');
+    
+    function switchTab(activeTab, activeContent, inactiveTab, inactiveContent) {
+        activeTab.classList.add('active', 'border-primary-green', 'text-primary-green');
+        activeTab.classList.remove('border-transparent', 'text-gray-300');
+        inactiveTab.classList.remove('active', 'border-primary-green', 'text-primary-green');
+        inactiveTab.classList.add('border-transparent', 'text-gray-300');
+        
+        activeContent.classList.remove('hidden');
+        inactiveContent.classList.add('hidden');
+    }
+    
+    kodaTab.addEventListener('click', () => {
+        switchTab(kodaTab, kodaContent, uploadTab, uploadContent);
+    });
+    
+    uploadTab.addEventListener('click', () => {
+        switchTab(uploadTab, uploadContent, kodaTab, kodaContent);
+    });
+    
+    // Gestion de la sélection d'avatar Koda
+    const avatarOptions = document.querySelectorAll('.avatar-option');
+    const selectedKodaInput = document.getElementById('selected-koda-avatar');
+    const currentAvatar = document.getElementById('current-avatar');
+    const sidebarPreview = document.getElementById('sidebar-preview');
+    
+    avatarOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const avatarName = this.dataset.avatar;
+            const avatarUrl = `/static/koda/${avatarName}`;
+            
+            // Mettre à jour la sélection visuelle
+            avatarOptions.forEach(opt => {
+                opt.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+                opt.querySelector('.border-2').classList.remove('border-primary-green');
+                opt.querySelector('.border-2').classList.add('border-gray-600');
+                const checkIcon = opt.querySelector('.absolute.-top-1');
+                if (checkIcon) checkIcon.remove();
+            });
+            
+            this.classList.add('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+            this.querySelector('.border-2').classList.add('border-primary-green');
+            this.querySelector('.border-2').classList.remove('border-gray-600');
+            
+            // Ajouter l'icône de sélection
+            const checkIcon = document.createElement('div');
+            checkIcon.className = 'absolute -top-1 -right-1 w-5 h-5 bg-primary-green rounded-full flex items-center justify-center';
+            checkIcon.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
+            this.appendChild(checkIcon);
+            
+            // Mettre à jour les aperçus
+            currentAvatar.src = avatarUrl;
+            sidebarPreview.src = avatarUrl;
+            
+            // Mettre à jour le champ caché
+            selectedKodaInput.value = avatarName;
+            
+            // Réinitialiser les icônes Lucide
+            lucide.createIcons();
+            
+            // Effacer les données d'upload personnalisé
+            document.getElementById('cropped-avatar').value = '';
+            document.getElementById('avatar-input').value = '';
+        });
+    });
+    
     let canvas, ctx, img;
     let scale = 1;
     let offsetX = 0;
@@ -219,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const zoomSlider = document.getElementById('zoom-slider');
     const cropSave = document.getElementById('crop-save');
     const cropCancel = document.getElementById('crop-cancel');
-    const currentAvatar = document.getElementById('current-avatar');
+    const uploadPreview = document.getElementById('upload-preview');
     
     canvas = cropCanvas;
     ctx = canvas.getContext('2d');
@@ -366,14 +479,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Convertir en blob et mettre à jour l'aperçu
         finalCanvas.toBlob(function(blob) {
             const url = URL.createObjectURL(blob);
+            uploadPreview.src = url;
             currentAvatar.src = url;
-            document.getElementById('preview-avatar').src = url;
-            document.getElementById('sidebar-preview').src = url;
+            sidebarPreview.src = url;
             
             // Stocker les données pour l'envoi
             const reader = new FileReader();
             reader.onload = function() {
                 document.getElementById('cropped-avatar').value = reader.result;
+                // Effacer la sélection Koda
+                selectedKodaInput.value = '';
+                avatarOptions.forEach(opt => {
+                    opt.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+                    opt.querySelector('.border-2').classList.remove('border-primary-green');
+                    opt.querySelector('.border-2').classList.add('border-gray-600');
+                    const checkIcon = opt.querySelector('.absolute.-top-1');
+                    if (checkIcon) checkIcon.remove();
+                });
             };
             reader.readAsDataURL(blob);
         }, 'image/jpeg', 0.9);
@@ -386,6 +508,9 @@ document.addEventListener('DOMContentLoaded', function() {
         cropContainer.classList.add('hidden');
         avatarInput.value = '';
     });
+    
+    // Réinitialiser les icônes au chargement
+    lucide.createIcons();
 });
 </script>
 {% endblock %}

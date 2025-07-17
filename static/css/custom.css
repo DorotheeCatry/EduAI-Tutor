@@ -1108,3 +1108,44 @@ main.tab-content {
     margin-bottom: 2rem;
     line-height: 1.6;
 }
+
+/* ===== AVATAR SELECTION ===== */
+.tab-button.active {
+    color: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+}
+
+.avatar-option {
+    transition: all 0.2s ease;
+}
+
+.avatar-option:hover {
+    transform: scale(1.05);
+}
+
+.avatar-option.selected {
+    transform: scale(1.1);
+}
+
+.avatar-option .border-2 {
+    transition: all 0.2s ease;
+}
+
+/* Scrollbar pour la grille d'avatars */
+.max-h-64::-webkit-scrollbar {
+    width: 6px;
+}
+
+.max-h-64::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 3px;
+}
+
+.max-h-64::-webkit-scrollbar-thumb {
+    background: #6B7280;
+    border-radius: 3px;
+}
+
+.max-h-64::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+}

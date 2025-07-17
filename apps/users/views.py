@@ -8,6 +8,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.base import ContentFile
 import base64
 import uuid
+import os
+from django.conf import settings
 from .forms import RegisterForm, LoginForm
 from .models import KodaUser
 
@@ -68,17 +70,67 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     Vue de modification du profil utilisateur.
     """
     model = KodaUser
-    fields = ['username', 'email', 'bio', 'avatar', 'language_preference']
+    fields = ['username', 'email', 'bio', 'language_preference']
     template_name = 'users/profile.html'
     success_url = reverse_lazy('users:profile')
     
     def get_object(self):
         return self.request.user
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Récupérer tous les avatars disponibles
+        koda_path = os.path.join(settings.STATIC_ROOT or 'static', 'koda')
+        if not os.path.exists(koda_path):
+            koda_path = os.path.join('static', 'koda')
+        
+        available_avatars = []
+        if os.path.exists(koda_path):
+            for filename in os.listdir(koda_path):
+                if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    # Créer un nom d'affichage plus joli
+                    display_name = filename.replace('koda_', '').replace('.png', '').replace('_', ' ').title()
+                    available_avatars.append({
+                        'filename': filename,
+                        'display_name': display_name,
+                        'url': f'/static/koda/{filename}'
+                    })
+        
+        # Trier par nom d'affichage
+        available_avatars.sort(key=lambda x: x['display_name'])
+        context['available_avatars'] = available_avatars
+        
+        # Avatar actuel de l'utilisateur
+        current_avatar = self.request.user.avatar
+        if current_avatar and hasattr(current_avatar, 'name'):
+            # Si c'est un fichier uploadé
+            context['current_avatar_url'] = current_avatar.url
+            context['current_avatar_type'] = 'uploaded'
+        else:
+            # Si c'est un avatar Koda par défaut
+            avatar_name = current_avatar or 'koda_base.png'
+            context['current_avatar_url'] = f'/static/koda/{avatar_name}'
+            context['current_avatar_type'] = 'koda'
+            context['current_avatar_name'] = avatar_name
+        
+        return context
+    
     def form_valid(self, form):
+        # Gérer la sélection d'avatar Koda
+        selected_koda_avatar = self.request.POST.get('selected_koda_avatar')
+        if selected_koda_avatar:
+            # Supprimer l'ancien avatar uploadé s'il existe
+            if form.instance.avatar and hasattr(form.instance.avatar, 'delete'):
+                form.instance.avatar.delete()
+            # Définir l'avatar comme nom de fichier Koda
+            form.instance.avatar = selected_koda_avatar
+        
         # Gérer l'avatar recadré si présent
         cropped_avatar = self.request.POST.get('cropped_avatar')
         if cropped_avatar:
+            # Supprimer l'ancien avatar s'il existe
+            if form.instance.avatar and hasattr(form.instance.avatar, 'delete'):
+                form.instance.avatar.delete()
             # Décoder l'image base64
             format, imgstr = cropped_avatar.split(';base64,')
             ext = format.split('/')[-1]
