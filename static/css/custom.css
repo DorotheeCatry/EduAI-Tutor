@@ -1099,6 +1099,29 @@ main.tab-content {
 }
 
 /* ===== AVATAR SELECTION ===== */
+.profile-avatar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #6B7280 #374151;
+}
+
+.profile-avatar-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.profile-avatar-scroll::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 2px;
+}
+
+.profile-avatar-scroll::-webkit-scrollbar-thumb {
+    background: #6B7280;
+    border-radius: 2px;
+}
+
+.profile-avatar-scroll::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
+}
+
 .tab-button.active {
     color: #4CAF50 !important;
     border-color: #4CAF50 !important;
