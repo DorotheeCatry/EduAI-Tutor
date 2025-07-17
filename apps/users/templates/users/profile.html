@@ -4,15 +4,15 @@
 {% block title %}Profil utilisateur - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 max-h-screen overflow-hidden">
+<div class="p-6 space-y-6">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="user" class="w-6 h-6 text-primary-green"></i>
         <h1 class="text-xl font-bold text-white">My Profile</h1>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Informations du profil -->
-        <div class="lg:col-span-1 space-y-6">
+        <div class="lg:col-span-1 space-y-6 overflow-visible">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h2 class="text-lg font-bold text-white mb-4">Personal Information</h2>
                 
@@ -28,11 +28,11 @@
                     {% endif %}
                 {% endfor %}
 
-                <form method="post" enctype="multipart/form-data" class="space-y-4">
+                <form method="post" enctype="multipart/form-data" class="flex flex-col gap-4">
                     {% csrf_token %}
                     
                     <!-- Section Avatar simplifiée -->
-                    <div class="mb-6">
+                    <div class="mb-6 relative">
                         <label class="block text-sm font-medium text-gray-300 mb-4">Choose your avatar</label>
                         
                         <!-- Avatar actuel -->
@@ -62,41 +62,36 @@
                         
                         <!-- Contenu onglet Koda Avatars -->
                         <div id="koda-content" class="tab-content">
-                            <div class="h-32 overflow-y-auto bg-gray-900 rounded-lg border border-gray-700 p-3">
-                                <div class="space-y-2">
-                                    {% for avatar in available_avatars %}
-                                        <div class="avatar-option cursor-pointer p-2 rounded-lg hover:bg-gray-800 transition-all group flex items-center space-x-3"
-                                            data-avatar="{{ avatar.filename }}"
-                                            data-url="{{ avatar.url }}">
-                                            <!-- Avatar -->
-                                            <div class="w-8 h-8 rounded-full overflow-hidden border-2 transition-all duration-200 flex-shrink-0
-                                                {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
-                                                    border-primary-green ring-2 ring-primary-green ring-opacity-50
-                                                {% else %}
-                                                    border-gray-600 group-hover:border-primary-green
-                                                {% endif %}">
-                                                <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover">
-                                            </div>
+                            <div class="bg-gray-900 rounded-lg border border-gray-700 overflow-hidden">
+                                <div class="overflow-y-auto max-h-40 divide-y divide-gray-800">
+                                {% for avatar in available_avatars %}
+                                    <div class="avatar-option cursor-pointer px-4 py-2 hover:bg-gray-800 flex items-center space-x-3"
+                                        data-avatar="{{ avatar.filename }}"
+                                        data-url="{{ avatar.url }}">
 
-                                            <!-- Nom -->
-                                            <p class="text-sm text-gray-400 group-hover:text-white flex-1">
-                                                {{ avatar.display_name }}
-                                            </p>
+                                    <div class="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0
+                                        {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
+                                            border-primary-green ring-2 ring-primary-green ring-opacity-50
+                                        {% else %}
+                                            border-gray-600 hover:border-primary-green
+                                        {% endif %}">
+                                        <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover">
+                                    </div>
 
-                                            <!-- Checkmark -->
-                                            {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
-                                                <div class="w-4 h-4 bg-primary-green rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <i data-lucide="check" class="w-3 h-3 text-white"></i>
-                                                </div>
-                                            {% endif %}
+                                    <p class="text-sm text-gray-300 truncate flex-1">{{ avatar.display_name }}</p>
+
+                                    {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
+                                        <div class="w-4 h-4 bg-primary-green rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i data-lucide="check" class="w-3 h-3 text-white"></i>
                                         </div>
-                                    {% endfor %}
+                                    {% endif %}
+                                    </div>
+                                {% endfor %}
                                 </div>
                             </div>
                             <p class="text-xs text-gray-400 mt-2 text-center">Click on a Koda avatar to select it</p>
                         </div>
-                        
-                        
+
                         <!-- Champ caché pour l'avatar Koda sélectionné -->
                         <input type="hidden" id="selected-koda-avatar" name="selected_koda_avatar">
                         
@@ -524,5 +519,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<style>
+/* CSS classique */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 3px;
+}
+</style>
 
 {% endblock %}
