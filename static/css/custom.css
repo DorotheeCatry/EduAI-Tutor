@@ -226,22 +226,11 @@ main.tab-content {
 
 /* ===== DROPDOWN MENU Z-INDEX FIX ===== */
 #profile-menu {
-    z-index: 99999 !important;
+    z-index: 999999 !important;
     position: fixed !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
     backdrop-filter: blur(10px) !important;
-    transform: translateZ(0) !important;
-}
-
-/* Forcer le menu au-dessus de tout */
-#profile-menu * {
-    z-index: inherit !important;
-}
-
-/* Forcer le conteneur principal sous le menu */
-.h-full.max-h-screen {
-    z-index: 1 !important;
-    position: relative !important;
+    transform: translate3d(0, 0, 0) !important;
 }
 
 /* ===== TAB BAR FIXES ===== */
@@ -1148,4 +1137,33 @@ main.tab-content {
 
 .profile-avatar-scroll::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
+}
+
+/* ===== PROFILE PAGE SPECIFIC ===== */
+.tab-button.active {
+    color: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+}
+
+.tab-content {
+    transition: opacity 0.2s ease;
+}
+
+.avatar-option:hover {
+    transform: translateX(2px);
+}
+
+.avatar-option.selected {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: #4CAF50;
+}
+
+#crop-canvas {
+    background: 
+        linear-gradient(45deg, #374151 25%, transparent 25%), 
+        linear-gradient(-45deg, #374151 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #374151 75%), 
+        linear-gradient(-45deg, transparent 75%, #374151 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
 }
