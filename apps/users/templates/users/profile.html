@@ -4,13 +4,13 @@
 {% block title %}Profil utilisateur - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6">
+<div class="p-6 space-y-6 max-h-screen overflow-hidden">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="user" class="w-6 h-6 text-primary-green"></i>
         <h1 class="text-xl font-bold text-white">My Profile</h1>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
         <!-- Informations du profil -->
         <div class="lg:col-span-1 space-y-6">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -31,7 +31,7 @@
                 <form method="post" enctype="multipart/form-data" class="space-y-4">
                     {% csrf_token %}
                     
-                    <!-- Section Avatar avec recadrage -->
+                    <!-- Section Avatar simplifiée -->
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-300 mb-4">Choose your avatar</label>
                         
@@ -62,63 +62,65 @@
                         
                         <!-- Contenu onglet Koda Avatars -->
                         <div id="koda-content" class="tab-content">
-                            <div class="max-h-20 overflow-y-auto bg-gray-900 rounded-lg border border-gray-700 p-3 space-y-2">
-                                {% for avatar in available_avatars %}
-                                    <div class="avatar-option flex items-center space-x-4 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-800 transition-all group relative"
-                                        data-avatar="{{ avatar.filename }}">
-                                        <!-- Avatar -->
-                                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 transition-all duration-200 
-                                            {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
-                                                border-primary-green ring-2 ring-primary-green ring-opacity-50
-                                            {% else %}
-                                                border-gray-600 group-hover:border-primary-green
-                                            {% endif %}">
-                                            <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover">
-                                        </div>
-
-                                        <!-- Nom -->
-                                        <span class="text-sm text-gray-300 group-hover:text-white">
-                                            {{ avatar.display_name }}
-                                        </span>
-
-                                        <!-- Checkmark -->
-                                        {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
-                                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-primary-green rounded-full flex items-center justify-center">
-                                                <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                            <div class="h-32 overflow-y-auto bg-gray-900 rounded-lg border border-gray-700 p-3">
+                                <div class="grid grid-cols-4 gap-2">
+                                    {% for avatar in available_avatars %}
+                                        <div class="avatar-option cursor-pointer p-1 rounded-lg hover:bg-gray-800 transition-all group relative"
+                                            data-avatar="{{ avatar.filename }}"
+                                            data-url="{{ avatar.url }}">
+                                            <!-- Avatar -->
+                                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 transition-all duration-200 mx-auto
+                                                {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
+                                                    border-primary-green ring-2 ring-primary-green ring-opacity-50
+                                                {% else %}
+                                                    border-gray-600 group-hover:border-primary-green
+                                                {% endif %}">
+                                                <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover">
                                             </div>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
+
+                                            <!-- Nom -->
+                                            <p class="text-xs text-center text-gray-400 group-hover:text-white mt-1 truncate">
+                                                {{ avatar.display_name }}
+                                            </p>
+
+                                            <!-- Checkmark -->
+                                            {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
+                                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-primary-green rounded-full flex items-center justify-center">
+                                                    <i data-lucide="check" class="w-2 h-2 text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
                             </div>
-                            <p class="text-xs text-gray-400 mt-3 text-center">Click on a Koda avatar to select it</p>
+                            <p class="text-xs text-gray-400 mt-2 text-center">Click on a Koda avatar to select it</p>
                         </div>
                         
                         <!-- Contenu onglet Upload Custom -->
                         <div id="upload-content" class="tab-content hidden">
-                            <div class="h-48 overflow-y-auto bg-gray-900 rounded-lg border border-gray-700 p-3">
-                                <!-- Avatar actuel -->
-                                <div class="flex items-center space-x-6 mb-4">
-                                <div class="text-center">
-                                    <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-2">
-                                        <img id="upload-preview" src="{{ current_avatar_url }}" alt="Preview" class="w-full h-full object-cover">
+                            <div class="h-32 overflow-y-auto bg-gray-900 rounded-lg border border-gray-700 p-3">
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mb-2">
+                                            <img id="upload-preview" src="{{ current_avatar_url }}" alt="Preview" class="w-full h-full object-cover">
+                                        </div>
+                                        <p class="text-xs text-gray-400">Preview</p>
                                     </div>
-                                    <p class="text-xs text-gray-400">Preview</p>
-                                </div>
-                                
-                                <!-- Zone d'upload -->
-                                <div class="flex-1">
-                                    <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                                        <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
-                                        <div class="flex flex-col items-center space-y-2">
-                                            <i data-lucide="upload" class="w-6 h-6 text-gray-400"></i>
-                                            <button type="button" onclick="document.getElementById('avatar-input').click()" 
-                                                    class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                                                Choose new image
-                                            </button>
-                                            <p class="text-xs text-gray-400">JPG, PNG, GIF (max 2MB)</p>
+                                    
+                                    <!-- Zone d'upload -->
+                                    <div class="flex-1">
+                                        <div class="border-2 border-dashed border-gray-600 rounded-lg p-3 text-center">
+                                            <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
+                                            <div class="flex flex-col items-center space-y-2">
+                                                <i data-lucide="upload" class="w-5 h-5 text-gray-400"></i>
+                                                <button type="button" onclick="document.getElementById('avatar-input').click()" 
+                                                        class="px-3 py-1 text-xs bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                                                    Choose image
+                                                </button>
+                                                <p class="text-xs text-gray-400">JPG, PNG (max 2MB)</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                                 </div>
                             </div>
                         </div>
@@ -128,38 +130,38 @@
                     </div>
                                 
                     <!-- Zone de recadrage (cachée par défaut) -->
-                        <div id="crop-container" class="hidden mt-6">
-                            <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h4 class="text-sm font-medium text-white">Adjust your avatar</h4>
-                                            <div class="flex space-x-2">
-                                                <button type="button" id="crop-save" class="px-3 py-1 bg-primary-green text-white rounded text-xs hover:bg-green-600">
-                                                    Save
-                                                </button>
-                                                <button type="button" id="crop-cancel" class="px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-500">
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Canvas pour le recadrage -->
-                                        <div class="relative bg-black rounded-lg overflow-hidden flex items-center justify-center crop-canvas-container" style="height: 300px;">
-                                            <canvas id="crop-canvas" width="300" height="300" class="max-w-full max-h-full"></canvas>
-                                        </div>
-                                        
-                                        <!-- Contrôles de zoom et position -->
-                                        <div class="mt-3 space-y-2">
-                                            <div class="flex items-center space-x-3">
-                                                <label class="text-xs text-gray-400 w-12">Zoom:</label>
-                                                <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" 
-                                                       class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                                            </div>
-                                            <p class="text-xs text-gray-400">
-                                                💡 Use mouse wheel to zoom, click and drag to move the image
-                                            </p>
-                                        </div>
-                                    </div>
+                    <div id="crop-container" class="hidden mt-6">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-sm font-medium text-white">Adjust your avatar</h4>
+                                <div class="flex space-x-2">
+                                    <button type="button" id="crop-save" class="px-3 py-1 bg-primary-green text-white rounded text-xs hover:bg-green-600">
+                                        Save
+                                    </button>
+                                    <button type="button" id="crop-cancel" class="px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-500">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Canvas pour le recadrage -->
+                            <div class="relative bg-black rounded-lg overflow-hidden flex items-center justify-center" style="height: 200px;">
+                                <canvas id="crop-canvas" width="200" height="200" class="max-w-full max-h-full cursor-grab"></canvas>
+                            </div>
+                            
+                            <!-- Contrôles de zoom -->
+                            <div class="mt-3">
+                                <div class="flex items-center space-x-3">
+                                    <label class="text-xs text-gray-400 w-12">Zoom:</label>
+                                    <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" 
+                                           class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    💡 Use mouse wheel to zoom, click and drag to move
+                                </p>
+                            </div>
                         </div>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -260,30 +262,14 @@
 </div>
 
 <script>
-// ✅ Script JS complet et robuste pour crop avatar (Koda ou upload)
 document.addEventListener('DOMContentLoaded', function () {
     lucide.createIcons();
 
-    // --- Tabs ---
+    // --- Variables globales ---
     const kodaTab = document.getElementById('koda-tab');
     const uploadTab = document.getElementById('upload-tab');
     const kodaContent = document.getElementById('koda-content');
     const uploadContent = document.getElementById('upload-content');
-
-    function switchTab(activeTab, activeContent, inactiveTab, inactiveContent) {
-        activeTab.classList.add('active', 'border-primary-green', 'text-primary-green');
-        activeTab.classList.remove('border-transparent', 'text-gray-300');
-        inactiveTab.classList.remove('active', 'border-primary-green', 'text-primary-green');
-        inactiveTab.classList.add('border-transparent', 'text-gray-300');
-
-        activeContent.classList.remove('hidden');
-        inactiveContent.classList.add('hidden');
-    }
-
-    kodaTab.addEventListener('click', () => switchTab(kodaTab, kodaContent, uploadTab, uploadContent));
-    uploadTab.addEventListener('click', () => switchTab(uploadTab, uploadContent, kodaTab, kodaContent));
-
-    // --- Global vars ---
     const avatarOptions = document.querySelectorAll('.avatar-option');
     const selectedKodaInput = document.getElementById('selected-koda-avatar');
     const croppedAvatarInput = document.getElementById('cropped-avatar');
@@ -297,6 +283,63 @@ document.addEventListener('DOMContentLoaded', function () {
     const cropSave = document.getElementById('crop-save');
     const cropCancel = document.getElementById('crop-cancel');
 
+    // --- Gestion des onglets ---
+    function switchTab(activeTab, activeContent, inactiveTab, inactiveContent) {
+        activeTab.classList.add('active', 'border-primary-green', 'text-primary-green');
+        activeTab.classList.remove('border-transparent', 'text-gray-300');
+        inactiveTab.classList.remove('active', 'border-primary-green', 'text-primary-green');
+        inactiveTab.classList.add('border-transparent', 'text-gray-300');
+
+        activeContent.classList.remove('hidden');
+        inactiveContent.classList.add('hidden');
+    }
+
+    kodaTab.addEventListener('click', () => switchTab(kodaTab, kodaContent, uploadTab, uploadContent));
+    uploadTab.addEventListener('click', () => switchTab(uploadTab, uploadContent, kodaTab, kodaContent));
+
+    // --- Sélection d'avatar Koda (simple) ---
+    avatarOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            const avatarName = this.dataset.avatar;
+            const avatarUrl = this.dataset.url;
+
+            // Mettre à jour tous les aperçus immédiatement
+            uploadPreview.src = avatarUrl;
+            currentAvatar.src = avatarUrl;
+            sidebarPreview.src = avatarUrl;
+            
+            // Marquer comme sélectionné
+            selectedKodaInput.value = avatarName;
+            croppedAvatarInput.value = ''; // Reset custom upload
+            
+            // Mise à jour visuelle de la sélection
+            avatarOptions.forEach(opt => {
+                opt.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+                const border = opt.querySelector('.border-2');
+                if (border) {
+                    border.classList.remove('border-primary-green');
+                    border.classList.add('border-gray-600');
+                }
+                const checkIcon = opt.querySelector('.absolute');
+                if (checkIcon) checkIcon.remove();
+            });
+
+            const border = this.querySelector('.border-2');
+            if (border) {
+                border.classList.add('border-primary-green');
+                border.classList.remove('border-gray-600');
+            }
+            
+            const checkIcon = document.createElement('div');
+            checkIcon.className = 'absolute -top-1 -right-1 w-4 h-4 bg-primary-green rounded-full flex items-center justify-center';
+            checkIcon.innerHTML = '<i data-lucide="check" class="w-2 h-2 text-white"></i>';
+            this.appendChild(checkIcon);
+
+            lucide.createIcons();
+        });
+    });
+
+    // --- Upload d'image personnalisée avec crop ---
     let canvas = cropCanvas;
     let ctx = canvas.getContext('2d');
     let img = null;
@@ -304,77 +347,33 @@ document.addEventListener('DOMContentLoaded', function () {
     let scale = 1, offsetX = 0, offsetY = 0;
     let isDragging = false, lastX = 0, lastY = 0;
 
-    function prepareImage(src, isKoda = false) {
-        imgReady = false;
-        img = new Image();
-        img.crossOrigin = 'anonymous'; // Pour éviter les problèmes CORS
-        img.onload = () => {
-            imgReady = true;
-            selectedKodaInput.value = isKoda ? src.split('/').pop() : '';
-            // Reset des valeurs de crop
-            scale = 1;
-            offsetX = 0;
-            offsetY = 0;
-            initCrop();
-        };
-        img.src = src;
-    }
-
-    avatarOptions.forEach(option => {
-        option.addEventListener('click', function () {
-            const avatarName = this.dataset.avatar;
-            const avatarUrl = `/static/koda/${avatarName}`;
-
-            prepareImage(avatarUrl, true);
-            uploadPreview.src = avatarUrl;
-            switchTab(uploadTab, uploadContent, kodaTab, kodaContent);
-            cropContainer.classList.remove('hidden');
-
-            avatarOptions.forEach(opt => {
-                opt.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
-                opt.querySelector('.border-2').classList.remove('border-primary-green');
-                opt.querySelector('.border-2').classList.add('border-gray-600');
-                const checkIcon = opt.querySelector('.absolute.-top-1');
-                if (checkIcon) checkIcon.remove();
-            });
-
-            this.classList.add('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
-            this.querySelector('.border-2').classList.add('border-primary-green');
-            this.querySelector('.border-2').classList.remove('border-gray-600');
-            const checkIcon = document.createElement('div');
-            checkIcon.className = 'absolute -top-1 -right-1 w-5 h-5 bg-primary-green rounded-full flex items-center justify-center';
-            checkIcon.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
-            this.appendChild(checkIcon);
-
-            lucide.createIcons();
-        });
-    });
-
     avatarInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function (event) {
-                prepareImage(event.target.result, false);
+                img = new Image();
+                img.onload = function() {
+                    imgReady = true;
+                    selectedKodaInput.value = ''; // Reset Koda selection
+                    switchTab(uploadTab, uploadContent, kodaTab, kodaContent);
+                    cropContainer.classList.remove('hidden');
+                    initCrop();
+                };
+                img.src = event.target.result;
                 uploadPreview.src = event.target.result;
-                switchTab(uploadTab, uploadContent, kodaTab, kodaContent);
-                cropContainer.classList.remove('hidden');
             };
             reader.readAsDataURL(file);
         }
     });
 
     function initCrop() {
-        if (!img || !img.complete) {
-            console.log('Image not ready for cropping');
-            return;
-        }
+        if (!img || !imgReady) return;
         
-        canvas.width = 300;
-        canvas.height = 300;
+        canvas.width = 200;
+        canvas.height = 200;
         
-        // Calculer le ratio pour que l'image remplisse le cercle de crop
-        const cropRadius = 120; // Rayon du cercle de crop
+        const cropRadius = 80;
         const cropDiameter = cropRadius * 2;
         const ratio = Math.max(cropDiameter / img.width, cropDiameter / img.height);
         
@@ -383,26 +382,22 @@ document.addEventListener('DOMContentLoaded', function () {
         offsetY = (canvas.height - img.height * scale) / 2;
         
         zoomSlider.value = scale;
-        zoomSlider.min = ratio * 0.5; // Zoom minimum basé sur la taille de l'image
-        zoomSlider.max = ratio * 3;   // Zoom maximum
+        zoomSlider.min = ratio * 0.5;
+        zoomSlider.max = ratio * 3;
         
         drawImage();
     }
 
     function drawImage() {
-        if (!imgReady || !img || !img.complete) {
-            console.log('Cannot draw image - not ready');
-            return;
-        }
+        if (!imgReady || !img) return;
 
         const imgW = img.width * scale;
         const imgH = img.height * scale;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const cropRadius = 80;
         
-        // Contraintes pour garder l'image dans le cercle de crop
-        const centerX = canvas.width / 2;  // 150
-        const centerY = canvas.height / 2; // 150
-        const cropRadius = 120;
-        
+        // Contraintes
         const minX = centerX - imgW + cropRadius;
         const maxX = centerX - cropRadius;
         const minY = centerY - imgH + cropRadius;
@@ -411,10 +406,10 @@ document.addEventListener('DOMContentLoaded', function () {
         offsetX = Math.min(Math.max(offsetX, minX), maxX);
         offsetY = Math.min(Math.max(offsetY, minY), maxY);
 
-        // Nettoyer le canvas
+        // Nettoyer
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Dessiner l'image avec clipping circulaire
+        // Dessiner avec clipping
         ctx.save();
         ctx.beginPath();
         ctx.arc(centerX, centerY, cropRadius, 0, 2 * Math.PI);
@@ -422,16 +417,16 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.drawImage(img, offsetX, offsetY, imgW, imgH);
         ctx.restore();
 
-        // Dessiner le contour du cercle de crop
+        // Contour
         ctx.strokeStyle = '#4CAF50';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(centerX, centerY, cropRadius, 0, 2 * Math.PI);
         ctx.stroke();
         
-        // Ajouter une zone sombre autour du cercle pour mieux voir la zone de crop
+        // Overlay sombre
         ctx.save();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.globalCompositeOperation = 'destination-out';
         ctx.beginPath();
@@ -440,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.restore();
     }
 
+    // Events pour le crop
     zoomSlider.addEventListener('input', () => {
         if (!imgReady) return;
         scale = parseFloat(zoomSlider.value);
@@ -460,6 +456,7 @@ document.addEventListener('DOMContentLoaded', function () {
     canvas.addEventListener('mousedown', e => {
         if (!imgReady) return;
         isDragging = true;
+        canvas.style.cursor = 'grabbing';
         const rect = canvas.getBoundingClientRect();
         lastX = e.clientX - rect.left;
         lastY = e.clientY - rect.top;
@@ -478,53 +475,46 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    canvas.addEventListener('mouseup', () => isDragging = false);
-    canvas.addEventListener('mouseleave', () => isDragging = false);
+    canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = 'grab';
+    });
+    canvas.addEventListener('mouseleave', () => {
+        isDragging = false;
+        canvas.style.cursor = 'grab';
+    });
 
     cropSave.addEventListener('click', () => {
         if (!imgReady) return;
         
-        // Créer un canvas temporaire pour extraire la zone circulaire
-        const tempCanvas = document.createElement('canvas');
-        const tempSize = 240; // Taille de la zone de crop (rayon 120 * 2)
-        tempCanvas.width = tempSize;
-        tempCanvas.height = tempSize;
-        const tempCtx = tempCanvas.getContext('2d');
-        
-        // Extraire la zone de crop du canvas principal
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const cropRadius = 120;
-        
-        // Copier la zone de crop
-        tempCtx.drawImage(
-            img,
-            (centerX - cropRadius - offsetX) / scale,
-            (centerY - cropRadius - offsetY) / scale,
-            tempSize / scale,
-            tempSize / scale,
-            0,
-            0,
-            tempSize,
-            tempSize
-        );
-        
-        // Créer le canvas final redimensionné
         const finalSize = 200;
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = finalSize;
         finalCanvas.height = finalSize;
         const ctxFinal = finalCanvas.getContext('2d');
         
-        // Créer un masque circulaire pour le canvas final
+        // Créer masque circulaire
         ctxFinal.beginPath();
         ctxFinal.arc(finalSize/2, finalSize/2, finalSize/2, 0, 2 * Math.PI);
         ctxFinal.clip();
         
-        // Redimensionner et dessiner dans le canvas final
-        ctxFinal.drawImage(tempCanvas, 0, 0, tempSize, tempSize, 0, 0, finalSize, finalSize);
+        // Extraire et redimensionner la zone de crop
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const cropRadius = 80;
+        
+        ctxFinal.drawImage(
+            img,
+            (centerX - cropRadius - offsetX) / scale,
+            (centerY - cropRadius - offsetY) / scale,
+            (cropRadius * 2) / scale,
+            (cropRadius * 2) / scale,
+            0,
+            0,
+            finalSize,
+            finalSize
+        );
 
-        // Convertir en base64 et mettre à jour les aperçus
         const dataURL = finalCanvas.toDataURL('image/png');
         
         // Mettre à jour tous les aperçus
@@ -532,10 +522,10 @@ document.addEventListener('DOMContentLoaded', function () {
         currentAvatar.src = dataURL;
         sidebarPreview.src = dataURL;
         
-        // Stocker pour l'envoi au serveur
+        // Stocker pour l'envoi
         croppedAvatarInput.value = dataURL;
         
-        // Masquer le crop container
+        // Masquer le crop
         cropContainer.classList.add('hidden');
     });
 

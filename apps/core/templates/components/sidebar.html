@@ -18,12 +18,12 @@
                            {% if 'profile' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
                 {% if user.avatar %}
                     {% if user.avatar.url %}
-                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
+                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                     {% else %}
-                        <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
+                        <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                     {% endif %}
                 {% else %}
-                    <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
+                    <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                 {% endif %}
             </button>
 
@@ -34,12 +34,12 @@
                     <div class="flex items-center space-x-3">
                         {% if user.avatar %}
                             {% if user.avatar.url %}
-                                <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                                <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                             {% else %}
-                                <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                                <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                             {% endif %}
                         {% else %}
-                            <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover">
+                            <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                         {% endif %}
                         <div>
                             <div class="text-sm font-medium text-white">{{ user.username }}</div>
