@@ -1,4 +1,3 @@
-{% load static %}
 <!-- Sidebar Component - KodaTheme avec Profil en haut -->
 <div class="w-16 bg-gray-900 border-r border-gray-800 flex flex-col items-center py-4 space-y-2">
     <!-- Logo -->
@@ -9,14 +8,14 @@
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-2 flex-1">
         <!-- Bouton Profil -->
-        <div class="relative"> <!-- z-index le plus élevé ici -->
+        <div class="relative z-[9999]"> <!-- z-index le plus élevé ici -->
             <button onclick="toggleProfileMenu()" 
                     id="profile-button"
                     title="Profil"
                     class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative 
                            {% if 'profile' in request.path %}bg-primary-green bg-opacity-20 text-primary-green border border-primary-green border-opacity-30{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
                 {% if user.avatar %}
-                    {% if user.avatar.url and user.avatar.name %}
+                    {% if user.avatar.url %}
                         <img src="{{ user.avatar.url }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
                     {% else %}
                         <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600">
@@ -27,12 +26,12 @@
             </button>
 
             <!-- Menu déroulant du profil -->
-            <div id="profile-menu" class="absolute left-16 top-0 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl hidden profile-dropdown">
+            <div id="profile-menu" class="absolute left-16 top-0 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg hidden" style="z-index: 99999 !important;">
                 <!-- Header du menu -->
                 <div class="p-3 border-b border-gray-700">
                     <div class="flex items-center space-x-3">
                         {% if user.avatar %}
-                            {% if user.avatar.url and user.avatar.name %}
+                            {% if user.avatar.url %}
                                 <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                             {% else %}
                                 <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">

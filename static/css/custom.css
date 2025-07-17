@@ -225,23 +225,22 @@ main.tab-content {
 }
 
 /* ===== DROPDOWN MENU Z-INDEX FIX ===== */
-.profile-dropdown {
-    z-index: 9999 !important;
+#profile-menu {
+    z-index: 99999 !important;
     position: absolute !important;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(15px) !important;
-    border: 2px solid #374151 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(10px) !important;
 }
 
 /* Assurer que le conteneur du profil a une position relative */
-.relative {
+.relative.z-\[9999\] {
     position: relative !important;
-    z-index: 9998 !important;
+    z-index: 9999 !important;
 }
 
 /* Forcer le z-index sur la sidebar */
 .w-16.bg-gray-900 {
-    z-index: 9997 !important;
+    z-index: 10000 !important;
     position: relative !important;
 }
 
@@ -1111,90 +1110,42 @@ main.tab-content {
 }
 
 /* ===== AVATAR SELECTION ===== */
-.avatar-grid {
-    scrollbar-width: thin;
-    scrollbar-color: #4B5563 #1F2937;
-}
-
-.avatar-grid::-webkit-scrollbar {
-    width: 6px;
-}
-
-.avatar-grid::-webkit-scrollbar-track {
-    background: #1F2937;
-    border-radius: 3px;
-}
-
-.avatar-grid::-webkit-scrollbar-thumb {
-    background: #4B5563;
-    border-radius: 3px;
-}
-
-.avatar-grid::-webkit-scrollbar-thumb:hover {
-    background: #6B7280;
-}
-
 .tab-button.active {
     color: #4CAF50 !important;
     border-color: #4CAF50 !important;
 }
 
-.avatar-option, .avatar-choice {
+.avatar-option {
     transition: all 0.2s ease;
-    padding: 0.5rem;
-    border-radius: 0.75rem;
-    min-height: 6rem;
 }
 
-.avatar-option:hover, .avatar-choice:hover {
-    background: rgba(75, 85, 99, 0.3);
-    transform: translateY(-2px);
+.avatar-option:hover {
+    transform: scale(1.05);
 }
 
-.avatar-option.selected, .avatar-choice.selected {
-    background: rgba(76, 175, 80, 0.1);
-    border-color: #4CAF50;
+.avatar-option.selected {
+    transform: scale(1.1);
 }
 
-.avatar-option .border-3, .avatar-choice .border-3 {
+.avatar-option .border-2 {
     transition: all 0.2s ease;
-    border-width: 3px;
 }
 
-.border-3 {
-    border-width: 3px;
+/* Scrollbar pour la grille d'avatars */
+.max-h-64::-webkit-scrollbar {
+    width: 6px;
 }
 
-/* Responsive pour les avatars */
-@media (max-width: 640px) {
-    .avatar-option, .avatar-choice {
-        min-height: 5rem;
-    }
-    
-    .avatar-option .w-16, .avatar-choice .w-16 {
-        width: 3.5rem;
-        height: 3.5rem;
-    }
+.max-h-64::-webkit-scrollbar-track {
+    background: #374151;
+    border-radius: 3px;
 }
 
-/* Animation pour la sélection */
-.avatar-option[data-selected="true"], .avatar-choice[data-selected="true"] {
-    background: rgba(76, 175, 80, 0.15);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+.max-h-64::-webkit-scrollbar-thumb {
+    background: #6B7280;
+    border-radius: 3px;
 }
 
-.avatar-option .absolute, .avatar-choice .absolute {
-    animation: checkmark-appear 0.3s ease-out;
-}
-
-@keyframes checkmark-appear {
-    0% {
-        opacity: 0;
-        transform: scale(0.5);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+.max-h-64::-webkit-scrollbar-thumb:hover {
+    background: #9CA3AF;
 }
