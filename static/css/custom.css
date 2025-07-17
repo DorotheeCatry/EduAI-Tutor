@@ -226,10 +226,11 @@ main.tab-content {
 
 /* ===== DROPDOWN MENU Z-INDEX FIX ===== */
 #profile-menu {
-    z-index: 999999 !important;
+    z-index: 99999 !important;
     position: fixed !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
     backdrop-filter: blur(10px) !important;
+    transform: translateZ(0) !important;
 }
 
 /* Forcer le menu au-dessus de tout */
@@ -237,9 +238,10 @@ main.tab-content {
     z-index: inherit !important;
 }
 
-/* Assurer que la sidebar reste en dessous */
-.w-16.bg-gray-900 {
-    z-index: 1000 !important;
+/* Forcer le conteneur principal sous le menu */
+.h-full.max-h-screen {
+    z-index: 1 !important;
+    position: relative !important;
 }
 
 /* ===== TAB BAR FIXES ===== */
