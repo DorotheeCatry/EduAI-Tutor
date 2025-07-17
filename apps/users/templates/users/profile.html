@@ -246,45 +246,71 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// ✅ Script JS complet et robuste pour crop avatar (Koda ou upload)
+document.addEventListener('DOMContentLoaded', function () {
     lucide.createIcons();
-    
-    // Gestion des onglets
+
+    // --- Tabs ---
     const kodaTab = document.getElementById('koda-tab');
     const uploadTab = document.getElementById('upload-tab');
     const kodaContent = document.getElementById('koda-content');
     const uploadContent = document.getElementById('upload-content');
-    
+
     function switchTab(activeTab, activeContent, inactiveTab, inactiveContent) {
         activeTab.classList.add('active', 'border-primary-green', 'text-primary-green');
         activeTab.classList.remove('border-transparent', 'text-gray-300');
         inactiveTab.classList.remove('active', 'border-primary-green', 'text-primary-green');
         inactiveTab.classList.add('border-transparent', 'text-gray-300');
-        
+
         activeContent.classList.remove('hidden');
         inactiveContent.classList.add('hidden');
     }
-    
-    kodaTab.addEventListener('click', () => {
-        switchTab(kodaTab, kodaContent, uploadTab, uploadContent);
-    });
-    
-    uploadTab.addEventListener('click', () => {
-        switchTab(uploadTab, uploadContent, kodaTab, kodaContent);
-    });
-    
-    // Gestion de la sélection d'avatar Koda
+
+    kodaTab.addEventListener('click', () => switchTab(kodaTab, kodaContent, uploadTab, uploadContent));
+    uploadTab.addEventListener('click', () => switchTab(uploadTab, uploadContent, kodaTab, kodaContent));
+
+    // --- Global vars ---
     const avatarOptions = document.querySelectorAll('.avatar-option');
     const selectedKodaInput = document.getElementById('selected-koda-avatar');
+    const croppedAvatarInput = document.getElementById('cropped-avatar');
+    const avatarInput = document.getElementById('avatar-input');
+    const cropContainer = document.getElementById('crop-container');
+    const uploadPreview = document.getElementById('upload-preview');
     const currentAvatar = document.getElementById('current-avatar');
     const sidebarPreview = document.getElementById('sidebar-preview');
-    
+    const cropCanvas = document.getElementById('crop-canvas');
+    const zoomSlider = document.getElementById('zoom-slider');
+    const cropSave = document.getElementById('crop-save');
+    const cropCancel = document.getElementById('crop-cancel');
+
+    let canvas = cropCanvas;
+    let ctx = canvas.getContext('2d');
+    let img = null;
+    let imgReady = false;
+    let scale = 1, offsetX = 0, offsetY = 0;
+    let isDragging = false, lastX = 0, lastY = 0;
+
+    function prepareImage(src, isKoda = false) {
+        imgReady = false;
+        img = new Image();
+        img.onload = () => {
+            imgReady = true;
+            selectedKodaInput.value = isKoda ? src.split('/').pop() : '';
+            initCrop();
+        };
+        img.src = src;
+    }
+
     avatarOptions.forEach(option => {
-        option.addEventListener('click', function() {
+        option.addEventListener('click', function () {
             const avatarName = this.dataset.avatar;
             const avatarUrl = `/static/koda/${avatarName}`;
-            
-            // Mettre à jour la sélection visuelle
+
+            prepareImage(avatarUrl, true);
+            uploadPreview.src = avatarUrl;
+            switchTab(uploadTab, uploadContent, kodaTab, kodaContent);
+            cropContainer.classList.remove('hidden');
+
             avatarOptions.forEach(opt => {
                 opt.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
                 opt.querySelector('.border-2').classList.remove('border-primary-green');
@@ -292,225 +318,147 @@ document.addEventListener('DOMContentLoaded', function() {
                 const checkIcon = opt.querySelector('.absolute.-top-1');
                 if (checkIcon) checkIcon.remove();
             });
-            
+
             this.classList.add('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
             this.querySelector('.border-2').classList.add('border-primary-green');
             this.querySelector('.border-2').classList.remove('border-gray-600');
-            
-            // Ajouter l'icône de sélection
             const checkIcon = document.createElement('div');
             checkIcon.className = 'absolute -top-1 -right-1 w-5 h-5 bg-primary-green rounded-full flex items-center justify-center';
             checkIcon.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
             this.appendChild(checkIcon);
-            
-            // Mettre à jour les aperçus
-            currentAvatar.src = avatarUrl;
-            sidebarPreview.src = avatarUrl;
-            
-            // Mettre à jour le champ caché
-            selectedKodaInput.value = avatarName;
-            
-            // Réinitialiser les icônes Lucide
+
             lucide.createIcons();
-            
-            // Effacer les données d'upload personnalisé
-            document.getElementById('cropped-avatar').value = '';
-            document.getElementById('avatar-input').value = '';
         });
     });
-    
-    let canvas, ctx, img;
-    let scale = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-    let isDragging = false;
-    let lastX, lastY;
-    
-    const avatarInput = document.getElementById('avatar-input');
-    const cropContainer = document.getElementById('crop-container');
-    const cropCanvas = document.getElementById('crop-canvas');
-    const zoomSlider = document.getElementById('zoom-slider');
-    const cropSave = document.getElementById('crop-save');
-    const cropCancel = document.getElementById('crop-cancel');
-    const uploadPreview = document.getElementById('upload-preview');
-    
-    canvas = cropCanvas;
-    ctx = canvas.getContext('2d');
-    
-    // Gestion du fichier sélectionné
-    avatarInput.addEventListener('change', function(e) {
+
+    avatarInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(event) {
-                img = new Image();
-                img.onload = function() {
-                    initCrop();
-                };
-                img.src = event.target.result;
+            reader.onload = function (event) {
+                prepareImage(event.target.result, false);
+                uploadPreview.src = event.target.result;
+                switchTab(uploadTab, uploadContent, kodaTab, kodaContent);
+                cropContainer.classList.remove('hidden');
             };
             reader.readAsDataURL(file);
         }
     });
-    
+
     function initCrop() {
-        cropContainer.classList.remove('hidden');
         canvas.width = 300;
         canvas.height = 300;
-        
-        // Calculer l'échelle initiale pour que l'image rentre dans le canvas
-        const maxDim = Math.max(img.width, img.height);
-        scale = 300 / maxDim;
-        
-        // Centrer l'image
+        const ratio = Math.min(canvas.width / img.width, canvas.height / img.height);
+        scale = ratio;
         offsetX = (canvas.width - img.width * scale) / 2;
         offsetY = (canvas.height - img.height * scale) / 2;
-        
         zoomSlider.value = scale;
         drawImage();
     }
-    
+
     function drawImage() {
+        if (!imgReady || !img.complete) return;
+
+        const imgW = img.width * scale;
+        const imgH = img.height * scale;
+        const minX = 150 - imgW;
+        const maxX = 150;
+        const minY = 150 - imgH;
+        const maxY = 150;
+
+        offsetX = Math.min(Math.max(offsetX, minX), maxX);
+        offsetY = Math.min(Math.max(offsetY, minY), maxY);
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Fond noir pour le canvas
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Dessiner l'image
-        ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
-        
-        // Créer un masque circulaire
-        ctx.save();
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.globalCompositeOperation = 'destination-in';
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.restore();
-        
-        // Redessiner l'image dans le cercle
         ctx.save();
         ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, 2 * Math.PI);
+        ctx.arc(150, 150, 120, 0, 2 * Math.PI);
         ctx.clip();
-        ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+        ctx.drawImage(img, offsetX, offsetY, imgW, imgH);
         ctx.restore();
-        
-        // Dessiner le contour du cercle
+
         ctx.strokeStyle = '#4CAF50';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, 120, 0, 2 * Math.PI);
+        ctx.arc(150, 150, 120, 0, 2 * Math.PI);
         ctx.stroke();
     }
-    
-    // Gestion du zoom
-    zoomSlider.addEventListener('input', function() {
-        scale = parseFloat(this.value);
+
+    zoomSlider.addEventListener('input', () => {
+        if (!imgReady) return;
+        scale = parseFloat(zoomSlider.value);
         drawImage();
     });
-    
-    // Gestion du zoom avec la molette
-    canvas.addEventListener('wheel', function(e) {
+
+    canvas.addEventListener('wheel', e => {
+        if (!imgReady) return;
         e.preventDefault();
         const delta = e.deltaY > 0 ? -0.1 : 0.1;
         scale = Math.max(0.5, Math.min(3, scale + delta));
         zoomSlider.value = scale;
         drawImage();
     });
-    
-    // Gestion du drag
-    canvas.addEventListener('mousedown', function(e) {
+
+    canvas.addEventListener('mousedown', e => {
+        if (!imgReady) return;
         isDragging = true;
         const rect = canvas.getBoundingClientRect();
         lastX = e.clientX - rect.left;
         lastY = e.clientY - rect.top;
     });
-    
-    canvas.addEventListener('mousemove', function(e) {
-        if (isDragging) {
+
+    canvas.addEventListener('mousemove', e => {
+        if (isDragging && imgReady) {
             const rect = canvas.getBoundingClientRect();
             const currentX = e.clientX - rect.left;
             const currentY = e.clientY - rect.top;
-            
             offsetX += currentX - lastX;
             offsetY += currentY - lastY;
-            
             lastX = currentX;
             lastY = currentY;
-            
             drawImage();
         }
     });
-    
-    canvas.addEventListener('mouseup', function() {
-        isDragging = false;
-    });
-    
-    // Sauvegarder le recadrage
-    cropSave.addEventListener('click', function() {
-        // Créer un canvas temporaire pour l'avatar final (rond)
+
+    canvas.addEventListener('mouseup', () => isDragging = false);
+    canvas.addEventListener('mouseleave', () => isDragging = false);
+
+    cropSave.addEventListener('click', () => {
+        if (!imgReady) return;
         const finalCanvas = document.createElement('canvas');
-        const finalCtx = finalCanvas.getContext('2d');
         finalCanvas.width = 240;
         finalCanvas.height = 240;
-        
-        // Créer un cercle parfait
-        finalCtx.beginPath();
-        finalCtx.arc(120, 120, 120, 0, 2 * Math.PI);
-        finalCtx.clip();
-        
-        // Calculer les coordonnées pour centrer l'image dans le cercle
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const sourceX = (centerX - 120 - offsetX) / scale;
-        const sourceY = (centerY - 120 - offsetY) / scale;
-        const sourceSize = 240 / scale;
-        
-        // Dessiner l'image recadrée et centrée
-        finalCtx.drawImage(img, 
-            sourceX, sourceY, sourceSize, sourceSize,
-            0, 0, 240, 240
-        );
-        
-        // Convertir en blob et mettre à jour l'aperçu
-        finalCanvas.toBlob(function(blob) {
+        const ctxFinal = finalCanvas.getContext('2d');
+        ctxFinal.beginPath();
+        ctxFinal.arc(120, 120, 120, 0, 2 * Math.PI);
+        ctxFinal.clip();
+
+        const sx = (canvas.width / 2 - 120 - offsetX) / scale;
+        const sy = (canvas.height / 2 - 120 - offsetY) / scale;
+        const sSize = 240 / scale;
+
+        ctxFinal.drawImage(img, sx, sy, sSize, sSize, 0, 0, 240, 240);
+
+        finalCanvas.toBlob(blob => {
             const url = URL.createObjectURL(blob);
             uploadPreview.src = url;
             currentAvatar.src = url;
             sidebarPreview.src = url;
-            
-            // Stocker les données pour l'envoi
             const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('cropped-avatar').value = reader.result;
-                // Effacer la sélection Koda
-                selectedKodaInput.value = '';
-                avatarOptions.forEach(opt => {
-                    opt.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
-                    opt.querySelector('.border-2').classList.remove('border-primary-green');
-                    opt.querySelector('.border-2').classList.add('border-gray-600');
-                    const checkIcon = opt.querySelector('.absolute.-top-1');
-                    if (checkIcon) checkIcon.remove();
-                });
+            reader.onload = () => {
+                croppedAvatarInput.value = reader.result;
             };
             reader.readAsDataURL(blob);
         }, 'image/jpeg', 0.9);
-        
+
         cropContainer.classList.add('hidden');
     });
-    
-    // Annuler le recadrage
-    cropCancel.addEventListener('click', function() {
+
+    cropCancel.addEventListener('click', () => {
         cropContainer.classList.add('hidden');
         avatarInput.value = '';
     });
-    
-    // Réinitialiser les icônes au chargement
-    lucide.createIcons();
 });
 </script>
+
 {% endblock %}

@@ -70,7 +70,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     Vue de modification du profil utilisateur.
     """
     model = KodaUser
-    fields = ['username', 'email', 'bio', 'language_preference']
+    fields = ['username', 'email', 'bio', 'language_preference', 'avatar']
     template_name = 'users/profile.html'
     success_url = reverse_lazy('users:profile')
     
@@ -116,26 +116,31 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return context
     
     def form_valid(self, form):
-        # Gérer la sélection d'avatar Koda
+    # Cas 1 : Avatar Koda sélectionné
         selected_koda_avatar = self.request.POST.get('selected_koda_avatar')
         if selected_koda_avatar:
-            # Supprimer l'ancien avatar uploadé s'il existe
-            if form.instance.avatar and hasattr(form.instance.avatar, 'delete'):
-                form.instance.avatar.delete()
-            # Définir l'avatar comme nom de fichier Koda
-            form.instance.avatar = selected_koda_avatar
-        
-        # Gérer l'avatar recadré si présent
-        cropped_avatar = self.request.POST.get('cropped_avatar')
-        if cropped_avatar:
             # Supprimer l'ancien avatar s'il existe
             if form.instance.avatar and hasattr(form.instance.avatar, 'delete'):
-                form.instance.avatar.delete()
-            # Décoder l'image base64
+                form.instance.avatar.delete(save=False)
+
+            # Charger l'image Koda depuis le dossier static et la copier dans le champ avatar
+            from django.core.files.base import File
+            koda_path = os.path.join(settings.BASE_DIR, 'static', 'koda', selected_koda_avatar)
+            with open(koda_path, 'rb') as f:
+                form.instance.avatar.save(selected_koda_avatar, File(f), save=False)
+
+        # Cas 2 : Upload d’un avatar recadré (base64)
+        elif self.request.POST.get('cropped_avatar'):
+            cropped_avatar = self.request.POST.get('cropped_avatar')
             format, imgstr = cropped_avatar.split(';base64,')
             ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name=f'avatar_{uuid.uuid4()}.{ext}')
+
+            # Supprimer l'ancien avatar uploadé
+            if form.instance.avatar and hasattr(form.instance.avatar, 'delete'):
+                form.instance.avatar.delete(save=False)
+
             form.instance.avatar = data
-        
+
         messages.success(self.request, 'Profil mis à jour avec succès !')
         return super().form_valid(form)
