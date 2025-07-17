@@ -1132,20 +1132,20 @@ main.tab-content {
 }
 
 /* Scrollbar pour la grille d'avatars */
-.max-h-64::-webkit-scrollbar {
+.h-32::-webkit-scrollbar {
     width: 6px;
 }
 
-.max-h-64::-webkit-scrollbar-track {
+.h-32::-webkit-scrollbar-track {
     background: #374151;
     border-radius: 3px;
 }
 
-.max-h-64::-webkit-scrollbar-thumb {
+.h-32::-webkit-scrollbar-thumb {
     background: #6B7280;
     border-radius: 3px;
 }
 
-.max-h-64::-webkit-scrollbar-thumb:hover {
+.h-32::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
 }
