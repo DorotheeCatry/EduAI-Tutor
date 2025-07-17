@@ -80,9 +80,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Récupérer tous les avatars disponibles
-        koda_path = os.path.join(settings.STATIC_ROOT or 'static', 'koda')
-        if not os.path.exists(koda_path):
-            koda_path = os.path.join('static', 'koda')
+        koda_path = os.path.join(settings.BASE_DIR, 'static', 'koda')
         
         available_avatars = []
         if os.path.exists(koda_path):
@@ -102,13 +100,13 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         
         # Avatar actuel de l'utilisateur
         current_avatar = self.request.user.avatar
-        if current_avatar and hasattr(current_avatar, 'name'):
+        if current_avatar and hasattr(current_avatar, 'url') and current_avatar.name:
             # Si c'est un fichier uploadé
             context['current_avatar_url'] = current_avatar.url
             context['current_avatar_type'] = 'uploaded'
         else:
             # Si c'est un avatar Koda par défaut
-            avatar_name = current_avatar or 'koda_base.png'
+            avatar_name = str(current_avatar) if current_avatar else 'koda_base.png'
             context['current_avatar_url'] = f'/static/koda/{avatar_name}'
             context['current_avatar_type'] = 'koda'
             context['current_avatar_name'] = avatar_name
@@ -120,7 +118,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         selected_koda_avatar = self.request.POST.get('selected_koda_avatar')
         if selected_koda_avatar:
             # Supprimer l'ancien avatar uploadé s'il existe
-            if form.instance.avatar and hasattr(form.instance.avatar, 'delete'):
+            if form.instance.avatar and hasattr(form.instance.avatar, 'delete') and form.instance.avatar.name:
                 form.instance.avatar.delete()
             # Définir l'avatar comme nom de fichier Koda
             form.instance.avatar = selected_koda_avatar

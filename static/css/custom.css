@@ -1115,37 +1115,42 @@ main.tab-content {
     border-color: #4CAF50 !important;
 }
 
-.avatar-option {
+.avatar-option, .avatar-choice {
     transition: all 0.2s ease;
 }
 
-.avatar-option:hover {
+.avatar-option:hover, .avatar-choice:hover {
     transform: scale(1.05);
 }
 
-.avatar-option.selected {
+.avatar-option.selected, .avatar-choice.selected {
     transform: scale(1.1);
 }
 
-.avatar-option .border-2 {
+.avatar-option .border-2, .avatar-choice .border-2 {
     transition: all 0.2s ease;
 }
 
 /* Scrollbar pour la grille d'avatars */
-.max-h-64::-webkit-scrollbar {
+.max-h-64::-webkit-scrollbar, .max-h-48::-webkit-scrollbar {
     width: 6px;
 }
 
-.max-h-64::-webkit-scrollbar-track {
+.max-h-64::-webkit-scrollbar-track, .max-h-48::-webkit-scrollbar-track {
     background: #374151;
     border-radius: 3px;
 }
 
-.max-h-64::-webkit-scrollbar-thumb {
+.max-h-64::-webkit-scrollbar-thumb, .max-h-48::-webkit-scrollbar-thumb {
     background: #6B7280;
     border-radius: 3px;
 }
 
-.max-h-64::-webkit-scrollbar-thumb:hover {
+.max-h-64::-webkit-scrollbar-thumb:hover, .max-h-48::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
+}
+
+/* Espacement pour les tooltips d'avatars */
+.grid.grid-cols-6 {
+    padding-bottom: 2rem;
 }

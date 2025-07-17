@@ -1,6 +1,8 @@
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from django import forms
+from django.conf import settings
+import os
 from .models import KodaUser
 
 class RegisterForm(UserCreationForm):
@@ -36,13 +38,51 @@ class RegisterForm(UserCreationForm):
         })
     )
     
+    avatar = forms.CharField(
+        required=False,
+        initial='koda_base.png',
+        widget=forms.HiddenInput()
+    )
+    
     class Meta:
         model = KodaUser
-        fields = ("email", "username", "password1", "password2")
+        fields = ("email", "username", "password1", "password2", "avatar")
         labels = {
             "email": _("Email"),
             "username": _("Username"),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Charger les avatars disponibles
+        self.available_avatars = self.get_available_avatars()
+    
+    def get_available_avatars(self):
+        """Récupère la liste des avatars Koda disponibles"""
+        koda_path = os.path.join(settings.BASE_DIR, 'static', 'koda')
+        available_avatars = []
+        
+        if os.path.exists(koda_path):
+            for filename in os.listdir(koda_path):
+                if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    display_name = filename.replace('koda_', '').replace('.png', '').replace('_', ' ').title()
+                    available_avatars.append({
+                        'filename': filename,
+                        'display_name': display_name,
+                        'url': f'/static/koda/{filename}'
+                    })
+        
+        available_avatars.sort(key=lambda x: x['display_name'])
+        return available_avatars
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        # Définir l'avatar sélectionné
+        avatar = self.cleaned_data.get('avatar') or 'koda_base.png'
+        user.avatar = avatar
+        if commit:
+            user.save()
+        return user
 
 class LoginForm(AuthenticationForm):
     """

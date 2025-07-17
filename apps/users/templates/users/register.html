@@ -76,6 +76,44 @@
                     {% endfor %}
                 {% endif %}
 
+                <!-- Section Avatar -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-4">Choose your avatar</label>
+                    
+                    <!-- Avatar actuel -->
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-700 border-4 border-gray-600 mx-auto mb-3 shadow-lg">
+                            <img id="selected-avatar-preview" src="/static/koda/koda_base.png" alt="Avatar sélectionné" class="w-full h-full object-cover">
+                        </div>
+                        <p class="text-sm text-gray-400">Selected avatar</p>
+                    </div>
+                    
+                    <!-- Grille d'avatars -->
+                    <div class="grid grid-cols-6 gap-3 max-h-48 overflow-y-auto p-3 bg-gray-900 rounded-lg border border-gray-700">
+                        {% for avatar in form.available_avatars %}
+                            <div class="avatar-choice relative cursor-pointer group" data-avatar="{{ avatar.filename }}">
+                                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-600 group-hover:border-primary-green transition-all duration-200 transform group-hover:scale-105 {% if avatar.filename == 'koda_base.png' %}border-primary-green ring-2 ring-primary-green ring-opacity-50{% endif %}">
+                                    <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                                    <div class="bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                                        {{ avatar.display_name }}
+                                    </div>
+                                </div>
+                                {% if avatar.filename == 'koda_base.png' %}
+                                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-primary-green rounded-full flex items-center justify-center">
+                                        <i data-lucide="check" class="w-2 h-2 text-white"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <p class="text-xs text-gray-400 mt-3 text-center">Click on an avatar to select it</p>
+                    
+                    <!-- Champ caché pour l'avatar -->
+                    {{ form.avatar }}
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
@@ -155,6 +193,44 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
+            
+            // Gestion de la sélection d'avatar
+            const avatarChoices = document.querySelectorAll('.avatar-choice');
+            const avatarInput = document.getElementById('id_avatar');
+            const avatarPreview = document.getElementById('selected-avatar-preview');
+            
+            avatarChoices.forEach(choice => {
+                choice.addEventListener('click', function() {
+                    const avatarName = this.dataset.avatar;
+                    const avatarUrl = `/static/koda/${avatarName}`;
+                    
+                    // Mettre à jour la sélection visuelle
+                    avatarChoices.forEach(opt => {
+                        opt.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+                        opt.querySelector('.border-2').classList.remove('border-primary-green');
+                        opt.querySelector('.border-2').classList.add('border-gray-600');
+                        const checkIcon = opt.querySelector('.absolute.-top-1');
+                        if (checkIcon) checkIcon.remove();
+                    });
+                    
+                    this.classList.add('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+                    this.querySelector('.border-2').classList.add('border-primary-green');
+                    this.querySelector('.border-2').classList.remove('border-gray-600');
+                    
+                    // Ajouter l'icône de sélection
+                    const checkIcon = document.createElement('div');
+                    checkIcon.className = 'absolute -top-1 -right-1 w-4 h-4 bg-primary-green rounded-full flex items-center justify-center';
+                    checkIcon.innerHTML = '<i data-lucide="check" class="w-2 h-2 text-white"></i>';
+                    this.appendChild(checkIcon);
+                    
+                    // Mettre à jour l'aperçu et le champ caché
+                    avatarPreview.src = avatarUrl;
+                    avatarInput.value = avatarName;
+                    
+                    // Réinitialiser les icônes Lucide
+                    lucide.createIcons();
+                });
+            });
         });
     </script>
 </body>
