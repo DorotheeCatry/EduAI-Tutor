@@ -1,11 +1,14 @@
 /* Styles personnalisés pour EduAI Tutor */
 
 /* Force le fond sombre sur tout le document */
-html, body {
-    background-color: #111827 !important; /* gray-900 */
+html,
+body {
+    background-color: #111827 !important;
+    /* gray-900 */
     color: white !important;
     min-height: 100vh;
-    overflow-x: hidden; /* Empêche seulement le scroll horizontal */
+    overflow-x: hidden;
+    /* Empêche seulement le scroll horizontal */
 }
 
 /* Variables CSS personnalisées */
@@ -19,24 +22,52 @@ html, body {
 }
 
 /* Classes utilitaires personnalisées */
-.bg-primary-rose { background-color: var(--primary-rose); }
-.bg-primary-blue { background-color: var(--primary-blue); }
-.bg-primary-green { background-color: var(--primary-green); }
-.text-primary-rose { color: var(--primary-rose); }
-.text-primary-blue { color: var(--primary-blue); }
-.text-primary-green { color: var(--primary-green); }
-.text-primary-gray { color: var(--primary-gray); }
-.bg-gray-750 { background-color: var(--gray-750); }
-.bg-gray-850 { background-color: var(--gray-850); }
+.bg-primary-rose {
+    background-color: var(--primary-rose);
+}
+
+.bg-primary-blue {
+    background-color: var(--primary-blue);
+}
+
+.bg-primary-green {
+    background-color: var(--primary-green);
+}
+
+.text-primary-rose {
+    color: var(--primary-rose);
+}
+
+.text-primary-blue {
+    color: var(--primary-blue);
+}
+
+.text-primary-green {
+    color: var(--primary-green);
+}
+
+.text-primary-gray {
+    color: var(--primary-gray);
+}
+
+.bg-gray-750 {
+    background-color: var(--gray-750);
+}
+
+.bg-gray-850 {
+    background-color: var(--gray-850);
+}
 
 /* Transitions fluides pour les changements de page */
 .tab-content {
-    height: calc(100vh - 120px); /* Hauteur fixe au lieu de min-height */
+    height: calc(100vh - 120px);
+    /* Hauteur fixe au lieu de min-height */
     position: relative;
     will-change: transform;
     backface-visibility: hidden;
     transform: translateZ(0);
-    overflow-y: auto; /* Permet le scroll vertical */
+    overflow-y: auto;
+    /* Permet le scroll vertical */
 }
 
 /* Stabiliser le layout pour éviter les repaints */
@@ -46,14 +77,16 @@ main.tab-content {
     -webkit-transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     -webkit-perspective: 1000;
-    overflow-y: auto; /* Assure le scroll sur le main */
+    overflow-y: auto;
+    /* Assure le scroll sur le main */
 }
 
 /* Optimisation GPU pour les transitions */
 .flex-1 {
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
-    overflow-y: auto; /* Permet le scroll sur les conteneurs flex */
+    overflow-y: auto;
+    /* Permet le scroll sur les conteneurs flex */
 }
 
 /* Éviter les reflows lors des changements de contenu */
@@ -66,13 +99,26 @@ main.tab-content {
     contain: layout;
 }
 
-.border-primary-green { border-color: var(--primary-green); }
-.border-primary-blue { border-color: var(--primary-blue); }
-.border-primary-rose { border-color: var(--primary-rose); }
+.border-primary-green {
+    border-color: var(--primary-green);
+}
+
+.border-primary-blue {
+    border-color: var(--primary-blue);
+}
+
+.border-primary-rose {
+    border-color: var(--primary-rose);
+}
 
 /* ===== ANIMATIONS ===== */
-.animate-bounce-delay-1 { animation-delay: 0.1s; }
-.animate-bounce-delay-2 { animation-delay: 0.2s; }
+.animate-bounce-delay-1 {
+    animation-delay: 0.1s;
+}
+
+.animate-bounce-delay-2 {
+    animation-delay: 0.2s;
+}
 
 /* ===== CONTENT STYLES ===== */
 .card {
@@ -223,7 +269,7 @@ main.tab-content {
     padding-bottom: 1rem !important;
 }
 
-.space-y-2 > :not([hidden]) ~ :not([hidden]) {
+.space-y-2> :not([hidden])~ :not([hidden]) {
     margin-top: 0.5rem !important;
 }
 
@@ -296,6 +342,7 @@ main.tab-content {
 .transition-all.duration-200 {
     transition: all 0.2s ease-in-out !important;
 }
+
 /* ===== NOTIFICATION STYLES ===== */
 .notification {
     @apply fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform;
@@ -372,7 +419,9 @@ main.tab-content {
 }
 
 /* ===== PROSE STYLING FOR COURSE CONTENT ===== */
-.prose h1, .prose h2, .prose h3 {
+.prose h1,
+.prose h2,
+.prose h3 {
     color: #FFFFFF !important;
     font-weight: 700;
     margin-top: 1.5rem;
@@ -508,11 +557,11 @@ main.tab-content {
         margin: 0 -1rem;
         border-radius: 0;
     }
-    
+
     .section-content {
         padding: 1rem;
     }
-    
+
     .prose pre {
         margin-left: -1rem;
         margin-right: -1rem;
@@ -548,6 +597,7 @@ main.tab-content {
     background: #4B5563;
     color: #FFFFFF;
 }
+
 /* ===== NOUVEAU SYSTÈME DE COURS ===== */
 .course-container {
     max-width: 1200px;
@@ -918,31 +968,31 @@ main.tab-content {
     .course-container {
         padding: 1rem;
     }
-    
+
     .course-header {
         flex-direction: column;
         gap: 1.5rem;
         align-items: flex-start;
     }
-    
+
     .course-main-title {
         font-size: 2rem;
     }
-    
+
     .course-actions {
         flex-direction: column;
         gap: 1rem;
         align-items: stretch;
     }
-    
+
     .action-buttons {
         flex-direction: column;
     }
-    
+
     .section-content {
         padding: 1.5rem;
     }
-    
+
     .code-block-container {
         margin-left: -1rem;
         margin-right: -1rem;

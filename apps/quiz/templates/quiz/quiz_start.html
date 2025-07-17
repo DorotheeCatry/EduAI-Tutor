@@ -1,9 +1,19 @@
 {% extends 'core/base.html' %}
+{% block extra_head %}
+<!-- Prism.js pour coloration syntaxique -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/';
+</script>
+{% endblock %}
 
 {% block title %}Quiz in Progress - EduAI Tutor{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6">
+    <!-- Header haut : titre + timer -->
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
             <i data-lucide="brain" class="w-6 h-6 text-primary-rose"></i>
@@ -15,167 +25,355 @@
                 <span class="text-primary-blue font-mono text-lg" id="timer">30s</span>
             </div>
             <div class="text-white">
-                Question <span id="current-question">1</span> of 2
+                Question <span id="current-question">1</span> of <span id="total-questions">X</span>
             </div>
         </div>
     </div>
 
+    <!-- Bloc question + réponses -->
     <div class="bg-gray-800 rounded-lg p-8 border border-gray-700">
         <div class="mb-8">
             <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
-                <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 50%"></div>
+                <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
             </div>
-            <h2 class="text-lg font-bold text-white mb-6" id="question-text">
-                What is the difference between POST and PUT?
-            </h2>
+            <div id="question-text" class="text-white space-y-4 text-base"></div>
         </div>
 
         <div class="space-y-4" id="options-container">
-            <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="0">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">A</div>
-                    <span>POST creates, PUT modifies</span>
-                </div>
-            </button>
-            <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="1">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">B</div>
-                    <span>POST modifies, PUT creates</span>
-                </div>
-            </button>
-            <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="2">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">C</div>
-                    <span>No difference</span>
-                </div>
-            </button>
-            <button class="quiz-option w-full p-3 text-sm text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]" data-answer="3">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">D</div>
-                    <span>POST is more secure</span>
-                </div>
-            </button>
+            <!-- Options générées dynamiquement -->
         </div>
     </div>
 
+    <!-- Pied de page -->
     <div class="flex justify-between items-center">
         <a href="{% url 'quiz:lobby' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
             Back
         </a>
         <div class="text-sm text-white font-semibold">
-            Score: <span id="score">0</span> / 2
+            Score: <span id="score">0</span> / <span id="total-questions-footer">X</span>
         </div>
     </div>
 </div>
 
+{{ quiz_data|json_script:"quiz-data" }}
+
+<!-- Script JS dynamique -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
-        
-        let currentQuestion = 1;
-        let score = 0;
-        let timeLeft = 30;
-        let timer;
+document.addEventListener('DOMContentLoaded', function () {
+    lucide.createIcons();
 
-        const questions = [
-            {
-                text: "What is the difference between POST and PUT?",
-                options: [
-                    "POST creates, PUT modifies",
-                    "POST modifies, PUT creates", 
-                    "No difference",
-                    "POST is more secure"
-                ],
-                correct: 0
-            },
-            {
-                text: "What is a closure in JavaScript?",
-                options: [
-                    "A function that closes the browser",
-                    "A function that has access to variables from its parent scope",
-                    "An anonymous function",
-                    "A recursive function"
-                ],
-                correct: 1
+    let currentQuestion = 1;
+    let score = 0;
+    let timeLeft = 30;
+    let timer;
+
+    const quizData = JSON.parse(document.getElementById("quiz-data").textContent);
+    const questions = quizData.questions.map(q => ({
+        text: q.question,
+        options: q.options,
+        correct: q.correct_answer,
+        explanation: q.explanation
+    }));
+
+    // Affichage du nombre total de questions
+    document.getElementById('total-questions').textContent = questions.length;
+    document.getElementById('total-questions-footer').textContent = questions.length;
+
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft + 's';
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                nextQuestion();
             }
-        ];
+        }, 1000);
+    }
 
-        function startTimer() {
-            timer = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft + 's';
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    nextQuestion();
-                }
-            }, 1000);
-        }
+    function updateQuestion() {
+        const question = questions[currentQuestion - 1];
+        document.getElementById('current-question').textContent = currentQuestion;
 
-        function nextQuestion() {
-            clearInterval(timer);
-            
-            if (currentQuestion < questions.length) {
-                currentQuestion++;
-                timeLeft = 30;
-                updateQuestion();
-                startTimer();
-            } else {
-                // Quiz terminé
-                alert(`Quiz completed! Final score: ${score}/${questions.length}`);
-                window.location.href = "{% url 'quiz:lobby' %}";
-            }
-        }
-
-        function updateQuestion() {
-            const question = questions[currentQuestion - 1];
-            document.getElementById('current-question').textContent = currentQuestion;
-            document.getElementById('question-text').textContent = question.text;
-            document.getElementById('progress-bar').style.width = (currentQuestion / questions.length) * 100 + '%';
-            
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            
-            question.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = 'quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]';
-                button.setAttribute('data-answer', index);
-                button.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">${String.fromCharCode(65 + index)}</div>
-                        <span>${option}</span>
-                    </div>
-                `;
-                button.addEventListener('click', () => handleAnswer(index));
-                optionsContainer.appendChild(button);
-            });
-        }
-
-        function handleAnswer(answerIndex) {
-            const question = questions[currentQuestion - 1];
-            
-            if (answerIndex === question.correct) {
-                score++;
-                document.getElementById('score').textContent = score;
-            }
-            
-            // Disable all options
-            document.querySelectorAll('.quiz-option').forEach(option => {
-                option.disabled = true;
-                option.classList.add('opacity-50');
-            });
-            
-            setTimeout(nextQuestion, 1000);
-        }
-
-        // Initialize quiz
-        startTimer();
-        document.querySelectorAll('.quiz-option').forEach(option => {
-            option.addEventListener('click', (e) => {
-                const answerIndex = parseInt(e.currentTarget.getAttribute('data-answer'));
-                handleAnswer(answerIndex);
-            });
+        // Traitement du bloc de question avec gestion des blocs ```python``` et <br>
+        const formatted = question.text
+            .replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
+            const language = lang || 'code';
+            const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
+            return `<div class="code-block-container my-4">
+                <div class="code-header">
+                    <span class="code-language">${displayLang}</span>
+                </div>
+                <pre class="code-content language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
+            </div>`;
         });
-    });
+        const questionTextEl = document.getElementById('question-text');
+        questionTextEl.innerHTML = formatted;
+
+        // Relancer Prism uniquement sur les nouveaux blocs
+        if (window.Prism) {
+            questionTextEl.querySelectorAll('pre code').forEach(block => {
+                Prism.highlightElement(block);
+            });
+        }
+
+        // Mise à jour de la barre de progression
+        document.getElementById('progress-bar').style.width = (currentQuestion / questions.length) * 100 + '%';
+
+        // Génération des options
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        question.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]';
+            button.setAttribute('data-answer', index);
+            button.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">
+                        ${String.fromCharCode(65 + index)}
+                    </div>
+                    <span>${option}</span>
+                </div>
+            `;
+            button.addEventListener('click', () => handleAnswer(index));
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function handleAnswer(answerIndex) {
+        const question = questions[currentQuestion - 1];
+
+        if (answerIndex === question.correct) {
+            score++;
+            document.getElementById('score').textContent = score;
+        }
+
+        document.querySelectorAll('.quiz-option').forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+        });
+
+        setTimeout(nextQuestion, 1000);
+    }
+
+    function nextQuestion() {
+        clearInterval(timer);
+
+        if (currentQuestion < questions.length) {
+            currentQuestion++;
+            timeLeft = 30;
+            updateQuestion();
+            startTimer();
+        } else {
+            alert(`Quiz completed! Final score: ${score}/${questions.length}`);
+            window.location.href = "{% url 'quiz:lobby' %}";
+        }
+    }
+
+    updateQuestion();
+    startTimer();
+});
 </script>
+<style>
+/* ✨ MISE EN FORME GÉNÉRALE */
+.keyword-highlight {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: #FFFFFF;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.inline-code {
+    background: #0D1117;
+    color: #79C0FF;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.875rem;
+    border: 1px solid #30363D;
+}
+
+/* 🧠 EXERCICES */
+.exercise-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin: 1rem 0 0.5rem 0;
+    border: 1px solid;
+}
+
+.exercise-statement {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.exercise-solution {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22C55E;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* 💻 BLOCS DE CODE */
+.code-block-container {
+    background: #0D1117;
+    border: 1px solid #30363D;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.code-header {
+    background: #21262D;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #30363D;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.code-language {
+    font-size: 0.75rem;
+    color: #7C3AED;
+    background: #1E1B4B;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-weight: 600;
+}
+
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: #374151;
+    color: #9CA3AF;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.copy-btn:hover {
+    background: #4B5563;
+    color: #FFFFFF;
+    transform: translateY(-1px);
+}
+
+.copy-btn.copied {
+    background: #4CAF50;
+    color: #FFFFFF;
+}
+
+.code-content {
+    padding: 0.3rem 1rem !important;
+    margin: 0 !important;
+    background: #0D1117;
+    color: #E6EDF3;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+    overflow-x: auto;
+}
+
+pre.code-content {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Supprime le label automatique de Prism */
+code[class^="language-"]::before,
+pre[class^="language-"]::before,
+code[class*=" language-"]::before,
+pre[class*=" language-"]::before,
+.code-content::before {
+    content: none !important;
+    display: none !important;
+}
+
+/* 🟩 LISTES */
+.list-container {
+    margin: 0.5rem 0;
+    padding-left: 1rem;
+}
+
+.list-item {
+    position: relative;
+    margin-bottom: 0.5rem;
+    color: #E5E7EB;
+    line-height: 1.6;
+}
+
+.list-item::before {
+    content: "•";
+    color: #4CAF50;
+    font-weight: bold;
+    position: absolute;
+    left: -1rem;
+}
+
+/* 📜 SCROLLBAR */
+#course-content-container {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #1F2937;
+    max-height: calc(100vh - 300px);
+}
+
+#course-content-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+#course-content-container::-webkit-scrollbar-track {
+    background: #1F2937;
+    border-radius: 4px;
+}
+
+#course-content-container::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 4px;
+}
+
+#course-content-container::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+
+pre.code-content,
+pre[class*="language-"] {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+pre.code-content > code {
+    display: block;
+    padding: 0.8rem 1rem !important;
+    margin: 0 !important;
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+    background: #0D1117 !important;
+    color: #E6EDF3 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+    .code-block-container {
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+    }
+}
+</style>
 {% endblock %}

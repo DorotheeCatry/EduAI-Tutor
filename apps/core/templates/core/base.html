@@ -9,6 +9,7 @@
     {% tailwind_css %}
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+{% block extra_head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-gray-900 text-white flex flex-col">
     {% if not user.is_authenticated %}

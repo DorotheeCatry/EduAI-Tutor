@@ -135,38 +135,39 @@ class AIOrchestrator:
                 'question': question
             }
     
-    def create_quiz(self, topic, difficulty="intermediate", num_questions=5):
+    def create_quiz(self, topic, num_questions):
         """
-        Crée un quiz sur un sujet donné
+        Crée un quiz sur un sujet donné et retourne un dict directement exploitable.
         """
         try:
             quiz_data = generate_quiz(topic, num_questions)
-            
-            # Tracking de la session si utilisateur connecté
+
+            # Tracking session (facultatif)
             session = None
             if self.user:
                 session = self.watcher.track_session(
                     topic=topic,
                     activity_type='quiz',
                     metadata={
-                        'num_questions': num_questions
+                        'num_questions': num_questions,
                     }
                 )
-            
+
+            # Ajoute les métadonnées directement dans le retour
             return {
-                'success': True,
-                'topic': topic,
-                'quiz': quiz_data,
-                'session_id': session.id if session else None
+                "questions": quiz_data["questions"],
+                "topic": topic,
+                "session_id": session.id if session else None
             }
-            
+
         except Exception as e:
             print(f"Erreur lors de la création du quiz : {e}")
             return {
-                'success': False,
-                'error': str(e),
-                'topic': topic
+                "questions": [],
+                "error": str(e),
+                "topic": topic
             }
+
     
     def submit_quiz_results(self, session_id, answers, quiz_data):
         """

@@ -13,16 +13,26 @@ def quiz_lobby(request):
 def quiz_start(request):
     mode = request.GET.get('mode', 'solo')
     topic = request.GET.get('topic', 'Python général')
-    
+
     # Générer un quiz avec l'IA
     orchestrator = get_orchestrator(request.user)
-    result = orchestrator.create_quiz(topic, 5)
-    
+    try:
+        num_questions = int(request.GET.get('num_questions', 10))
+        if num_questions < 1 or num_questions > 50:
+            num_questions = 10
+    except (TypeError, ValueError):
+        num_questions = 10
+        
+    result = orchestrator.create_quiz(topic, num_questions)
+
+    # Vérifie que des questions ont bien été retournées
+    quiz_data = result if result and "questions" in result and result["questions"] else None
+
     context = {
         'mode': mode,
         'topic': topic,
-        'quiz_data': result if result['success'] else None,
-        'error': result.get('error') if not result['success'] else None
+        'quiz_data': quiz_data,
+        'error': None if quiz_data else "⚠️ Aucun quiz n’a pu être généré."
     }
     return render(request, 'quiz/quiz_start.html', context)
 

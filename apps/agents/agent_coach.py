@@ -5,10 +5,11 @@ from langchain.prompts import PromptTemplate
 from apps.agents.tools.llm_loader import get_llm
 from langchain_community.vectorstores import Chroma
 from apps.rag.utils import load_embedding_function
+from apps.agents.utils import load_prompt, parse_text_quiz
 import json
 import random
 
-def get_coach_chain(model_name="llama3-70b-8192"):
+def get_coach_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     """
     Agent Coach IA : génère des QCM et exercices à partir d'un sujet donné.
     """
@@ -17,45 +18,11 @@ def get_coach_chain(model_name="llama3-70b-8192"):
     # Prompt pour générer des QCM
     quiz_prompt = PromptTemplate(
         input_variables=["topic", "num_questions"],
-        template="""
-Tu es un excellent formateur qui crée des QCM pédagogiques.
-
-SUJET : {topic}
-NOMBRE DE QUESTIONS : {num_questions}
-
-Génère un QCM avec exactement {num_questions} questions sur le sujet "{topic}".
-
-RÈGLES IMPORTANTES :
-- Chaque question doit avoir exactement 4 options (A, B, C, D)
-- Une seule bonne réponse par question
-- Les mauvaises réponses doivent être plausibles mais clairement incorrectes
-- Varie les types de questions : définitions, exemples pratiques, cas d'usage
-- Adapte la complexité à un niveau intermédiaire
-
-FORMAT DE RÉPONSE (JSON strict) :
-{{
-  "questions": [
-    {{
-      "question": "Texte de la question ?",
-      "options": [
-        "Option A",
-        "Option B", 
-        "Option C",
-        "Option D"
-      ],
-      "correct_answer": 0,
-      "explanation": "Explication de la bonne réponse"
-    }}
-  ]
-}}
-
-Réponds UNIQUEMENT avec le JSON, sans texte supplémentaire.
-"""
+        template=load_prompt("coach")
     )
-    
     return LLMChain(llm=llm, prompt=quiz_prompt)
 
-def get_code_exercise_chain(model_name="llama3-70b-8192"):
+def get_code_exercise_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     """
     Agent Coach IA : génère des exercices de code à compléter.
     """
@@ -93,41 +60,35 @@ Réponds UNIQUEMENT avec le JSON, sans texte supplémentaire.
     
     return LLMChain(llm=llm, prompt=code_prompt)
 
-def generate_quiz(topic, difficulty="intermediate", num_questions=5):
-    """
-    Génère un quiz sur un sujet donné.
-    """
+def generate_quiz(topic, num_questions=5):
     try:
         chain = get_coach_chain()
         result = chain.run(
             topic=topic,
             num_questions=num_questions
         )
-        
-        # Parser le JSON
-        quiz_data = json.loads(result)
-        return quiz_data
-        
-    except Exception as e:
-        print(f"Erreur lors de la génération du quiz : {e}")
-        # Fallback avec un quiz exemple
-        return {
-            "questions": [
-                {
-                    "question": f"Question exemple sur {topic}",
-                    "options": [
-                        "Option A",
-                        "Option B", 
-                        "Option C",
-                        "Option D"
-                    ],
-                    "correct_answer": 0,
-                    "explanation": "Explication exemple"
-                }
-            ]
-        }
+        print("🧠 Raw model output:", result)
 
-def generate_code_exercise(topic, difficulty="intermediate"):
+        quiz_data = parse_text_quiz(result)
+        if quiz_data and quiz_data.get("questions"):
+            return quiz_data
+
+    except Exception as e:
+        print(f"❌ Quiz generation failed: {e}")
+
+    # Fallback
+    return {
+        "questions": [
+            {
+                "question": f"Example question on {topic}",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "correct_answer": 0,
+                "explanation": "Sample explanation"
+            }
+        ]
+    }
+
+def generate_code_exercise(topic):
     """
     Génère un exercice de code sur un sujet donné.
     """

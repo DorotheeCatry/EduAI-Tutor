@@ -1,5 +1,14 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% block extra_head %}
+<!-- Prism.js pour coloration syntaxique -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/';
+</script>
+{% endblock %}
 
 {% block title %}{{ generated_course.title|default:"Cours généré" }} - EduAI Tutor{% endblock %}
 
@@ -83,106 +92,109 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
-        
-        // Fonction pour formater le contenu markdown
-        function formatMarkdownContent() {
-            const content = document.getElementById('course-content');
-            if (!content) return;
-            
-            let html = content.innerHTML;
-            
-            // Headers avec emojis et couleurs
-            html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0 flex items-center">$1</h1>');
-            html = html.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-primary-green mb-4 mt-6 flex items-center">$1</h2>');
-            html = html.replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
-            
-            // Formatage spécial pour "Énoncé :" et "Solution :"
-            html = html.replace(/\*\*Énoncé\s*:\*\*/g, '<div class="exercise-label exercise-statement"><i data-lucide="file-text" class="w-4 h-4"></i><span>Énoncé</span></div>');
-            html = html.replace(/\*\*Solution\s*:\*\*/g, '<div class="exercise-label exercise-solution"><i data-lucide="check-circle" class="w-4 h-4"></i><span>Solution</span></div>');
-            
-            // Blocs de code avec header repositionné
-            html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, lang, code) {
-                const language = lang || 'code';
-                const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
-                return `<div class="code-block-container my-4">
-                    <div class="code-header">
-                        <span class="code-language">${displayLang}</span>
-                        <button class="copy-btn" onclick="copyCode(this)">
-                            <i data-lucide="copy" class="w-4 h-4"></i>
-                            <span>Copy</span>
-                        </button>
-                    </div>
-                    <pre class="code-content"><code>${escapeHtml(code.trim())}</code></pre>
-                </div>`;
-            });
-            
-            // Code inline
-            html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
-            
-            // Texte en gras avec surlignage (sauf pour Énoncé et Solution déjà traités)
-            html = html.replace(/\*\*((?!Énoncé|Solution).*?)\*\*/g, '<strong class="keyword-highlight">$1</strong>');
-            
-            // Listes à puces
-            html = html.replace(/^- (.+)$/gm, '<li class="list-item">$1</li>');
-            html = html.replace(/^• (.+)$/gm, '<li class="list-item">$1</li>');
-            
-            // Grouper les listes
-            html = html.replace(/(<li class="list-item">.*?<\/li>)/gs, function(match) {
-                return '<ul class="list-container mb-4">' + match + '</ul>';
-            });
-            
-            // Paragraphes
-            html = html.replace(/\n\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">');
-            html = '<p class="mb-4 text-gray-300 leading-relaxed">' + html + '</p>';
-            
-            content.innerHTML = html;
+
+    function formatMarkdownContent() {
+        const content = document.getElementById('course-content');
+        if (!content) return;
+
+        let html = content.innerHTML;
+
+        // Étape 1 : remplacer les blocs ```lang\ncode``` → HTML <pre> custom
+        html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
+            const language = lang || 'code';
+            const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
+            return `<div class="code-block-container my-4">
+                <div class="code-header">
+                    <span class="code-language">${displayLang}</span>
+                    <button class="copy-btn" onclick="copyCode(this)">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+                <pre class="code-content language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
+            </div>`;
+        });
+
+        // Étape 2 : Sauvegarder les blocs <pre> pour ne pas les altérer ensuite
+        const codeBlocks = [];
+        html = html.replace(/<pre[^>]*>[\s\S]*?<\/pre>/g, (match) => {
+            codeBlocks.push(match);
+            return `<!--CODEBLOCK_${codeBlocks.length - 1}-->`;
+        });
+
+        // Étape 3 : Formattage Markdown en HTML
+        html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0 flex items-center">$1</h1>');
+        html = html.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-primary-green mb-4 mt-6 flex items-center">$1</h2>');
+        html = html.replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
+        html = html.replace(/^#### (.*$)/gm, '<h4 class="text-lg font-semibold text-primary-blue mt-4 mb-2">$1</h4>');
+        html = html.replace(/^##### (.*$)/gm, '<h5 class="text-base font-semibold text-primary-blue mt-4 mb-2">$1</h5>');
+
+        html = html.replace(/\*\*Énoncé\s*:\*\*/g, '<div class="exercise-label exercise-statement"><i data-lucide="file-text" class="w-4 h-4"></i><span>Énoncé</span></div><p>');
+        html = html.replace(/\*\*Solution\s*:\*\*/g, '<div class="exercise-label exercise-solution"><i data-lucide="check-circle" class="w-4 h-4"></i><span>Solution</span></div><p>');
+
+        html = html.replace(/(Exemple|Exercice)(\d+)/g, '$1 $2');
+        html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+
+        html = html.replace(/^- (.+)$/gm, '<li class="list-item">$1</li>');
+        html = html.replace(/^• (.+)$/gm, '<li class="list-item">$1</li>');
+        html = html.replace(/(<li class="list-item">.*?<\/li>)/gs, match => '<ul class="list-container mb-4">' + match + '</ul>');
+
+        html = html.replace(/\n\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">');
+        html = '<p class="mb-4 text-gray-300 leading-relaxed">' + html + '</p>';
+
+        // Étape 4 : Réinjection des blocs <pre>
+        html = html.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => codeBlocks[parseInt(i)]);
+
+        content.innerHTML = html;
+        lucide.createIcons();
+
+        if (window.Prism) {
+            Prism.highlightAll();
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    window.copyCode = function (button) {
+        const codeContainer = button.closest('.code-block-container');
+        const codeElement = codeContainer.querySelector('code');
+        const text = codeElement.textContent;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = button.querySelector('i');
+            const span = button.querySelector('span');
+            const originalIcon = icon.getAttribute('data-lucide');
+            const originalText = span.textContent;
+
+            button.classList.add('copied');
+            icon.setAttribute('data-lucide', 'check');
+            span.textContent = 'Copied!';
             lucide.createIcons();
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Fonction pour copier le code
-        window.copyCode = function(button) {
-            const codeContainer = button.closest('.code-block-container');
-            const codeElement = codeContainer.querySelector('code');
-            const text = codeElement.textContent;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const icon = button.querySelector('i');
-                const span = button.querySelector('span');
-                const originalIcon = icon.getAttribute('data-lucide');
-                const originalText = span.textContent;
-                
-                button.classList.add('copied');
-                icon.setAttribute('data-lucide', 'check');
-                span.textContent = 'Copied!';
-                
+
+            setTimeout(() => {
+                button.classList.remove('copied');
+                icon.setAttribute('data-lucide', originalIcon);
+                span.textContent = originalText;
                 lucide.createIcons();
-                
-                setTimeout(() => {
-                    button.classList.remove('copied');
-                    icon.setAttribute('data-lucide', originalIcon);
-                    span.textContent = originalText;
-                    lucide.createIcons();
-                }, 2000);
-            }).catch(err => {
-                console.error('Erreur lors de la copie:', err);
-            });
-        };
-        
-        // Appliquer le formatage
-        formatMarkdownContent();
-    });
+            }, 2000);
+        }).catch(err => {
+            console.error('Erreur lors de la copie:', err);
+        });
+    };
+
+    formatMarkdownContent();
+});
+
 </script>
 
 <style>
-/* Styles pour le formatage du contenu */
+/* ✨ MISE EN FORME GÉNÉRALE */
 .keyword-highlight {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: #FFFFFF;
@@ -202,7 +214,7 @@
     border: 1px solid #30363D;
 }
 
-/* Styles pour les labels d'exercices */
+/* 🧠 EXERCICES */
 .exercise-label {
     display: inline-flex;
     align-items: center;
@@ -227,6 +239,7 @@
     border-color: rgba(34, 197, 94, 0.3);
 }
 
+/* 💻 BLOCS DE CODE */
 .code-block-container {
     background: #0D1117;
     border: 1px solid #30363D;
@@ -281,16 +294,32 @@
 }
 
 .code-content {
-    padding: 1rem;
-    margin: 0;
+    padding: 0.3rem 1rem !important;
+    margin: 0 !important;
     background: #0D1117;
     color: #E6EDF3;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    font-size: 0.875rem;
-    line-height: 1.5;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
     overflow-x: auto;
 }
 
+pre.code-content {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Supprime le label automatique de Prism */
+code[class^="language-"]::before,
+pre[class^="language-"]::before,
+code[class*=" language-"]::before,
+pre[class*=" language-"]::before,
+.code-content::before {
+    content: none !important;
+    display: none !important;
+}
+
+/* 🟩 LISTES */
 .list-container {
     margin: 0.5rem 0;
     padding-left: 1rem;
@@ -311,7 +340,7 @@
     left: -1rem;
 }
 
-/* Scroll personnalisé pour le contenu */
+/* 📜 SCROLLBAR */
 #course-content-container {
     scrollbar-width: thin;
     scrollbar-color: #4B5563 #1F2937;
@@ -336,7 +365,27 @@
     background: #6B7280;
 }
 
-/* Responsive design */
+pre.code-content,
+pre[class*="language-"] {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+pre.code-content > code {
+    display: block;
+    padding: 0.8rem 1rem !important;
+    margin: 0 !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+    background: #0D1117 !important;
+    color: #E6EDF3 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 📱 MOBILE */
 @media (max-width: 768px) {
     .code-block-container {
         margin-left: -1rem;
