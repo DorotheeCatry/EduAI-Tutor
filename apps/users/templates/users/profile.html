@@ -4,78 +4,78 @@
 {% block title %}Profil utilisateur - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6">
-    <div class="flex items-center space-x-3 mb-6">
+<div class="h-full flex flex-col overflow-hidden">
+    <!-- Header -->
+    <div class="flex-shrink-0 flex items-center space-x-3 p-6 border-b border-gray-700">
         <i data-lucide="user" class="w-6 h-6 text-primary-green"></i>
         <h1 class="text-xl font-bold text-white">My Profile</h1>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Informations du profil -->
-        <div class="lg:col-span-1 space-y-6">
-            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+    <!-- Contenu principal -->
+    <div class="flex-1 min-h-0 p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+            <!-- Colonne gauche - Formulaire -->
+            <div class="bg-gray-800 rounded-lg border border-gray-700 p-6 flex flex-col">
                 <h2 class="text-lg font-bold text-white mb-4">Personal Information</h2>
                 
                 {% for message in messages %}
                     {% if message.tags == 'success' %}
-                        <div class="mb-4 p-3 rounded-lg bg-green-500 bg-opacity-20 border border-green-500 border-opacity-30 text-green-400">
+                        <div class="mb-4 p-3 rounded bg-green-500 bg-opacity-20 border border-green-500 border-opacity-30 text-green-400 text-sm">
                             {{ message }}
                         </div>
                     {% elif message.tags == 'error' %}
-                        <div class="mb-4 p-3 rounded-lg bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 text-red-400">
+                        <div class="mb-4 p-3 rounded bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 text-red-400 text-sm">
                             {{ message }}
                         </div>
                     {% endif %}
                 {% endfor %}
 
-                <form method="post" enctype="multipart/form-data" class="space-y-4">
+                <form method="post" enctype="multipart/form-data" class="flex-1 flex flex-col">
                     {% csrf_token %}
                     
-                    <!-- Section Avatar -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-300 mb-4">Choose your avatar</label>
-                        
-                        <!-- Avatar actuel -->
-                        <div class="text-center mb-6">
-                            <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-700 border-4 border-gray-600 mx-auto mb-3 shadow-lg">
-                                <img id="current-avatar" src="{{ current_avatar_url }}" alt="Avatar actuel" class="w-full h-full object-cover">
-                            </div>
-                            <p class="text-sm text-gray-400">Current avatar</p>
+                    <!-- Avatar actuel -->
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600 mx-auto mb-3">
+                            <img id="current-avatar" src="{{ current_avatar_url }}" alt="Avatar actuel" class="w-full h-full object-cover" style="object-position: center top;">
                         </div>
-                        
-                        <!-- Onglets -->
-                        <div class="mb-4">
-                            <div class="flex border-b border-gray-600">
+                        <p class="text-sm text-gray-400">Current avatar</p>
+                    </div>
+                    
+                    <!-- Onglets Avatar -->
+                    <div class="mb-4">
+                        <div class="border-b border-gray-600">
+                            <div class="flex">
                                 <button type="button" id="koda-tab"
-                                    class="px-4 py-2 text-sm font-medium text-primary-green border-b-2 border-primary-green tab-button active flex items-center">
-                                    <i data-lucide="smile" class="w-4 h-4 mr-2"></i>
-                                    <span>Koda Avatars</span>
+                                    class="px-4 py-2 text-sm font-medium text-primary-green border-b-2 border-primary-green tab-button active">
+                                    <i data-lucide="smile" class="w-4 h-4 mr-2 inline"></i>
+                                    Koda Avatars
                                 </button>
                                 <button type="button" id="upload-tab"
-                                    class="px-4 py-2 text-sm font-medium text-gray-300 border-b-2 border-transparent hover:text-white hover:border-primary-green transition-colors tab-button flex items-center">
-                                    <i data-lucide="upload" class="w-4 h-4 mr-2"></i>
-                                    <span>Upload Custom</span>
+                                    class="px-4 py-2 text-sm font-medium text-gray-300 border-b-2 border-transparent hover:text-white hover:border-primary-green transition-colors tab-button">
+                                    <i data-lucide="upload" class="w-4 h-4 mr-2 inline"></i>
+                                    Upload Custom
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- Contenu onglet Koda -->
-                        <div id="koda-content" class="tab-content">
-                            <div class="bg-gray-900 rounded-lg border border-gray-700 overflow-hidden">
-                                <div class="overflow-y-auto divide-y divide-gray-800" style="height: 160px; max-height: 160px;">
+                    </div>
+                    
+                    <!-- Contenu onglet Koda -->
+                    <div id="koda-content" class="tab-content mb-4">
+                        <div class="bg-gray-900 rounded border border-gray-700 p-3 space-y-2 profile-avatar-scroll" style="height: 200px; max-height: 200px; overflow-y: auto; overflow-x: hidden;">
+                            <div class="space-y-2">
                                 {% for avatar in available_avatars %}
-                                    <div class="avatar-option cursor-pointer px-4 py-2 hover:bg-gray-800 flex items-center space-x-3"
+                                    <div class="avatar-option cursor-pointer p-2 hover:bg-gray-800 rounded flex items-center space-x-3 text-sm transition-colors"
                                         data-avatar="{{ avatar.filename }}"
                                         data-url="{{ avatar.url }}">
-                                        <div class="w-8 h-8 rounded-full overflow-hidden border-2 flex-shrink-0
+                                        <div class="w-8 h-8 rounded-full overflow-hidden border flex-shrink-0
                                             {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
-                                                border-primary-green ring-2 ring-primary-green ring-opacity-50
+                                                border-primary-green
                                             {% else %}
                                                 border-gray-600 hover:border-primary-green
                                             {% endif %}">
-                                            <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover">
+                                            <img src="{{ avatar.url }}" alt="{{ avatar.display_name }}" class="w-full h-full object-cover" style="object-position: center top;">
                                         </div>
-                                        <p class="text-sm text-gray-300 truncate flex-1">{{ avatar.display_name }}</p>
+                                        <span class="text-gray-300 flex-1">{{ avatar.display_name }}</span>
                                         {% if current_avatar_type == 'koda' and current_avatar_name == avatar.filename %}
                                             <div class="w-4 h-4 bg-primary-green rounded-full flex items-center justify-center flex-shrink-0">
                                                 <i data-lucide="check" class="w-3 h-3 text-white"></i>
@@ -83,53 +83,49 @@
                                         {% endif %}
                                     </div>
                                 {% endfor %}
-                                </div>
-                            </div>
-                            <p class="text-xs text-gray-400 mt-2 text-center">Click on a Koda avatar to select it</p>
-                        </div>
-
-                        <!-- Contenu onglet Upload -->
-                        <div id="upload-content" class="tab-content hidden">
-                            <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
-                                <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
-                                <div class="flex flex-col items-center space-y-3">
-                                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600">
-                                        <img id="upload-preview" src="{{ current_avatar_url }}" alt="Preview" class="w-full h-full object-cover">
-                                    </div>
-                                    <div>
-                                        <button type="button" onclick="document.getElementById('avatar-input').click()" 
-                                                class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                                            Choose image
-                                        </button>
-                                        <p class="text-xs text-gray-400 mt-2">JPG, PNG (max 2MB)</p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
-
+                    </div>
+                    
+                    <!-- Contenu onglet Upload -->
+                    <div id="upload-content" class="tab-content hidden mb-4">
+                        <div class="border border-dashed border-gray-600 rounded p-4 text-center">
+                            <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
+                            <div class="flex flex-col items-center space-y-3">
+                                <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-700 border border-gray-600">
+                                    <img id="upload-preview" src="{{ current_avatar_url }}" alt="Preview" class="w-full h-full object-cover">
+                                </div>
+                                <button type="button" onclick="document.getElementById('avatar-input').click()" 
+                                        class="px-4 py-2 text-sm bg-primary-green text-white rounded hover:bg-green-600 transition-colors">
+                                    Choose image
+                                </button>
+                                <p class="text-xs text-gray-400">JPG, PNG (max 2MB)</p>
+                            </div>
+                        </div>
+                        
                         <!-- Zone de crop -->
                         <div id="crop-container" class="hidden mt-4">
-                            <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                            <div class="bg-gray-900 rounded border border-gray-700 p-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <h4 class="text-sm font-medium text-white">Adjust your avatar</h4>
                                     <div class="flex space-x-2">
-                                        <button type="button" id="crop-save" class="px-3 py-1 bg-primary-green text-white rounded text-xs hover:bg-green-600">
+                                        <button type="button" id="crop-save" class="px-3 py-1 bg-primary-green text-white rounded text-sm hover:bg-green-600">
                                             Save
                                         </button>
-                                        <button type="button" id="crop-cancel" class="px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-500">
+                                        <button type="button" id="crop-cancel" class="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-500">
                                             Cancel
                                         </button>
                                     </div>
                                 </div>
-                                <div class="relative bg-black rounded-lg overflow-hidden flex items-center justify-center" style="height: 120px;">
+                                
+                                <div class="relative bg-black rounded overflow-hidden flex items-center justify-center h-32 mb-3">
                                     <canvas id="crop-canvas" width="120" height="120" class="max-w-full max-h-full cursor-grab"></canvas>
                                 </div>
-                                <div class="mt-3">
-                                    <div class="flex items-center space-x-3">
-                                        <label class="text-xs text-gray-400 w-12">Zoom:</label>
-                                        <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" 
-                                               class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                                    </div>
+                                
+                                <div class="flex items-center space-x-3">
+                                    <label class="text-xs text-gray-400">Zoom:</label>
+                                    <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" 
+                                           class="flex-1 h-2 bg-gray-700 rounded appearance-none cursor-pointer">
                                 </div>
                             </div>
                         </div>
@@ -140,80 +136,167 @@
                     <input type="hidden" id="cropped-avatar" name="cropped_avatar">
                     
                     <!-- Champs du formulaire -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                            <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
-                                   class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
+                    <div class="space-y-3 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                    <!-- Champs du formulaire -->
+                    <div class="space-y-3 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                    <!-- Champs du formulaire -->
+                    <div class="space-y-3 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                    <!-- Champs du formulaire -->
+                    <div class="space-y-3 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                    <!-- Champs du formulaire -->
+                    <div class="space-y-3 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                    <!-- Champs du formulaire -->
+                    <div class="space-y-3 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                    <!-- Champs du formulaire -->
+                    <div class="space-y-3 mt-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-300 mb-1">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                    <!-- Champs du formulaire -->
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                                <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                                <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
+                                       class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors">
+                            </div>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                            <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
-                                   class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Biography</label>
+                            <textarea name="bio" rows="3" 
+                                      class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-primary-green transition-colors resize-none"
+                                      placeholder="Tell us about yourself...">{{ form.bio.value|default:user.bio }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Language</label>
+                            <select name="language_preference" 
+                                    class="w-full px-2 py-1.5 text-xs bg-gray-900 border border-gray-600 rounded text-white focus:outline-none focus:border-primary-green transition-colors">
+                                <option value="fr" {% if user.language_preference == 'fr' %}selected{% endif %}>Français</option>
+                                <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Biography</label>
-                        <textarea name="bio" rows="3" 
-                                  class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
-                                  placeholder="Tell us about yourself...">{{ form.bio.value|default:user.bio }}</textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Preferred Language</label>
-                        <select name="language_preference" 
-                                class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
-                            <option value="fr" {% if user.language_preference == 'fr' %}selected{% endif %}>Français</option>
-                            <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
-                        </select>
-                    </div>
-
-                    <div class="flex justify-end space-x-4">
-                        <a href="{% url 'courses:generator' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    <!-- Boutons -->
+                    <div class="flex justify-end space-x-2 pt-2 border-t border-gray-700">
+                        <a href="{% url 'courses:generator' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors">
                             Cancel
                         </a>
-                        <button type="submit" class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                            Save
+                        <button type="submit" class="px-4 py-2 text-sm bg-primary-green text-white rounded hover:bg-green-600 transition-colors">
+                            Save Changes
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
 
-        <!-- Aperçu du profil -->
-        <div class="lg:col-span-2 space-y-4">
-            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h3 class="text-lg font-bold text-white mb-4">Preview</h3>
-                <div class="text-center">
-                    <img id="sidebar-preview" src="{{ current_avatar_url }}" alt="Avatar" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-600 shadow-lg">
-                    <h4 class="text-xl font-bold text-white mb-2">{{ user.username }}</h4>
-                    <p class="text-sm text-gray-400 mb-4">{{ user.email }}</p>
-                    <span class="inline-block px-2 py-1 bg-primary-green bg-opacity-20 text-primary-green rounded-full text-xs">
-                        {{ user.get_role_display }}
-                    </span>
+            <!-- Colonne droite - Preview et Stats -->
+            <div class="flex flex-col space-y-6">
+                <!-- Preview -->
+                <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Preview</h3>
+                    <div class="text-center">
+                        <img id="sidebar-preview" src="{{ current_avatar_url }}" alt="Avatar" class="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-2 border-gray-600" style="object-position: center top;">
+                        <h4 class="text-xl font-bold text-white mb-2">{{ user.username }}</h4>
+                        <p class="text-sm text-gray-400 mb-3">{{ user.email }}</p>
+                        <span class="inline-block px-3 py-1 bg-primary-green bg-opacity-20 text-primary-green rounded-full text-sm">
+                            {{ user.get_role_display }}
+                        </span>
+                        
+                        {% if user.bio %}
+                            <div class="mt-4 p-4 bg-gray-900 rounded text-sm text-gray-300">
+                                {{ user.bio }}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-                {% if user.bio %}
-                    <div class="mt-6 p-4 bg-gray-900 rounded-lg">
-                        <p class="text-sm text-gray-300">{{ user.bio }}</p>
-                    </div>
-                {% endif %}
-            </div>
 
-            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h3 class="text-lg font-bold text-white mb-4">Statistics</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Level</span>
-                        <span class="text-sm font-bold text-primary-blue">{{ user.level }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">XP</span>
-                        <span class="text-sm font-bold text-primary-green">{{ user.xp }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Member since</span>
-                        <span class="text-sm text-gray-300">{{ user.date_joined|date:"M Y" }}</span>
+                <!-- Statistiques -->
+                <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Statistics</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Level</span>
+                            <span class="text-sm font-bold text-primary-blue">{{ user.level }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Experience Points</span>
+                            <span class="text-sm font-bold text-primary-green">{{ user.xp }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Member since</span>
+                            <span class="text-sm text-gray-300">{{ user.date_joined|date:"M Y" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Language</span>
+                            <span class="text-sm text-gray-300">{{ user.get_language_preference_display }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -225,7 +308,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     lucide.createIcons();
 
-    // Variables
+    // Variables globales
     const kodaTab = document.getElementById('koda-tab');
     const uploadTab = document.getElementById('upload-tab');
     const kodaContent = document.getElementById('koda-content');
@@ -249,6 +332,7 @@ document.addEventListener('DOMContentLoaded', function () {
         activeTab.classList.remove('border-transparent', 'text-gray-300');
         inactiveTab.classList.remove('active', 'border-primary-green', 'text-primary-green');
         inactiveTab.classList.add('border-transparent', 'text-gray-300');
+
         activeContent.classList.remove('hidden');
         inactiveContent.classList.add('hidden');
     }
@@ -262,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const avatarName = this.dataset.avatar;
             const avatarUrl = this.dataset.url;
 
+            // Mettre à jour tous les aperçus
             uploadPreview.src = avatarUrl;
             currentAvatar.src = avatarUrl;
             sidebarPreview.src = avatarUrl;
@@ -269,20 +354,30 @@ document.addEventListener('DOMContentLoaded', function () {
             selectedKodaInput.value = avatarName;
             croppedAvatarInput.value = '';
             
+            // Mise à jour visuelle
             avatarOptions.forEach(opt => {
-                const border = opt.querySelector('.border-2');
+                const border = opt.querySelector('div');
                 if (border) {
-                    border.classList.remove('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+                    border.classList.remove('border-primary-green');
                     border.classList.add('border-gray-600');
                 }
                 const checkIcon = opt.querySelector('.bg-primary-green');
                 if (checkIcon) checkIcon.remove();
             });
 
-            const border = this.querySelector('.border-2');
+            const border = this.querySelector('div');
             if (border) {
-                border.classList.add('border-primary-green', 'ring-2', 'ring-primary-green', 'ring-opacity-50');
+                border.classList.add('border-primary-green');
                 border.classList.remove('border-gray-600');
+            }
+
+            // Ajouter l'icône de validation
+            const existingCheck = this.querySelector('.bg-primary-green');
+            if (!existingCheck) {
+                const checkDiv = document.createElement('div');
+                checkDiv.className = 'w-4 h-4 bg-primary-green rounded-full flex items-center justify-center flex-shrink-0';
+                checkDiv.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
+                this.appendChild(checkDiv);
             }
 
             lucide.createIcons();
@@ -319,25 +414,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function initCrop() {
         if (!img || !imgReady) return;
-        canvas.width = 200;
-        canvas.height = 200;
-        const cropRadius = 80;
+        
+        canvas.width = 120;
+        canvas.height = 120;
+        
+        const cropRadius = 50;
         const cropDiameter = cropRadius * 2;
         const ratio = Math.max(cropDiameter / img.width, cropDiameter / img.height);
+        
         scale = ratio;
         zoomSlider.value = scale;
         zoomSlider.min = ratio * 0.5;
         zoomSlider.max = ratio * 3;
+        
+        offsetX = (canvas.width - img.width * scale) / 2;
+        offsetY = (canvas.height - img.height * scale) / 2;
+        
         drawImage();
     }
 
     function drawImage() {
         if (!imgReady || !img) return;
+
         const imgW = img.width * scale;
         const imgH = img.height * scale;
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const cropRadius = 80;
+        const cropRadius = 50;
         
         const minX = centerX - imgW + cropRadius;
         const maxX = centerX - cropRadius;
@@ -363,6 +466,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.stroke();
     }
 
+    // Events pour le crop
     zoomSlider.addEventListener('input', () => {
         if (!imgReady) return;
         scale = parseFloat(zoomSlider.value);
@@ -399,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function () {
     cropSave.addEventListener('click', () => {
         if (!imgReady) return;
         
-        const finalSize = 150;
+        const finalSize = 100;
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = finalSize;
         finalCanvas.height = finalSize;
@@ -411,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const cropRadius = 80;
+        const cropRadius = 50;
         
         ctxFinal.drawImage(
             img,
@@ -438,20 +542,7 @@ document.addEventListener('DOMContentLoaded', function () {
     cropCancel.addEventListener('click', () => {
         cropContainer.classList.add('hidden');
         avatarInput.value = '';
+        uploadPreview.src = currentAvatar.src;
     });
 });
 </script>
-
-<style>
-::-webkit-scrollbar {
-    width: 6px;
-}
-::-webkit-scrollbar-track {
-    background: #1e293b;
-}
-::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
-    border-radius: 3px;
-}
-</style>
-{% endblock %}
