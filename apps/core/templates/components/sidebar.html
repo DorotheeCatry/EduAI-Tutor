@@ -9,7 +9,7 @@
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-2 flex-1">
         <!-- Bouton Profil -->
-        <div class="relative z-[9999]"> <!-- z-index le plus élevé ici -->
+        <div class="relative"> <!-- z-index le plus élevé ici -->
             <button onclick="toggleProfileMenu()" 
                     id="profile-button"
                     title="Profil"
@@ -27,7 +27,7 @@
             </button>
 
             <!-- Menu déroulant du profil -->
-            <div id="profile-menu" class="fixed left-16 top-16 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl hidden profile-dropdown">
+            <div id="profile-menu" class="absolute left-16 top-0 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-xl hidden profile-dropdown">
                 <!-- Header du menu -->
                 <div class="p-3 border-b border-gray-700">
                     <div class="flex items-center space-x-3">

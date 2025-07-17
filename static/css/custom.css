@@ -226,22 +226,22 @@ main.tab-content {
 
 /* ===== DROPDOWN MENU Z-INDEX FIX ===== */
 .profile-dropdown {
-    z-index: 999999 !important;
-    position: fixed !important;
+    z-index: 9999 !important;
+    position: absolute !important;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: blur(15px) !important;
     border: 2px solid #374151 !important;
 }
 
 /* Assurer que le conteneur du profil a une position relative */
-.relative.z-\[9999\] {
+.relative {
     position: relative !important;
-    z-index: 999998 !important;
+    z-index: 9998 !important;
 }
 
 /* Forcer le z-index sur la sidebar */
 .w-16.bg-gray-900 {
-    z-index: 999997 !important;
+    z-index: 9997 !important;
     position: relative !important;
 }
 
