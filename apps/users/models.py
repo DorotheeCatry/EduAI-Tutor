@@ -41,6 +41,12 @@ class KodaUser(AbstractUser):
         verbose_name=_("Avatar")
     )
 
+    koda_avatar = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True)    # nom du fichier koda
+
+
     LANGUAGE_CHOICES = [
         ("en", _("English")),
         ("fr", _("French")),
