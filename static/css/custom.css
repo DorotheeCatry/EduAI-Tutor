@@ -226,22 +226,20 @@ main.tab-content {
 
 /* ===== DROPDOWN MENU Z-INDEX FIX ===== */
 #profile-menu {
-    z-index: 99999 !important;
-    position: absolute !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+    z-index: 999999 !important;
+    position: fixed !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
     backdrop-filter: blur(10px) !important;
 }
 
-/* Assurer que le conteneur du profil a une position relative */
-.relative.z-\[9999\] {
-    position: relative !important;
-    z-index: 9999 !important;
+/* Forcer le menu au-dessus de tout */
+#profile-menu * {
+    z-index: inherit !important;
 }
 
-/* Forcer le z-index sur la sidebar */
+/* Assurer que la sidebar reste en dessous */
 .w-16.bg-gray-900 {
-    z-index: 10000 !important;
-    position: relative !important;
+    z-index: 1000 !important;
 }
 
 /* ===== TAB BAR FIXES ===== */

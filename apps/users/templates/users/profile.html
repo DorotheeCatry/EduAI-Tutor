@@ -369,8 +369,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const ratio = Math.max(cropDiameter / img.width, cropDiameter / img.height);
         
         scale = ratio;
-        offsetX = (canvas.width - img.width * scale) / 2;
-        offsetY = (canvas.height - img.height * scale) / 2;
         
         zoomSlider.value = scale;
         zoomSlider.min = ratio * 0.5;
