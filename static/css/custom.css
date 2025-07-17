@@ -226,11 +226,10 @@ main.tab-content {
 
 /* ===== DROPDOWN MENU Z-INDEX FIX ===== */
 #profile-menu {
-    z-index: 2147483647 !important;
+    z-index: 999999 !important;
     position: fixed !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
     backdrop-filter: blur(10px) !important;
-    transform: translateZ(0) !important;
 }
 
 /* Forcer le menu au-dessus de tout */
@@ -238,23 +237,9 @@ main.tab-content {
     z-index: inherit !important;
 }
 
-/* Scrollbar personnalisée pour les avatars */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: #374151;
-    border-radius: 2px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #6B7280;
-    border-radius: 2px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #9CA3AF;
+/* Assurer que la sidebar reste en dessous */
+.w-16.bg-gray-900 {
+    z-index: 1000 !important;
 }
 
 /* ===== TAB BAR FIXES ===== */
