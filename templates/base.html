@@ -1,0 +1,66 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduAI Tutor - Plateforme d'apprentissage intelligente{% endblock %}</title>
+    <meta name="description" content="Plateforme d'apprentissage avec IA pour générer des cours, quiz et révisions personnalisées">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div class="flex flex-1 min-h-0">
+        <!-- Sidebar -->
+        {% if user.is_authenticated %}
+            {% include 'components/sidebar.html' %}
+        {% endif %}
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <!-- Tab Bar -->
+            {% if user.is_authenticated %}
+                {% include 'components/tabbar.html' %}
+            {% endif %}
+            
+            <!-- Page Content -->
+            <main class="flex-1 bg-gray-900 overflow-y-auto tab-content min-h-0">
+                {% block content %}
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-white">Template de base fonctionne !</h1>
+                    <p class="text-gray-300">Si vous voyez ce message, le template de base est chargé correctement.</p>
+                </div>
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <!-- Status Bar -->
+    {% if user.is_authenticated %}
+        {% include 'components/statusbar.html' %}
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser les icônes Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+            // Mettre à jour l'heure
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        function updateTime() {
+            const timeElement = document.getElementById('current-time');
+            if (timeElement) {
+                const now = new Date();
+                timeElement.textContent = now.toLocaleTimeString();
+            }
+        }
+    </script>
+</body>
+</html>
