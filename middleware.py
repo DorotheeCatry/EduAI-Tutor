@@ -13,6 +13,7 @@ class AuthenticationMiddleware:
     def __call__(self, request):
         # URLs qui ne nécessitent pas d'authentification
         public_urls = [
+            '/courses/test/',
             '/auth/login/',
             '/auth/register/',
             '/admin/',

@@ -9,9 +9,16 @@ from apps.rag.module_loader import module_loader
 from .models import Course
 import re
 
+def test_template(request):
+    """Vue de test pour vérifier les templates"""
+    return render(request, 'test.html')
+
 @login_required
 def course_generator(request):
     """Vue principale pour la génération de cours"""
+    
+    print(f"DEBUG: course_generator called, method: {request.method}")
+    print(f"DEBUG: user authenticated: {request.user.is_authenticated}")
     
     if request.method == 'POST':
         topic = request.POST.get('topic')
@@ -65,6 +72,7 @@ def course_generator(request):
     context = {
         'modules': module_loader.get_available_modules()
     }
+    print(f"DEBUG: Rendering template with context: {context}")
     return render(request, 'courses/generate.html', context)
 
 
