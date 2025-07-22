@@ -32,6 +32,10 @@ class AuthenticationMiddleware:
         # Si l'utilisateur est connecté et essaie d'accéder à login/register
         if request.user.is_authenticated and request.path in ['/auth/login/', '/auth/register/']:
             return redirect('/courses/generator/')
+            
+        # Redirection de la racine vers courses si connecté
+        if request.user.is_authenticated and request.path == '/':
+            return redirect('/courses/generator/')
         
         response = self.get_response(request)
         return response

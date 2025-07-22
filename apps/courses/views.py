@@ -11,14 +11,16 @@ import re
 
 @login_required
 def course_generator(request):
-    print(f"🔍 DEBUG: course_generator called with method: {request.method}")
-    print(f"🔍 DEBUG: User authenticated: {request.user.is_authenticated}")
+    """Vue principale pour la génération de cours"""
     
     if request.method == 'POST':
-        print("🔍 DEBUG: Processing POST request")
         topic = request.POST.get('topic')
         module = request.POST.get('module', '')
-        print(f"🔍 DEBUG: Topic: {topic}, Module: {module}")
+        
+        if not topic:
+            messages.error(request, 'Veuillez saisir un sujet pour générer le cours.')
+            context = {'modules': module_loader.get_available_modules()}
+            return render(request, 'courses/generate.html', context)
         
         # Utiliser l'orchestrateur IA pour générer le cours
         orchestrator = get_orchestrator(request.user)
@@ -59,11 +61,10 @@ def course_generator(request):
             
         return render(request, 'courses/course_detail.html', context)
     
-    print("🔍 DEBUG: Rendering GET request")
+    # GET request - afficher le formulaire
     context = {
         'modules': module_loader.get_available_modules()
     }
-    print(f"🔍 DEBUG: Context modules count: {len(context['modules'])}")
     return render(request, 'courses/generate.html', context)
 
 
