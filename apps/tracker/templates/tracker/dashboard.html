@@ -1,34 +1,174 @@
-{% extends 'core/base.html' %}
+{% extends 'base.html' %}
 
-{% block title %}Dashboard - EduAI Tutor{% endblock %}
+{% block title %}Performance Dashboard - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 text-center">
-    <div class="flex items-center justify-center space-x-3 mb-6">
+<div class="p-6 space-y-6">
+    <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="bar-chart-3" class="w-6 h-6 text-primary-blue"></i>
-        <h2 class="text-xl font-bold text-white">Dashboard</h2>
+        <h1 class="text-xl font-bold text-white">Performance Dashboard</h1>
     </div>
-    <p class="text-sm text-gray-400">Performance analysis in development...</p>
-    
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Statistiques principales -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div class="text-2xl font-bold text-primary-green mb-2">127</div>
-            <div class="text-sm text-gray-400">Completed exercises</div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-400">Cours complétés</h3>
+                <i data-lucide="book-check" class="w-5 h-5 text-primary-green"></i>
+            </div>
+            <div class="text-2xl font-bold text-primary-green mb-2">12</div>
+            <div class="text-xs text-gray-500">+3 cette semaine</div>
         </div>
+
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-400">Taux de réussite</h3>
+                <i data-lucide="target" class="w-5 h-5 text-primary-blue"></i>
+            </div>
             <div class="text-2xl font-bold text-primary-blue mb-2">85%</div>
-            <div class="text-sm text-gray-400">Success rate</div>
+            <div class="text-xs text-gray-500">+5% ce mois</div>
         </div>
+
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-400">Temps d'étude</h3>
+                <i data-lucide="clock" class="w-5 h-5 text-primary-rose"></i>
+            </div>
             <div class="text-2xl font-bold text-primary-rose mb-2">42h</div>
-            <div class="text-sm text-gray-400">Learning time</div>
+            <div class="text-xs text-gray-500">2h 30m aujourd'hui</div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-400">Niveau actuel</h3>
+                <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+            </div>
+            <div class="text-2xl font-bold text-yellow-500 mb-2">{{ user.level }}</div>
+            <div class="text-xs text-gray-500">{{ user.xp }} XP</div>
+        </div>
+    </div>
+
+    <!-- Graphique de progression -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+            <i data-lucide="trending-up" class="w-5 h-5 text-primary-green"></i>
+            <span>Progression cette semaine</span>
+        </h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">Lundi</span>
+                <div class="flex-1 mx-4">
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-primary-green h-2 rounded-full" style="width: 60%"></div>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-400">1h 30m</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">Mardi</span>
+                <div class="flex-1 mx-4">
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-primary-green h-2 rounded-full" style="width: 80%"></div>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-400">2h 00m</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">Mercredi</span>
+                <div class="flex-1 mx-4">
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-primary-green h-2 rounded-full" style="width: 45%"></div>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-400">1h 10m</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">Jeudi</span>
+                <div class="flex-1 mx-4">
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-primary-green h-2 rounded-full" style="width: 100%"></div>
+                    </div>
+                </div>
+                <span class="text-sm text-gray-400">2h 30m</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sujets récents -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+                <i data-lucide="book-open" class="w-5 h-5 text-primary-blue"></i>
+                <span>Sujets étudiés</span>
+            </h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
+                    <div>
+                        <div class="text-sm font-medium text-white">Python Decorators</div>
+                        <div class="text-xs text-gray-400">Terminé il y a 2h</div>
+                    </div>
+                    <div class="text-primary-green text-sm font-bold">95%</div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
+                    <div>
+                        <div class="text-sm font-medium text-white">FastAPI Basics</div>
+                        <div class="text-xs text-gray-400">Terminé hier</div>
+                    </div>
+                    <div class="text-primary-blue text-sm font-bold">87%</div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
+                    <div>
+                        <div class="text-sm font-medium text-white">SQL Queries</div>
+                        <div class="text-xs text-gray-400">En cours</div>
+                    </div>
+                    <div class="text-yellow-500 text-sm font-bold">72%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+                <i data-lucide="target" class="w-5 h-5 text-primary-rose"></i>
+                <span>Objectifs</span>
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-300">Cours cette semaine</span>
+                        <span class="text-sm text-gray-400">3/5</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-primary-green h-2 rounded-full" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-300">Quiz réussis</span>
+                        <span class="text-sm text-gray-400">8/10</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-primary-blue h-2 rounded-full" style="width: 80%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-gray-300">Temps d'étude quotidien</span>
+                        <span class="text-sm text-gray-400">2h 30m/2h</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2">
+                        <div class="bg-primary-rose h-2 rounded-full" style="width: 125%"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     });
 </script>
 {% endblock %}
