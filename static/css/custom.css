@@ -58,10 +58,8 @@ body {
 
 /* Transitions fluides pour les changements de page */
 .tab-content {
-    height: calc(100vh - 104px);
     position: relative;
     background-color: #111827 !important;
-    overflow: hidden;
 }
 
 /* Force l'affichage du contenu principal */
