@@ -2,6 +2,16 @@
 
 {% block title %}AI Search - EduAI Tutor{% endblock %}
 
+{% block extra_head %}
+<!-- Prism.js pour coloration syntaxique -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script>
+  Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/';
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="p-6 space-y-6 h-full flex flex-col overflow-hidden">
         <div class="flex items-center space-x-3 mb-6">
@@ -70,278 +80,242 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
-        
-        // Set initial time
-        document.getElementById('initial-time').textContent = new Date().toLocaleTimeString();
+document.addEventListener('DOMContentLoaded', function () {
+    lucide.createIcons();
+    document.getElementById('initial-time').textContent = new Date().toLocaleTimeString();
 
-        const chatForm = document.getElementById('chat-form');
-        const messageInput = document.getElementById('message-input');
-        const sendButton = document.getElementById('send-button');
-        const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const chatMessages = document.getElementById('chat-messages');
 
-        // Auto-resize textarea
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    function scrollToBottom() {
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatResponse(text) {
+        // Étape 1 – extraire les blocs de code triple backticks
+        const blocks = [];
+        const withoutCode = text.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+            const language = lang || 'code';
+            const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
+            const escaped = escapeHtml(code);
+            const block = `
+                <div class="code-block-container my-4">
+                    <div class="code-header">
+                        <span class="code-language">${displayLang}</span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <pre class="code-content language-${language}"><code class="language-${language}">${escaped}</code></pre>
+                </div>
+            `;
+            blocks.push(block);
+            return `<!--CODEBLOCK_${blocks.length - 1}-->`;
         });
 
-        // Auto-scroll function
-        function scrollToBottom() {
-            setTimeout(() => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 100);
-        }
+        // Étape 2 – transformer le markdown hors code
+        let formatted = withoutCode
+            .replace(/^### (.*$)/gm, '<h3 class="text-primary-blue font-bold text-base mb-2 mt-3">$1</h3>')
+            .replace(/^## (.*$)/gm, '<h2 class="text-primary-green font-bold text-lg mb-2 mt-3">$1</h2>')
+            .replace(/^# (.*$)/gm, '<h1 class="text-white font-bold text-xl mb-3 mt-4">$1</h1>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="keyword-highlight">$1</strong>')
+            .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>')
+            .replace(/^[\-\*] (.+)$/gm, '<li class="list-item">$1</li>')
+            .replace(/\n\n/g, '</p><p class="mb-2">')
+            .replace(/\n/g, '<br>');
 
-        // Initial scroll
-        scrollToBottom();
+        // Étape 3 – emballer dans des paragraphes
+        formatted = '<p class="mb-2">' + formatted + '</p>';
 
-        chatForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const message = messageInput.value.trim();
-            if (!message) return;
+        // Étape 4 – transformer les <li> en <ul>
+        formatted = formatted.replace(/(<li class="list-item">.*?<\/li>)/gs, match => '<ul class="list-container">' + match + '</ul>');
 
-            // Disable button during send
-            sendButton.disabled = true;
-            sendButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+        // Étape 5 – réinjecter les blocs de code
+        formatted = formatted.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => blocks[parseInt(i)]);
 
-            // Add user message
-            addMessage(message, true);
-            messageInput.value = '';
-            messageInput.style.height = 'auto';
-            
-            // Show loading
-            showLoading();
-            
-            // Send to AI backend
-            try {
-                const response = await fetch('{% url "chat:send_message" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify({ message: message })
-                });
-                
-                const data = await response.json();
-                hideLoading();
-                
-                if (data.response) {
-                    addMessage(data.response, false);
-                } else {
-                    addMessage('Sorry, an error occurred.', false);
-                }
-            } catch (error) {
-                hideLoading();
-                addMessage('Connection error. Please try again.', false);
-            } finally {
-                // Re-enable button
-                sendButton.disabled = false;
-                sendButton.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i>';
-                lucide.createIcons();
-                messageInput.focus();
-            }
-        });
+        return formatted;
+    }
 
-        function addMessage(text, isUser) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
-            
-            const time = new Date().toLocaleTimeString();
-            
-            if (isUser) {
-                messageDiv.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-primary-green flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="user" class="w-4 h-4 text-white"></i>
+    function addMessage(text, isUser) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
+        const time = new Date().toLocaleTimeString();
+
+        if (isUser) {
+            messageDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-primary-green flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="user" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="flex-1 flex flex-col items-end">
+                    <div class="bg-primary-green rounded-lg px-4 py-3 border border-green-600 max-w-2xl">
+                        <p class="text-white text-sm leading-relaxed">${escapeHtml(text)}</p>
                     </div>
-                    <div class="flex-1 flex flex-col items-end">
-                        <div class="bg-primary-green rounded-lg px-4 py-3 border border-green-600 max-w-2xl">
-                            <p class="text-white text-sm leading-relaxed">${escapeHtml(text)}</p>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">${time}</p>
-                    </div>
-                `;
-            } else {
-                messageDiv.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="bot" class="w-4 h-4 text-white"></i>
-                    </div>
-                    <div class="flex-1">
-                        <div class="bg-gray-800 rounded-lg px-4 py-3 border border-gray-700 max-w-2xl">
-                            <div class="text-white text-sm leading-relaxed">
-                                ${formatResponse(text)}
-                            </div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">${time}</p>
-                    </div>
-                `;
-            }
-            
-            chatMessages.appendChild(messageDiv);
-            lucide.createIcons();
-            scrollToBottom();
-        }
-
-        function formatResponse(text) {
-            // Amélioration du formatage markdown
-            let formatted = text
-                // Headers (### Title)
-                .replace(/^### (.*$)/gm, '<h3 class="text-primary-blue font-bold text-base mb-2 mt-3">$1</h3>')
-                .replace(/^## (.*$)/gm, '<h2 class="text-primary-green font-bold text-lg mb-2 mt-3">$1</h2>')
-                .replace(/^# (.*$)/gm, '<h1 class="text-white font-bold text-xl mb-3 mt-4">$1</h1>')
-                
-                // Code blocks (```code```)
-                .replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, lang, code) {
-                    const language = lang || 'code';
-                    return `<div class="code-block-container my-3">
-                        <div class="code-header">
-                            <span class="code-language">${language}</span>
-                            <button class="copy-btn" onclick="copyCode(this)">
-                                <i data-lucide="copy" class="w-3 h-3"></i>
-                                <span>Copy</span>
-                            </button>
-                        </div>
-                        <pre class="code-content"><code>${escapeHtml(code.trim())}</code></pre>
-                    </div>`;
-                })
-                
-                // Inline code (`code`)
-                .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>')
-                
-                // Bold text (**text**)
-                .replace(/\*\*(.*?)\*\*/g, '<strong class="keyword-highlight">$1</strong>')
-                
-                // Lists (- item or * item)
-                .replace(/^[\-\*] (.+)$/gm, '<li class="list-item">$1</li>')
-                
-                // Line breaks
-                .replace(/\n\n/g, '</p><p class="mb-2">')
-                .replace(/\n/g, '<br>');
-
-            // Wrap in paragraphs and process lists
-            formatted = '<p class="mb-2">' + formatted + '</p>';
-            
-            // Group list items
-            formatted = formatted.replace(/(<li class="list-item">.*?<\/li>)/gs, function(match) {
-                return '<ul class="list-container">' + match + '</ul>';
-            });
-
-            return formatted;
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function showLoading() {
-            const loadingDiv = document.createElement('div');
-            loadingDiv.id = 'loading-message';
-            loadingDiv.className = 'flex items-start space-x-3';
-            loadingDiv.innerHTML = `
+                    <p class="text-xs text-gray-500 mt-1">${time}</p>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
                 <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                     <i data-lucide="bot" class="w-4 h-4 text-white"></i>
                 </div>
                 <div class="flex-1">
-                    <div class="bg-gray-800 rounded-lg px-4 py-3 border border-gray-700">
-                        <div class="flex items-center space-x-2">
-                            <div class="flex space-x-1">
-                                <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce"></div>
-                                <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
-                                <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <span class="text-xs text-gray-400">AI is thinking...</span>
-                        </div>
+                    <div class="bg-gray-800 rounded-lg px-4 py-3 border border-gray-700 max-w-2xl">
+                        <div class="text-white text-sm leading-relaxed">${formatResponse(text)}</div>
                     </div>
+                    <p class="text-xs text-gray-500 mt-1">${time}</p>
                 </div>
             `;
-            chatMessages.appendChild(loadingDiv);
-            lucide.createIcons();
-            scrollToBottom();
         }
 
-        function hideLoading() {
-            const loadingMessage = document.getElementById('loading-message');
-            if (loadingMessage) {
-                loadingMessage.remove();
-            }
-        }
+        chatMessages.appendChild(messageDiv);
+        lucide.createIcons();
+        if (window.Prism) Prism.highlightAll();
+        scrollToBottom();
+    }
 
-        // Focus on input on load
-        messageInput.focus();
+    function showLoading() {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'loading-message';
+        loadingDiv.className = 'flex items-start space-x-3';
+        loadingDiv.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
+                <i data-lucide="bot" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="flex-1">
+                <div class="bg-gray-800 rounded-lg px-4 py-3 border border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                        </div>
+                        <span class="text-xs text-gray-400">AI is thinking...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(loadingDiv);
+        lucide.createIcons();
+        scrollToBottom();
+    }
 
-        // Enter to send (Shift+Enter for new line)
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!sendButton.disabled && this.value.trim()) {
-                    chatForm.dispatchEvent(new Event('submit'));
-                }
-            }
-        });
+    function hideLoading() {
+        const loadingMessage = document.getElementById('loading-message');
+        if (loadingMessage) loadingMessage.remove();
+    }
 
-        // Global function for copy code
-        window.copyCode = function(button) {
-            const codeContainer = button.closest('.code-block-container');
-            const codeElement = codeContainer.querySelector('code');
-            const text = codeElement.textContent;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const icon = button.querySelector('i');
-                const span = button.querySelector('span');
-                const originalIcon = icon.getAttribute('data-lucide');
-                const originalText = span.textContent;
-                
-                // Animation de succès
-                button.classList.add('copied');
-                icon.setAttribute('data-lucide', 'check');
-                span.textContent = 'Copied!';
-                
-                // Réinitialiser les icônes
-                lucide.createIcons();
-                
-                setTimeout(() => {
-                    button.classList.remove('copied');
-                    icon.setAttribute('data-lucide', originalIcon);
-                    span.textContent = originalText;
-                    lucide.createIcons();
-                }, 2000);
-            }).catch(err => {
-                console.error('Erreur lors de la copie:', err);
-            });
-        };
+    messageInput.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
-</script>
 
+    messageInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendButton.disabled && this.value.trim()) {
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        }
+    });
+
+    chatForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+        addMessage(message, true);
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        showLoading();
+
+        try {
+            const response = await fetch('{% url "chat:send_message" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            hideLoading();
+            addMessage(data.response || 'Sorry, an error occurred.', false);
+        } catch (err) {
+            hideLoading();
+            addMessage('Connection error. Please try again.', false);
+        } finally {
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i>';
+            lucide.createIcons();
+            messageInput.focus();
+        }
+    });
+
+    window.copyCode = function (button) {
+        const codeContainer = button.closest('.code-block-container');
+        const codeElement = codeContainer.querySelector('code');
+        const text = codeElement.textContent;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = button.querySelector('i');
+            const span = button.querySelector('span');
+            const originalIcon = icon.getAttribute('data-lucide');
+            const originalText = span.textContent;
+
+            button.classList.add('copied');
+            icon.setAttribute('data-lucide', 'check');
+            span.textContent = 'Copied!';
+            lucide.createIcons();
+
+            setTimeout(() => {
+                button.classList.remove('copied');
+                icon.setAttribute('data-lucide', originalIcon);
+                span.textContent = originalText;
+                lucide.createIcons();
+            }, 2000);
+        }).catch(err => {
+            console.error('Erreur lors de la copie:', err);
+        });
+    };
+});
+</script>
 <style>
-/* Scrollbar styling pour la zone de chat */
+@import url('https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css');
+
+/* Scrollbar */
 #chat-messages {
     scrollbar-width: thin;
     scrollbar-color: #4B5563 #1F2937;
 }
-
 #chat-messages::-webkit-scrollbar {
     width: 6px;
 }
-
 #chat-messages::-webkit-scrollbar-track {
     background: #1F2937;
 }
-
 #chat-messages::-webkit-scrollbar-thumb {
     background: #4B5563;
     border-radius: 3px;
 }
-
 #chat-messages::-webkit-scrollbar-thumb:hover {
     background: #6B7280;
 }
 
-/* Styles pour le formatage du contenu */
+/* Text emphasis */
 .keyword-highlight {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: #FFFFFF;
@@ -350,25 +324,24 @@
     font-weight: 600;
     font-size: 0.875rem;
 }
-
 .inline-code {
     background: #0D1117;
     color: #79C0FF;
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     border: 1px solid #30363D;
 }
 
+/* Code blocks */
 .code-block-container {
     background: #0D1117;
     border: 1px solid #30363D;
     border-radius: 0.5rem;
     overflow: hidden;
-    margin: 0.75rem 0;
+    margin: 1rem 0;
 }
-
 .code-header {
     background: #21262D;
     padding: 0.75rem 1rem;
@@ -377,7 +350,6 @@
     justify-content: space-between;
     align-items: center;
 }
-
 .code-language {
     font-size: 0.75rem;
     color: #7C3AED;
@@ -387,7 +359,6 @@
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
     font-weight: 600;
 }
-
 .copy-btn {
     display: flex;
     align-items: center;
@@ -402,54 +373,65 @@
     transition: all 0.2s ease;
     font-weight: 500;
 }
-
 .copy-btn:hover {
     background: #4B5563;
     color: #FFFFFF;
     transform: translateY(-1px);
 }
-
 .copy-btn.copied {
     background: #4CAF50;
     color: #FFFFFF;
 }
-
 .code-content {
-    padding: 1rem;
-    margin: 0;
+    padding: 0.8rem 1rem;
     background: #0D1117;
     color: #E6EDF3;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    font-size: 0.8rem;
-    line-height: 1.5;
+    font-size: 0.8125rem;
+    line-height: 1.4;
     overflow-x: auto;
 }
-
-.list-container {
-    margin: 0.5rem 0;
-    padding-left: 1rem;
+pre.code-content {
+    margin: 0;
+    border: none;
+    background: transparent;
+}
+pre.code-content > code {
+    display: block;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: transparent;
 }
 
+/* ✅ Listes corrigées - version compacte et alignée */
+.list-container {
+    margin: 0.25rem 0 0.75rem 0;
+    padding-left: 1.25rem;
+    list-style: none;
+}
 .list-item {
     position: relative;
     margin-bottom: 0.25rem;
+    padding-left: 0.75rem;
     color: #E5E7EB;
+    line-height: 1.5;
+    font-size: 0.875rem;
 }
-
 .list-item::before {
     content: "•";
     color: #4CAF50;
     font-weight: bold;
     position: absolute;
-    left: -1rem;
+    left: 0;
+    top: 0.125rem;
 }
 
-/* Responsive design */
+/* Responsive */
 @media (max-width: 768px) {
     .max-w-2xl {
         max-width: calc(100vw - 120px);
     }
-    
     .code-block-container {
         margin-left: -0.5rem;
         margin-right: -0.5rem;
