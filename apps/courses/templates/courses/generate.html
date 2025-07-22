@@ -3,6 +3,13 @@
 {% block title %}Course Generator - EduAI Tutor{% endblock %}
 
 {% block content %}
+<!-- DEBUG: Template is loading -->
+<div style="background: red; color: white; padding: 10px; margin: 10px;">
+    🔍 DEBUG: Template courses/generate.html is loading correctly!
+    User: {{ user.username }}
+    Modules count: {{ modules|length }}
+</div>
+
 <div class="p-6 space-y-6 min-h-full">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="book-open" class="w-6 h-6 text-primary-green"></i>

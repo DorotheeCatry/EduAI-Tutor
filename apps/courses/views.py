@@ -4,7 +4,6 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
 from apps.agents.agent_orchestrator import get_orchestrator
 from apps.rag.module_loader import module_loader
 from .models import Course
@@ -12,9 +11,14 @@ import re
 
 @login_required
 def course_generator(request):
+    print(f"🔍 DEBUG: course_generator called with method: {request.method}")
+    print(f"🔍 DEBUG: User authenticated: {request.user.is_authenticated}")
+    
     if request.method == 'POST':
+        print("🔍 DEBUG: Processing POST request")
         topic = request.POST.get('topic')
         module = request.POST.get('module', '')
+        print(f"🔍 DEBUG: Topic: {topic}, Module: {module}")
         
         # Utiliser l'orchestrateur IA pour générer le cours
         orchestrator = get_orchestrator(request.user)
@@ -55,9 +59,11 @@ def course_generator(request):
             
         return render(request, 'courses/course_detail.html', context)
     
+    print("🔍 DEBUG: Rendering GET request")
     context = {
         'modules': module_loader.get_available_modules()
     }
+    print(f"🔍 DEBUG: Context modules count: {len(context['modules'])}")
     return render(request, 'courses/generate.html', context)
 
 
