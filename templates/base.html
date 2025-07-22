@@ -59,6 +59,11 @@
         {% include 'components/statusbar.html' %}
     {% endif %}
 
+    <!-- Status Bar -->
+    {% if user.is_authenticated %}
+        {% include 'components/statusbar.html' %}
+    {% endif %}
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialiser les icônes Lucide
