@@ -1,11 +1,11 @@
-{% extends 'core/base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Quiz & MCQ - EduAI Tutor{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6">
     <div class="flex items-center space-x-3 mb-6">
-        <i data-lucide="brain" class="w-6 h-6 text-primary-rose"></i>
+        <i data-lucide="brain" class="w-6 h-6 text-pink-500"></i>
         <h1 class="text-xl font-bold text-white">Quiz & MCQ</h1>
     </div>
 
@@ -35,10 +35,10 @@
                 <!-- Solo -->
                 <button type="submit"
                     onclick="document.getElementById('quiz-mode').value='solo'"
-                    class="w-full bg-gray-800 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all duration-200 hover:border-primary-green hover:bg-gray-750 hover:scale-[1.02] group">
+                    class="w-full bg-gray-800 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all duration-200 hover:border-green-500 hover:bg-gray-700 hover:scale-[1.02] group">
                     <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-primary-green bg-opacity-20 rounded-full flex items-center justify-center mx-auto group-hover:bg-opacity-30 transition-all duration-200">
-                            <i data-lucide="play" class="w-8 h-8 text-primary-green"></i>
+                        <div class="w-16 h-16 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto group-hover:bg-opacity-30 transition-all duration-200">
+                            <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
                         </div>
                         <h3 class="text-lg font-bold text-white">Solo Mode</h3>
                         <p class="text-sm text-gray-400">Train at your own pace with personalized quizzes</p>
@@ -48,10 +48,10 @@
                 <!-- Multiplayer -->
                 <button type="submit"
                     onclick="document.getElementById('quiz-mode').value='multiplayer'"
-                    class="w-full bg-gray-800 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all duration-200 hover:border-primary-blue hover:bg-gray-750 hover:scale-[1.02] group">
+                    class="w-full bg-gray-800 rounded-lg p-6 border border-gray-700 cursor-pointer transition-all duration-200 hover:border-blue-500 hover:bg-gray-700 hover:scale-[1.02] group">
                     <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-primary-blue bg-opacity-20 rounded-full flex items-center justify-center mx-auto group-hover:bg-opacity-30 transition-all duration-200">
-                            <i data-lucide="users" class="w-8 h-8 text-primary-blue"></i>
+                        <div class="w-16 h-16 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto group-hover:bg-opacity-30 transition-all duration-200">
+                            <i data-lucide="users" class="w-8 h-8 text-blue-500"></i>
                         </div>
                         <h3 class="text-lg font-bold text-white">Multiplayer Mode</h3>
                         <p class="text-sm text-gray-400">Challenge other players in real time</p>
@@ -63,24 +63,24 @@
 
     <!-- Statistiques -->
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <div class="flex items-center space-x-3 mb-4">
+                <i data-lucide="trophy" class="w-5 h-5 text-pink-500"></i>
             <i data-lucide="trophy" class="w-5 h-5 text-primary-rose"></i>
             <h3 class="text-base font-bold text-white">Statistics</h3>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="text-center">
+                    <div class="text-xl font-bold text-green-500">127</div>
                 <div class="text-xl font-bold text-primary-green">127</div>
                 <div class="text-sm text-gray-400">Completed quizzes</div>
             </div>
-            <div class="text-center">
+                    <div class="text-xl font-bold text-blue-500">85%</div>
                 <div class="text-xl font-bold text-primary-blue">85%</div>
                 <div class="text-sm text-gray-400">Accuracy</div>
             </div>
-            <div class="text-center">
+                    <div class="text-xl font-bold text-pink-500">12</div>
                 <div class="text-xl font-bold text-primary-rose">12</div>
                 <div class="text-sm text-gray-400">Current streak</div>
             </div>
-            <div class="text-center">
+                    <div class="text-xl font-bold text-gray-400">3h 42m</div>
                 <div class="text-xl font-bold text-primary-gray">3h 42m</div>
                 <div class="text-sm text-gray-400">Total time</div>
             </div>
