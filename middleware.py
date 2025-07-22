@@ -19,6 +19,7 @@ class AuthenticationMiddleware:
             '/static/',
             '/media/',
             '/__reload__/',
+            '/i18n/',
         ]
         
         # Vérifier si l'URL actuelle est publique

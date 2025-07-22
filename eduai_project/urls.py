@@ -33,9 +33,6 @@ def redirect_to_courses(request):
 
 urlpatterns = [
     path('i18n/setlang/', set_language, name='set_language'),  # 💬 Vue pour changer la langue
-]
-
-urlpatterns += [
     path('admin/', admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
 
@@ -47,4 +44,9 @@ urlpatterns += [
     path('revision/', include('apps.revision.urls')),
     path('chat/', include('apps.chat.urls')),
     path('tracker/', include('apps.tracker.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+# Servir les fichiers statiques et media en développement
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -80,13 +80,19 @@ ROOT_URLCONF = 'eduai_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "apps/core/templates"],  # pour le layout/base.html
+        'DIRS': [
+            BASE_DIR / "apps/core/templates",
+            BASE_DIR / "templates",  # Dossier templates global
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -161,7 +167,7 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # Pour la production
+STATIC_ROOT = BASE_DIR / 'staticfiles' if not DEBUG else None  # Pour la production
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',  # Dossier pour les fichiers statiques globaux

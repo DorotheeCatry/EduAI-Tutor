@@ -12,4 +12,6 @@ def homepage(request):
     Returns:
         HttpResponse: Rendered homepage template.
     """
-    return render(request, 'core/homepage.html')
+    # Rediriger vers le générateur de cours par défaut
+    from django.shortcuts import redirect
+    return redirect('courses:generator')
