@@ -28,12 +28,12 @@
             </button>
 
             <!-- Menu déroulant du profil -->
-            <div id="profile-menu" class="fixed left-20 top-4 w-64 bg-gray-800/90 backdrop-blur-lg border border-gray-600/50 rounded-lg shadow-2xl hidden" style="z-index: 99999 !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);">
+            <div id="profile-menu" class="fixed left-20 top-16 w-64 bg-gray-800/90 backdrop-blur-lg border border-gray-600/50 rounded-lg shadow-2xl hidden" style="z-index: 99999 !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);">
                 <!-- Flèche pointant vers le bouton -->
-                <div class="absolute -left-2 top-4 w-4 h-4 bg-gray-800/90 border-l border-t border-gray-600/50 transform rotate-45"></div>
+                <div class="absolute -left-2 top-6 w-4 h-4 bg-gray-800/90 backdrop-blur-lg border-l border-t border-gray-600/50 transform rotate-45"></div>
                 
                 <!-- Header du menu -->
-                <div class="p-3 border-b border-gray-600/50">
+                <div class="p-3 border-b border-gray-600/50 bg-gray-800/95 backdrop-blur-lg rounded-t-lg">
                     <div class="flex items-center space-x-3">
                         {% if user.avatar %}
                             {% if user.avatar.url %}
@@ -51,9 +51,9 @@
                 </div>
 
                 <!-- Liens d'action -->
-                <div class="py-1">
+                <div class="py-1 bg-gray-800/90 backdrop-blur-lg rounded-b-lg">
                     <!-- Bouton Edit Profile -->
-                    <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white transition-colors text-left">
+                    <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/70 hover:text-white transition-all duration-200 text-left backdrop-blur-sm">
                         <i data-lucide="user" class="w-4 h-4 mr-2"></i>
                         <span>Edit Profile</span>
                     </button>
@@ -61,7 +61,7 @@
                     <!-- Form Logout -->
                     <form method="post" action="{% url 'users:logout' %}" class="m-0">
                         {% csrf_token %}
-                        <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white transition-colors text-left">
+                        <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-red-600/20 hover:text-red-400 transition-all duration-200 text-left backdrop-blur-sm">
                             <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
                             <span>Sign Out</span>
                         </button>
