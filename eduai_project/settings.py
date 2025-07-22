@@ -167,7 +167,7 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles' if not DEBUG else None  # Pour la production
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Toujours défini pour collectstatic
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',  # Dossier pour les fichiers statiques globaux
