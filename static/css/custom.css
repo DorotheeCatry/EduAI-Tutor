@@ -4,10 +4,9 @@
 html,
 body {
     background-color: #111827 !important;
-    /* gray-900 */
     color: white !important;
     min-height: 100vh;
-    overflow: auto;
+    overflow-x: hidden;
 }
 
 /* Variables CSS personnalisées */
@@ -59,36 +58,41 @@ body {
 
 /* Transitions fluides pour les changements de page */
 .tab-content {
-    min-height: calc(100vh - 120px);
+    min-height: calc(100vh - 64px) !important;
     position: relative;
-    will-change: transform;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+    background-color: #111827 !important;
+    overflow-y: auto !important;
 }
 
-/* Stabiliser le layout pour éviter les repaints */
-main.tab-content {
-    contain: layout style paint;
-    transform: translate3d(0, 0, 0);
-    -webkit-transform: translate3d(0, 0, 0);
-    -webkit-backface-visibility: hidden;
-    -webkit-perspective: 1000;
+/* Force l'affichage du contenu principal */
+main {
+    background-color: #111827 !important;
+    color: white !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-/* Optimisation GPU pour les transitions */
-.flex-1 {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-}
-
-/* Éviter les reflows lors des changements de contenu */
+/* Assurer que le contenu est visible */
 .p-6 {
-    contain: layout;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: transparent !important;
 }
 
-/* Stabiliser les dimensions pour éviter les sauts */
-.space-y-6 {
-    contain: layout;
+/* Force l'affichage des éléments de contenu */
+.space-y-6 > * {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Correction pour les cartes */
+.bg-gray-800 {
+    background-color: #1F2937 !important;
+    display: block !important;
+    visibility: visible !important;
 }
 
 .border-primary-green {
