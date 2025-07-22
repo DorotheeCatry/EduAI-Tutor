@@ -5,6 +5,7 @@ app_name = 'courses'
 
 urlpatterns = [
     path('test/', views.test_template, name='test'),
+    path('test-simple/', lambda request: render(request, 'test-simple.html'), name='test_simple'),
     path('generator/', views.course_generator, name='generator'),
     path('save/', views.save_course, name='save'),
     path('customize/', views.customize_course, name='customize'),

@@ -6,7 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EduAI Tutor - Plateforme d'apprentissage intelligente{% endblock %}</title>
     <meta name="description" content="Plateforme d'apprentissage avec IA pour générer des cours, quiz et révisions personnalisées">
-    {% tailwind_css %}
+    <!-- Tailwind CSS temporairement remplacé par CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-rose': '#C586C0',
+                        'primary-blue': '#007ACC',
+                        'primary-green': '#4CAF50',
+                        'primary-gray': '#D4D4D4',
+                        'gray-750': '#3F3F46',
+                        'gray-850': '#1F2937'
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     {% block extra_head %}{% endblock %}
