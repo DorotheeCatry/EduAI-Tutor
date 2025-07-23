@@ -162,167 +162,137 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
+    console.log('🚀 Page chargée, initialisation...');
     
-    let editor;
-    let isMonacoLoaded = false;
     const starterCode = `{{ exercise.starter_code|escapejs }}`;
-    const fallbackEditor = document.getElementById('code-editor');
-    const monacoContainer = document.getElementById('monaco-editor');
+    const codeEditor = document.getElementById('code-editor');
+    const resetBtn = document.getElementById('reset-code');
+    const runBtn = document.getElementById('run-code');
     
-    // Créer l'objet editor unifié qui fonctionne avec textarea ou Monaco
-    editor = {
-        getValue: () => {
-            if (isMonacoLoaded && window.monacoEditor) {
-                return window.monacoEditor.getValue();
-            }
-            return fallbackEditor.value;
-        },
-        setValue: (value) => {
-            if (isMonacoLoaded && window.monacoEditor) {
-                window.monacoEditor.setValue(value);
-            } else {
-                fallbackEditor.value = value;
-            }
-        },
-        focus: () => {
-            if (isMonacoLoaded && window.monacoEditor) {
-                window.monacoEditor.focus();
-            } else {
-                fallbackEditor.focus();
-            }
-        },
-        layout: () => {
-            if (isMonacoLoaded && window.monacoEditor) {
-                try {
-                    window.monacoEditor.layout();
-                } catch (e) {
-                    console.log('Layout error:', e);
-                }
-            }
-        }
-    };
+    console.log('📝 Éléments trouvés:', { codeEditor, resetBtn, runBtn });
     
-    // Essayer de charger Monaco en arrière-plan
-    function tryLoadMonaco() {
-        if (typeof require === 'undefined') {
-            console.log('📝 Monaco non disponible, utilisation du textarea');
-            return;
-        }
-        
-        try {
-            require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } });
-            require(['vs/editor/editor.main'], function () {
-                try {
-                    window.monacoEditor = monaco.editor.create(monacoContainer, {
-                        value: starterCode,
-                        language: 'python',
-                        theme: 'vs-dark',
-                        fontSize: 14,
-                        fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace",
-                        minimap: { enabled: false },
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                        tabSize: 4,
-                        insertSpaces: true,
-                        wordWrap: 'on',
-                        lineNumbers: 'on',
-                        padding: { top: 15, bottom: 15 },
-                        rulers: [80]
-                    });
-                    
-                    // Masquer le textarea et afficher Monaco
-                    fallbackEditor.style.display = 'none';
-                    monacoContainer.classList.remove('hidden');
-                    isMonacoLoaded = true;
-                    
-                    // Layout après un court délai
-                    setTimeout(() => {
-                        window.monacoEditor.layout();
-                        window.monacoEditor.focus();
-                    }, 100);
-                    
-                    console.log('✅ Monaco Editor chargé avec succès');
-                } catch (e) {
-                    console.error('❌ Erreur création Monaco:', e);
-                }
-            });
-        } catch (e) {
-            console.log('📝 Erreur chargement Monaco, utilisation du textarea:', e);
-        }
+    // S'assurer que l'éditeur a le code de départ
+    if (codeEditor && !codeEditor.value.trim()) {
+        codeEditor.value = starterCode;
     }
     
-    // Charger Monaco après un délai
-    setTimeout(tryLoadMonaco, 500);
+    // Focus sur l'éditeur
+    if (codeEditor) {
+        codeEditor.focus();
+        console.log('✅ Focus mis sur l\'éditeur');
+    }
     
-    // S'assurer que le textarea fonctionne immédiatement
-    fallbackEditor.focus();
+    // Gestion de la touche Tab pour l'indentation
+    if (codeEditor) {
+        codeEditor.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+    }
     
     // Reset du code
-    document.getElementById('reset-code').addEventListener('click', function() {
-        if (confirm('Êtes-vous sûr de vouloir réinitialiser le code ?')) {
-            editor.setValue(starterCode);
-            editor.focus();
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            console.log('🔄 Reset cliqué');
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser le code ?')) {
+                codeEditor.value = starterCode;
+                codeEditor.focus();
+                console.log('✅ Code réinitialisé');
+            }
+        });
+    }
+    
+    // Fonction pour récupérer le token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-    });
+        return cookieValue;
+    }
     
     // Exécution du code
-    document.getElementById('run-code').addEventListener('click', async function() {
-        const code = editor.getValue().trim();
-        if (!code) {
-            showResults('error', 'Veuillez écrire du code avant de tester.');
-            return;
-        }
-        
-        const button = this;
-        const originalContent = button.innerHTML;
-        
-        // État de chargement
-        button.disabled = true;
-        button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i>Exécution...';
-        lucide.createIcons();
-        
-        try {
-            const response = await fetch('{% url "exercises:submit" exercise.id %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({ code: code })
-            });
+    if (runBtn) {
+        runBtn.addEventListener('click', async function() {
+            console.log('▶️ Bouton Tester cliqué');
             
-            const data = await response.json();
+            const code = codeEditor.value.trim();
+            console.log('📝 Code à exécuter:', code.substring(0, 100) + '...');
             
-            if (response.ok) {
-                updateTestResults(data);
-                showResults(data.success ? 'success' : 'failed', data);
-                updateTestsDisplay(data.test_results);
-                
-                // Afficher notification XP si réussi
-                if (data.success && data.xp_result) {
-                    setTimeout(() => {
-                        showXPGain(
-                            data.xp_result.xp_gained,
-                            'exercise_completion',
-                            data.xp_result.level_up,
-                            data.xp_result.level_up ? data.xp_result.new_level : null
-                        );
-                    }, 1000);
-                }
-            } else {
-                showResults('error', data.error || 'Erreur lors de l\'exécution');
+            if (!code) {
+                alert('Veuillez écrire du code avant de tester.');
+                return;
             }
             
-        } catch (error) {
-            showResults('error', 'Erreur de connexion. Veuillez réessayer.');
-        } finally {
-            button.disabled = false;
-            button.innerHTML = originalContent;
+            const button = this;
+            const originalContent = button.innerHTML;
+            
+            // État de chargement
+            button.disabled = true;
+            button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i>Exécution...';
             lucide.createIcons();
-        }
-    });
+            
+            try {
+                console.log('🌐 Envoi de la requête...');
+                const response = await fetch('{% url "exercises:submit" exercise.id %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ code: code })
+                });
+                
+                console.log('📡 Réponse reçue:', response.status);
+                const data = await response.json();
+                console.log('📊 Données:', data);
+                
+                if (response.ok) {
+                    updateTestsDisplay(data.test_results);
+                    showResults(data.success ? 'success' : 'failed', data);
+                    
+                    // Afficher notification XP si réussi
+                    if (data.success && data.xp_result) {
+                        setTimeout(() => {
+                            if (typeof showXPGain === 'function') {
+                                showXPGain(
+                                    data.xp_result.xp_gained,
+                                    'exercise_completion',
+                                    data.xp_result.level_up,
+                                    data.xp_result.level_up ? data.xp_result.new_level : null
+                                );
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    showResults('error', data.error || 'Erreur lors de l\'exécution');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                showResults('error', 'Erreur de connexion. Veuillez réessayer.');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalContent;
+                lucide.createIcons();
+            }
+        });
+    }
     
     function updateTestsDisplay(testResults) {
+        console.log('🧪 Mise à jour des tests:', testResults);
         if (!testResults) return;
         
         testResults.forEach((result, index) => {
@@ -365,44 +335,15 @@ document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
     }
     
-    function updateTestResults(data) {
-        if (!data.test_results) return;
-        
-        data.test_results.forEach((testResult, index) => {
-            const testCase = document.querySelector(`[data-test-index="${index}"]`);
-            if (!testCase) return;
-            
-            const statusIcon = testCase.querySelector('.test-status');
-            const resultDiv = testCase.querySelector('.test-result');
-            const actualCode = testCase.querySelector('.test-actual');
-            
-            // Mettre à jour l'icône de statut
-            if (testResult.passed) {
-                statusIcon.className = 'test-status w-6 h-6 rounded-full bg-green-500 flex items-center justify-center';
-                statusIcon.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-white"></i>';
-                testCase.classList.remove('border-gray-600', 'border-red-500/30');
-                testCase.classList.add('border-green-500/30', 'bg-green-500/5');
-            } else {
-                statusIcon.className = 'test-status w-6 h-6 rounded-full bg-red-500 flex items-center justify-center';
-                statusIcon.innerHTML = '<i data-lucide="x" class="w-4 h-4 text-white"></i>';
-                testCase.classList.remove('border-gray-600', 'border-green-500/30');
-                testCase.classList.add('border-red-500/30', 'bg-red-500/5');
-            }
-            
-            // Afficher le résultat obtenu
-            if (testResult.actual !== undefined) {
-                actualCode.textContent = testResult.actual;
-                actualCode.className = `test-actual ${testResult.passed ? 'text-green-400' : 'text-red-400'}`;
-                resultDiv.classList.remove('hidden');
-            }
-            
-            lucide.createIcons();
-        });
-    }
-    
     function showResults(type, data) {
+        console.log('📋 Affichage des résultats:', type, data);
         const panel = document.getElementById('results-panel');
         const content = document.getElementById('results-content');
+        
+        if (!panel || !content) {
+            console.error('❌ Éléments de résultats non trouvés');
+            return;
+        }
         
         panel.classList.remove('hidden');
         
@@ -461,35 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
-    // Fonction pour récupérer le token CSRF
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    
-    // Redimensionner l'éditeur quand la fenêtre change de taille
-    window.addEventListener('resize', function() {
-        editor.layout();
-    });
-    
-    // Forcer le layout quand l'onglet devient visible
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            setTimeout(() => {
-                editor.layout();
-            }, 100);
-        }
-    });
+    console.log('✅ Initialisation terminée');
 });
 </script>
 
