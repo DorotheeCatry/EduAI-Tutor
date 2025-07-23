@@ -84,8 +84,133 @@
                     </div>
                     
                     <!-- Progression utilisateur -->
-                    {% with progress=user_progress|get_item:exercise.id %}
-                        {% if progress %}
+                    {% if exercise.user_progress %}
+                        <div class="mb-4">
+                            {% if exercise.user_progress.is_completed %}
+                                <div class="flex items-center space-x-2 text-green-400 text-sm">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                    <span>Complété ({{ exercise.user_progress.attempts_count }} tentative{{ exercise.user_progress.attempts_count|pluralize }})</span>
+                                </div>
+                            {% else %}
+                                <div class="flex items-center space-x-2 text-yellow-400 text-sm">
+                                    <i data-lucide="clock" class="w-4 h-4"></i>
+                                    <span>En cours ({{ exercise.user_progress.attempts_count }} tentative{{ exercise.user_progress.attempts_count|pluralize }})</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500">
+                            Taux de réussite: {{ exercise.success_rate }}%
+                        </div>
+                        <a href="{% url 'exercises:detail' exercise.id %}" 
+                           class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                            <span>Commencer</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-12">
+                <i data-lucide="code" class="w-16 h-16 text-gray-500 mx-auto mb-4"></i>
+                <h3 class="text-lg font-bold text-white mb-2">Aucun exercice trouvé</h3>
+                <p class="text-gray-400 mb-4">Essayez de modifier vos filtres ou générez un nouvel exercice.</p>
+                <button onclick="showGenerateModal()" class="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                    Générer un exercice
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if exercises.has_other_pages %}
+        <div class="flex justify-center mt-8">
+            <nav class="flex items-center space-x-2">
+                {% if exercises.has_previous %}
+                    <a href="?page={{ exercises.previous_page_number }}" class="px-3 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Précédent
+                    </a>
+                {% endif %}
+                
+                <span class="px-3 py-2 text-sm text-gray-300">
+                    Page {{ exercises.number }} sur {{ exercises.paginator.num_pages }}
+                </span>
+                
+                {% if exercises.has_next %}
+                    <a href="?page={{ exercises.next_page_number }}" class="px-3 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Suivant
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal de génération d'exercice -->
+<div id="generate-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 border border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-white">Générer un exercice</h3>
+            <button onclick="hideGenerateModal()" class="text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <form method="post" action="{% url 'exercises:generate' %}">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Sujet</label>
+                    <input type="text" name="topic" required
+                           placeholder="Ex: fonctions Python, boucles, classes..."
+                           class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Difficulté</label>
+                    <select name="difficulty" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green">
+                        {% for value, label in difficulty_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="hideGenerateModal()" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Annuler
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
+                        Générer
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+});
+
+function showGenerateModal() {
+    document.getElementById('generate-modal').classList.remove('hidden');
+}
+
+function hideGenerateModal() {
+    document.getElementById('generate-modal').classList.add('hidden');
+}
+
+// Fermer le modal en cliquant à l'extérieur
+document.getElementById('generate-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideGenerateModal();
+    }
+});
+</script>
+{% endblock %}
                             <div class="mb-4">
                                 {% if progress.is_completed %}
                                     <div class="flex items-center space-x-2 text-green-400 text-sm">

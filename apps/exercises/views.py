@@ -44,16 +44,21 @@ def exercise_list(request):
             exercise__in=exercises
         ).select_related('exercise')
         
-        user_progress = {
-            progress.exercise_id: progress for progress in progress_qs
-        }
+        user_progress = {}
+        for progress in progress_qs:
+            user_progress[progress.exercise_id] = progress
     
     # Topics disponibles pour le filtre
     topics = Exercise.objects.filter(is_active=True).values_list('topic', flat=True).distinct()
     
+    # Ajouter la progression à chaque exercice pour simplifier le template
+    exercises_with_progress = []
+    for exercise in exercises:
+        exercise.user_progress = user_progress.get(exercise.id)
+        exercises_with_progress.append(exercise)
+    
     context = {
-        'exercises': exercises_page,
-        'user_progress': user_progress,
+        'exercises': exercises_page,  # Garde la pagination
         'topics': topics,
         'current_difficulty': difficulty,
         'current_topic': topic,
