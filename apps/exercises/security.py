@@ -7,6 +7,7 @@ import sys
 import io
 import time
 import traceback
+import functools
 from contextlib import redirect_stdout, redirect_stderr
 
 
@@ -26,15 +27,16 @@ class SecurePythonExecutor:
         'pow', 'range', 'reversed', 'round', 'set', 'sorted', 'str',
         'sum', 'tuple', 'type', 'zip', 'print', 'Exception', 'ValueError',
         'TypeError', 'IndexError', 'KeyError', 'iter', 'next', 'slice',
-        'hasattr', 'getattr', 'setattr', 'isinstance', 'issubclass'
+        'hasattr', 'getattr', 'setattr', 'isinstance', 'issubclass',
+        '__import__'
     }
     
     # Modules interdits (blacklist)
     FORBIDDEN_MODULES = {
-        'os', 'sys', 'subprocess', 'socket', 'urllib', 'requests',
+        'os', 'subprocess', 'socket', 'urllib', 'requests',
         'shutil', 'glob', 'pickle', 'marshal', 'shelve', 'dbm',
         'sqlite3', 'threading', 'multiprocessing', 'ctypes',
-        'importlib', '__import__', 'eval', 'exec', 'compile',
+        'importlib', 'eval', 'exec', 'compile',
         'open', 'file', 'input', 'raw_input'
     }
     
@@ -60,12 +62,20 @@ class SecurePythonExecutor:
             'round': round, 'min': min, 'max': max
         }
         
+        # Ajouter les modules sécurisés nécessaires
+        safe_modules = {
+            'time': time,
+            'functools': functools,
+        }
+        
         safe_globals = {
             '__builtins__': restricted_builtins,
-            **math_functions
+            **math_functions,
+            **safe_modules
         }
         
         print(f"🔧 Builtins disponibles: {list(restricted_builtins.keys())}")
+        print(f"🔧 Modules disponibles: {list(safe_modules.keys())}")
         return safe_globals
     
     def _validate_code(self, code):
@@ -75,12 +85,15 @@ class SecurePythonExecutor:
         for line in lines:
             line = line.strip()
             if line.startswith('import ') or line.startswith('from '):
+                # Permettre les imports sécurisés
+                if any(safe_module in line for safe_module in ['time', 'functools']):
+                    continue
                 for forbidden in self.FORBIDDEN_MODULES:
                     if forbidden in line:
                         raise CodeExecutionError(f"Import interdit détecté: {forbidden}")
         
         # Vérifier les mots-clés dangereux
-        dangerous_keywords = ['exec', 'eval', 'compile', '__import__', 'open', 'file']
+        dangerous_keywords = ['exec', 'eval', 'compile', 'open', 'file']
         for keyword in dangerous_keywords:
             if keyword in code:
                 raise CodeExecutionError(f"Mot-clé interdit détecté: {keyword}")
