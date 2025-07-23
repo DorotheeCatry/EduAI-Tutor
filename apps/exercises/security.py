@@ -213,26 +213,32 @@ if result is not None:
                     
                     # Nettoyer la sortie plus simplement
                     lines = actual_output.split('\n')
-                    # Prendre la première ligne non vide qui n'est pas "None"
-                    for line in lines:
-                        line = line.strip()
-                        if line and line != 'None':
-                            actual_output = line
-                            break
+                    # Pour les décorateurs qui affichent plusieurs lignes, garder tout
+                    actual_output = actual_output.strip()
+                    
+                    # Si on a plusieurs lignes, les rejoindre avec des espaces pour comparaison
+                    if '\n' in actual_output:
+                        # Remplacer les retours à la ligne par des espaces pour la comparaison
+                        actual_output_for_comparison = actual_output.replace('\n', ' ')
                     else:
-                        actual_output = actual_output.strip()
+                        actual_output_for_comparison = actual_output
                     
                     expected_output = str(test['expected']).strip()
+                    # Même traitement pour l'attendu
+                    if '\n' in expected_output:
+                        expected_output_for_comparison = expected_output.replace('\n', ' ')
+                    else:
+                        expected_output_for_comparison = expected_output
                     
                     test_result['actual'] = actual_output
-                    test_result['passed'] = actual_output == expected_output
+                    test_result['passed'] = actual_output_for_comparison == expected_output_for_comparison
                     
-                    print(f"   Attendu: {expected_output}")
-                    print(f"   Obtenu: {actual_output}")
+                    print(f"   Attendu: {expected_output_for_comparison}")
+                    print(f"   Obtenu: {actual_output_for_comparison}")
                     print(f"   Résultat: {'✅' if test_result['passed'] else '❌'}")
                     
                     if not test_result['passed']:
-                        test_result['error'] = f"Attendu: {expected_output}, Obtenu: {actual_output}"
+                        test_result['error'] = f"Attendu: {expected_output_for_comparison}, Obtenu: {actual_output_for_comparison}"
                 else:
                     test_result['error'] = execution_result['error']
                     print(f"   Erreur: {execution_result['error']}")
