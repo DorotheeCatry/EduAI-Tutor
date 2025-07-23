@@ -246,6 +246,42 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateTestsDisplay(data.test_results);
                     showResults(data.success ? 'success' : 'failed', data);
 
+                    // ✅ AJOUT DYNAMIQUE si réussite
+                    if (data.success) {
+                        // Badge "Complété"
+                        const badgeContainer = document.querySelector('.flex.items-center.space-x-2');
+                        const alreadyCompleted = badgeContainer.querySelector('.text-primary-green');
+
+                        if (!alreadyCompleted) {
+                            const badge = document.createElement('span');
+                            badge.className = "px-3 py-1 bg-primary-green/20 text-primary-green rounded-full text-sm font-medium flex items-center space-x-1";
+                            badge.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i><span>Complété</span>`;
+                            badgeContainer.appendChild(badge);
+                            lucide.createIcons();
+                            console.log('✅ Badge Complété ajouté');
+                        }
+
+                        // Tentative récente
+                        const historySection = document.querySelector('.space-y-2');
+                        if (historySection) {
+                            const attempt = document.createElement('div');
+                            attempt.className = 'bg-gray-900 rounded-lg p-3 border border-gray-600 flex items-center justify-between';
+
+                            attempt.innerHTML = `
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+                                    <span class="text-green-400 text-sm">Réussi</span>
+                                    <span class="text-gray-400 text-sm">${data.test_results.length}/${data.test_results.length} tests</span>
+                                </div>
+                                <span class="text-gray-500 text-xs">à l’instant</span>
+                            `;
+                            historySection.prepend(attempt);
+                            lucide.createIcons();
+                            console.log('📊 Tentative ajoutée');
+                        }
+                    }
+
+                    // XP comme avant
                     if (data.success && data.xp_result) {
                         setTimeout(() => {
                             if (typeof showXPGain === 'function') {
