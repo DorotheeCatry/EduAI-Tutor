@@ -12,9 +12,9 @@
     <!-- Modes de jeu -->
     <div class="space-y-6">
         <!-- Solo Mode -->
-        <div class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-green-500 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/20 max-w-2xl mx-auto">
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-green-500 transition-colors duration-300">
             <div class="text-center space-y-4">
-                <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-green-500/30 transition-all duration-300">
+                <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
                     <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white">Solo Mode</h3>
@@ -44,16 +44,16 @@
 
         <!-- Modes multijoueur -->
         <div>
-            <h3 class="text-lg font-bold text-white mb-4 text-center flex items-center justify-center space-x-2">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-center space-x-2">
                 <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
                 <span>Multiplayer Modes</span>
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Create Room -->
-                <a href="{% url 'quiz:create_room' %}" class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-blue-500 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/20">
+                <a href="{% url 'quiz:create_room' %}" class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-blue-500 transition-colors duration-300 block">
                     <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-blue-500/30 transition-all duration-300">
+                        <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto">
                             <i data-lucide="plus-circle" class="w-8 h-8 text-blue-500"></i>
                         </div>
                         <h3 class="text-lg font-bold text-white">Create Room</h3>
@@ -62,9 +62,9 @@
                 </a>
 
                 <!-- Join Room -->
-                <a href="{% url 'quiz:join_room' %}" class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/20">
+                <a href="{% url 'quiz:join_room' %}" class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-purple-500 transition-colors duration-300 block">
                     <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-purple-500/30 transition-all duration-300">
+                        <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto">
                             <i data-lucide="hash" class="w-8 h-8 text-purple-500"></i>
                         </div>
                         <h3 class="text-lg font-bold text-white">Join Room</h3>
