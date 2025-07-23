@@ -202,9 +202,16 @@ class AIOrchestrator:
             # Terminer la session
             session = self.watcher.end_session(session_id, score)
             
-            # Mettre à jour l'XP de l'utilisateur
-            xp_gained = int(score / 10)  # 1 XP par 10% de score
-            self.user.xp += xp_gained
+            # Calculer l'XP basé sur la performance
+            base_xp = 10  # XP de base pour compléter un quiz
+            bonus_xp = int(score / 10)  # Bonus basé sur le score (0-10 XP)
+            streak_bonus = min(self.user.current_streak * 2, 20)  # Bonus streak (max 20 XP)
+            
+            total_xp = base_xp + bonus_xp + streak_bonus
+            
+            # Ajouter l'XP et mettre à jour les stats
+            xp_result = self.user.add_xp(total_xp, 'quiz_completion')
+            self.user.total_quizzes_completed += 1
             self.user.save()
             
             return {
@@ -212,8 +219,9 @@ class AIOrchestrator:
                 'score': score,
                 'correct_answers': correct_answers,
                 'total_questions': total_questions,
-                'xp_gained': xp_gained,
-                'session': session
+                'xp_result': xp_result,
+                'session': session,
+                'streak_bonus': streak_bonus
             }
             
         except Exception as e:

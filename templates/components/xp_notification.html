@@ -1,0 +1,92 @@
+<!-- Notification XP/Level Up -->
+<div id="xp-notification" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-4 rounded-lg shadow-2xl border border-green-400 transform transition-all duration-500 scale-95 opacity-0">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i data-lucide="zap" class="w-6 h-6 text-yellow-300"></i>
+            </div>
+            <div>
+                <div class="font-bold text-lg" id="xp-title">+15 XP Gagné !</div>
+                <div class="text-sm opacity-90" id="xp-description">Génération de cours</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Level Up -->
+<div id="levelup-notification" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-4 rounded-lg shadow-2xl border border-yellow-300 transform transition-all duration-500 scale-95 opacity-0">
+        <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i data-lucide="crown" class="w-8 h-8 text-yellow-200"></i>
+            </div>
+            <div>
+                <div class="font-bold text-xl" id="levelup-title">Niveau Supérieur !</div>
+                <div class="text-sm opacity-90" id="levelup-description">Vous êtes maintenant niveau 3</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showXPNotification(xpGained, activityType, levelUp = false, newLevel = null) {
+    if (levelUp && newLevel) {
+        // Notification de montée de niveau
+        const notification = document.getElementById('levelup-notification');
+        const title = document.getElementById('levelup-title');
+        const description = document.getElementById('levelup-description');
+        
+        title.textContent = `Niveau ${newLevel} Atteint !`;
+        description.textContent = `Félicitations ! Vous progressez bien.`;
+        
+        notification.classList.remove('hidden');
+        const content = notification.querySelector('div');
+        
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 100);
+        
+        setTimeout(() => {
+            content.classList.add('scale-95', 'opacity-0');
+            content.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => notification.classList.add('hidden'), 500);
+        }, 4000);
+        
+    } else {
+        // Notification XP normale
+        const notification = document.getElementById('xp-notification');
+        const title = document.getElementById('xp-title');
+        const description = document.getElementById('xp-description');
+        
+        title.textContent = `+${xpGained} XP Gagné !`;
+        
+        const activityNames = {
+            'course_generation': 'Génération de cours',
+            'course_save': 'Cours sauvegardé',
+            'quiz_completion': 'Quiz terminé',
+            'chat_interaction': 'Recherche IA',
+            'general': 'Activité générale'
+        };
+        
+        description.textContent = activityNames[activityType] || 'Activité';
+        
+        notification.classList.remove('hidden');
+        const content = notification.querySelector('div');
+        
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 100);
+        
+        setTimeout(() => {
+            content.classList.add('scale-95', 'opacity-0');
+            content.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => notification.classList.add('hidden'), 500);
+        }, 3000);
+    }
+}
+
+// Fonction globale pour déclencher les notifications
+window.showXPGain = showXPNotification;
+</script>

@@ -193,6 +193,21 @@
 
 </script>
 
+{% if xp_result %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Afficher la notification XP après génération de cours
+    setTimeout(() => {
+        showXPGain(
+            {{ xp_result.xp_gained }}, 
+            '{{ xp_result.activity_type }}',
+            {{ xp_result.level_up|yesno:"true,false" }},
+            {% if xp_result.level_up %}{{ xp_result.new_level }}{% else %}null{% endif %}
+        );
+    }, 1000);
+});
+</script>
+
 <style>
 /* ✨ MISE EN FORME GÉNÉRALE */
 .keyword-highlight {

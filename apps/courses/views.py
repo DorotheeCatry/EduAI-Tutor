@@ -41,6 +41,9 @@ def course_generator(request):
         result = orchestrator.generate_course(topic)
         
         if result['success']:
+            # Ajouter de l'XP pour la génération de cours
+            xp_result = request.user.add_xp(15, 'course_generation')
+            
             # Traitement direct du markdown
             content = result['content']
             
@@ -57,7 +60,8 @@ def course_generator(request):
                     'content': content,
                     'sources': result['sources']
                 },
-                'modules': module_loader.get_available_modules()
+                'modules': module_loader.get_available_modules(),
+                'xp_result': xp_result
             }
         else:
             context = {
@@ -100,6 +104,11 @@ def save_course(request):
                 sources=[],
                 created_by=request.user
             )
+            
+            # Ajouter de l'XP pour sauvegarder un cours
+            xp_result = request.user.add_xp(10, 'course_save')
+            request.user.total_courses_completed += 1
+            request.user.save()
             
             messages.success(request, f'✨ Cours "{course.title}" sauvegardé avec succès !')
             return redirect('courses:detail', course_id=course.id)

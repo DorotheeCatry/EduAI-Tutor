@@ -5,7 +5,14 @@
             <i data-lucide="clock" class="w-3 h-3"></i>
             <span id="session-time">Session: 2h 34m</span>
         </span>
-        <span>Level: {{ user.level|default:"1" }}</span>
+        <span class="flex items-center space-x-1">
+            <i data-lucide="star" class="w-3 h-3 text-yellow-400"></i>
+            <span>{{ user.level_title }} Niv.{{ user.level|default:"1" }}</span>
+        </span>
+        <span class="flex items-center space-x-1">
+            <i data-lucide="zap" class="w-3 h-3 text-green-400"></i>
+            <span>{{ user.xp|default:"0" }} XP</span>
+        </span>
         <span class="text-primary-green">● Online</span>
     </div>
     
