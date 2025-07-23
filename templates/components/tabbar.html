@@ -1,10 +1,3 @@
-<!-- Tab Bar Component - Exact KodaTheme Design with Dynamic Behavior -->
-<div class="h-10 bg-gray-800/80 backdrop-blur-md border-b border-gray-700/50 flex items-center shadow-sm flex-shrink-0">
-    <div class="flex" id="tabs-container">
-        <!-- Les onglets seront ajoutés dynamiquement ici -->
-    </div>
-</div>
-
 <script>
 // Gestion dynamique des onglets avec ordre chronologique
 let openTabsOrder = []; // Array pour maintenir l'ordre d'ouverture
@@ -49,8 +42,11 @@ const availableTabs = {
 function getCurrentTab() {
     const path = window.location.pathname;
     if (path.includes('profile')) return 'profile';
-    if (path.includes('courses')) return 'courses';
+    if (path.includes('courses/generator')) return 'courses';
+    if (path.includes('courses/my-courses')) return 'my-courses';
+    if (path.includes('courses')) {
         if (path.includes('my-courses')) return 'my-courses';
+        return 'courses';
     }
     if (path.includes('chat')) return 'chat';
     if (path.includes('quiz')) return 'quiz';
