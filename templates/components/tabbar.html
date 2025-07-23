@@ -49,9 +49,8 @@ const availableTabs = {
 function getCurrentTab() {
     const path = window.location.pathname;
     if (path.includes('profile')) return 'profile';
-    if (path.includes('courses')) return 'courses';
-        if (path.includes('my-courses')) return 'my-courses';
-    }
+    if (path.includes('generator')) return 'courses';
+    if (path.includes('my-courses')) return 'my-courses';
     if (path.includes('chat')) return 'chat';
     if (path.includes('quiz')) return 'quiz';
     if (path.includes('exercises')) return 'exercises';
