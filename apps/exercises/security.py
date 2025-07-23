@@ -174,12 +174,25 @@ class SecurePythonExecutor:
             
             try:
                 # Créer le code de test complet
-                test_code = f"""
-{code}
+                test_code = f"""{code}
 
-# Exécuter le test et afficher le résultat
-result = {test['input']}
-print(result)
+# Exécuter le test et capturer le résultat
+import sys
+from io import StringIO
+
+# Capturer la sortie
+old_stdout = sys.stdout
+sys.stdout = StringIO()
+
+try:
+    result = {test['input']}
+    if result is not None:
+        print(result, end='')  # Pas de retour à la ligne automatique
+    output = sys.stdout.getvalue()
+finally:
+    sys.stdout = old_stdout
+
+print(output, end='')  # Afficher le résultat capturé
 """
                 
                 print(f"🧪 Exécution du test {i+1}: {test['input']}")
@@ -189,6 +202,13 @@ print(result)
                 
                 if execution_result['success']:
                     actual_output = str(execution_result['output']).strip()
+                    # Nettoyer la sortie : supprimer les "None" automatiques et les retours à la ligne
+                    if actual_output.endswith('\nNone'):
+                        actual_output = actual_output[:-5]  # Supprimer '\nNone'
+                    elif actual_output.endswith('None'):
+                        actual_output = actual_output[:-4]  # Supprimer 'None'
+                    actual_output = actual_output.strip()
+                    
                     expected_output = str(test['expected']).strip()
                     
                     test_result['actual'] = actual_output
