@@ -173,26 +173,13 @@ class SecurePythonExecutor:
             }
             
             try:
-                # Créer le code de test complet
+                # Créer le code de test simple sans import sys
                 test_code = f"""{code}
 
-# Exécuter le test et capturer le résultat
-import sys
-from io import StringIO
-
-# Capturer la sortie
-old_stdout = sys.stdout
-sys.stdout = StringIO()
-
-try:
-    result = {test['input']}
-    if result is not None:
-        print(result, end='')  # Pas de retour à la ligne automatique
-    output = sys.stdout.getvalue()
-finally:
-    sys.stdout = old_stdout
-
-print(output, end='')  # Afficher le résultat capturé
+# Exécuter le test
+result = {test['input']}
+if result is not None:
+    print(result)
 """
                 
                 print(f"🧪 Exécution du test {i+1}: {test['input']}")
@@ -202,12 +189,17 @@ print(output, end='')  # Afficher le résultat capturé
                 
                 if execution_result['success']:
                     actual_output = str(execution_result['output']).strip()
-                    # Nettoyer la sortie : supprimer les "None" automatiques et les retours à la ligne
-                    if actual_output.endswith('\nNone'):
-                        actual_output = actual_output[:-5]  # Supprimer '\nNone'
-                    elif actual_output.endswith('None'):
-                        actual_output = actual_output[:-4]  # Supprimer 'None'
-                    actual_output = actual_output.strip()
+                    
+                    # Nettoyer la sortie plus simplement
+                    lines = actual_output.split('\n')
+                    # Prendre la première ligne non vide qui n'est pas "None"
+                    for line in lines:
+                        line = line.strip()
+                        if line and line != 'None':
+                            actual_output = line
+                            break
+                    else:
+                        actual_output = actual_output.strip()
                     
                     expected_output = str(test['expected']).strip()
                     
