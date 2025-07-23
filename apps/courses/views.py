@@ -111,11 +111,12 @@ def save_course(request):
             request.user.save()
             
             messages.success(request, f'✨ Cours "{course.title}" sauvegardé avec succès !')
+            messages.success(request, f'Cours "{course.title}" sauvegardé avec succès !')
             return redirect('courses:detail', course_id=course.id)
             
         except Exception as save_error:
             print(f"❌ Erreur lors de la sauvegarde : {save_error}")
-            messages.error(request, f'❌ Erreur lors de la sauvegarde : {save_error}')
+            messages.error(request, f'Erreur lors de la sauvegarde : {save_error}')
             return redirect('courses:generator')
     
     return redirect('courses:generator')
@@ -180,8 +181,31 @@ def course_detail(request, course_id):
         course = get_object_or_404(Course, id=course_id, created_by=request.user)
         course.increment_view_count()
         
-        # Traitement du contenu markdown pour l'affichage
+        # Nettoyer le contenu des emojis
         content = course.content
+        
+        # Supprimer tous les emojis du contenu
+        import re
+        # Pattern pour supprimer les emojis Unicode
+        emoji_pattern = re.compile("["
+                                   u"\U0001F600-\U0001F64F"  # emoticons
+                                   u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                                   u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                                   u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                                   u"\U00002702-\U000027B0"
+                                   u"\U000024C2-\U0001F251"
+                                   "]+", flags=re.UNICODE)
+        content = emoji_pattern.sub('', content)
+        
+        # Supprimer les emojis textuels courants
+        text_emojis = [
+            '📖', '🎯', '🔍', '⚙️', '💡', '🚀', '📚', '📝', '🔁', '🧠', '🎓', '💻', '🌟', '✨',
+            '🔥', '💪', '🎉', '👍', '👏', '🚀', '📊', '📈', '📉', '🔧', '⭐', '🏆', '🎪', '🎨',
+            '🎵', '🎶', '🎸', '🎹', '🎺', '🎻', '🥁', '🎤', '🎧', '📻', '📺', '📱', '💻', '🖥️',
+            '⌨️', '🖱️', '🖨️', '💾', '💿', '📀', '💽', '💻', '📱', '☎️', '📞', '📟', '📠', '📡'
+        ]
+        for emoji in text_emojis:
+            content = content.replace(emoji, '')
         
         # Extraire le titre du markdown si présent
         title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
@@ -194,12 +218,12 @@ def course_detail(request, course_id):
                 'topic': course.topic,
                 'module': course.module,
                 'module_name': course.module.replace('_', ' ').title() if course.module != 'general' else None,
-                'content': course.content,
+                'content': content,
                 'sources': course.sources
             }
         }
     except Course.DoesNotExist:
-        messages.error(request, '❌ Cours non trouvé.')
+        messages.error(request, 'Cours non trouvé.')
         return redirect('courses:generator')
     
     return render(request, 'courses/course_detail.html', context)
@@ -248,10 +272,9 @@ def delete_course(request, course_id):
             course = get_object_or_404(Course, id=course_id, created_by=request.user)
             course_title = course.title
             course.delete()
-            messages.success(request, f'🗑️ Cours "{course_title}" supprimé avec succès !')
         except Course.DoesNotExist:
-            messages.error(request, '❌ Cours non trouvé.')
+            messages.error(request, 'Cours non trouvé.')
         except Exception as delete_error:
-            messages.error(request, f'❌ Erreur lors de la suppression : {delete_error}')
+            messages.error(request, f'Erreur lors de la suppression : {delete_error}')
     
     return redirect('courses:my_courses')
