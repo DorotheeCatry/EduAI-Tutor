@@ -210,6 +210,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 showResults(data.success ? 'success' : 'failed', data);
                 
+                // Debug: afficher la réponse complète
+                console.log('Réponse du serveur:', data);
+                
                 // Afficher notification XP si réussi
                 if (data.success && data.xp_result) {
                     setTimeout(() => {
@@ -222,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1000);
                 }
             } else {
+                console.error('Erreur HTTP:', response.status, data);
                 showResults('error', data.error || 'Erreur lors de l\'exécution');
             }
             

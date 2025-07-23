@@ -121,7 +121,19 @@ def submit_code(request, exercise_id):
         
         # Exécuter les tests
         start_time = time.time()
+        
+        # Debug: afficher les tests
+        print(f"🧪 Tests à exécuter pour {exercise.title}:")
+        for i, test in enumerate(exercise.tests):
+            print(f"  Test {i+1}: {test}")
+        
         test_results = secure_executor.run_tests(submitted_code, exercise.tests)
+        
+        # Debug: afficher les résultats
+        print(f"📊 Résultats des tests:")
+        for result in test_results:
+            print(f"  Test {result['test_number']}: {'✅' if result['passed'] else '❌'} - {result.get('error', 'OK')}")
+        
         execution_time = time.time() - start_time
         
         # Analyser les résultats

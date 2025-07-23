@@ -203,21 +203,33 @@ class SecurePythonExecutor:
             }
             
             try:
-                # Créer le code de test complet
-                test_code = f"{code}\n\nresult = {test['input']}\nprint(result)"
+                # Créer le code de test complet avec gestion des erreurs
+                test_code = f"""
+{code}
+
+try:
+    result = {test['input']}
+    print(result)
+except Exception as e:
+    print(f"ERROR: {{e}}")
+"""
                 
                 # Exécuter le test
                 execution_result = self.execute_code(test_code)
                 
                 if execution_result['success']:
                     actual_output = execution_result['output'].strip()
-                    expected_output = str(test['expected']).strip()
                     
-                    test_result['actual'] = actual_output
-                    test_result['passed'] = actual_output == expected_output
+                    # Vérifier si c'est une erreur
+                    if actual_output.startswith('ERROR:'):
+                        test_result['error'] = actual_output
+                    else:
+                        expected_output = str(test['expected']).strip()
+                        test_result['actual'] = actual_output
+                        test_result['passed'] = actual_output == expected_output
                     
-                    if not test_result['passed']:
-                        test_result['error'] = f"Attendu: {expected_output}, Obtenu: {actual_output}"
+                        if not test_result['passed']:
+                            test_result['error'] = f"Attendu: {expected_output}, Obtenu: {actual_output}"
                 else:
                     test_result['error'] = execution_result['error']
                     
