@@ -238,7 +238,11 @@ def generate_exercise(request):
             - Les tests doivent appeler la MÊME fonction que celle définie dans la solution
             - Les valeurs "expected" doivent être le VRAI résultat de ta fonction
             - Teste des cas variés : normal, limite, erreur
+            - UTILISE TOUJOURS les f-strings (f"") pour le formatage de chaînes, jamais la concaténation
+            - Exemple : f"Résultat: {{valeur}}" au lieu de "Résultat: " + str(valeur)
             
+            - UTILISE TOUJOURS les f-strings (f"") pour le formatage de chaînes, jamais la concaténation
+            - Exemple : f"Impossible de convertir {{valeur}} en entier" au lieu de "Impossible de convertir " + valeur + " en entier"
             EXEMPLE de cohérence :
             Si ta solution définit "def calculer_moyenne(liste):", 
             alors tes tests doivent être "calculer_moyenne([1,2,3])" avec expected "2.0"
@@ -258,6 +262,8 @@ def generate_exercise(request):
             
             VÉRIFICATION FINALE : Assure-toi que si j'exécute ta solution puis tes tests, 
             les résultats correspondent exactement aux valeurs "expected".
+            IMPORTANT : Utilise les f-strings dans tout le code Python généré !
+            IMPORTANT : Utilise les f-strings dans tout le code Python généré !
             """
             
             result = orchestrator.answer_question(prompt)
