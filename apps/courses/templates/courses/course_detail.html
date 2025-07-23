@@ -84,7 +84,7 @@
                 <div class="bg-gray-900 mt-6">
                     <div class="p-6">
                         <div class="prose prose-invert max-w-none" id="course-content">
-                            {{ generated_course.content }}
+                            {{ generated_course.content|safe }}
                         </div>
                     </div>
                 </div>
@@ -106,29 +106,16 @@
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
         
-        // Formatage immédiat et forcé pour tous les cours
-        function applyFormatting() {
+        // S'assurer que le formatage s'applique TOUJOURS, même pour les cours sauvegardés
+        setTimeout(function() {
             formatMarkdownContent();
-        }
-        
-        // Appliquer le formatage immédiatement
-        applyFormatting();
-        
-        // Et aussi après un délai pour être sûr
-        setTimeout(applyFormatting, 100);
-        setTimeout(applyFormatting, 500);
+        }, 100);
 
     function formatMarkdownContent() {
         const content = document.getElementById('course-content');
         if (!content) return;
 
-        // Récupérer le contenu brut (textContent pour éviter les problèmes de HTML)
-        let html = content.textContent || content.innerText || content.innerHTML;
-        
-        // Si le contenu est déjà formaté (contient des balises HTML), on le garde tel quel
-        if (html.includes('<h1') || html.includes('<h2') || html.includes('<div class="code-block-container">')) {
-            return; // Déjà formaté
-        }
+        let html = content.innerHTML;
 
         // Étape 1 : Sauvegarder les blocs de code pour ne pas les altérer
         const codeBlocks = [];
