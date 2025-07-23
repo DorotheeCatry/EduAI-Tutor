@@ -16,8 +16,8 @@
                 <h3 class="text-sm font-medium text-gray-400">Cours complétés</h3>
                 <i data-lucide="book-check" class="w-5 h-5 text-green-500"></i>
             </div>
-            <div class="text-2xl font-bold text-green-500 mb-2">12</div>
-            <div class="text-xs text-gray-500">+3 cette semaine</div>
+            <div class="text-2xl font-bold text-green-500 mb-2">{{ total_courses }}</div>
+            <div class="text-xs text-gray-500">{{ user.total_courses_completed }} au total</div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -25,8 +25,8 @@
                 <h3 class="text-sm font-medium text-gray-400">Taux de réussite</h3>
                 <i data-lucide="target" class="w-5 h-5 text-blue-500"></i>
             </div>
-            <div class="text-2xl font-bold text-blue-500 mb-2">85%</div>
-            <div class="text-xs text-gray-500">+5% ce mois</div>
+            <div class="text-2xl font-bold text-blue-500 mb-2">{{ success_rate }}%</div>
+            <div class="text-xs text-gray-500">Basé sur {{ user.total_quizzes_completed }} quiz</div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -34,8 +34,8 @@
                 <h3 class="text-sm font-medium text-gray-400">Temps d'étude</h3>
                 <i data-lucide="clock" class="w-5 h-5 text-pink-500"></i>
             </div>
-            <div class="text-2xl font-bold text-pink-500 mb-2">42h</div>
-            <div class="text-xs text-gray-500">2h 30m aujourd'hui</div>
+            <div class="text-2xl font-bold text-pink-500 mb-2">{{ total_study_time }}</div>
+            <div class="text-xs text-gray-500">{{ today_study_time }} aujourd'hui</div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
@@ -55,42 +55,17 @@
             <span>Progression cette semaine</span>
         </h3>
         <div class="space-y-4">
+            {% for day in week_progress %}
             <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-300 w-16">Lundi</span>
+                <span class="text-sm text-gray-300 w-16">{{ day.day }}</span>
                 <div class="flex-1 mx-4">
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 60%"></div>
+                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ day.percentage }}%"></div>
                     </div>
                 </div>
-                <span class="text-sm text-gray-400 w-16 text-right">1h 30m</span>
+                <span class="text-sm text-gray-400 w-16 text-right">{{ day.minutes }}m</span>
             </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-300 w-16">Mardi</span>
-                <div class="flex-1 mx-4">
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 80%"></div>
-                    </div>
-                </div>
-                <span class="text-sm text-gray-400 w-16 text-right">2h 00m</span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-300 w-16">Mercredi</span>
-                <div class="flex-1 mx-4">
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 45%"></div>
-                    </div>
-                </div>
-                <span class="text-sm text-gray-400 w-16 text-right">1h 10m</span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-300 w-16">Jeudi</span>
-                <div class="flex-1 mx-4">
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
-                    </div>
-                </div>
-                <span class="text-sm text-gray-400 w-16 text-right">2h 30m</span>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
@@ -102,27 +77,15 @@
                 <span>Sujets étudiés</span>
             </h3>
             <div class="space-y-3">
+                {% for subject in recent_subjects %}
                 <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
                     <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium text-white truncate">Python Decorators</div>
-                        <div class="text-xs text-gray-400">Terminé il y a 2h</div>
+                        <div class="text-sm font-medium text-white truncate">{{ subject.title }}</div>
+                        <div class="text-xs text-gray-400">{{ subject.status }} {{ subject.time_ago }}</div>
                     </div>
-                    <div class="text-green-500 text-sm font-bold ml-4">95%</div>
+                    <div class="{% if subject.score >= 80 %}text-green-500{% elif subject.score >= 70 %}text-blue-500{% else %}text-yellow-500{% endif %} text-sm font-bold ml-4">{{ subject.score }}%</div>
                 </div>
-                <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
-                    <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium text-white truncate">FastAPI Basics</div>
-                        <div class="text-xs text-gray-400">Terminé hier</div>
-                    </div>
-                    <div class="text-blue-500 text-sm font-bold ml-4">87%</div>
-                </div>
-                <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
-                    <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium text-white truncate">SQL Queries</div>
-                        <div class="text-xs text-gray-400">En cours</div>
-                    </div>
-                    <div class="text-yellow-500 text-sm font-bold ml-4">72%</div>
-                </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -135,28 +98,28 @@
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-gray-300">Cours cette semaine</span>
-                        <span class="text-sm text-gray-400">3/5</span>
+                        <span class="text-sm text-gray-400">{{ goals.courses.current }}/{{ goals.courses.target }}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 60%"></div>
+                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ goals.courses.percentage }}%"></div>
                     </div>
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-gray-300">Quiz réussis</span>
-                        <span class="text-sm text-gray-400">8/10</span>
+                        <span class="text-sm text-gray-400">{{ goals.quizzes.current }}/{{ goals.quizzes.target }}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 80%"></div>
+                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: {{ goals.quizzes.percentage }}%"></div>
                     </div>
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-gray-300">Temps quotidien</span>
-                        <span class="text-sm text-gray-400">2h 30m/2h</span>
+                        <span class="text-sm text-gray-400">{{ goals.daily_time.display }}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-pink-500 h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
+                        <div class="bg-pink-500 h-2 rounded-full transition-all duration-300" style="width: {{ goals.daily_time.percentage }}%"></div>
                     </div>
                 </div>
             </div>

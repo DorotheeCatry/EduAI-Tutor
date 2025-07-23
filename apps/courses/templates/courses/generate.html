@@ -78,22 +78,24 @@
                 <span>Cours récents</span>
             </h3>
             <div class="space-y-3">
+                {% if user.total_courses_completed > 0 %}
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-white">Python Decorators</span>
-                        <span class="text-xs text-gray-400">85%</span>
+                        <span class="text-xs font-bold text-white">Dernier cours</span>
+                        <span class="text-xs text-gray-400">{{ user.level }}%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 85%"></div>
+                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage }}%"></div>
                     </div>
                 </div>
+                {% endif %}
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-white">REST API</span>
-                        <span class="text-xs text-gray-400">60%</span>
+                        <span class="text-xs font-bold text-white">Progression niveau</span>
+                        <span class="text-xs text-gray-400">{{ user.xp }}/{{ user.xp_for_next_level }} XP</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 60%"></div>
+                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage }}%"></div>
                     </div>
                 </div>
             </div>
@@ -105,7 +107,7 @@
                 <span>Temps d'étude</span>
             </h3>
             <div class="text-center">
-                <div class="text-2xl font-bold text-primary-rose mb-2">2h 34m</div>
+                <div class="text-2xl font-bold text-primary-rose mb-2">{{ user.current_streak }}j</div>
                 <div class="text-sm text-gray-400">Aujourd'hui</div>
             </div>
         </div>
@@ -116,8 +118,8 @@
                 <span>Progression</span>
             </h3>
             <div class="text-center">
-                <div class="text-2xl font-bold text-primary-blue mb-2">67%</div>
-                <div class="text-sm text-gray-400">Moyenne générale</div>
+                <div class="text-2xl font-bold text-primary-blue mb-2">{{ user.level }}</div>
+                <div class="text-sm text-gray-400">{{ user.level_title }}</div>
             </div>
         </div>
     </div>
