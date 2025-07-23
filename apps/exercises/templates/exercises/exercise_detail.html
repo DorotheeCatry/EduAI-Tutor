@@ -500,6 +500,27 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 /* Amélioration de l'éditeur */
+#code-editor {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.8 !important;
+    color: #e6edf3 !important;
+    background-color: #0d1117 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 6px !important;
+    padding: 16px !important;
+    tab-size: 4 !important;
+    white-space: pre !important;
+    overflow-wrap: normal !important;
+    overflow-x: auto !important;
+}
+
+#code-editor:focus {
+    outline: none !important;
+    border-color: #4CAF50 !important;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
+}
+
 .monaco-editor .margin {
     background-color: #1e1e1e !important;
 }
