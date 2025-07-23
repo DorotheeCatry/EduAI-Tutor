@@ -43,7 +43,7 @@
             {% endif %}
             
             <!-- Page Content -->
-            <main class="flex-1 bg-gray-900 overflow-y-auto">
+            <main class="flex-1 bg-gray-900 overflow-hidden">
                 {% block content %}
                 <div class="p-6 text-white">
                     <h1 class="text-2xl font-bold text-white mb-4">Template de base fonctionne !</h1>
@@ -53,7 +53,9 @@
             </main>
             
             <!-- Status Bar -->
-            {% include 'components/statusbar.html' %}
+            {% if user.is_authenticated %}
+                {% include 'components/statusbar.html' %}
+            {% endif %}
         </div>
     </div>
     

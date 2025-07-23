@@ -8,6 +8,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-rose': '#C586C0',
+                        'primary-blue': '#007ACC',
+                        'primary-green': '#4CAF50',
+                        'primary-gray': '#D4D4D4'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
