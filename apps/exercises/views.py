@@ -127,6 +127,10 @@ def submit_code(request, exercise_id):
         for i, test in enumerate(exercise.tests):
             print(f"  Test {i+1}: {test}")
         
+        # Vérifier que les tests sont bien formatés
+        if not exercise.tests:
+            return JsonResponse({'error': 'Aucun test défini pour cet exercice'}, status=400)
+        
         test_results = secure_executor.run_tests(submitted_code, exercise.tests)
         
         # Debug: afficher les résultats

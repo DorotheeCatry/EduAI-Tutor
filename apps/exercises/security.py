@@ -6,7 +6,6 @@ Utilise RestrictedPython pour créer un environnement d'exécution sécurisé
 import sys
 import io
 import time
-import signal
 import traceback
 from contextlib import redirect_stdout, redirect_stderr
 from RestrictedPython import compile_restricted
@@ -22,11 +21,6 @@ class TimeoutException(Exception):
 class CodeExecutionError(Exception):
     """Exception levée en cas d'erreur d'exécution"""
     pass
-
-
-def timeout_handler(signum, frame):
-    """Handler pour le timeout"""
-    raise TimeoutException("Code execution timed out")
 
 
 class SecurePythonExecutor:
@@ -137,11 +131,6 @@ class SecurePythonExecutor:
             stdout_capture = io.StringIO()
             stderr_capture = io.StringIO()
             
-            # Configurer le timeout
-            if sys.platform != 'win32':  # Unix/Linux
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.alarm(self.timeout)
-            
             try:
                 # Exécuter le code avec redirection des sorties
                 with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
@@ -156,18 +145,9 @@ class SecurePythonExecutor:
                 else:
                     result['success'] = True
                     
-            except TimeoutException:
-                result['timeout'] = True
-                result['error'] = f"Timeout: Le code a pris plus de {self.timeout} secondes à s'exécuter"
-                
             except Exception as e:
                 result['error'] = f"Erreur d'exécution: {str(e)}"
                 
-            finally:
-                # Désactiver le timeout
-                if sys.platform != 'win32':
-                    signal.alarm(0)
-                    
         except CodeExecutionError as e:
             result['error'] = str(e)
             
