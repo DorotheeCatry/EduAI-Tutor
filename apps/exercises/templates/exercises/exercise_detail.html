@@ -201,25 +201,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Forcer le redimensionnement multiple fois pour s'assurer que l'éditeur s'affiche
-        setTimeout(() => {
+        // Forcer plusieurs layouts pour s'assurer que l'éditeur s'affiche
+        const forceLayout = () => {
             if (editor) {
-                editor.layout();
+                try {
+                    editor.layout();
+                    editor.focus();
+                    console.log('✅ Monaco Editor layout forcé');
+                } catch (e) {
+                    console.error('❌ Erreur layout Monaco:', e);
+                }
             }
-        }, 50);
+        };
         
-        setTimeout(() => {
-            if (editor) {
-                editor.layout();
-                editor.focus();
-            }
-        }, 200);
-        
-        setTimeout(() => {
-            if (editor) {
-                editor.layout();
-            }
-        }, 500);
+        // Plusieurs tentatives de layout
+        setTimeout(forceLayout, 100);
+        setTimeout(forceLayout, 300);
+        setTimeout(forceLayout, 500);
+        setTimeout(forceLayout, 1000);
     });
+    
+    // Fallback si Monaco ne se charge pas
+    setTimeout(() => {
+        if (!editor) {
+            console.error('❌ Monaco Editor failed to load, creating fallback');
+            createFallbackEditor();
+        }
+    }, 3000);
+    
+    function createFallbackEditor() {
+        const container = document.getElementById('monaco-editor');
+        container.innerHTML = `
+            <textarea id="fallback-editor" 
+                class="w-full h-full bg-gray-900 text-white font-mono text-sm p-4 border-none outline-none resize-none"
+                style="font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, monospace; line-height: 1.5;"
+                placeholder="Écrivez votre code Python ici...">${starterCode}</textarea>
+        `;
+        
+        // Créer un objet editor compatible
+        const textarea = document.getElementById('fallback-editor');
+        editor = {
+            getValue: () => textarea.value,
+            setValue: (value) => { textarea.value = value; },
+            focus: () => textarea.focus(),
+            layout: () => {} // No-op pour le fallback
+        };
+        
+        console.log('✅ Fallback editor créé');
+    }
     
     // Reset du code
     document.getElementById('reset-code').addEventListener('click', function() {
@@ -445,14 +474,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // Redimensionner l'éditeur quand la fenêtre change de taille
     window.addEventListener('resize', function() {
         if (editor) {
-            editor.layout();
+            try {
+                editor.layout();
+            } catch (e) {
+                console.log('Layout error on resize:', e);
+            }
         }
     });
     
     // Forcer le layout quand l'onglet devient visible
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden && editor) {
-            setTimeout(() => editor.layout(), 100);
+            setTimeout(() => {
+                try {
+                    editor.layout();
+                } catch (e) {
+                    console.log('Layout error on visibility change:', e);
+                }
+            }, 100);
         }
     });
 });
