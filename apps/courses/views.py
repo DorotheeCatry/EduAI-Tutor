@@ -133,10 +133,11 @@ def course_detail(request, course_id):
                 'title': course.title,
                 'topic': course.topic,
                 'module': course.module,
-                'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == course.module), course.module.replace('_', ' ').title()) if course.module != 'general' else None,
+                'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == course.module), course.module.replace('_', ' ').title()) if course.module and course.module != 'general' else None,
                 'content': course.content,
                 'sources': course.sources
-            }
+            },
+            'is_saved_course': True  # Flag pour identifier un cours sauvegardé
         }
     except Course.DoesNotExist:
         messages.error(request, '❌ Cours non trouvé.')

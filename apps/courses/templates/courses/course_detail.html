@@ -36,7 +36,7 @@
         
         <!-- Actions rapides -->
         <div class="flex items-center space-x-3">
-            {% if generated_course and not course %}
+            {% if generated_course and not is_saved_course %}
                 <form method="post" action="{% url 'courses:save' %}" class="inline">
                     {% csrf_token %}
                     <input type="hidden" name="title" value="{{ generated_course.title }}">
@@ -58,7 +58,7 @@
                 </a>
             {% endif %}
             
-            <a href="{% if course %}{% url 'courses:my_courses' %}{% else %}{% url 'courses:generator' %}{% endif %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
+            <a href="{% if is_saved_course %}{% url 'courses:my_courses' %}{% else %}{% url 'courses:generator' %}{% endif %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 <span>Retour</span>
             </a>
@@ -78,17 +78,13 @@
     {% endif %}
 
     <!-- Contenu du cours avec scroll fixe et fond uniforme -->
-    {% if generated_course or course %}
+    {% if generated_course %}
         <div class="flex-1 bg-gray-900 overflow-hidden">
             <div class="h-full overflow-y-auto px-6 pb-6" id="course-content-container">
                 <div class="bg-gray-900 mt-6">
                     <div class="p-6">
                         <div class="prose prose-invert max-w-none" id="course-content">
-                            {% if generated_course %}
-                                {{ generated_course.content|safe }}
-                            {% elif course %}
-                                {{ course.content|safe }}
-                            {% endif %}
+                            {{ generated_course.content|safe }}
                         </div>
                     </div>
                 </div>
@@ -109,6 +105,11 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
+        
+        // S'assurer que le formatage s'applique TOUJOURS, même pour les cours sauvegardés
+        setTimeout(function() {
+            formatMarkdownContent();
+        }, 100);
 
     function formatMarkdownContent() {
         const content = document.getElementById('course-content');
@@ -151,8 +152,8 @@
         // Code inline
         html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
 
-        html = html.replace(/\*\*Énoncé\s*:\*\*/g, '<div class="exercise-label exercise-statement"><i data-lucide="file-text" class="w-4 h-4"></i><span>Énoncé</span></div><p>');
-        html = html.replace(/\*\*Solution\s*:\*\*/g, '<div class="exercise-label exercise-solution"><i data-lucide="check-circle" class="w-4 h-4"></i><span>Solution</span></div><p>');
+        html = html.replace(/\*\*Énoncé\s*:\*\*/g, '<div class="exercise-label exercise-statement"><i data-lucide="file-text" class="w-4 h-4"></i><span>Énoncé</span></div>');
+        html = html.replace(/\*\*Solution\s*:\*\*/g, '<div class="exercise-label exercise-solution"><i data-lucide="check-circle" class="w-4 h-4"></i><span>Solution</span></div>');
 
         // Amélioration des listes
         html = html.replace(/^[\-\*\+•] (.+)$/gm, '<li class="list-item">$1</li>');
@@ -212,7 +213,7 @@
         });
     };
 
-    formatMarkdownContent();
+    // Le formatage est maintenant appelé dans le setTimeout ci-dessus
 });
 
 </script>
