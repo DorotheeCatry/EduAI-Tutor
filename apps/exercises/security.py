@@ -1,6 +1,6 @@
 """
-Système de sécurité pour l'exécution de code Python
-Utilise RestrictedPython pour créer un environnement d'exécution sécurisé
+Système de sécurité simplifié pour l'exécution de code Python
+Utilise exec() avec un environnement restreint
 """
 
 import sys
@@ -8,15 +8,6 @@ import io
 import time
 import traceback
 from contextlib import redirect_stdout, redirect_stderr
-from RestrictedPython import compile_restricted
-from RestrictedPython.Guards import safe_globals, safe_builtins
-from RestrictedPython.transformer import RestrictingNodeTransformer
-from RestrictedPython.PrintCollector import PrintCollector
-
-
-class TimeoutException(Exception):
-    """Exception levée en cas de timeout"""
-    pass
 
 
 class CodeExecutionError(Exception):
@@ -25,10 +16,7 @@ class CodeExecutionError(Exception):
 
 
 class SecurePythonExecutor:
-    """Exécuteur Python sécurisé utilisant RestrictedPython"""
-    
-    # Timeout par défaut (5 secondes)
-    DEFAULT_TIMEOUT = 5
+    """Exécuteur Python simplifié et sécurisé"""
     
     # Fonctions autorisées (whitelist)
     ALLOWED_BUILTINS = {
@@ -36,7 +24,8 @@ class SecurePythonExecutor:
         'enumerate', 'filter', 'float', 'format', 'frozenset', 'hex',
         'int', 'len', 'list', 'map', 'max', 'min', 'oct', 'ord',
         'pow', 'range', 'reversed', 'round', 'set', 'sorted', 'str',
-        'sum', 'tuple', 'type', 'zip', 'print'
+        'sum', 'tuple', 'type', 'zip', 'print', 'Exception', 'ValueError',
+        'TypeError', 'IndexError', 'KeyError'
     }
     
     # Modules interdits (blacklist)
@@ -48,61 +37,30 @@ class SecurePythonExecutor:
         'open', 'file', 'input', 'raw_input'
     }
     
-    def __init__(self, timeout=None):
-        self.timeout = timeout or self.DEFAULT_TIMEOUT
-    
-    def _safe_print(self, *args, **kwargs):
-        """Fonction print sécurisée pour RestrictedPython"""
-        # Convertir tous les arguments en string et les joindre
-        output = ' '.join(str(arg) for arg in args)
-        # Ajouter un retour à la ligne si end n'est pas spécifié
-        if kwargs.get('end', '\n') == '\n':
-            output += '\n'
-        return output
+    def __init__(self, timeout=5):
+        self.timeout = timeout
     
     def _create_safe_globals(self):
         """Crée un environnement global sécurisé"""
-        # Commencer avec les globals sécurisés de RestrictedPython
-        safe_globals_dict = safe_globals.copy()
-        
-        # Ajouter les builtins autorisés
+        # Créer un dictionnaire de builtins restreint
         restricted_builtins = {}
         for name in self.ALLOWED_BUILTINS:
-            if name in safe_builtins:
-                restricted_builtins[name] = safe_builtins[name]
-            elif hasattr(__builtins__, name):
+            if hasattr(__builtins__, name):
                 restricted_builtins[name] = getattr(__builtins__, name)
-        
-        safe_globals_dict['__builtins__'] = restricted_builtins
-        
-        # Ajouter les fonctions requises par RestrictedPython
-        safe_globals_dict['_print_'] = PrintCollector
-        safe_globals_dict['_getattr_'] = getattr
-        safe_globals_dict['_getitem_'] = lambda obj, key: obj[key]
-        safe_globals_dict['_getiter_'] = iter
-        safe_globals_dict['_write_'] = lambda x: x
-        safe_globals_dict['_apply_'] = lambda f, *args, **kwargs: f(*args, **kwargs)
-        safe_globals_dict['_inplacevar_'] = lambda op, x, y: op(x, y)
-        
-        # Opérateurs pour _inplacevar_
-        import operator
-        safe_globals_dict['__add__'] = operator.add
-        safe_globals_dict['__sub__'] = operator.sub
-        safe_globals_dict['__mul__'] = operator.mul
-        safe_globals_dict['__truediv__'] = operator.truediv
-        safe_globals_dict['__floordiv__'] = operator.floordiv
-        safe_globals_dict['__mod__'] = operator.mod
-        safe_globals_dict['__pow__'] = operator.pow
         
         # Ajouter des fonctions mathématiques de base
         import math
         math_functions = {
-            'sqrt': math.sqrt, 'pow': math.pow, 'abs': abs,
+            'sqrt': math.sqrt, 'pow': pow, 'abs': abs,
             'round': round, 'min': min, 'max': max
         }
-        safe_globals_dict.update(math_functions)
         
-        return safe_globals_dict
+        safe_globals = {
+            '__builtins__': restricted_builtins,
+            **math_functions
+        }
+        
+        return safe_globals
     
     def _validate_code(self, code):
         """Valide le code avant exécution"""
@@ -146,36 +104,33 @@ class SecurePythonExecutor:
             # Valider le code
             self._validate_code(code)
             
-            # Compiler le code avec RestrictedPython
-            compiled_code = compile_restricted(code, '<user_code>', 'exec')
-            
-            if compiled_code is None:
-                raise CodeExecutionError("Erreur de compilation : code non autorisé ou syntaxe incorrecte")
+            # Compiler le code
+            try:
+                compiled_code = compile(code, '<user_code>', 'exec')
+            except SyntaxError as e:
+                raise CodeExecutionError(f"Erreur de syntaxe: {str(e)}")
             
             # Créer l'environnement d'exécution sécurisé
-            safe_globals_dict = self._create_safe_globals()
+            safe_globals = self._create_safe_globals()
             safe_locals = {}
             
-            # Initialiser le collecteur de prints
-            safe_globals_dict['_print'] = PrintCollector()
+            # Capturer les sorties
+            output_buffer = io.StringIO()
+            error_buffer = io.StringIO()
             
             try:
-                # Exécuter le code
-                exec(compiled_code, safe_globals_dict, safe_locals)
+                with redirect_stdout(output_buffer), redirect_stderr(error_buffer):
+                    exec(compiled_code, safe_globals, safe_locals)
                 
-                # Récupérer les sorties des prints depuis PrintCollector
-                if '_print' in safe_globals_dict:
-                    print_output = safe_globals_dict['_print'].txt
-                    # PrintCollector.txt peut être une liste ou une chaîne
-                    if isinstance(print_output, list):
-                        result['output'] = '\n'.join(str(item) for item in print_output)
-                    else:
-                        result['output'] = str(print_output)
-                
+                result['output'] = output_buffer.getvalue()
                 result['success'] = True
                     
             except Exception as e:
-                result['error'] = f"Erreur d'exécution: {str(e)}"
+                error_output = error_buffer.getvalue()
+                if error_output:
+                    result['error'] = f"Erreur d'exécution: {error_output}"
+                else:
+                    result['error'] = f"Erreur d'exécution: {str(e)}"
                 
         except CodeExecutionError as e:
             result['error'] = str(e)
@@ -205,46 +160,47 @@ class SecurePythonExecutor:
             test_result = {
                 'test_number': i + 1,
                 'input': test.get('input', ''),
-                'expected': test.get('expected', ''),
+                'expected': str(test.get('expected', '')),
                 'actual': '',
                 'passed': False,
                 'error': ''
             }
             
             try:
-                # Créer le code de test complet avec gestion des erreurs
+                # Créer le code de test complet
                 test_code = f"""
 {code}
 
-# Exécuter le test et capturer le résultat
-try:
-    result = {test['input']}
-    print(result)
-except Exception as e:
-    print(f"ERREUR: {{e}}")
+# Exécuter le test et afficher le résultat
+result = {test['input']}
+print(result)
 """
+                
+                print(f"🧪 Exécution du test {i+1}: {test['input']}")
                 
                 # Exécuter le test
                 execution_result = self.execute_code(test_code)
                 
                 if execution_result['success']:
                     actual_output = str(execution_result['output']).strip()
+                    expected_output = str(test['expected']).strip()
                     
-                    # Vérifier si c'est une erreur
-                    if actual_output.startswith('ERREUR:'):
-                        test_result['error'] = actual_output.replace('ERREUR: ', '')
-                    else:
-                        expected_output = str(test['expected']).strip()
-                        test_result['actual'] = actual_output
-                        test_result['passed'] = actual_output == expected_output
+                    test_result['actual'] = actual_output
+                    test_result['passed'] = actual_output == expected_output
                     
-                        if not test_result['passed']:
-                            test_result['error'] = f"Attendu: {expected_output}, Obtenu: {actual_output}"
+                    print(f"   Attendu: {expected_output}")
+                    print(f"   Obtenu: {actual_output}")
+                    print(f"   Résultat: {'✅' if test_result['passed'] else '❌'}")
+                    
+                    if not test_result['passed']:
+                        test_result['error'] = f"Attendu: {expected_output}, Obtenu: {actual_output}"
                 else:
                     test_result['error'] = execution_result['error']
+                    print(f"   Erreur: {execution_result['error']}")
                     
             except Exception as e:
                 test_result['error'] = f"Erreur lors du test: {str(e)}"
+                print(f"   Exception: {str(e)}")
             
             test_results.append(test_result)
         
