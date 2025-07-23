@@ -83,3 +83,32 @@ main {
 .gap-6 {
     gap: 1.5rem !important;
 }
+
+/* ===== STATUS BAR ===== */
+.status-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+}
+
+/* Animation pour la status bar */
+.status-bar {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Horloge temps réel */
+#current-time {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-weight: 600;
+}

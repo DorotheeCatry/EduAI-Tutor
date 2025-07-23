@@ -51,6 +51,9 @@
                 </div>
                 {% endblock %}
             </main>
+            
+            <!-- Status Bar -->
+            {% include 'components/statusbar.html' %}
         </div>
     </div>
 
@@ -60,6 +63,38 @@
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+            
+            // Horloge temps réel dans la status bar
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                const timeElement = document.getElementById('current-time');
+                if (timeElement) {
+                    timeElement.textContent = timeString;
+                }
+            }
+            
+            // Mettre à jour l'heure immédiatement et toutes les minutes
+            updateTime();
+            setInterval(updateTime, 60000);
+            
+            // Simuler le temps de session (optionnel)
+            let sessionMinutes = 154; // 2h34m en minutes
+            function updateSessionTime() {
+                sessionMinutes++;
+                const hours = Math.floor(sessionMinutes / 60);
+                const minutes = sessionMinutes % 60;
+                const sessionElement = document.getElementById('session-time');
+                if (sessionElement) {
+                    sessionElement.textContent = `Session: ${hours}h ${minutes.toString().padStart(2, '0')}m`;
+                }
+            }
+            
+            // Mettre à jour le temps de session toutes les minutes
+            setInterval(updateSessionTime, 60000);
         });
     </script>
 </body>
