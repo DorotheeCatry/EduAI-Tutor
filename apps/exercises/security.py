@@ -165,7 +165,12 @@ class SecurePythonExecutor:
                 
                 # Récupérer les sorties des prints depuis PrintCollector
                 if '_print' in safe_globals_dict:
-                    result['output'] = safe_globals_dict['_print'].txt
+                    print_output = safe_globals_dict['_print'].txt
+                    # PrintCollector.txt peut être une liste ou une chaîne
+                    if isinstance(print_output, list):
+                        result['output'] = '\n'.join(str(item) for item in print_output)
+                    else:
+                        result['output'] = str(print_output)
                 
                 result['success'] = True
                     
@@ -223,7 +228,7 @@ except Exception as e:
                 execution_result = self.execute_code(test_code)
                 
                 if execution_result['success']:
-                    actual_output = execution_result['output'].strip()
+                    actual_output = str(execution_result['output']).strip()
                     
                     # Vérifier si c'est une erreur
                     if actual_output.startswith('ERREUR:'):
