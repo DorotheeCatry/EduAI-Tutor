@@ -4,7 +4,7 @@
 
 {% block extra_head %}
 <!-- Monaco Editor -->
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -122,7 +122,7 @@
         
         <!-- Éditeur Monaco -->
         <div class="flex-1 relative">
-            <div id="monaco-editor" class="w-full h-full"></div>
+            <div id="monaco-editor" class="w-full h-full" style="min-height: 400px;"></div>
         </div>
         
         <!-- Résultats -->
@@ -139,10 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
     
     let editor;
-    const starterCode = {{ starter_code|safe }};
+    const starterCode = `{{ exercise.starter_code|escapejs }}`;
     
     // Initialiser Monaco Editor
-    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+    require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } });
     require(['vs/editor/editor.main'], function () {
         editor = monaco.editor.create(document.getElementById('monaco-editor'), {
             value: starterCode,
@@ -153,8 +153,21 @@ document.addEventListener('DOMContentLoaded', function() {
             scrollBeyondLastLine: false,
             automaticLayout: true,
             tabSize: 4,
-            insertSpaces: true
+            insertSpaces: true,
+            wordWrap: 'on',
+            lineNumbers: 'on',
+            glyphMargin: false,
+            folding: false,
+            lineDecorationsWidth: 0,
+            lineNumbersMinChars: 3
         });
+        
+        // Forcer le redimensionnement après initialisation
+        setTimeout(() => {
+            if (editor) {
+                editor.layout();
+            }
+        }, 100);
     });
     
     // Reset du code
@@ -187,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({ code: code })
             });
@@ -285,6 +298,29 @@ document.addEventListener('DOMContentLoaded', function() {
         // Scroll vers les résultats
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+    
+    // Fonction pour récupérer le token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Redimensionner l'éditeur quand la fenêtre change de taille
+    window.addEventListener('resize', function() {
+        if (editor) {
+            editor.layout();
+        }
+    });
 });
 </script>
 

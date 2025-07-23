@@ -90,7 +90,6 @@ def exercise_detail(request, exercise_id):
         'exercise': exercise,
         'progress': progress,
         'recent_submissions': recent_submissions,
-        'starter_code': exercise.starter_code,
     }
     
     return render(request, 'exercises/exercise_detail.html', context)
