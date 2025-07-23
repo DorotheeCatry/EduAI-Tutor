@@ -44,6 +44,7 @@ urlpatterns = [
     path('revision/', include('apps.revision.urls')),
     path('chat/', include('apps.chat.urls')),
     path('tracker/', include('apps.tracker.urls')),
+    path('exercises/', include('apps.exercises.urls')),
 ]
 
 # Servir les fichiers statiques et media en développement

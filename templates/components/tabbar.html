@@ -34,6 +34,10 @@ const availableTabs = {
     'revision': {
         title: 'Revision',
         url: "/revision/flashcards/"
+    },
+    'exercises': {
+        title: 'Python Exercises',
+        url: "/exercises/"
     }
 };
 
@@ -46,6 +50,7 @@ function getCurrentTab() {
     if (path.includes('quiz')) return 'quiz';
     if (path.includes('tracker')) return 'tracker';
     if (path.includes('revision')) return 'revision';
+    if (path.includes('exercises')) return 'exercises';
     return null;
 }
 

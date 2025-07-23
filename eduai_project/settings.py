@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'apps.chat',
     'apps.rag',
     'apps.tracker',
+    'apps.exercises',
     'theme',
 
     # Third-party apps

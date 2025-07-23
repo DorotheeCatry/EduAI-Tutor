@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exercise.title }} - Exercices Python{% endblock %}
+
+{% block extra_head %}
+<!-- Monaco Editor -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="flex h-full overflow-hidden">
+    <!-- Panneau de gauche - Énoncé -->
+    <div class="w-1/2 bg-gray-800 border-r border-gray-700 flex flex-col">
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-700 flex-shrink-0">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'exercises:list' %}" class="text-gray-400 hover:text-white transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </a>
+                    <h1 class="text-xl font-bold text-white">{{ exercise.title }}</h1>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    {% if exercise.difficulty == 'beginner' %}
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">Débutant</span>
+                    {% elif exercise.difficulty == 'intermediate' %}
+                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">Intermédiaire</span>
+                    {% else %}
+                        <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium">Avancé</span>
+                    {% endif %}
+                    
+                    {% if progress.is_completed %}
+                        <span class="px-3 py-1 bg-primary-green/20 text-primary-green rounded-full text-sm font-medium flex items-center space-x-1">
+                            <i data-lucide="check" class="w-3 h-3"></i>
+                            <span>Complété</span>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4 text-sm text-gray-400">
+                <span class="flex items-center space-x-1">
+                    <i data-lucide="tag" class="w-4 h-4"></i>
+                    <span>{{ exercise.topic|title }}</span>
+                </span>
+                <span class="flex items-center space-x-1">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                    <span>{{ progress.attempts_count }} tentative{{ progress.attempts_count|pluralize }}</span>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="prose prose-invert max-w-none">
+                <h3 class="text-lg font-bold text-white mb-4">📋 Énoncé</h3>
+                <div class="text-gray-300 leading-relaxed mb-6">
+                    {{ exercise.description|linebreaks }}
+                </div>
+                
+                <!-- Tests à passer -->
+                <h3 class="text-lg font-bold text-white mb-4">🧪 Tests à passer</h3>
+                <div class="space-y-3">
+                    {% for test in exercise.tests %}
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-600">
+                            <div class="flex items-center justify-between">
+                                <code class="text-primary-blue text-sm">{{ test.input }}</code>
+                                <span class="text-gray-400">→</span>
+                                <code class="text-primary-green text-sm">{{ test.expected }}</code>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Soumissions récentes -->
+                {% if recent_submissions %}
+                    <h3 class="text-lg font-bold text-white mb-4 mt-8">📊 Tentatives récentes</h3>
+                    <div class="space-y-2">
+                        {% for submission in recent_submissions %}
+                            <div class="bg-gray-900 rounded-lg p-3 border border-gray-600 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    {% if submission.status == 'success' %}
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+                                        <span class="text-green-400 text-sm">Réussi</span>
+                                    {% else %}
+                                        <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
+                                        <span class="text-red-400 text-sm">Échoué</span>
+                                    {% endif %}
+                                    <span class="text-gray-400 text-sm">{{ submission.passed_tests_count }}/{{ submission.total_tests_count }} tests</span>
+                                </div>
+                                <span class="text-gray-500 text-xs">{{ submission.submitted_at|timesince }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panneau de droite - Éditeur de code -->
+    <div class="w-1/2 bg-gray-900 flex flex-col">
+        <!-- Header éditeur -->
+        <div class="p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="code" class="w-5 h-5 text-primary-green"></i>
+                <span class="text-white font-medium">Éditeur Python</span>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button id="reset-code" class="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4 mr-1"></i>
+                    Reset
+                </button>
+                
+                <button id="run-code" class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                    <i data-lucide="play" class="w-4 h-4"></i>
+                    <span>Tester le code</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Éditeur Monaco -->
+        <div class="flex-1 relative">
+            <div id="monaco-editor" class="w-full h-full"></div>
+        </div>
+        
+        <!-- Résultats -->
+        <div id="results-panel" class="border-t border-gray-700 bg-gray-800 hidden">
+            <div class="p-4">
+                <div id="results-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+    
+    let editor;
+    const starterCode = {{ starter_code|safe }};
+    
+    // Initialiser Monaco Editor
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+        editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+            value: starterCode,
+            language: 'python',
+            theme: 'vs-dark',
+            fontSize: 14,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            tabSize: 4,
+            insertSpaces: true
+        });
+    });
+    
+    // Reset du code
+    document.getElementById('reset-code').addEventListener('click', function() {
+        if (editor && confirm('Êtes-vous sûr de vouloir réinitialiser le code ?')) {
+            editor.setValue(starterCode);
+        }
+    });
+    
+    // Exécution du code
+    document.getElementById('run-code').addEventListener('click', async function() {
+        if (!editor) return;
+        
+        const code = editor.getValue().trim();
+        if (!code) {
+            showResults('error', 'Veuillez écrire du code avant de tester.');
+            return;
+        }
+        
+        const button = this;
+        const originalContent = button.innerHTML;
+        
+        // État de chargement
+        button.disabled = true;
+        button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i>Exécution...';
+        lucide.createIcons();
+        
+        try {
+            const response = await fetch('{% url "exercises:submit" exercise.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ code: code })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showResults(data.success ? 'success' : 'failed', data);
+                
+                // Afficher notification XP si réussi
+                if (data.success && data.xp_result) {
+                    setTimeout(() => {
+                        showXPGain(
+                            data.xp_result.xp_gained,
+                            'exercise_completion',
+                            data.xp_result.level_up,
+                            data.xp_result.level_up ? data.xp_result.new_level : null
+                        );
+                    }, 1000);
+                }
+            } else {
+                showResults('error', data.error || 'Erreur lors de l\'exécution');
+            }
+            
+        } catch (error) {
+            showResults('error', 'Erreur de connexion. Veuillez réessayer.');
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalContent;
+            lucide.createIcons();
+        }
+    });
+    
+    function showResults(type, data) {
+        const panel = document.getElementById('results-panel');
+        const content = document.getElementById('results-content');
+        
+        panel.classList.remove('hidden');
+        
+        if (type === 'error') {
+            content.innerHTML = `
+                <div class="flex items-center space-x-2 text-red-400 mb-3">
+                    <i data-lucide="x-circle" class="w-5 h-5"></i>
+                    <span class="font-medium">Erreur</span>
+                </div>
+                <p class="text-red-300 text-sm">${data}</p>
+            `;
+        } else {
+            const isSuccess = type === 'success';
+            const iconClass = isSuccess ? 'check-circle text-green-400' : 'x-circle text-red-400';
+            const titleClass = isSuccess ? 'text-green-400' : 'text-red-400';
+            
+            let html = `
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2 ${titleClass}">
+                        <i data-lucide="${iconClass.split(' ')[0]}" class="w-5 h-5"></i>
+                        <span class="font-medium">${data.message}</span>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        ${data.execution_time}s
+                    </div>
+                </div>
+            `;
+            
+            // Résultats des tests
+            if (data.test_results && data.test_results.length > 0) {
+                html += '<div class="space-y-2">';
+                data.test_results.forEach((test, index) => {
+                    const testIcon = test.passed ? 'check' : 'x';
+                    const testColor = test.passed ? 'text-green-400' : 'text-red-400';
+                    
+                    html += `
+                        <div class="bg-gray-900 rounded-lg p-3 border ${test.passed ? 'border-green-500/30' : 'border-red-500/30'}">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-white">Test ${test.test_number}</span>
+                                <i data-lucide="${testIcon}" class="w-4 h-4 ${testColor}"></i>
+                            </div>
+                            <div class="text-xs text-gray-400 space-y-1">
+                                <div>Input: <code class="text-primary-blue">${test.input}</code></div>
+                                <div>Attendu: <code class="text-primary-green">${test.expected}</code></div>
+                                ${test.actual ? `<div>Obtenu: <code class="${test.passed ? 'text-primary-green' : 'text-red-400'}">${test.actual}</code></div>` : ''}
+                                ${test.error ? `<div class="text-red-400">${test.error}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            content.innerHTML = html;
+        }
+        
+        lucide.createIcons();
+        
+        // Scroll vers les résultats
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+});
+</script>
+
+<style>
+/* Styles pour l'éditeur Monaco */
+.monaco-editor {
+    border-radius: 0;
+}
+
+/* Styles pour les résultats */
+#results-panel {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Scrollbar pour les résultats */
+#results-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+#results-panel::-webkit-scrollbar-track {
+    background: #1F2937;
+}
+
+#results-panel::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 3px;
+}
+
+#results-panel::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+</style>
+{% endblock %}
