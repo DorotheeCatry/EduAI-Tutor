@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Room {{ room.code }} - EduAI Tutor{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6 h-full overflow-y-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <i data-lucide="radio" class="w-6 h-6 text-green-500"></i>
+            <div>
+                <h1 class="text-xl font-bold text-white">Room {{ room.code }}</h1>
+                <p class="text-sm text-gray-400">{{ room.topic }}</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+            {% if is_host %}
+                <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">Host</span>
+            {% endif %}
+            <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">{{ room.get_status_display }}</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Game Info -->
+        <div class="lg:col-span-1">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 space-y-4">
+                <h3 class="text-lg font-bold text-white mb-4">Game Settings</h3>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-400">Questions</span>
+                        <span class="text-sm text-white font-medium">{{ room.num_questions }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-400">Max Players</span>
+                        <span class="text-sm text-white font-medium">{{ room.max_players }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-400">Time per Question</span>
+                        <span class="text-sm text-white font-medium">60 seconds</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-400">Room Code</span>
+                        <span class="text-sm text-white font-mono font-bold">{{ room.code }}</span>
+                    </div>
+                </div>
+
+                <!-- Share room code -->
+                <div class="pt-4 border-t border-gray-600">
+                    <button onclick="copyRoomCode()" class="w-full py-2 px-4 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        <span>Copy Room Code</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Players List -->
+        <div class="lg:col-span-2">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-white">Players ({{ participants.count }}/{{ room.max_players }})</h3>
+                    {% if is_host and can_start %}
+                        <button onclick="startGame()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                            <i data-lucide="play" class="w-4 h-4"></i>
+                            <span>Start Game</span>
+                        </button>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="players-list">
+                    {% for participant in participants %}
+                    <div class="flex items-center space-x-3 p-3 bg-gray-900 rounded-lg border border-gray-600">
+                        {% if participant.user.avatar %}
+                            {% if participant.user.avatar.url %}
+                                <img src="{{ participant.user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                            {% else %}
+                                <img src="{% static 'koda/' %}{{ participant.user.avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                            {% endif %}
+                        {% else %}
+                            <img src="{% static 'koda/koda_base.png' %}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                        {% endif %}
+                        
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm font-medium text-white">{{ participant.user.username }}</span>
+                                {% if participant.user == room.host %}
+                                    <i data-lucide="crown" class="w-4 h-4 text-yellow-500"></i>
+                                {% endif %}
+                            </div>
+                            <div class="text-xs text-gray-400">Level {{ participant.user.level }}</div>
+                        </div>
+                        
+                        <div class="text-xs text-green-400">
+                            <i data-lucide="wifi" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if not can_start and is_host %}
+                    <div class="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                        <p class="text-sm text-yellow-400">Waiting for at least 1 player to start the game...</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Back button -->
+    <div class="flex justify-center">
+        <a href="{% url 'quiz:lobby' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+            Back to Lobby
+        </a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // WebSocket connection for real-time updates
+        const roomCode = '{{ room.code }}';
+        const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'room_update') {
+                updatePlayersList(data.data.participants);
+            } else if (data.type === 'game_starting') {
+                showGameStarting(data.countdown);
+            } else if (data.type === 'new_question') {
+                window.location.href = `{% url 'quiz:multiplayer_game' room.code %}`;
+            }
+        };
+
+        socket.onclose = function(event) {
+            console.log('WebSocket closed');
+        };
+
+        window.startGame = function() {
+            socket.send(JSON.stringify({
+                'type': 'start_game'
+            }));
+        };
+    });
+
+    function copyRoomCode() {
+        const roomCode = '{{ room.code }}';
+        navigator.clipboard.writeText(roomCode).then(() => {
+            // Show success feedback
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i><span>Copied!</span>';
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                lucide.createIcons();
+            }, 2000);
+        });
+    }
+
+    function updatePlayersList(participants) {
+        const playersList = document.getElementById('players-list');
+        // Update players list with new data
+        // Implementation depends on your needs
+    }
+
+    function showGameStarting(countdown) {
+        // Show countdown overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+        overlay.innerHTML = `
+            <div class="text-center">
+                <div class="text-6xl font-bold text-white mb-4" id="countdown">${countdown}</div>
+                <div class="text-xl text-gray-300">Game starting...</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const countdownEl = document.getElementById('countdown');
+        let count = countdown;
+        const interval = setInterval(() => {
+            count--;
+            countdownEl.textContent = count;
+            if (count <= 0) {
+                clearInterval(interval);
+            }
+        }, 1000);
+    }
+</script>
+{% endblock %}

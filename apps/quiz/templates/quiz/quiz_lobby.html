@@ -9,66 +9,68 @@
         <h1 class="text-xl font-bold text-white">Quiz & MCQ</h1>
     </div>
 
-    <!-- Formulaire unique -->
-    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 space-y-6">
-        <form method="get" action="{% url 'quiz:start' %}" id="quiz-form" class="space-y-6">
-            <!-- Champ de sujet -->
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Topic</label>
-                <input
-                    type="text"
-                    name="topic"
-                    placeholder="Choose a topic (e.g. FastAPI, decorators...)"
-                    class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                    required
-                >
+    <!-- Modes de jeu -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Solo Mode -->
+        <a href="{% url 'quiz:start' %}" class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-green-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-green-500/30 transition-all duration-300">
+                    <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Solo Mode</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">Train at your own pace with personalized quizzes</p>
             </div>
+        </a>
 
-            <!-- Nombre de questions -->
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Number of questions</label>
-                <input
-                    type="number"
-                    name="num_questions"
-                    min="5"
-                    max="20"
-                    value="10"
-                    class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                />
+        <!-- Create Room -->
+        <a href="{% url 'quiz:create_room' %}" class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20">
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-blue-500/30 transition-all duration-300">
+                    <i data-lucide="plus-circle" class="w-8 h-8 text-blue-500"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Create Room</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">Host a multiplayer quiz for your friends</p>
             </div>
+        </a>
 
-            <input type="hidden" name="mode" id="quiz-mode" value="solo">
-
-            <!-- Boutons mode -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Solo -->
-                <button type="submit"
-                    onclick="document.getElementById('quiz-mode').value='solo'"
-                    class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-green-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
-                    <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-green-500/30 transition-all duration-300">
-                            <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Solo Mode</h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">Train at your own pace with personalized quizzes</p>
-                    </div>
-                </button>
-
-                <!-- Multiplayer -->
-                <button type="submit"
-                    onclick="document.getElementById('quiz-mode').value='multiplayer'"
-                    class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20">
-                    <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-blue-500/30 transition-all duration-300">
-                            <i data-lucide="users" class="w-8 h-8 text-blue-500"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">Multiplayer Mode</h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">Challenge other players in real time</p>
-                    </div>
-                </button>
+        <!-- Join Room -->
+        <a href="{% url 'quiz:join_room' %}" class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-purple-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20">
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-purple-500/30 transition-all duration-300">
+                    <i data-lucide="users" class="w-8 h-8 text-purple-500"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Join Room</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">Enter a room code to join a multiplayer quiz</p>
             </div>
-        </form>
+        </a>
     </div>
+
+    <!-- Salles actives -->
+    {% if active_rooms %}
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+            <i data-lucide="radio" class="w-5 h-5 text-green-500"></i>
+            <span>Active Rooms</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for room in active_rooms %}
+            <div class="bg-gray-900 rounded-lg p-4 border border-gray-600">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-bold text-white">{{ room.code }}</h4>
+                    <span class="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">{{ room.status|title }}</span>
+                </div>
+                <p class="text-xs text-gray-400 mb-2">{{ room.topic }}</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">{{ room.player_count }}/{{ room.max_players }} players</span>
+                    <a href="{% url 'quiz:room_detail' room.code %}" class="text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                        Join
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Statistiques -->
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">

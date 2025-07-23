@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Room - EduAI Tutor{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6 h-full overflow-y-auto">
+    <div class="flex items-center space-x-3 mb-6">
+        <i data-lucide="plus-circle" class="w-6 h-6 text-blue-500"></i>
+        <h1 class="text-xl font-bold text-white">Create Multiplayer Room</h1>
+    </div>
+
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Topic -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Quiz Topic</label>
+                    <input
+                        type="text"
+                        name="topic"
+                        placeholder="e.g. Python Basics, Django, FastAPI..."
+                        class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    >
+                </div>
+
+                <!-- Number of questions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Number of Questions</label>
+                        <select name="num_questions" class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="5">5 questions</option>
+                            <option value="10" selected>10 questions</option>
+                            <option value="15">15 questions</option>
+                            <option value="20">20 questions</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Max Players</label>
+                        <select name="max_players" class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="5">5 players</option>
+                            <option value="10">10 players</option>
+                            <option value="15">15 players</option>
+                            <option value="20" selected>20 players</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Game settings info -->
+                <div class="bg-gray-900 rounded-lg p-4 border border-gray-600">
+                    <h4 class="text-sm font-bold text-white mb-2 flex items-center space-x-2">
+                        <i data-lucide="settings" class="w-4 h-4 text-blue-500"></i>
+                        <span>Game Settings</span>
+                    </h4>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li>• 60 seconds per question (or until everyone answers)</li>
+                        <li>• Points based on speed and accuracy</li>
+                        <li>• Correct answer shown after each question</li>
+                        <li>• XP bonus for top performers</li>
+                    </ul>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'quiz:lobby' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        Back to Lobby
+                    </a>
+                    <button type="submit" class="px-6 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span>Create Room</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>
+{% endblock %}
