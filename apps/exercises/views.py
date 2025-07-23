@@ -225,27 +225,39 @@ def generate_exercise(request):
             
             # Créer un prompt spécialisé pour les exercices
             prompt = f"""
-            Génère un exercice de programmation Python sur le sujet "{topic}" 
-            de niveau {difficulty}.
+            Génère un exercice de programmation Python sur le sujet "{topic}" de niveau {difficulty}.
             
-            L'exercice doit inclure :
-            - Un titre clair
-            - Une description détaillée de ce qu'il faut faire
-            - Du code de départ avec des TODO
-            - Une solution complète
-            - Au moins 3 tests avec entrées et sorties attendues
+            ÉTAPES OBLIGATOIRES :
+            1. Définis UNE fonction principale claire (ex: calculer_moyenne, decorator_timer, etc.)
+            2. Écris la solution complète qui fonctionne
+            3. Crée le starter_code avec # TODO à compléter
+            4. Génère des tests qui appellent EXACTEMENT cette fonction avec les bons paramètres
+            5. Vérifie que les résultats attendus correspondent au comportement de ta solution
             
-            Format JSON requis :
+            RÈGLES CRITIQUES :
+            - Les tests doivent appeler la MÊME fonction que celle définie dans la solution
+            - Les valeurs "expected" doivent être le VRAI résultat de ta fonction
+            - Teste des cas variés : normal, limite, erreur
+            
+            EXEMPLE de cohérence :
+            Si ta solution définit "def calculer_moyenne(liste):", 
+            alors tes tests doivent être "calculer_moyenne([1,2,3])" avec expected "2.0"
+            
+            Format JSON STRICT :
             {{
                 "title": "Titre de l'exercice",
                 "description": "Description détaillée",
                 "starter_code": "Code de départ avec # TODO",
                 "solution": "Code solution complet",
                 "tests": [
-                    {{"input": "fonction(2, 3)", "expected": "5"}},
-                    {{"input": "fonction(-1, 1)", "expected": "0"}}
+                    {{"input": "ma_fonction(2, 3)", "expected": "5"}},
+                    {{"input": "ma_fonction(-1, 1)", "expected": "0"}},
+                    {{"input": "ma_fonction(0, 0)", "expected": "0"}}
                 ]
             }}
+            
+            VÉRIFICATION FINALE : Assure-toi que si j'exécute ta solution puis tes tests, 
+            les résultats correspondent exactement aux valeurs "expected".
             """
             
             result = orchestrator.answer_question(prompt)
@@ -483,30 +495,40 @@ def generate_exercise_from_course(request):
         
         # Prompt spécialisé pour les exercices basés sur un cours
         prompt = f"""
-        Génère un exercice de programmation Python pratique basé sur le cours suivant : "{topic}"
+        Génère un exercice de programmation Python pratique basé sur le cours : "{topic}" (niveau {difficulty})
         
-        L'exercice doit être de niveau {difficulty} et permettre de mettre en pratique 
-        les concepts enseignés dans le cours.
+        ÉTAPES OBLIGATOIRES :
+        1. Définis UNE fonction principale claire liée au sujet du cours
+        2. Écris la solution complète qui fonctionne réellement
+        3. Crée le starter_code avec # TODO à compléter
+        4. Génère des tests qui appellent EXACTEMENT cette fonction
+        5. Vérifie que les résultats attendus sont corrects
         
-        L'exercice doit inclure :
-        - Un titre clair lié au sujet du cours
-        - Une description détaillée de ce qu'il faut implémenter
-        - Du code de départ avec des parties à compléter (marquées par # TODO)
-        - Une solution complète fonctionnelle
-        - Au moins 3 tests avec entrées et sorties attendues
+        RÈGLES CRITIQUES :
+        - Les tests doivent appeler la MÊME fonction que celle définie dans la solution
+        - Les valeurs "expected" doivent être le VRAI résultat de ta fonction
+        - Teste des cas variés : normal, limite, erreur
+        - L'exercice doit permettre de pratiquer les concepts du cours "{topic}"
         
-        Format JSON requis :
+        EXEMPLE de cohérence pour les décorateurs :
+        Si ta solution définit "def mon_decorateur(func):" et une fonction "calculer(a,b)",
+        alors tes tests doivent être "calculer(2, 3)" avec le bon résultat attendu.
+        
+        Format JSON STRICT :
         {{
             "title": "Titre de l'exercice pratique",
             "description": "Description détaillée de l'exercice",
             "starter_code": "Code de départ avec # TODO",
             "solution": "Code solution complet",
             "tests": [
-                {{"input": "fonction(2, 3)", "expected": "5"}},
-                {{"input": "fonction(-1, 1)", "expected": "0"}},
-                {{"input": "fonction(0, 0)", "expected": "0"}}
+                {{"input": "ma_fonction(2, 3)", "expected": "5"}},
+                {{"input": "ma_fonction(-1, 1)", "expected": "0"}},
+                {{"input": "ma_fonction(0, 0)", "expected": "0"}}
             ]
         }}
+        
+        VÉRIFICATION FINALE : Assure-toi que si j'exécute ta solution puis tes tests, 
+        les résultats correspondent exactement aux valeurs "expected".
         """
         
         result = orchestrator.answer_question(prompt)
