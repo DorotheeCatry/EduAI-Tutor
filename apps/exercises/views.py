@@ -238,21 +238,23 @@ def generate_exercise(request):
             - Les tests doivent appeler la MÊME fonction que celle définie dans la solution
             - Les valeurs "expected" doivent être le VRAI résultat de ta fonction
             - Teste des cas variés : normal, limite, erreur
-            - UTILISE TOUJOURS les f-strings (f"") pour le formatage de chaînes, jamais la concaténation
-            - Exemple : f"Résultat: {{valeur}}" au lieu de "Résultat: " + str(valeur)
+            - UTILISE TOUJOURS les f-strings (f"") pour le formatage de chaînes
+            - IMPORTANT : Dans le JSON, utilise des guillemets simples avec \\n pour les retours à la ligne
+            - JAMAIS de triples guillemets """ dans le JSON
+            - Exemple de format correct : "starter_code": "def ma_fonction():\\n    # TODO: compléter\\n    pass"
             
-            - UTILISE TOUJOURS les f-strings (f"") pour le formatage de chaînes, jamais la concaténation
-            - Exemple : f"Impossible de convertir {{valeur}} en entier" au lieu de "Impossible de convertir " + valeur + " en entier"
+            - UTILISE TOUJOURS les f-strings (f"") pour le formatage de chaînes
+            - IMPORTANT : Dans le JSON, utilise des guillemets simples avec \\n pour les retours à la ligne
             EXEMPLE de cohérence :
             Si ta solution définit "def calculer_moyenne(liste):", 
             alors tes tests doivent être "calculer_moyenne([1,2,3])" avec expected "2.0"
             
-            Format JSON STRICT :
+            Format JSON STRICT (SANS triples guillemets) :
             {{
                 "title": "Titre de l'exercice",
                 "description": "Description détaillée",
-                "starter_code": "Code de départ avec # TODO",
-                "solution": "Code solution complet",
+                "starter_code": "def ma_fonction():\\n    # TODO: compléter\\n    pass",
+                "solution": "def ma_fonction():\\n    return 'Hello World'",
                 "tests": [
                     {{"input": "ma_fonction(2, 3)", "expected": "5"}},
                     {{"input": "ma_fonction(-1, 1)", "expected": "0"}},
@@ -262,8 +264,8 @@ def generate_exercise(request):
             
             VÉRIFICATION FINALE : Assure-toi que si j'exécute ta solution puis tes tests, 
             les résultats correspondent exactement aux valeurs "expected".
-            IMPORTANT : Utilise les f-strings dans tout le code Python généré !
-            IMPORTANT : Utilise les f-strings dans tout le code Python généré !
+            RAPPEL : Utilise \\n dans les chaînes JSON, PAS de triples guillemets !
+            RAPPEL : Utilise \\n dans les chaînes JSON, PAS de triples guillemets !
             """
             
             result = orchestrator.answer_question(prompt)
