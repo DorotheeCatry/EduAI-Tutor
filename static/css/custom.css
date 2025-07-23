@@ -1,11 +1,41 @@
 /* ===== STYLES PERSONNALISÉS MINIMAUX ===== */
 
+/* Force la stabilité du layout */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
 /* Variables CSS */
 :root {
     --primary-rose: #C586C0;
     --primary-blue: #007ACC;
     --primary-green: #4CAF50;
     --primary-gray: #D4D4D4;
+}
+
+/* Classes utilitaires pour éviter les conflits */
+.text-primary-rose { color: var(--primary-rose) !important; }
+.text-primary-blue { color: var(--primary-blue) !important; }
+.text-primary-green { color: var(--primary-green) !important; }
+.bg-primary-rose { background-color: var(--primary-rose) !important; }
+.bg-primary-blue { background-color: var(--primary-blue) !important; }
+.bg-primary-green { background-color: var(--primary-green) !important; }
+
+/* Assurer la visibilité du contenu */
+main {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.p-6 {
+    display: block !important;
+    visibility: visible !important;
 }
 
 /* Scrollbar personnalisée */
@@ -24,4 +54,32 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: #9CA3AF;
+}
+
+/* Grilles responsive stables */
+.grid {
+    display: grid !important;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 768px) {
+    .md\:grid-cols-3 {
+        grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    }
+}
+
+/* Espacement stable */
+.space-y-6 > * + * {
+    margin-top: 1.5rem !important;
+}
+
+.gap-6 {
+    gap: 1.5rem !important;
 }
