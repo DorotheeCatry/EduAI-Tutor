@@ -70,9 +70,9 @@
                                         <span class="text-xs font-bold text-gray-400">{{ forloop.counter }}</span>
                                     </div>
                                     <div>
-                                    <div class="text-lg font-bold text-white">+\${data.xp_result.xp_gained} XP Gagné !</div>
+                                        <code class="text-primary-blue text-sm">{{ test.input }}</code>
                                         <div class="text-xs text-gray-500 mt-1">Attendu: <code class="text-primary-green">{{ test.expected }}</code></div>
-                                    \${data.xp_result.level_up ? `<div class="text-sm text-yellow-400 font-bold">🎊 Niveau \${data.xp_result.new_level} atteint !</div>` : ''}
+                                    </div>
                                 </div>
                             </div>
                             <div class="test-result hidden">
@@ -92,21 +92,21 @@
                                 <div class="flex items-center space-x-3">
                                     {% if submission.status == 'success' %}
                                         <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
-                        <div class="text-lg font-bold mb-2">\${data.passed_tests}/\${data.total_tests} tests réussis</div>
-                        <div class="text-sm">Temps d'exécution: \${data.execution_time}s</div>
+                                        <span class="text-green-400 text-sm">Réussi</span>
+                                    {% else %}
                                         <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
                                         <span class="text-red-400 text-sm">Échoué</span>
                 ${data.xp_result ? `
                     <div class="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-lg p-4 border border-green-500/30 mb-4">
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                            <div class="text-red-400">\${message}</div>
+                                <i data-lucide="zap" class="w-6 h-6 text-yellow-400"></i>
                             </div>
                             <div>
-                        <div class="text-sm text-red-300 mb-3">\${data.message}</div>
+                                <div class="text-lg font-bold text-white">+${data.xp_result.xp_gained} XP Gagné !</div>
                                 <div class="text-sm text-gray-300">Exercice complété avec succès</div>
-                            <div class="text-lg font-bold mb-2">\${data.passed_tests}/\${data.total_tests} tests réussis</div>
-                            <div class="text-sm">Temps d'exécution: \${data.execution_time}s</div>
+                                ${data.xp_result.level_up ? `<div class="text-sm text-yellow-400 font-bold">🎊 Niveau ${data.xp_result.new_level} atteint !</div>` : ''}
+                            </div>
                         </div>
                     </div>
                 ` : ''}
