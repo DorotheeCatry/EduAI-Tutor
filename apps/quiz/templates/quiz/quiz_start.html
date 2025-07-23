@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (timeLeft <= 0) {
                 clearInterval(timer);
-                nextQuestion();
+                showCorrectAnswer();
             }
         }, 1000);
     }
@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function handleAnswer(answerIndex) {
         const question = questions[currentQuestion - 1];
+        clearInterval(timer);
 
         if (answerIndex === question.correct) {
             score++;
@@ -151,24 +152,81 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.querySelectorAll('.quiz-option').forEach(btn => {
             btn.disabled = true;
-            btn.classList.add('opacity-50');
         });
 
-        setTimeout(nextQuestion, 1000);
+        showCorrectAnswer();
+    }
+    
+    function showCorrectAnswer() {
+        const question = questions[currentQuestion - 1];
+        const options = document.querySelectorAll('.quiz-option');
+        
+        // Colorer les options
+        options.forEach((option, index) => {
+            if (index === question.correct) {
+                option.classList.add('border-green-500', 'bg-green-500/20');
+                option.classList.remove('border-gray-600');
+            } else {
+                option.classList.add('border-red-500/50', 'opacity-60');
+                option.classList.remove('border-gray-600');
+            }
+        });
+        
+        // Afficher l'explication si disponible
+        if (question.explanation) {
+            const explanationDiv = document.createElement('div');
+            explanationDiv.className = 'mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg';
+            explanationDiv.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <i data-lucide="lightbulb" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-400 mb-2">Explication</h4>
+                        <p class="text-sm text-blue-200">${question.explanation}</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('options-container').appendChild(explanationDiv);
+            
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+        
+        // Bouton pour continuer
+        const continueBtn = document.createElement('button');
+        continueBtn.className = 'mt-4 w-full py-3 px-4 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors font-medium';
+        continueBtn.textContent = currentQuestion < questions.length ? 'Question suivante' : 'Voir les résultats';
+        continueBtn.addEventListener('click', nextQuestion);
+        document.getElementById('options-container').appendChild(continueBtn);
     }
 
     function nextQuestion() {
-        clearInterval(timer);
-
         if (currentQuestion < questions.length) {
             currentQuestion++;
-            timeLeft = 30;
+            timeLeft = 60;
             updateQuestion();
             startTimer();
         } else {
-            alert(`Quiz completed! Final score: ${score}/${questions.length}`);
-            window.location.href = "{% url 'quiz:lobby' %}";
+            showFinalResults();
         }
+    }
+    
+    function showFinalResults() {
+        const percentage = Math.round((score / questions.length) * 100);
+        let message = `Quiz terminé !\n\nScore: ${score}/${questions.length} (${percentage}%)\n\n`;
+        
+        if (percentage >= 90) {
+            message += "🏆 Excellent ! Vous maîtrisez parfaitement le sujet !";
+        } else if (percentage >= 70) {
+            message += "👍 Très bien ! Quelques points à revoir mais c'est solide !";
+        } else if (percentage >= 50) {
+            message += "📚 Pas mal ! Il y a encore des choses à apprendre.";
+        } else {
+            message += "💪 Continuez vos efforts ! La pratique rend parfait.";
+        }
+        
+        alert(message);
+        window.location.href = "{% url 'quiz:lobby' %}";
     }
 
     updateQuestion();
