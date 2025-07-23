@@ -77,6 +77,12 @@
             <i data-lucide="book-open" class="w-5 h-5 relative z-10"></i>
         </button>
 
+        <button onclick="openTab('my-courses')" title="Mes Cours"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                       {% if 'my-courses' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
+            <i data-lucide="bookmark" class="w-5 h-5 relative z-10"></i>
+        </button>
+
         <button onclick="openTab('chat')" title="Recherche"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
                        {% if 'chat' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
@@ -87,6 +93,12 @@
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
                        {% if 'quiz' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="brain" class="w-5 h-5 relative z-10"></i>
+        </button>
+
+        <button onclick="openTab('exercises')" title="Exercices Python"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                       {% if 'exercises' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
+            <i data-lucide="code" class="w-5 h-5 relative z-10"></i>
         </button>
 
         <button onclick="openTab('tracker')" title="Performances"
@@ -132,11 +144,12 @@ window.openTab = function(tabId) {
     const urls = {
         'profile': '/auth/profile/',
         'courses': '/courses/generator/',
+        'my-courses': '/courses/my-courses/',
         'chat': '/chat/search/',
         'quiz': '/quiz/lobby/',
+        'exercises': '/exercises/',
         'tracker': '/tracker/dashboard/',
         'revision': '/revision/flashcards/',
-        'exercises': '/exercises/'
     };
     
     if (urls[tabId]) {
