@@ -210,9 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 showResults(data.success ? 'success' : 'failed', data);
                 
-                // Debug: afficher la réponse complète
-                console.log('Réponse du serveur:', data);
-                
                 // Afficher notification XP si réussi
                 if (data.success && data.xp_result) {
                     setTimeout(() => {
@@ -225,7 +222,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1000);
                 }
             } else {
-                console.error('Erreur HTTP:', response.status, data);
                 showResults('error', data.error || 'Erreur lors de l\'exécution');
             }
             
@@ -263,9 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i data-lucide="${iconClass.split(' ')[0]}" class="w-5 h-5"></i>
                         <span class="font-medium">${data.message}</span>
                     </div>
-                    <div class="text-sm text-gray-400">
-                        ${data.execution_time}s
-                    </div>
+                    ${data.execution_time ? `<div class="text-sm text-gray-400">${data.execution_time}s</div>` : ''}
                 </div>
             `;
             
@@ -286,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div>Input: <code class="text-primary-blue">${test.input}</code></div>
                                 <div>Attendu: <code class="text-primary-green">${test.expected}</code></div>
                                 ${test.actual ? `<div>Obtenu: <code class="${test.passed ? 'text-primary-green' : 'text-red-400'}">${test.actual}</code></div>` : ''}
-                                ${test.error ? `<div class="text-red-400">${test.error}</div>` : ''}
+                                ${test.error ? `<div class="text-red-400 mt-2 p-2 bg-red-500/10 rounded border border-red-500/30"><strong>Erreur:</strong> ${test.error}</div>` : ''}
                             </div>
                         </div>
                     `;
