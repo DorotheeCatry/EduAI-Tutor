@@ -85,7 +85,6 @@
                     
                     <!-- Progression utilisateur -->
                     {% if exercise.user_progress %}
-                        <div class="mb-4">
                             {% if exercise.user_progress.is_completed %}
                                 <div class="flex items-center space-x-2 text-green-400 text-sm">
                                     <i data-lucide="check-circle" class="w-4 h-4"></i>
@@ -225,7 +224,6 @@ document.getElementById('generate-modal').addEventListener('click', function(e) 
                                 {% endif %}
                             </div>
                         {% endif %}
-                    {% endwith %}
                     
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500">
