@@ -25,7 +25,8 @@ class SecurePythonExecutor:
         'int', 'len', 'list', 'map', 'max', 'min', 'oct', 'ord',
         'pow', 'range', 'reversed', 'round', 'set', 'sorted', 'str',
         'sum', 'tuple', 'type', 'zip', 'print', 'Exception', 'ValueError',
-        'TypeError', 'IndexError', 'KeyError'
+        'TypeError', 'IndexError', 'KeyError', 'iter', 'next', 'slice',
+        'hasattr', 'getattr', 'setattr', 'isinstance', 'issubclass'
     }
     
     # Modules interdits (blacklist)
@@ -45,8 +46,12 @@ class SecurePythonExecutor:
         # Créer un dictionnaire de builtins restreint
         restricted_builtins = {}
         for name in self.ALLOWED_BUILTINS:
-            if hasattr(__builtins__, name):
-                restricted_builtins[name] = getattr(__builtins__, name)
+            if isinstance(__builtins__, dict):
+                if name in __builtins__:
+                    restricted_builtins[name] = __builtins__[name]
+            else:
+                if hasattr(__builtins__, name):
+                    restricted_builtins[name] = getattr(__builtins__, name)
         
         # Ajouter des fonctions mathématiques de base
         import math
@@ -60,6 +65,7 @@ class SecurePythonExecutor:
             **math_functions
         }
         
+        print(f"🔧 Builtins disponibles: {list(restricted_builtins.keys())}")
         return safe_globals
     
     def _validate_code(self, code):
