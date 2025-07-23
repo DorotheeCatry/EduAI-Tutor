@@ -210,12 +210,8 @@ __marimo__/
 db.sqlite3
 
 # Node / Tailwind stuff
-theme/static_src/src/
 theme/static_src/node_modules/
-theme/static_src/package-lock.json
-theme/static_src/package.json
 theme/static_src/.gitignore
-theme/static_src/postcss.config.js
 
 data
 data/
