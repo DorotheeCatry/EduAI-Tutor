@@ -83,8 +83,8 @@
             <div class="h-full overflow-y-auto px-6 pb-6" id="course-content-container">
                 <div class="bg-gray-900 mt-6">
                     <div class="p-6">
-                        <div class="prose prose-invert max-w-none" id="course-content">
-                            {{ generated_course.content|safe }}
+                        <div class="prose prose-invert max-w-none" id="course-content" data-raw-content="{{ generated_course.content|escapejs }}">
+                            <!-- Le contenu sera formaté par JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -97,12 +97,23 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
+        
+        // Forcer le formatage du contenu au chargement
+        formatMarkdownContent();
+    });
 
     function formatMarkdownContent() {
         const content = document.getElementById('course-content');
         if (!content) return;
 
-        let html = content.innerHTML;
+        // Récupérer le contenu brut depuis l'attribut data
+        const rawContent = content.getAttribute('data-raw-content');
+        if (!rawContent) {
+            console.log('Pas de contenu brut trouvé');
+            return;
+        }
+        
+        let html = rawContent;
 
         // Étape 1 : Sauvegarder les blocs de code pour ne pas les altérer
         const codeBlocks = [];
