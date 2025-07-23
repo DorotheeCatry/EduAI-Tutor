@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'tailwind',
     'rest_framework',
     'django_browser_reload'
+    'channels',
 ]
 
 TAILWIND_APP_NAME = 'theme'
@@ -212,3 +213,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/dashboard/'    
 LOGOUT_REDIRECT_URL = '/auth/login/'
 LOGIN_URL = '/auth/login/'            # protection @login_required
+
+# Channels configuration
+ASGI_APPLICATION = 'eduai_project.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
