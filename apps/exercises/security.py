@@ -153,6 +153,9 @@ class SecurePythonExecutor:
                 result['success'] = True
                     
             except Exception as e:
+                # Capturer le type d'exception réel
+                result['exception_type'] = type(e).__name__
+                
                 error_output = error_buffer.getvalue()
                 if error_output:
                     result['error'] = f"Erreur d'exécution: {error_output}"
@@ -240,17 +243,20 @@ if result is not None:
                     
                     # Si l'erreur attendue est dans le résultat espéré, c'est un succès
                     if any(error_type in expected_output for error_type in ['TypeError', 'ValueError', 'Exception']):
+                        # Extraire le vrai type d'exception depuis execution_result
+                        actual_exception_type = execution_result.get('exception_type', '')
+                        
                         # Vérifier si le type d'erreur correspond
-                        if ('TypeError' in expected_output and 'TypeError' in error_msg) or \
-                           ('ValueError' in expected_output and 'ValueError' in error_msg) or \
-                           ('Exception' in expected_output and ('TypeError' in error_msg or 'ValueError' in error_msg)):
+                        if ('TypeError' in expected_output and actual_exception_type == 'TypeError') or \
+                           ('ValueError' in expected_output and actual_exception_type == 'ValueError') or \
+                           ('Exception' in expected_output and actual_exception_type in ['TypeError', 'ValueError', 'Exception']):
                             test_result['passed'] = True
                             test_result['actual'] = expected_output
                             print(f"   Attendu: Erreur")
                             print(f"   Obtenu: Erreur levée correctement")
                             print(f"   Résultat: ✅")
                         else:
-                            test_result['error'] = f"Erreur attendue mais obtenu: {error_msg}"
+                            test_result['error'] = f"Erreur attendue ({expected_output}) mais obtenu: {actual_exception_type or 'erreur inconnue'}"
                             print(f"   Erreur: Erreur attendue mais obtenu: {error_msg}")
                     else:
                         test_result['error'] = error_msg
