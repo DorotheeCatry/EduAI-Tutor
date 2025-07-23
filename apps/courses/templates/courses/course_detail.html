@@ -144,7 +144,7 @@
         html = html.replace(/^[\-\*\+•] (.+)$/gm, '<li class="list-item">$1</li>');
         
         // Grouper les listes consécutives
-        html = html.replace(/(<li class="list-item">.*?<\/li>(\s*<li class="list-item">.*?<\/li>)*)/gs, 
+        html = html.replace(/(<li class="list-item">.*?<\/li>(\s*<li class="list-item">.*?<\/li>)*)/gs,
             match => '<ul class="list-container">' + match + '</ul>');
 
         // Formatage des paragraphes
@@ -354,10 +354,10 @@ pre[class*=" language-"]::before,
 
 .list-item {
     position: relative;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
     padding-left: 1.5rem;
     color: #E5E7EB;
-    line-height: 1.5;
+    line-height: 1.4;
     font-size: 0.875rem;
     border-left: 2px solid transparent;
     transition: border-color 0.2s ease;
@@ -369,7 +369,7 @@ pre[class*=" language-"]::before,
     font-weight: bold;
     position: absolute;
     left: 0.5rem;
-    font-size: 0.9em;
+    font-size: 1em;
     top: 0;
 }
 

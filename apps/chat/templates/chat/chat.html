@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formatted = '<p class="mb-2">' + formatted + '</p>';
 
         // Étape 4 – transformer les <li> en <ul>
-        formatted = formatted.replace(/(<li class="list-item">.*?<\/li>)/gs, match => '<ul class="list-container">' + match + '</ul>');
+        formatted = formatted.replace(/(<li class="list-item">.*?<\/li>(\s*<li class="list-item">.*?<\/li>)*)/gs, match => '<ul class="list-container">' + match + '</ul>');
 
         // Étape 5 – réinjecter les blocs de code
         formatted = formatted.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => blocks[parseInt(i)]);
@@ -412,7 +412,7 @@ pre.code-content > code {
 }
 .list-item {
     position: relative;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
     padding-left: 1.25rem;
     color: #E5E7EB;
     line-height: 1.5;
