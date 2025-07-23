@@ -280,10 +280,29 @@ def generate_exercise(request):
                     json_content = json_content.replace('"""', '"')
                     json_content = json_content.replace("'''", '"')
                     
-                    # Nettoyer les retours à la ligne dans les chaînes
+                    # Nettoyer les retours à la ligne et caractères de contrôle dans les chaînes JSON
                     import re
-                    # Remplacer les vrais retours à la ligne par \n dans les valeurs JSON
-                    json_content = re.sub(r':\s*"([^"]*)\n([^"]*)"', r': "\1\\n\2"', json_content, flags=re.MULTILINE)
+                    
+                    # Fonction pour nettoyer une chaîne JSON
+                    def clean_json_string(match):
+                        key = match.group(1)
+                        value = match.group(2)
+                        # Remplacer les retours à la ligne par \n et échapper les guillemets
+                        cleaned_value = value.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t').replace('"', '\\"')
+                        return f'"{key}": "{cleaned_value}"'
+                    
+                    # Appliquer le nettoyage aux chaînes JSON multilignes
+                    json_content = re.sub(r'"([^"]+)":\s*"([^"]*(?:\n[^"]*)*)"', clean_json_string, json_content, flags=re.MULTILINE | re.DOTALL)
+                    # Fonction pour nettoyer une chaîne JSON
+                    def clean_json_string(match):
+                        key = match.group(1)
+                        value = match.group(2)
+                        # Remplacer les retours à la ligne par \n et échapper les guillemets
+                        cleaned_value = value.replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t').replace('"', '\\"')
+                        return f'"{key}": "{cleaned_value}"'
+                    
+                    # Appliquer le nettoyage aux chaînes JSON multilignes
+                    json_content = re.sub(r'"([^"]+)":\s*"([^"]*(?:\n[^"]*)*)"', clean_json_string, json_content, flags=re.MULTILINE | re.DOTALL)
                     
                     print(f"🔧 JSON nettoyé: {json_content[:300]}...")
                     
@@ -298,10 +317,20 @@ def generate_exercise(request):
                     
                     # Nettoyer le starter_code et solution des triples quotes
                     if isinstance(exercise_data.get('starter_code'), str):
-                        exercise_data['starter_code'] = exercise_data['starter_code'].replace('"""', '').replace("'''", '').strip()
+                        # Nettoyer et formater le code de départ
+                        starter_code = exercise_data['starter_code']
+                        starter_code = starter_code.replace('"""', '').replace("'''", '').strip()
+                        # Remplacer les \n par de vrais retours à la ligne
+                        starter_code = starter_code.replace('\\n', '\n').replace('\\t', '\t')
+                        exercise_data['starter_code'] = starter_code
                     
                     if isinstance(exercise_data.get('solution'), str):
-                        exercise_data['solution'] = exercise_data['solution'].replace('"""', '').replace("'''", '').strip()
+                        # Nettoyer et formater la solution
+                        solution = exercise_data['solution']
+                        solution = solution.replace('"""', '').replace("'''", '').strip()
+                        # Remplacer les \n par de vrais retours à la ligne
+                        solution = solution.replace('\\n', '\n').replace('\\t', '\t')
+                        exercise_data['solution'] = solution
                     
                     print(f"✅ Exercice parsé: {exercise_data['title']}")
                     
@@ -461,10 +490,20 @@ def generate_exercise_from_course(request):
                 
                 # Nettoyer le starter_code et solution des triples quotes
                 if isinstance(exercise_data.get('starter_code'), str):
-                    exercise_data['starter_code'] = exercise_data['starter_code'].replace('"""', '').replace("'''", '').strip()
+                    # Nettoyer et formater le code de départ
+                    starter_code = exercise_data['starter_code']
+                    starter_code = starter_code.replace('"""', '').replace("'''", '').strip()
+                    # Remplacer les \n par de vrais retours à la ligne
+                    starter_code = starter_code.replace('\\n', '\n').replace('\\t', '\t')
+                    exercise_data['starter_code'] = starter_code
                 
                 if isinstance(exercise_data.get('solution'), str):
-                    exercise_data['solution'] = exercise_data['solution'].replace('"""', '').replace("'''", '').strip()
+                    # Nettoyer et formater la solution
+                    solution = exercise_data['solution']
+                    solution = solution.replace('"""', '').replace("'''", '').strip()
+                    # Remplacer les \n par de vrais retours à la ligne
+                    solution = solution.replace('\\n', '\n').replace('\\t', '\t')
+                    exercise_data['solution'] = solution
                 
                 print(f"✅ Exercice parsé: {exercise_data['title']}")
                 
