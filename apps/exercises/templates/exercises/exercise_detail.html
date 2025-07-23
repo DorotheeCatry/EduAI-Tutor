@@ -133,7 +133,7 @@
         </div>
         
         <!-- Éditeur Monaco -->
-        <div class="flex-1 relative bg-[#1e1e1e]">
+        <div class="flex-1 relative bg-[#1e1e1e] min-h-0">
             <div id="monaco-editor" class="w-full h-full" style="min-height: 400px;"></div>
         </div>
         
@@ -160,10 +160,10 @@ document.addEventListener('DOMContentLoaded', function() {
             value: starterCode,
             language: 'python',
             theme: 'vs-dark',
-            fontSize: 15,
+            fontSize: 14,
             fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace",
             fontLigatures: true,
-            minimap: { enabled: true, scale: 0.8 },
+            minimap: { enabled: false },
             scrollBeyondLastLine: false,
             automaticLayout: true,
             tabSize: 4,
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
             renderLineHighlight: 'all',
             cursorBlinking: 'smooth',
             smoothScrolling: true,
-            padding: { top: 25, bottom: 25 },
+            padding: { top: 15, bottom: 15 },
             bracketPairColorization: { enabled: true },
             guides: {
                 bracketPairs: true,
@@ -197,15 +197,28 @@ document.addEventListener('DOMContentLoaded', function() {
             hover: { enabled: true },
             contextmenu: true,
             mouseWheelZoom: true,
-            rulers: [80, 120]
+            rulers: [80]
         });
         
-        // Forcer le redimensionnement après initialisation
+        // Forcer le redimensionnement multiple fois pour s'assurer que l'éditeur s'affiche
         setTimeout(() => {
             if (editor) {
                 editor.layout();
             }
-        }, 100);
+        }, 50);
+        
+        setTimeout(() => {
+            if (editor) {
+                editor.layout();
+                editor.focus();
+            }
+        }, 200);
+        
+        setTimeout(() => {
+            if (editor) {
+                editor.layout();
+            }
+        }, 500);
     });
     
     // Reset du code
@@ -433,6 +446,13 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', function() {
         if (editor) {
             editor.layout();
+        }
+    });
+    
+    // Forcer le layout quand l'onglet devient visible
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && editor) {
+            setTimeout(() => editor.layout(), 100);
         }
     });
 });

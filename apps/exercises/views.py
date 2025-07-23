@@ -84,7 +84,7 @@ def exercise_detail(request, exercise_id):
     recent_submissions = ExerciseSubmission.objects.filter(
         user=request.user,
         exercise=exercise
-    ).order_by('-submitted_at')[:5]
+    ).order_by('-submitted_at')[:2]
     
     context = {
         'exercise': exercise,
