@@ -1,20 +1,20 @@
 {% load static %}
 
 <!-- Sidebar Component - KodaTheme avec Profil en haut -->
-<div class="w-16 bg-gray-900 border-r border-gray-700 flex flex-col items-center py-4 space-y-2 shadow-xl flex-shrink-0">
+<div class="w-16 bg-gray-900 border-r border-gray-700 flex flex-col items-center py-3 space-y-1 shadow-xl flex-shrink-0">
     <!-- Logo -->
-    <div class="mb-6">
+    <div class="mb-4">
         <i data-lucide="code" class="w-8 h-8 text-primary-green"></i>
     </div>
 
     <!-- Navigation Items -->
-    <nav class="flex flex-col space-y-2 flex-1">
+    <nav class="flex flex-col space-y-1 flex-1">
         <!-- Bouton Profil -->
         <div class="relative z-[9999]">
             <button onclick="toggleProfileMenu()" 
                     id="profile-button"
                     title="Profil"
-                    class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                    class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                            {% if 'profile' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
                 {% if user.avatar %}
                     {% if user.avatar.url %}
@@ -72,43 +72,43 @@
 
         <!-- Autres boutons -->
         <button onclick="openTab('courses')" title="Cours"
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                     {% if request.path == '/courses/generator/' %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="book-open" class="w-5 h-5 relative z-10"></i>
         </button>
 
         <button onclick="openTab('my-courses')" title="Mes Cours"
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                     {% if request.path == '/courses/my-courses/' %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="bookmark" class="w-5 h-5 relative z-10"></i>
         </button>
 
         <button onclick="openTab('chat')" title="Recherche"
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'chat' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="search" class="w-5 h-5 relative z-10"></i>
         </button>
 
         <button onclick="openTab('exercises')" title="Exercices Python"
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'exercises' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="code" class="w-5 h-5 relative z-10"></i>
         </button>
 
         <button onclick="openTab('quiz')" title="Quiz"
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'quiz' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="brain" class="w-5 h-5 relative z-10"></i>
         </button>
 
         <button onclick="openTab('revision')" title="Révision"
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'revision' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="rotate-ccw" class="w-5 h-5 relative z-10"></i>
         </button>
 
         <button onclick="openTab('tracker')" title="Performances"
-                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'tracker' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="bar-chart-3" class="w-5 h-5 relative z-10"></i>
         </button>
