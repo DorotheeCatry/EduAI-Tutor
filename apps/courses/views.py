@@ -127,20 +127,13 @@ def course_detail(request, course_id):
         course = get_object_or_404(Course, id=course_id, created_by=request.user)
         course.increment_view_count()
         
-        # Traitement du contenu markdown pour l'affichage
-        content = course.content
-        
-        # Extraire le titre du markdown si présent
-        title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
-        display_title = title_match.group(1) if title_match else course.title
-        
         context = {
             'course': course,
             'generated_course': {
-                'title': display_title,
+                'title': course.title,
                 'topic': course.topic,
                 'module': course.module,
-                'module_name': course.module.replace('_', ' ').title() if course.module != 'general' else None,
+                'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == course.module), course.module.replace('_', ' ').title()) if course.module != 'general' else None,
                 'content': course.content,
                 'sources': course.sources
             }

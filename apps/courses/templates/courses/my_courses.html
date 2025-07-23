@@ -43,6 +43,12 @@
                                 <span>Ouvrir</span>
                             </a>
                             
+                            <a href="{% url 'quiz:start' %}?topic={{ course.topic }}" 
+                               class="px-4 py-2 text-sm bg-primary-rose text-white rounded-lg hover:bg-pink-600 transition-colors flex items-center space-x-2">
+                                <i data-lucide="brain" class="w-4 h-4"></i>
+                                <span>Quiz</span>
+                            </a>
+                            
                             <form method="post" action="{% url 'courses:delete' course.id %}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')">
                                 {% csrf_token %}
                                 <button type="submit" class="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-2">
