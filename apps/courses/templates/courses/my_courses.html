@@ -3,71 +3,70 @@
 {% block title %}Mes Cours - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="course-container">
-    <div class="course-header">
-        <div class="course-title-section">
-            <div class="course-icon">
-                <i data-lucide="bookmark" class="w-8 h-8 text-primary-blue"></i>
-            </div>
-            <div class="course-info">
-                <h1 class="course-main-title">Mes Cours Sauvegardés</h1>
-                <p class="course-module">{{ courses.count }} cours personnalisé{{ courses.count|pluralize }}</p>
-            </div>
-        </div>
+<div class="p-6 space-y-6 h-full overflow-y-auto">
+    <div class="flex items-center space-x-3 mb-6">
+        <i data-lucide="bookmark" class="w-6 h-6 text-primary-blue"></i>
+        <h1 class="text-xl font-bold text-white">Mes Cours Sauvegardés</h1>
     </div>
 
     {% if courses %}
-        <div class="courses-grid">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for course in courses %}
-                <div class="course-card">
-                    <div class="course-card-header">
-                        <h3 class="course-card-title">{{ course.title }}</h3>
-                        <div class="course-card-badges">
+                <div class="bg-gray-800 rounded-lg border border-gray-700 hover:border-primary-green transition-colors duration-300 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <h3 class="text-lg font-bold text-white mb-2">{{ course.title }}</h3>
                             {% if course.module != 'general' %}
-                                <span class="badge badge-module">{{ course.module|title }}</span>
+                                <span class="px-2 py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs font-medium">
+                                    {{ course.module|title }}
+                                </span>
                             {% endif %}
                         </div>
-                    </div>
-                    
-                    <div class="course-card-content">
-                        <p class="course-card-topic">{{ course.topic }}</p>
-                        <div class="course-card-meta">
-                            <span class="meta-item">
-                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                {{ course.view_count }} vue{{ course.view_count|pluralize }}
+                        
+                        <p class="text-gray-300 text-sm mb-4 line-clamp-3">{{ course.topic }}</p>
+                        
+                        <div class="flex items-center justify-between text-xs text-gray-400 mb-4">
+                            <span class="flex items-center space-x-1">
+                                <i data-lucide="eye" class="w-3 h-3"></i>
+                                <span>{{ course.view_count }} vue{{ course.view_count|pluralize }}</span>
                             </span>
-                            <span class="meta-item">
-                                <i data-lucide="calendar" class="w-4 h-4"></i>
-                                {{ course.created_at|date:"d M Y" }}
+                            <span class="flex items-center space-x-1">
+                                <i data-lucide="calendar" class="w-3 h-3"></i>
+                                <span>{{ course.created_at|date:"d M Y" }}</span>
                             </span>
                         </div>
-                    </div>
-                    
-                    <div class="course-card-actions">
-                        <a href="{% url 'courses:detail' course.id %}" class="btn btn-primary btn-sm">
-                            <i data-lucide="book-open" class="w-4 h-4"></i>
-                            Ouvrir
-                        </a>
-                        <button class="btn btn-secondary btn-sm" onclick="deleteCourse({{ course.id }})">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            Supprimer
-                        </button>
+                        
+                        <div class="flex items-center justify-between">
+                            <a href="{% url 'courses:detail' course.id %}" 
+                               class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                                <i data-lucide="book-open" class="w-4 h-4"></i>
+                                <span>Ouvrir</span>
+                            </a>
+                            
+                            <form method="post" action="{% url 'courses:delete' course.id %}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')">
+                                {% csrf_token %}
+                                <button type="submit" class="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-2">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    <span>Supprimer</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i data-lucide="book-x" class="w-16 h-16 text-gray-500"></i>
+        <div class="text-center py-12 max-w-md mx-auto">
+            <div class="mb-6">
+                <i data-lucide="book-x" class="w-16 h-16 text-gray-500 mx-auto"></i>
             </div>
-            <h3 class="empty-title">Aucun cours sauvegardé</h3>
-            <p class="empty-description">
+            <h3 class="text-xl font-bold text-white mb-4">Aucun cours sauvegardé</h3>
+            <p class="text-gray-400 mb-6 leading-relaxed">
                 Commencez par générer un cours et sauvegardez-le pour le retrouver ici.
             </p>
-            <a href="{% url 'courses:generator' %}" class="btn btn-primary">
+            <a href="{% url 'courses:generator' %}" class="px-6 py-3 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2 inline-flex">
                 <i data-lucide="plus" class="w-4 h-4"></i>
-                Créer mon premier cours
+                <span>Créer mon premier cours</span>
             </a>
         </div>
     {% endif %}
@@ -75,14 +74,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        lucide.createIcons();
-    });
-    
-    function deleteCourse(courseId) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
-            // Implémenter la suppression
-            console.log('Suppression du cours', courseId);
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
         }
-    }
+    });
 </script>
 {% endblock %}
