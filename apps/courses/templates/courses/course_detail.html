@@ -102,11 +102,12 @@
 
         let html = content.innerHTML;
 
-        // Étape 1 : remplacer les blocs ```lang\ncode``` → HTML <pre> custom
+        // Étape 1 : Sauvegarder les blocs de code pour ne pas les altérer
+        const codeBlocks = [];
         html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
             const language = lang || 'code';
             const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
-            return `<div class="code-block-container my-4">
+            const block = `<div class="code-block-container my-4">
                 <div class="code-header">
                     <span class="code-language">${displayLang}</span>
                     <button class="copy-btn" onclick="copyCode(this)">
@@ -116,36 +117,45 @@
                 </div>
                 <pre class="code-content language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
             </div>`;
-        });
-
-        // Étape 2 : Sauvegarder les blocs <pre> pour ne pas les altérer ensuite
-        const codeBlocks = [];
-        html = html.replace(/<pre[^>]*>[\s\S]*?<\/pre>/g, (match) => {
-            codeBlocks.push(match);
+            codeBlocks.push(block);
             return `<!--CODEBLOCK_${codeBlocks.length - 1}-->`;
         });
 
-        // Étape 3 : Formattage Markdown en HTML
+        // Étape 2 : Formatage Markdown amélioré
         html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0 flex items-center">$1</h1>');
         html = html.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-primary-green mb-4 mt-6 flex items-center">$1</h2>');
         html = html.replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
         html = html.replace(/^#### (.*$)/gm, '<h4 class="text-lg font-semibold text-primary-blue mt-4 mb-2">$1</h4>');
         html = html.replace(/^##### (.*$)/gm, '<h5 class="text-base font-semibold text-primary-blue mt-4 mb-2">$1</h5>');
 
+        // Formatage des titres avec **Titre**
+        html = html.replace(/\*\*([^*\n]+)\*\*/g, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
+        
+        // Formatage du texte en gras simple
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="keyword-highlight">$1</strong>');
+        
+        // Code inline
+        html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+
         html = html.replace(/\*\*Énoncé\s*:\*\*/g, '<div class="exercise-label exercise-statement"><i data-lucide="file-text" class="w-4 h-4"></i><span>Énoncé</span></div><p>');
         html = html.replace(/\*\*Solution\s*:\*\*/g, '<div class="exercise-label exercise-solution"><i data-lucide="check-circle" class="w-4 h-4"></i><span>Solution</span></div><p>');
 
-        html = html.replace(/(Exemple|Exercice)(\d+)/g, '$1 $2');
-        html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
-
-        html = html.replace(/^- (.+)$/gm, '<li class="list-item">$1</li>');
+        // Amélioration des listes
+        html = html.replace(/^[\-\*\+] (.+)$/gm, '<li class="list-item">$1</li>');
         html = html.replace(/^• (.+)$/gm, '<li class="list-item">$1</li>');
-        html = html.replace(/(<li class="list-item">.*?<\/li>)/gs, match => '<ul class="list-container mb-4">' + match + '</ul>');
+        
+        // Grouper les listes consécutives
+        html = html.replace(/(<li class="list-item">.*?<\/li>(\s*<li class="list-item">.*?<\/li>)*)/gs, 
+            match => '<ul class="list-container mb-4">' + match + '</ul>');
 
+        // Formatage des paragraphes
         html = html.replace(/\n\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">');
         html = '<p class="mb-4 text-gray-300 leading-relaxed">' + html + '</p>';
 
-        // Étape 4 : Réinjection des blocs <pre>
+        // Nettoyage des paragraphes vides
+        html = html.replace(/<p class="mb-4 text-gray-300 leading-relaxed">\s*<\/p>/g, '');
+        
+        // Étape 3 : Réinjection des blocs de code
         html = html.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => codeBlocks[parseInt(i)]);
 
         content.innerHTML = html;
@@ -214,10 +224,11 @@ document.addEventListener('DOMContentLoaded', function() {
 .keyword-highlight {
     background: linear-gradient(135deg, #4CAF50, #45a049);
     color: #FFFFFF;
-    padding: 0.125rem 0.375rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     font-weight: 600;
-    font-size: 0.9em;
+    font-size: 0.95em;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
 }
 
 .inline-code {
@@ -337,15 +348,20 @@ pre[class*=" language-"]::before,
 
 /* 🟩 LISTES */
 .list-container {
-    margin: 0.5rem 0;
-    padding-left: 1rem;
+    margin: 1rem 0 1.5rem 0;
+    padding-left: 0;
+    list-style: none;
 }
 
 .list-item {
     position: relative;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
     color: #E5E7EB;
-    line-height: 1.6;
+    line-height: 1.7;
+    font-size: 0.95rem;
+    border-left: 2px solid transparent;
+    transition: border-color 0.2s ease;
 }
 
 .list-item::before {
@@ -353,7 +369,12 @@ pre[class*=" language-"]::before,
     color: #4CAF50;
     font-weight: bold;
     position: absolute;
-    left: -1rem;
+    left: 0;
+    font-size: 1.1em;
+}
+
+.list-item:hover {
+    border-left-color: #4CAF50;
 }
 
 /* 📜 SCROLLBAR */
