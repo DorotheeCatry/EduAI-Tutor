@@ -31,6 +31,9 @@ def exercise_list(request):
             Q(title__icontains=search) | Q(description__icontains=search)
         )
     
+    # Ordonner par date de création (plus récents en premier)
+    exercises = exercises.order_by('-created_at')
+    
     # Pagination
     paginator = Paginator(exercises, 12)
     page_number = request.GET.get('page')
@@ -41,24 +44,21 @@ def exercise_list(request):
     if request.user.is_authenticated:
         progress_qs = UserExerciseProgress.objects.filter(
             user=request.user,
-            exercise__in=exercises
+            exercise__in=exercises_page
         ).select_related('exercise')
         
-        user_progress = {}
         for progress in progress_qs:
             user_progress[progress.exercise_id] = progress
     
     # Topics disponibles pour le filtre
     topics = Exercise.objects.filter(is_active=True).values_list('topic', flat=True).distinct()
     
-    # Ajouter la progression à chaque exercice pour simplifier le template
-    exercises_with_progress = []
-    for exercise in exercises:
+    # Ajouter la progression à chaque exercice de la page pour simplifier le template
+    for exercise in exercises_page:
         exercise.user_progress = user_progress.get(exercise.id)
-        exercises_with_progress.append(exercise)
     
     context = {
-        'exercises': exercises_page,  # Garde la pagination
+        'exercises': exercises_page,
         'topics': topics,
         'current_difficulty': difficulty,
         'current_topic': topic,
@@ -237,8 +237,18 @@ def generate_exercise(request):
             
             if result['success']:
                 try:
-                    # Parser la réponse JSON
-                    exercise_data = json.loads(result['answer'])
+                    # Parser la réponse JSON - nettoyer d'abord la réponse
+                    answer = result['answer'].strip()
+                    
+                    # Extraire le JSON si il y a du texte avant/après
+                    start_idx = answer.find('{')
+                    end_idx = answer.rfind('}') + 1
+                    
+                    if start_idx != -1 and end_idx != -1:
+                        json_str = answer[start_idx:end_idx]
+                        exercise_data = json.loads(json_str)
+                    else:
+                        raise json.JSONDecodeError("No JSON found", answer, 0)
                     
                     # Créer l'exercice
                     exercise = Exercise.objects.create(
@@ -252,15 +262,20 @@ def generate_exercise(request):
                         created_by=request.user
                     )
                     
+                    print(f"✅ Exercice créé avec succès : {exercise.title} (ID: {exercise.id})")
                     messages.success(request, f'Exercice "{exercise.title}" généré avec succès !')
                     return redirect('exercises:detail', exercise_id=exercise.id)
                     
                 except (json.JSONDecodeError, KeyError) as e:
+                    print(f"❌ Erreur parsing JSON : {e}")
+                    print(f"Réponse reçue : {result['answer'][:500]}...")
                     messages.error(request, f'Erreur lors de la génération : format de réponse invalide')
             else:
+                print(f"❌ Erreur orchestrateur : {result.get('error', 'Erreur inconnue')}")
                 messages.error(request, f'Erreur lors de la génération : {result.get("error", "Erreur inconnue")}')
                 
         except Exception as e:
+            print(f"❌ Exception lors de la génération : {str(e)}")
             messages.error(request, f'Erreur lors de la génération : {str(e)}')
     
     return redirect('exercises:list')
