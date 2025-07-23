@@ -3,39 +3,39 @@
 {% block title %}Quiz & MCQ - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-4 h-full overflow-hidden flex flex-col">
+<div class="p-6 space-y-6 h-full overflow-y-auto">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="brain" class="w-6 h-6 text-pink-500"></i>
         <h1 class="text-xl font-bold text-white">Quiz & MCQ</h1>
     </div>
 
-    <!-- Contenu principal sans scroll -->
-    <div class="flex-1 flex flex-col space-y-4 min-h-0">
+    <!-- Modes de jeu -->
+    <div class="space-y-6">
         <!-- Solo Mode -->
-        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-green-500 transition-colors duration-300">
-            <div class="text-center space-y-3">
-                <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+        <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-green-500 transition-colors duration-300">
+            <div class="text-center space-y-4">
+                <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
                     <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
                 </div>
-                <h3 class="text-base font-bold text-white">Solo Mode</h3>
-                <p class="text-xs text-gray-400">Train at your own pace with personalized quizzes</p>
+                <h3 class="text-lg font-bold text-white">Solo Mode</h3>
+                <p class="text-sm text-gray-400 leading-relaxed">Train at your own pace with personalized quizzes</p>
                 
                 <!-- Formulaire solo intégré -->
-                <form action="{% url 'quiz:start' %}" method="get" class="space-y-2 mt-3">
+                <form action="{% url 'quiz:start' %}" method="get" class="space-y-3 mt-4">
                     <input type="hidden" name="mode" value="solo">
                     <input
                         type="text"
                         name="topic"
                         placeholder="e.g. Python functions, Django models..."
-                        class="w-full px-3 py-2 text-xs bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                        class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
                         required
                     >
-                    <select name="num_questions" class="w-full px-3 py-2 text-xs bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+                    <select name="num_questions" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
                         <option value="5">5 questions</option>
                         <option value="10" selected>10 questions</option>
                         <option value="15">15 questions</option>
                     </select>
-                    <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-xs font-medium">
+                    <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
                         Start Solo Quiz
                     </button>
                 </form>
@@ -43,32 +43,32 @@
         </div>
 
         <!-- Modes multijoueur -->
-        <div class="flex-1 min-h-0">
-            <h3 class="text-base font-bold text-white mb-3 flex items-center justify-center space-x-2">
+        <div>
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-center space-x-2">
                 <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
                 <span>Multiplayer Modes</span>
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Create Room -->
-                <a href="{% url 'quiz:create_room' %}" class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-blue-500 transition-colors duration-300 block">
-                    <div class="text-center space-y-3">
-                        <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto">
+                <a href="{% url 'quiz:create_room' %}" class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-blue-500 transition-colors duration-300 block">
+                    <div class="text-center space-y-4">
+                        <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto">
                             <i data-lucide="plus-circle" class="w-8 h-8 text-blue-500"></i>
                         </div>
-                        <h3 class="text-base font-bold text-white">Create Room</h3>
-                        <p class="text-xs text-gray-400">Host a multiplayer quiz for your friends</p>
+                        <h3 class="text-lg font-bold text-white">Create Room</h3>
+                        <p class="text-sm text-gray-400 leading-relaxed">Host a multiplayer quiz for your friends</p>
                     </div>
                 </a>
 
                 <!-- Join Room -->
-                <a href="{% url 'quiz:join_room' %}" class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-purple-500 transition-colors duration-300 block">
-                    <div class="text-center space-y-3">
-                        <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto">
+                <a href="{% url 'quiz:join_room' %}" class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-purple-500 transition-colors duration-300 block">
+                    <div class="text-center space-y-4">
+                        <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto">
                             <i data-lucide="hash" class="w-8 h-8 text-purple-500"></i>
                         </div>
-                        <h3 class="text-base font-bold text-white">Join Room</h3>
-                        <p class="text-xs text-gray-400">Enter a room code to join a multiplayer quiz</p>
+                        <h3 class="text-lg font-bold text-white">Join Room</h3>
+                        <p class="text-sm text-gray-400 leading-relaxed">Enter a room code to join a multiplayer quiz</p>
                     </div>
                 </a>
             </div>
@@ -77,16 +77,16 @@
 
     <!-- Salles actives -->
     {% if active_rooms %}
-    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 flex-shrink-0">
-        <h3 class="text-base font-bold text-white mb-3 flex items-center space-x-2">
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
             <i data-lucide="radio" class="w-5 h-5 text-green-500"></i>
             <span>Active Rooms</span>
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             {% for room in active_rooms %}
-            <div class="bg-gray-900 rounded-lg p-3 border border-gray-600">
+            <div class="bg-gray-900 rounded-lg p-4 border border-gray-600">
                 <div class="flex items-center justify-between mb-2">
-                    <h4 class="text-xs font-bold text-white">{{ room.code }}</h4>
+                    <h4 class="text-sm font-bold text-white">{{ room.code }}</h4>
                     <span class="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">{{ room.status|title }}</span>
                 </div>
                 <p class="text-xs text-gray-400 mb-2">{{ room.topic }}</p>
@@ -103,25 +103,25 @@
     {% endif %}
 
     <!-- Statistiques -->
-    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 flex-shrink-0">
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
         <div class="flex items-center space-x-3 mb-6">
             <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
-            <h3 class="text-base font-bold text-white">Your Statistics</h3>
+            <h3 class="text-lg font-bold text-white">Your Statistics</h3>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="text-center p-3 bg-gray-900 rounded-lg">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-4 bg-gray-900 rounded-lg">
                 <div class="text-2xl font-bold text-green-500 mb-1">127</div>
                 <div class="text-xs text-gray-400">Completed</div>
             </div>
-            <div class="text-center p-3 bg-gray-900 rounded-lg">
+            <div class="text-center p-4 bg-gray-900 rounded-lg">
                 <div class="text-2xl font-bold text-blue-500 mb-1">85%</div>
                 <div class="text-xs text-gray-400">Accuracy</div>
             </div>
-            <div class="text-center p-3 bg-gray-900 rounded-lg">
+            <div class="text-center p-4 bg-gray-900 rounded-lg">
                 <div class="text-2xl font-bold text-pink-500 mb-1">12</div>
                 <div class="text-xs text-gray-400">Streak</div>
             </div>
-            <div class="text-center p-3 bg-gray-900 rounded-lg">
+            <div class="text-center p-4 bg-gray-900 rounded-lg">
                 <div class="text-2xl font-bold text-gray-400 mb-1">3h 42m</div>
                 <div class="text-xs text-gray-400">Total time</div>
             </div>
