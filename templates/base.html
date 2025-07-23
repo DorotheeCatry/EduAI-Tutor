@@ -26,12 +26,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
-    {% block extra_head %}{% endblock %}
-</head>
-<body class="min-h-screen bg-gray-900 text-white">
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        {% if user.is_authenticated %}
+                <div class="flex space-x-1 overflow-x-auto" id="tabs-container">
+                    <!-- Les onglets seront générés dynamiquement par JavaScript -->
+                </div>
             {% include 'components/sidebar.html' %}
         {% endif %}
         
