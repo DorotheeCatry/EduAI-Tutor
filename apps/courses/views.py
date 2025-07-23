@@ -54,7 +54,7 @@ def course_generator(request):
             course_title = title_match.group(1) if title_match else f"Cours sur {topic}"
             
             context = {
-                'generated_course': {
+                'course': {
                     'title': course_title,
                     'topic': topic,
                     'module': module,
@@ -63,13 +63,15 @@ def course_generator(request):
                     'sources': result['sources']
                 },
                 'modules': module_loader.get_available_modules(),
+                'is_saved_course': False,
                 'xp_result': xp_result
             }
         else:
             context = {
                 'error': result.get('error', 'Erreur lors de la génération du cours'),
                 'topic': topic,
-                'modules': module_loader.get_available_modules()
+                'modules': module_loader.get_available_modules(),
+                'is_saved_course': False
             }
             
         return render(request, 'courses/course_detail.html', context)
@@ -127,10 +129,14 @@ def course_detail(request, course_id):
         course = get_object_or_404(Course, id=course_id, created_by=request.user)
         course.increment_view_count()
         
+        # Extraire le titre du markdown si pas de titre explicite
+        content = course.content
+        title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
+        course_title = title_match.group(1) if title_match else course.title
+        
         context = {
-            'course': course,
-            'generated_course': {
-                'title': course.title,
+            'course': {
+                'title': course_title,
                 'topic': course.topic,
                 'module': course.module,
                 'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == course.module), course.module.replace('_', ' ').title()) if course.module and course.module != 'general' else None,
