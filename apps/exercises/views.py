@@ -371,6 +371,169 @@ def generate_exercise(request):
     return redirect('exercises:list')
 
 @login_required
+def generate_exercise_from_course(request):
+    """Génère un exercice basé sur le sujet d'un cours"""
+    
+    topic = request.GET.get('topic', '').strip()
+    difficulty = request.GET.get('difficulty', 'intermediate')  # Difficulté par défaut pour les cours
+    
+    if not topic:
+        messages.error(request, 'Aucun sujet spécifié pour générer l\'exercice.')
+        return redirect('exercises:list')
+    
+    try:
+        # Utiliser l'orchestrateur IA pour générer l'exercice
+        orchestrator = get_orchestrator(request.user)
+        
+        # Prompt spécialisé pour les exercices basés sur un cours
+        prompt = f"""
+        Génère un exercice de programmation Python pratique basé sur le cours suivant : "{topic}"
+        
+        L'exercice doit être de niveau {difficulty} et permettre de mettre en pratique 
+        les concepts enseignés dans le cours.
+        
+        L'exercice doit inclure :
+        - Un titre clair lié au sujet du cours
+        - Une description détaillée de ce qu'il faut implémenter
+        - Du code de départ avec des parties à compléter (marquées par # TODO)
+        - Une solution complète fonctionnelle
+        - Au moins 3 tests avec entrées et sorties attendues
+        
+        Format JSON requis :
+        {{
+            "title": "Titre de l'exercice pratique",
+            "description": "Description détaillée de l'exercice",
+            "starter_code": "Code de départ avec # TODO",
+            "solution": "Code solution complet",
+            "tests": [
+                {{"input": "fonction(2, 3)", "expected": "5"}},
+                {{"input": "fonction(-1, 1)", "expected": "0"}},
+                {{"input": "fonction(0, 0)", "expected": "0"}}
+            ]
+        }}
+        """
+        
+        result = orchestrator.answer_question(prompt)
+        
+        if result['success']:
+            try:
+                # Parser la réponse JSON avec nettoyage robuste
+                answer = result['answer'].strip()
+                print(f"🔍 Réponse brute reçue: {answer[:500]}...")
+                
+                # Nettoyer la réponse des blocs de code markdown
+                if '```json' in answer:
+                    start_marker = answer.find('```json') + 7
+                    end_marker = answer.find('```', start_marker)
+                    if end_marker != -1:
+                        json_content = answer[start_marker:end_marker].strip()
+                    else:
+                        json_content = answer[start_marker:].strip()
+                else:
+                    # Extraire le JSON si il y a du texte avant/après
+                    start_idx = answer.find('{')
+                    end_idx = answer.rfind('}') + 1
+                    if start_idx != -1 and end_idx != -1:
+                        json_content = answer[start_idx:end_idx]
+                    else:
+                        raise json.JSONDecodeError("No JSON found", answer, 0)
+                
+                print(f"🧹 JSON extrait: {json_content[:300]}...")
+                
+                # Nettoyer les triples quotes Python dans le JSON
+                json_content = json_content.replace('"""', '"')
+                json_content = json_content.replace("'''", '"')
+                
+                # Nettoyer les retours à la ligne dans les chaînes
+                import re
+                json_content = re.sub(r':\s*"([^"]*)\n([^"]*)"', r': "\1\\n\2"', json_content, flags=re.MULTILINE)
+                
+                print(f"🔧 JSON nettoyé: {json_content[:300]}...")
+                
+                # Parser le JSON nettoyé
+                exercise_data = json.loads(json_content)
+                
+                # Vérifier que toutes les clés requises sont présentes
+                required_keys = ['title', 'description', 'starter_code', 'solution', 'tests']
+                for key in required_keys:
+                    if key not in exercise_data:
+                        raise KeyError(f"Clé manquante: {key}")
+                
+                # Nettoyer le starter_code et solution des triples quotes
+                if isinstance(exercise_data.get('starter_code'), str):
+                    exercise_data['starter_code'] = exercise_data['starter_code'].replace('"""', '').replace("'''", '').strip()
+                
+                if isinstance(exercise_data.get('solution'), str):
+                    exercise_data['solution'] = exercise_data['solution'].replace('"""', '').replace("'''", '').strip()
+                
+                print(f"✅ Exercice parsé: {exercise_data['title']}")
+                
+                # Créer l'exercice
+                exercise = Exercise.objects.create(
+                    title=exercise_data['title'],
+                    description=exercise_data['description'],
+                    difficulty=difficulty,
+                    topic=topic,
+                    starter_code=exercise_data['starter_code'],
+                    solution=exercise_data['solution'],
+                    tests=exercise_data['tests'],
+                    created_by=request.user
+                )
+                
+                print(f"✅ Exercice créé avec succès : {exercise.title} (ID: {exercise.id})")
+                messages.success(request, f'Exercice "{exercise.title}" généré avec succès à partir du cours !')
+                return redirect('exercises:detail', exercise_id=exercise.id)
+                
+            except (json.JSONDecodeError, KeyError, ValueError) as e:
+                print(f"❌ Erreur parsing JSON : {e}")
+                print(f"Réponse reçue : {result['answer'][:500]}...")
+                
+                # Créer un exercice de fallback basique
+                fallback_exercise = Exercise.objects.create(
+                    title=f"Exercice pratique : {topic}",
+                    description=f"Exercice pratique basé sur le cours '{topic}'. Complétez le code ci-dessous pour mettre en pratique les concepts appris.",
+                    difficulty=difficulty,
+                    topic=topic,
+                    starter_code=f"# Exercice basé sur le cours : {topic}\n# TODO: Implémentez votre solution\n\ndef ma_fonction():\n    # Votre code ici\n    pass\n",
+                    solution=f"# Solution exemple pour {topic}\n\ndef ma_fonction():\n    return 'Hello World'\n",
+                    tests=[
+                        {"input": "ma_fonction()", "expected": "Hello World"}
+                    ],
+                    created_by=request.user
+                )
+                
+                messages.warning(request, f'L\'IA a généré une réponse malformée. Exercice de base créé sur "{topic}".')
+                return redirect('exercises:detail', exercise_id=fallback_exercise.id)
+        else:
+            print(f"❌ Erreur orchestrateur : {result.get('error', 'Erreur inconnue')}")
+            messages.error(request, f'Erreur lors de la génération : {result.get("error", "Erreur inconnue")}')
+            
+    except Exception as e:
+        print(f"❌ Exception lors de la génération : {str(e)}")
+        
+        # Créer un exercice de fallback en cas d'erreur totale
+        try:
+            fallback_exercise = Exercise.objects.create(
+                title=f"Exercice pratique : {topic}",
+                description=f"Exercice pratique basé sur le cours '{topic}'. Complétez le code ci-dessous.",
+                difficulty=difficulty,
+                topic=topic,
+                starter_code=f"# TODO: Implémentez votre solution pour {topic}\n\ndef ma_fonction():\n    # Votre code ici\n    pass\n",
+                solution=f"# Solution exemple pour {topic}\n\ndef ma_fonction():\n    return 'Hello World'\n",
+                tests=[
+                    {"input": "ma_fonction()", "expected": "Hello World"}
+                ],
+                created_by=request.user
+            )
+            
+            messages.warning(request, f'Erreur lors de la génération IA. Exercice de base créé sur "{topic}".')
+            return redirect('exercises:detail', exercise_id=fallback_exercise.id)
+        except Exception as fallback_error:
+            messages.error(request, f'Erreur lors de la génération : {str(e)}')
+    
+    return redirect('exercises:list')
+
+@login_required
 def user_progress(request):
     """Page de progression utilisateur pour les exercices"""
     

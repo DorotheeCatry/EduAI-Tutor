@@ -37,6 +37,11 @@
                 <span>Quiz</span>
             </a>
             
+            <a href="{% url 'exercises:generate_from_course' %}?topic={{ course.topic }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2">
+                <i data-lucide="code" class="w-4 h-4"></i>
+                <span>Exercice</span>
+            </a>
+            
             <a href="{% if is_saved_course %}{% url 'courses:my_courses' %}{% else %}{% url 'courses:generator' %}{% endif %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 <span>Retour</span>
