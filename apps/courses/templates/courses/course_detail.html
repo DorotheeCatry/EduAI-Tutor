@@ -83,7 +83,7 @@
             <div class="h-full overflow-y-auto px-6 pb-6" id="course-content-container">
                 <div class="bg-gray-900 mt-6">
                     <div class="p-6">
-                        <div class="prose prose-invert max-w-none" id="course-content" data-raw-content="{{ generated_course.content|escapejs }}">
+                        <div class="prose prose-invert max-w-none" id="course-content">
                             <!-- Le contenu sera formaté par JavaScript -->
                         </div>
                     </div>
@@ -106,10 +106,10 @@
         const content = document.getElementById('course-content');
         if (!content) return;
 
-        // Récupérer le contenu brut depuis l'attribut data
-        const rawContent = content.getAttribute('data-raw-content');
-        if (!rawContent) {
-            console.log('Pas de contenu brut trouvé');
+        // Récupérer le contenu depuis la variable JavaScript
+        const rawContent = `{{ generated_course.content|escapejs }}`;
+        if (!rawContent || rawContent === '') {
+            console.log('Pas de contenu trouvé');
             return;
         }
         
