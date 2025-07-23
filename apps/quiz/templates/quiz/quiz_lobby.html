@@ -12,15 +12,35 @@
     <!-- Modes de jeu -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Solo Mode -->
-        <a href="{% url 'quiz:start' %}" class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-green-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
+        <div class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-green-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-green-500/20">
             <div class="text-center space-y-4">
                 <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto group-hover:bg-green-500/30 transition-all duration-300">
                     <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white">Solo Mode</h3>
                 <p class="text-sm text-gray-400 leading-relaxed">Train at your own pace with personalized quizzes</p>
+                
+                <!-- Formulaire solo intégré -->
+                <form action="{% url 'quiz:start' %}" method="get" class="space-y-3 mt-4">
+                    <input type="hidden" name="mode" value="solo">
+                    <input
+                        type="text"
+                        name="topic"
+                        placeholder="e.g. Python functions, Django models..."
+                        class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                        required
+                    >
+                    <select name="num_questions" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+                        <option value="5">5 questions</option>
+                        <option value="10" selected>10 questions</option>
+                        <option value="15">15 questions</option>
+                    </select>
+                    <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
+                        Start Solo Quiz
+                    </button>
+                </form>
             </div>
-        </a>
+        </div>
 
         <!-- Create Room -->
         <a href="{% url 'quiz:create_room' %}" class="group relative overflow-hidden bg-gray-800 rounded-xl p-6 border-2 border-gray-700 hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20">
