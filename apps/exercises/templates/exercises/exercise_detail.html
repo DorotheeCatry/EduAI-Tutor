@@ -163,7 +163,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     lucide.createIcons();
-    console.log('🚀 Page chargée, initialisation...');
 
     const starterCode = `{{ exercise.starter_code|escapejs }}`;
     const textArea = document.getElementById('code-editor');
@@ -171,69 +170,42 @@ document.addEventListener('DOMContentLoaded', function () {
     const resetBtn = document.getElementById('reset-code');
     let editor = null;
 
-    // Initialiser Monaco Editor
-    require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.44.0/min/vs' }});
+    require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } });
     require(['vs/editor/editor.main'], function () {
-        console.log('🎨 Monaco chargé');
         const monacoContainer = document.getElementById('monaco-editor');
-
         editor = monaco.editor.create(monacoContainer, {
             value: textArea.value || starterCode,
             language: 'python',
             theme: 'vs-dark',
             fontSize: 14,
-            fontFamily: 'JetBrains Mono, Fira Code, monospace',
             automaticLayout: true,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
-            padding: {
-                top: 12,  // ou 16 si tu veux plus d'air
-                bottom: 12
-            }
+            padding: { top: 16, bottom: 12 }
         });
 
-                // 🎯 Animer les tests un par un
-                await animateTestResults(data.test_results);
-                
-                // 🎉 Afficher les résultats finaux avec points
-        // Masquer textarea et afficher Monaco
         textArea.style.display = 'none';
         monacoContainer.classList.remove('hidden');
-        console.log('✅ Monaco Editor initialisé');
-
-        // Mettre le focus sur l’éditeur
         editor.focus();
 
-        // 🔄 Reset du code
         resetBtn.addEventListener('click', function () {
-            console.log('🔄 Reset cliqué');
             if (confirm('Êtes-vous sûr de vouloir réinitialiser le code ?')) {
                 editor.setValue(starterCode);
                 editor.focus();
-                console.log('✅ Code réinitialisé');
             }
         });
 
-        // ▶️ Exécution du code
         runBtn.addEventListener('click', async function () {
-            console.log('▶️ Bouton Tester cliqué');
             const code = editor.getValue().trim();
+            if (!code) return alert("Veuillez écrire du code avant de tester.");
 
-            if (!code) {
-                alert('Veuillez écrire du code avant de tester.');
-                return;
-            }
-
-            // Copier le code dans le textarea pour Django si nécessaire
             textArea.value = code;
-
-            const originalContent = runBtn.innerHTML;
+            const original = runBtn.innerHTML;
             runBtn.disabled = true;
             runBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i>Exécution...';
             lucide.createIcons();
 
             try {
-                console.log('🌐 Envoi de la requête...');
                 const response = await fetch('{% url "exercises:submit" exercise.id %}', {
                     method: 'POST',
                     headers: {
@@ -244,33 +216,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 const data = await response.json();
-                console.log('📡 Réponse reçue:', response.status, data);
 
                 if (response.ok) {
-                    updateTestsDisplay(data.test_results);
+                    resetTestsDisplay();
+                    await animateTestResults(data.test_results);
                     showResults(data.success ? 'success' : 'failed', data);
 
-                    // ✅ AJOUT DYNAMIQUE si réussite
                     if (data.success) {
-                        // Badge "Complété"
                         const badgeContainer = document.querySelector('.flex.items-center.space-x-2');
-                        const alreadyCompleted = badgeContainer.querySelector('.text-primary-green');
-
-                        if (!alreadyCompleted) {
+                        const badgeExist = badgeContainer.querySelector('.text-primary-green');
+                        if (!badgeExist) {
                             const badge = document.createElement('span');
                             badge.className = "px-3 py-1 bg-primary-green/20 text-primary-green rounded-full text-sm font-medium flex items-center space-x-1";
                             badge.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i><span>Complété</span>`;
                             badgeContainer.appendChild(badge);
                             lucide.createIcons();
-                            console.log('✅ Badge Complété ajouté');
                         }
 
-                        // Tentative récente
                         const historySection = document.querySelector('.space-y-2');
                         if (historySection) {
-                showResults(data.success ? 'success' : 'failed', data);
+                            const attempt = document.createElement('div');
                             attempt.className = 'bg-gray-900 rounded-lg p-3 border border-gray-600 flex items-center justify-between';
-
                             attempt.innerHTML = `
                                 <div class="flex items-center space-x-3">
                                     <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
@@ -281,11 +247,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             `;
                             historySection.prepend(attempt);
                             lucide.createIcons();
-                            console.log('📊 Tentative ajoutée');
                         }
                     }
 
-                    // XP comme avant
                     if (data.success && data.xp_result) {
                         setTimeout(() => {
                             if (typeof showXPGain === 'function') {
@@ -301,141 +265,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     showResults('error', data.error || 'Erreur inconnue.');
                 }
-            } catch (error) {
-                console.error('❌ Erreur:', error);
+            } catch (err) {
+                console.error(err);
                 showResults('error', 'Erreur de connexion. Veuillez réessayer.');
             } finally {
                 runBtn.disabled = false;
-                runBtn.innerHTML = originalContent;
+                runBtn.innerHTML = original;
                 lucide.createIcons();
             }
         });
     });
 
-    // 🎯 Fonction pour réinitialiser l'affichage des tests
-    function resetTestsDisplay() {
-        document.querySelectorAll('.test-case').forEach(testCase => {
-            testCase.classList.remove('test-passed', 'test-failed', 'test-running');
-            const status = testCase.querySelector('.test-status');
-            const result = testCase.querySelector('.test-result');
-            
-            if (status) {
-                status.className = 'test-status w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center';
-                status.innerHTML = `<span class="text-xs font-bold text-gray-400">${testCase.dataset.testIndex ? parseInt(testCase.dataset.testIndex) + 1 : '?'}</span>`;
-            }
-            
-            if (result) {
-                result.classList.add('hidden');
-            }
-        });
-    }
-
-    // 🎯 Animation des résultats test par test
-    async function animateTestResults(testResults) {
-        for (let i = 0; i < testResults.length; i++) {
-            const testCase = document.querySelector(`[data-test-index="${i}"]`);
-            const result = testResults[i];
-            
-            if (!testCase) continue;
-            
-            // 🔄 Marquer comme en cours
-            testCase.classList.add('test-running');
-            const status = testCase.querySelector('.test-status');
-            if (status) {
-                status.className = 'test-status w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center animate-pulse';
-                status.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 text-white animate-spin"></i>';
-                lucide.createIcons();
-            }
-            
-            // ⏱️ Attendre un peu pour l'effet visuel
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // ✅ ou ❌ Afficher le résultat
-            testCase.classList.remove('test-running');
-            
-            if (result.passed) {
-                testCase.classList.add('test-passed');
-                if (status) {
-                    status.className = 'test-status w-6 h-6 rounded-full bg-green-500 flex items-center justify-center';
-                    status.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
-                }
-                
-                // 🎉 Animation de succès
-                testCase.style.transform = 'scale(1.05)';
-                setTimeout(() => {
-                    testCase.style.transform = 'scale(1)';
-                }, 200);
-                
-        if (status === 'running') {
-            resultsContent.innerHTML = `
-                <div class="flex items-center space-x-3 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                    <i data-lucide="loader-2" class="w-5 h-5 text-blue-400 animate-spin"></i>
-                    <span class="text-blue-400 font-medium">${data.message}</span>
-                </div>
-            `;
-            lucide.createIcons();
-            return;
-        }
-        
-            } else {
-            const passedTests = data.passed_tests || 0;
-            const totalTests = data.total_tests || 0;
-            const points = data.xp_result ? data.xp_result.xp_gained : 20;
-            
-                testCase.classList.add('test-failed');
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                        <i data-lucide="trophy" class="w-6 h-6 text-yellow-400"></i>
-                        <div>
-                            <div class="text-green-400 font-bold text-lg">🎉 Exercice réussi !</div>
-                            <div class="text-green-300 text-sm">Tous les tests sont passés (${passedTests}/${totalTests})</div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
-                            <div class="text-yellow-400 font-bold text-xl">+${points}</div>
-                            <div class="text-yellow-300 text-xs">Points XP</div>
-                        </div>
-                        <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center">
-                            <div class="text-blue-400 font-bold text-xl">${(data.execution_time * 1000).toFixed(0)}ms</div>
-                            <div class="text-blue-300 text-xs">Temps d'exécution</div>
-                        </div>
-                    </div>
-                }
-                
-                // 📊 Afficher le résultat obtenu
-            const passedTests = data.passed_tests || 0;
-            const totalTests = data.total_tests || 0;
-            
-                const resultDiv = testCase.querySelector('.test-result');
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                        <i data-lucide="x-circle" class="w-5 h-5 text-red-400"></i>
-                        <div>
-                            <div class="text-red-400 font-bold">Tests échoués</div>
-                            <div class="text-red-300 text-sm">${passedTests}/${totalTests} tests réussis</div>
-                        </div>
-                    </div>
-                    
-                    <div class="p-3 bg-gray-800 rounded-lg">
-                        <div class="text-gray-300 text-sm">💡 <strong>Conseil :</strong> Vérifiez votre code et réessayez !</div>
-                    </div>
-                    if (actualCode) {
-                        actualCode.textContent = result.actual || 'Aucune sortie';
-                    }
-                }
-            }
-            
-            lucide.createIcons();
-            
-            // ⏱️ Petit délai entre chaque test
-            if (i < testResults.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 300));
-            }
-        }
-    }
-    // 🔐 Récupération du token CSRF
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -450,9 +290,119 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return cookieValue;
     }
+
+    function resetTestsDisplay() {
+        document.querySelectorAll('.test-case').forEach(testCase => {
+            testCase.classList.remove('test-passed', 'test-failed');
+            const status = testCase.querySelector('.test-status');
+            const result = testCase.querySelector('.test-result');
+            if (status) {
+                status.className = 'test-status w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center';
+                status.innerHTML = `<span class="text-xs font-bold text-gray-400">${parseInt(testCase.dataset.testIndex)+1}</span>`;
+            }
+            if (result) result.classList.add('hidden');
+        });
+    }
+
+    async function animateTestResults(testResults) {
+        for (let i = 0; i < testResults.length; i++) {
+            const testCase = document.querySelector(`[data-test-index="${i}"]`);
+            const result = testResults[i];
+            if (!testCase) continue;
+
+            const status = testCase.querySelector('.test-status');
+            const resultDiv = testCase.querySelector('.test-result');
+            const actualEl = testCase.querySelector('.test-actual');
+
+            testCase.classList.add('test-running');
+            if (status) {
+                status.className = 'test-status w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center animate-pulse';
+                status.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 text-white animate-spin"></i>';
+                lucide.createIcons();
+            }
+
+            await new Promise(r => setTimeout(r, 400));
+
+            testCase.classList.remove('test-running');
+            if (result.passed) {
+                testCase.classList.add('test-passed');
+                if (status) {
+                    status.className = 'test-status w-6 h-6 rounded-full bg-green-500 flex items-center justify-center';
+                    status.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
+                }
+            } else {
+                testCase.classList.add('test-failed');
+                if (status) {
+                    status.className = 'test-status w-6 h-6 rounded-full bg-red-500 flex items-center justify-center';
+                    status.innerHTML = '<i data-lucide="x" class="w-3 h-3 text-white"></i>';
+                }
+            }
+
+            if (actualEl) actualEl.textContent = result.actual || 'Aucune sortie';
+            if (resultDiv) resultDiv.classList.remove('hidden');
+
+            await new Promise(r => setTimeout(r, 250));
+        }
+    }
+
+    function showResults(status, data) {
+        const panel = document.getElementById('results-panel');
+        const content = document.getElementById('results-content');
+        panel.classList.remove('hidden');
+
+        if (status === 'success') {
+            const xp = data.xp_result?.xp_gained || 0;
+            const time = data.execution_time ? (data.execution_time * 1000).toFixed(0) : null;
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <i data-lucide="trophy" class="w-6 h-6 text-yellow-400"></i>
+                        <div>
+                            <div class="text-green-400 font-bold text-lg">🎉 Exercice réussi !</div>
+                            <div class="text-green-300 text-sm">Tous les tests sont passés (${data.passed_tests}/${data.total_tests})</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
+                            <div class="text-yellow-400 font-bold text-xl">+${xp}</div>
+                            <div class="text-yellow-300 text-xs">Points XP</div>
+                        </div>
+                        <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center">
+                            <div class="text-blue-400 font-bold text-xl">${time}ms</div>
+                            <div class="text-blue-300 text-xs">Temps d'exécution</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (status === 'failed') {
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                        <i data-lucide="x-circle" class="w-5 h-5 text-red-400"></i>
+                        <div>
+                            <div class="text-red-400 font-bold">Tests échoués</div>
+                            <div class="text-red-300 text-sm">${data.passed_tests}/${data.total_tests} tests réussis</div>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-gray-800 rounded-lg">
+                        <div class="text-gray-300 text-sm">💡 <strong>Conseil :</strong> Vérifiez votre code et réessayez !</div>
+                    </div>
+                </div>
+            `;
+        } else if (status === 'error') {
+            content.innerHTML = `
+                <div class="flex items-center space-x-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <i data-lucide="x-circle" class="w-5 h-5 text-red-400"></i>
+                    <span class="text-red-400 font-medium">${data}</span>
+                </div>
+            `;
+        }
+
+        lucide.createIcons();
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 });
 </script>
-
 
 <style>
 /* Styles pour l'éditeur Monaco */
