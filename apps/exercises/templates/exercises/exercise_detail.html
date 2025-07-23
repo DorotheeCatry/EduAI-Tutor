@@ -134,7 +134,20 @@
         
         <!-- Éditeur Monaco -->
         <div class="flex-1 relative bg-[#1e1e1e] min-h-0">
-            <div id="monaco-editor" class="w-full h-full" style="min-height: 400px;"></div>
+            <!-- Container pour Monaco avec fallback immédiat -->
+            <div id="editor-container" class="w-full h-full relative">
+                <!-- Fallback textarea toujours présent -->
+                <textarea 
+                    id="code-editor" 
+                    class="w-full h-full bg-[#1e1e1e] text-white font-mono text-sm p-4 border-none outline-none resize-none"
+                    style="font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace; line-height: 1.6; tab-size: 4;"
+                    placeholder="Écrivez votre code Python ici..."
+                    spellcheck="false"
+                >{{ exercise.starter_code }}</textarea>
+                
+                <!-- Monaco container (sera créé par JS si disponible) -->
+                <div id="monaco-editor" class="absolute inset-0 hidden"></div>
+            </div>
         </div>
         
         <!-- Résultats -->
@@ -151,116 +164,109 @@ document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
     
     let editor;
+    let isMonacoLoaded = false;
     const starterCode = `{{ exercise.starter_code|escapejs }}`;
+    const fallbackEditor = document.getElementById('code-editor');
+    const monacoContainer = document.getElementById('monaco-editor');
     
-    // Initialiser Monaco Editor
-    require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } });
-    require(['vs/editor/editor.main'], function () {
-        editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-            value: starterCode,
-            language: 'python',
-            theme: 'vs-dark',
-            fontSize: 14,
-            fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace",
-            fontLigatures: true,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            tabSize: 4,
-            insertSpaces: true,
-            wordWrap: 'on',
-            lineNumbers: 'on',
-            glyphMargin: true,
-            folding: true,
-            lineDecorationsWidth: 15,
-            lineNumbersMinChars: 3,
-            renderLineHighlight: 'all',
-            cursorBlinking: 'smooth',
-            smoothScrolling: true,
-            padding: { top: 15, bottom: 15 },
-            bracketPairColorization: { enabled: true },
-            guides: {
-                bracketPairs: true,
-                indentation: true
-            },
-            suggest: {
-                showKeywords: true,
-                showSnippets: true,
-                showFunctions: true
-            },
-            quickSuggestions: {
-                other: true,
-                comments: false,
-                strings: false
-            },
-            parameterHints: { enabled: true },
-            hover: { enabled: true },
-            contextmenu: true,
-            mouseWheelZoom: true,
-            rulers: [80]
-        });
-        
-        // Forcer le redimensionnement multiple fois pour s'assurer que l'éditeur s'affiche
-        // Forcer plusieurs layouts pour s'assurer que l'éditeur s'affiche
-        const forceLayout = () => {
-            if (editor) {
+    // Créer l'objet editor unifié qui fonctionne avec textarea ou Monaco
+    editor = {
+        getValue: () => {
+            if (isMonacoLoaded && window.monacoEditor) {
+                return window.monacoEditor.getValue();
+            }
+            return fallbackEditor.value;
+        },
+        setValue: (value) => {
+            if (isMonacoLoaded && window.monacoEditor) {
+                window.monacoEditor.setValue(value);
+            } else {
+                fallbackEditor.value = value;
+            }
+        },
+        focus: () => {
+            if (isMonacoLoaded && window.monacoEditor) {
+                window.monacoEditor.focus();
+            } else {
+                fallbackEditor.focus();
+            }
+        },
+        layout: () => {
+            if (isMonacoLoaded && window.monacoEditor) {
                 try {
-                    editor.layout();
-                    editor.focus();
-                    console.log('✅ Monaco Editor layout forcé');
+                    window.monacoEditor.layout();
                 } catch (e) {
-                    console.error('❌ Erreur layout Monaco:', e);
+                    console.log('Layout error:', e);
                 }
             }
-        };
-        
-        // Plusieurs tentatives de layout
-        setTimeout(forceLayout, 100);
-        setTimeout(forceLayout, 300);
-        setTimeout(forceLayout, 500);
-        setTimeout(forceLayout, 1000);
-    });
-    
-    // Fallback si Monaco ne se charge pas
-    setTimeout(() => {
-        if (!editor) {
-            console.error('❌ Monaco Editor failed to load, creating fallback');
-            createFallbackEditor();
         }
-    }, 3000);
+    };
     
-    function createFallbackEditor() {
-        const container = document.getElementById('monaco-editor');
-        container.innerHTML = `
-            <textarea id="fallback-editor" 
-                class="w-full h-full bg-gray-900 text-white font-mono text-sm p-4 border-none outline-none resize-none"
-                style="font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, monospace; line-height: 1.5;"
-                placeholder="Écrivez votre code Python ici...">${starterCode}</textarea>
-        `;
+    // Essayer de charger Monaco en arrière-plan
+    function tryLoadMonaco() {
+        if (typeof require === 'undefined') {
+            console.log('📝 Monaco non disponible, utilisation du textarea');
+            return;
+        }
         
-        // Créer un objet editor compatible
-        const textarea = document.getElementById('fallback-editor');
-        editor = {
-            getValue: () => textarea.value,
-            setValue: (value) => { textarea.value = value; },
-            focus: () => textarea.focus(),
-            layout: () => {} // No-op pour le fallback
-        };
-        
-        console.log('✅ Fallback editor créé');
+        try {
+            require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs' } });
+            require(['vs/editor/editor.main'], function () {
+                try {
+                    window.monacoEditor = monaco.editor.create(monacoContainer, {
+                        value: starterCode,
+                        language: 'python',
+                        theme: 'vs-dark',
+                        fontSize: 14,
+                        fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace",
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                        tabSize: 4,
+                        insertSpaces: true,
+                        wordWrap: 'on',
+                        lineNumbers: 'on',
+                        padding: { top: 15, bottom: 15 },
+                        rulers: [80]
+                    });
+                    
+                    // Masquer le textarea et afficher Monaco
+                    fallbackEditor.style.display = 'none';
+                    monacoContainer.classList.remove('hidden');
+                    isMonacoLoaded = true;
+                    
+                    // Layout après un court délai
+                    setTimeout(() => {
+                        window.monacoEditor.layout();
+                        window.monacoEditor.focus();
+                    }, 100);
+                    
+                    console.log('✅ Monaco Editor chargé avec succès');
+                } catch (e) {
+                    console.error('❌ Erreur création Monaco:', e);
+                }
+            });
+        } catch (e) {
+            console.log('📝 Erreur chargement Monaco, utilisation du textarea:', e);
+        }
     }
+    
+    // Charger Monaco après un délai
+    setTimeout(tryLoadMonaco, 500);
+    
+    // S'assurer que le textarea fonctionne immédiatement
+    fallbackEditor.focus();
     
     // Reset du code
     document.getElementById('reset-code').addEventListener('click', function() {
-        if (editor && confirm('Êtes-vous sûr de vouloir réinitialiser le code ?')) {
+        if (confirm('Êtes-vous sûr de vouloir réinitialiser le code ?')) {
             editor.setValue(starterCode);
+            editor.focus();
         }
     });
     
     // Exécution du code
     document.getElementById('run-code').addEventListener('click', async function() {
-        if (!editor) return;
-        
         const code = editor.getValue().trim();
         if (!code) {
             showResults('error', 'Veuillez écrire du code avant de tester.');
@@ -473,24 +479,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Redimensionner l'éditeur quand la fenêtre change de taille
     window.addEventListener('resize', function() {
-        if (editor) {
-            try {
-                editor.layout();
-            } catch (e) {
-                console.log('Layout error on resize:', e);
-            }
-        }
+        editor.layout();
     });
     
     // Forcer le layout quand l'onglet devient visible
     document.addEventListener('visibilitychange', function() {
-        if (!document.hidden && editor) {
+        if (!document.hidden) {
             setTimeout(() => {
-                try {
-                    editor.layout();
-                } catch (e) {
-                    console.log('Layout error on visibility change:', e);
-                }
+                editor.layout();
             }, 100);
         }
     });
