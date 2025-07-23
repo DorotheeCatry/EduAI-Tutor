@@ -1,15 +1,15 @@
 <!-- Tab Bar Component - Exact KodaTheme Design with Dynamic Behavior -->
 <div class="h-10 bg-gray-800/80 backdrop-blur-md border-b border-gray-700/50 flex items-center shadow-sm flex-shrink-0">
     <div class="flex" id="tabs-container">
-        <!-- Les onglets seront ajoutés dynamiquement ici -->
+        <!-- Tabs will be added dynamically here -->
     </div>
 </div>
 
 <script>
-// Gestion dynamique des onglets avec ordre chronologique
-let openTabsOrder = []; // Array pour maintenir l'ordre d'ouverture
+// Dynamic tab management with chronological order
+let openTabsOrder = []; // Array to maintain opening order
 
-// Configuration des onglets disponibles
+// Available tabs configuration
 const availableTabs = {
     'profile': {
         title: 'Profile',
@@ -45,7 +45,7 @@ const availableTabs = {
     }
 };
 
-// Détecter l'onglet actuel basé sur l'URL
+// Detect current tab based on URL
 function getCurrentTab() {
     const path = window.location.pathname;
     if (path.includes('profile')) return 'profile';
@@ -59,11 +59,11 @@ function getCurrentTab() {
     return null;
 }
 
-// Ajouter un onglet dans l'ordre chronologique
+// Add tab in chronological order
 function addTab(tabId) {
     if (!availableTabs[tabId]) return;
     
-    // Si l'onglet n'est pas déjà ouvert, l'ajouter à la fin
+    // If tab is not already open, add it at the end
     if (!openTabsOrder.includes(tabId)) {
         openTabsOrder.push(tabId);
         renderTabs();
@@ -71,23 +71,23 @@ function addTab(tabId) {
     }
 }
 
-// Fermer un onglet
+// Close a tab
 function closeTab(event, tabId) {
     event.stopPropagation();
     
-    // Retirer l'onglet de la liste ordonnée
+    // Remove tab from ordered list
     const index = openTabsOrder.indexOf(tabId);
     if (index > -1) {
         openTabsOrder.splice(index, 1);
     }
     
-    // Si on ferme l'onglet actuel et qu'il y en a d'autres, aller au premier
+    // If closing current tab and there are others, go to first
     const currentTab = getCurrentTab();
     if (tabId === currentTab && openTabsOrder.length > 0) {
         const firstTab = openTabsOrder[0];
         window.location.href = availableTabs[firstTab].url;
     } else if (openTabsOrder.length === 0) {
-        // Si plus d'onglets, aller à l'accueil
+        // If no more tabs, go to home
         window.location.href = "/courses/generator/";
     } else {
         renderTabs();
@@ -95,12 +95,12 @@ function closeTab(event, tabId) {
     }
 }
 
-// Naviguer vers un onglet
+// Navigate to a tab
 function navigateToTab(tabId) {
     window.location.href = availableTabs[tabId].url;
 }
 
-// Rendre les onglets dans l'ordre chronologique
+// Render tabs in chronological order
 function renderTabs() {
     const container = document.getElementById('tabs-container');
     const currentTab = getCurrentTab();
@@ -109,7 +109,7 @@ function renderTabs() {
     
     container.innerHTML = '';
     
-    // Afficher les onglets dans l'ordre chronologique d'ouverture
+    // Display tabs in chronological opening order
     openTabsOrder.forEach(tabId => {
         const tab = availableTabs[tabId];
         if (!tab) return;
@@ -132,18 +132,18 @@ function renderTabs() {
         container.appendChild(tabElement);
     });
     
-    // Réinitialiser les icônes Lucide
+    // Reinitialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
 }
 
-// Sauvegarder l'ordre des onglets
+// Save tab order
 function saveTabsToStorage() {
     localStorage.setItem('openTabsOrder', JSON.stringify(openTabsOrder));
 }
 
-// Charger l'ordre des onglets
+// Load tab order
 function loadTabsFromStorage() {
     const savedTabs = localStorage.getItem('openTabsOrder');
     if (savedTabs) {
@@ -151,18 +151,18 @@ function loadTabsFromStorage() {
             const tabsArray = JSON.parse(savedTabs);
             openTabsOrder = tabsArray.filter(tabId => availableTabs[tabId]);
         } catch (e) {
-            console.log('Erreur lors du chargement des onglets sauvegardés');
+            console.log('Error loading saved tabs');
             openTabsOrder = [];
         }
     }
 }
 
-// Initialiser au chargement de la page
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Charger les onglets sauvegardés
+    // Load saved tabs
     loadTabsFromStorage();
     
-    // Ajouter l'onglet actuel s'il n'est pas déjà dans la liste
+    // Add current tab if not already in list
     const currentTab = getCurrentTab();
     if (currentTab && !openTabsOrder.includes(currentTab)) {
         openTabsOrder.push(currentTab);
@@ -171,12 +171,12 @@ document.addEventListener('DOMContentLoaded', function() {
     renderTabs();
 });
 
-// Sauvegarder les onglets ouverts avant de quitter
+// Save open tabs before leaving
 window.addEventListener('beforeunload', function() {
     saveTabsToStorage();
 });
 
-// Fonction globale pour ouvrir un onglet depuis la sidebar
+// Global function to open tab from sidebar
 window.openTab = function(tabId) {
     addTab(tabId);
     navigateToTab(tabId);

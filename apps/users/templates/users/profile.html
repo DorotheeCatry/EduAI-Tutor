@@ -43,7 +43,7 @@
                             <p class="text-sm text-gray-400">Current avatar</p>
                         </div>
                         
-                        <!-- Onglets -->
+                        <!-- Tabs -->
                         <div class="mb-4">
                             <div class="flex border-b border-gray-600">
                                 <button type="button" id="koda-tab"
@@ -59,7 +59,7 @@
                             </div>
                         </div>
                         
-                        <!-- Contenu onglet Koda -->
+                        <!-- Koda tab content -->
                         <div id="koda-content" class="tab-content">
                             <div class="bg-gray-900 rounded-lg border border-gray-700 overflow-hidden">
                                 <div class="overflow-y-auto divide-y divide-gray-800" style="height: 80px; max-height: 80px;">
@@ -88,7 +88,7 @@
                             <p class="text-xs text-gray-400 mt-2 text-center">Click on a Koda avatar to select it</p>
                         </div>
 
-                        <!-- Contenu onglet Upload -->
+                        <!-- Upload tab content -->
                         <div id="upload-content" class="tab-content hidden">
                             <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center">
                                 <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
@@ -107,7 +107,7 @@
                             </div>
                         </div>
 
-                        <!-- Zone de crop -->
+                        <!-- Crop area -->
                         <div id="crop-container" class="hidden mt-4">
                             <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
                                 <div class="flex items-center justify-between mb-3">
@@ -135,11 +135,11 @@
                         </div>
                     </div>
                     
-                    <!-- Champs cachés -->
+                    <!-- Hidden fields -->
                     <input type="hidden" id="selected-koda-avatar" name="selected_koda_avatar">
                     <input type="hidden" id="cropped-avatar" name="cropped_avatar">
                     
-                    <!-- Champs du formulaire -->
+                    <!-- Form fields -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
@@ -181,7 +181,7 @@
             </div>
         </div>
 
-        <!-- Aperçu du profil -->
+        <!-- Profile preview -->
         <div class="lg:col-span-2 space-y-4">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h3 class="text-lg font-bold text-white mb-4">Preview</h3>
@@ -201,7 +201,7 @@
                 <h3 class="text-lg font-bold text-white mb-4">Statistics</h3>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Titre</span>
+                        <span class="text-sm text-gray-400">Title</span>
                         <span class="text-sm font-bold text-yellow-500">{{ user.level_title }}</span>
                     </div>
                     <div class="flex justify-between items-center">
@@ -214,7 +214,7 @@
                     </div>
                     <div class="mb-2">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm text-gray-400">Progression</span>
+                            <span class="text-sm text-gray-400">Progress</span>
                             <span class="text-sm text-gray-300">{{ user.xp }}/{{ user.xp_for_next_level }} XP</span>
                         </div>
                         <div class="w-full bg-gray-700 rounded-full h-2">
@@ -222,16 +222,16 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Cours complétés</span>
+                        <span class="text-sm text-gray-400">Completed courses</span>
                         <span class="text-sm text-gray-300">{{ user.total_courses_completed }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Quiz réussis</span>
+                        <span class="text-sm text-gray-400">Successful quizzes</span>
                         <span class="text-sm text-gray-300">{{ user.total_quizzes_completed }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Série actuelle</span>
-                        <span class="text-sm font-bold text-orange-500">{{ user.current_streak }} jour{{ user.current_streak|pluralize }}</span>
+                        <span class="text-sm text-gray-400">Current streak</span>
+                        <span class="text-sm font-bold text-orange-500">{{ user.current_streak }} day{{ user.current_streak|pluralize }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-400">Member since</span>

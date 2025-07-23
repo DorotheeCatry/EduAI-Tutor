@@ -26,11 +26,11 @@ class CustomLoginView(LoginView):
         return reverse_lazy('courses:generator')
     
     def form_valid(self, form):
-        messages.success(self.request, 'Connexion réussie ! Bienvenue.')
+        messages.success(self.request, 'Login successful! Welcome.')
         return super().form_valid(form)
     
     def form_invalid(self, form):
-        messages.error(self.request, 'Erreur de connexion. Vérifiez vos identifiants.')
+        messages.error(self.request, 'Login error. Check your credentials.')
         return super().form_invalid(form)
 
 class RegisterView(CreateView):
@@ -43,14 +43,14 @@ class RegisterView(CreateView):
     success_url = reverse_lazy('users:login')
     
     def form_valid(self, form):
-        # Forcer le rôle étudiant pour tous les nouveaux utilisateurs
+        # Force student role for all new users
         form.instance.role = KodaUser.Role.STUDENT
         response = super().form_valid(form)
-        messages.success(self.request, 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.')
+        messages.success(self.request, 'Account created successfully! You can now log in.')
         return response
     
     def form_invalid(self, form):
-        messages.error(self.request, 'Erreur lors de la création du compte. Vérifiez les informations saisies.')
+        messages.error(self.request, 'Account creation error. Check the entered information.')
         return super().form_invalid(form)
 
 class CustomLogoutView(LogoutView):
@@ -62,7 +62,7 @@ class CustomLogoutView(LogoutView):
     
     def dispatch(self, request, *args, **kwargs):
         response = super().dispatch(request, *args, **kwargs)
-        messages.success(request, 'Vous avez été déconnecté avec succès.')
+        messages.success(request, 'You have been logged out successfully.')
         return response
     
 
@@ -80,7 +80,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Récupérer tous les avatars disponibles
+        # Get all available avatars
         koda_path = os.path.join(settings.STATIC_ROOT or 'static', 'koda')
         if not os.path.exists(koda_path):
             koda_path = os.path.join('static', 'koda')
@@ -134,9 +134,9 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
                 form.instance.avatar = data
             except Exception as e:
-                messages.error(self.request, f"Erreur lors de la sauvegarde de l'avatar : {e}")
+                messages.error(self.request, f"Avatar save error: {e}")
 
-        messages.success(self.request, 'Profil mis à jour avec succès !')
+        messages.success(self.request, 'Profile updated successfully!')
         return super().form_valid(form)
 
 

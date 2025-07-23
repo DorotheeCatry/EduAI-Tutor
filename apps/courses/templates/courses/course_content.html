@@ -1,7 +1,7 @@
 {% load static %}
-<!-- Template dédié pour l'affichage du contenu de cours -->
+<!-- Dedicated template for course content display -->
 <div class="flex flex-col h-full overflow-hidden">
-    <!-- Header du cours -->
+    <!-- Course header -->
     <div class="flex-shrink-0 flex items-center justify-between p-6 border-b border-gray-700">
         <div class="flex items-center space-x-4">
             <div class="w-12 h-12 bg-primary-green rounded-lg flex items-center justify-center">
@@ -15,7 +15,7 @@
             </div>
         </div>
         
-        <!-- Actions rapides -->
+        <!-- Quick actions -->
         <div class="flex items-center space-x-3">
             {% if not is_saved_course %}
                 <form method="post" action="{% url 'courses:save' %}" class="inline">
@@ -27,7 +27,7 @@
                     
                     <button type="submit" class="px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
                         <i data-lucide="save" class="w-4 h-4"></i>
-                        <span>Sauvegarder</span>
+                        <span>Save</span>
                     </button>
                 </form>
             {% endif %}
@@ -39,12 +39,12 @@
             
             <a href="{% url 'exercises:generate_from_course' %}?topic={{ course.topic }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2">
                 <i data-lucide="code" class="w-4 h-4"></i>
-                <span>Exercice</span>
+                <span>Exercise</span>
             </a>
             
             <a href="{% if is_saved_course %}{% url 'courses:my_courses' %}{% else %}{% url 'courses:generator' %}{% endif %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                <span>Retour</span>
+                <span>Back</span>
             </a>
         </div>
     </div>
@@ -54,14 +54,14 @@
             <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4">
                 <div class="flex items-center space-x-2">
                     <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                    <span class="text-red-400 font-medium">Erreur</span>
+                    <span class="text-red-400 font-medium">Error</span>
                 </div>
                 <p class="text-red-300 mt-2">{{ error }}</p>
             </div>
         </div>
     {% endif %}
 
-    <!-- Contenu du cours avec scroll fixe et fond uniforme -->
+    <!-- Course content with fixed scroll and uniform background -->
     {% if course.content %}
         <div class="flex-1 bg-gray-900 overflow-hidden">
             <div class="h-full overflow-y-auto px-6 pb-6" id="course-content-container">
@@ -78,8 +78,8 @@
         <div class="flex-1 bg-gray-900 flex items-center justify-center">
             <div class="text-center">
                 <i data-lucide="book-x" class="w-16 h-16 text-gray-500 mx-auto mb-4"></i>
-                <h3 class="text-xl font-bold text-white mb-2">Aucun contenu disponible</h3>
-                <p class="text-gray-400">Le contenu de ce cours n'a pas pu être chargé.</p>
+                <h3 class="text-xl font-bold text-white mb-2">No content available</h3>
+                <p class="text-gray-400">This course content could not be loaded.</p>
             </div>
         </div>
     {% endif %}
@@ -89,7 +89,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
         
-        // S'assurer que le formatage s'applique TOUJOURS
+        // Ensure formatting is ALWAYS applied
         setTimeout(function() {
             formatMarkdownContent();
         }, 100);
@@ -100,7 +100,7 @@
 
         let html = content.innerHTML;
 
-        // Étape 1 : Sauvegarder les blocs de code pour ne pas les altérer
+        // Step 1: Save code blocks to avoid altering them
         const codeBlocks = [];
         html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
             const language = lang || 'code';
@@ -119,7 +119,7 @@
             return `<!--CODEBLOCK_${codeBlocks.length - 1}-->`;
         });
 
-        // Étape 2 : Formatage Markdown amélioré
+        // Step 2: Enhanced Markdown formatting
         html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0 flex items-center">$1</h1>');
         html = html.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-primary-green mb-4 mt-6 flex items-center">$1</h2>');
         html = html.replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
@@ -142,14 +142,14 @@
         html = html.replace(/(<li class="list-item">.*?<\/li>(\s*<li class="list-item">.*?<\/li>)*)/gs,
             match => '<ul class="list-container">' + match + '</ul>');
 
-        // Formatage des paragraphes
+        // Paragraph formatting
         html = html.replace(/\n\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">');
         html = '<p class="mb-4 text-gray-300 leading-relaxed">' + html + '</p>';
 
-        // Nettoyage des paragraphes vides
+        // Clean empty paragraphs
         html = html.replace(/<p class="mb-4 text-gray-300 leading-relaxed">\s*<\/p>/g, '');
         
-        // Étape 3 : Réinjection des blocs de code
+        // Step 3: Reinject code blocks
         html = html.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => codeBlocks[parseInt(i)]);
 
         content.innerHTML = html;
@@ -183,7 +183,7 @@
                 lucide.createIcons();
             }, 2000);
         }).catch(err => {
-            console.error('Erreur lors de la copie:', err);
+            console.error('Copy error:', err);
         });
     };
 });

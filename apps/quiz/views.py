@@ -10,7 +10,7 @@ import json
 
 @login_required
 def quiz_lobby(request):
-    # Récupérer les salles actives
+    # Get active rooms
     active_rooms = GameRoom.objects.filter(status__in=['waiting', 'starting']).order_by('-created_at')[:10]
     
     context = {
@@ -20,13 +20,13 @@ def quiz_lobby(request):
 
 @login_required
 def create_room(request):
-    """Créer une nouvelle salle de jeu"""
+    """Create a new game room"""
     if request.method == 'POST':
-        topic = request.POST.get('topic', 'Python général')
+        topic = request.POST.get('topic', 'General Python')
         num_questions = int(request.POST.get('num_questions', 10))
         max_players = int(request.POST.get('max_players', 20))
         
-        # Créer la salle
+        # Create room
         room = GameRoom.objects.create(
             code=GameRoom.generate_code(),
             host=request.user,
@@ -35,20 +35,20 @@ def create_room(request):
             max_players=max_players
         )
         
-        # Ajouter l'hôte comme participant
+        # Add host as participant
         GameParticipant.objects.create(
             room=room,
             user=request.user
         )
         
-        messages.success(request, f'Salle créée avec le code : {room.code}')
+        messages.success(request, f'Room created with code: {room.code}')
         return redirect('quiz:room_detail', room_code=room.code)
     
     return render(request, 'quiz/create_room.html')
 
 @login_required
 def join_room(request):
-    """Rejoindre une salle existante"""
+    """Join an existing room"""
     if request.method == 'POST':
         room_code = request.POST.get('room_code', '').upper()
         
@@ -56,10 +56,10 @@ def join_room(request):
             room = GameRoom.objects.get(code=room_code, status__in=['waiting', 'starting'])
             
             if room.is_full:
-                messages.error(request, 'Cette salle est complète.')
+                messages.error(request, 'This room is full.')
                 return render(request, 'quiz/join_room.html')
             
-            # Ajouter le joueur s'il n'est pas déjà dans la salle
+            # Add player if not already in room
             participant, created = GameParticipant.objects.get_or_create(
                 room=room,
                 user=request.user,
@@ -73,20 +73,20 @@ def join_room(request):
             return redirect('quiz:room_detail', room_code=room.code)
             
         except GameRoom.DoesNotExist:
-            messages.error(request, 'Salle introuvable ou déjà terminée.')
+            messages.error(request, 'Room not found or already finished.')
     
     return render(request, 'quiz/join_room.html')
 
 @login_required
 def room_detail(request, room_code):
-    """Page de détail d'une salle (lobby d'attente)"""
+    """Room detail page (waiting lobby)"""
     room = get_object_or_404(GameRoom, code=room_code)
     
-    # Vérifier si l'utilisateur est dans la salle
+    # Check if user is in room
     try:
         participant = GameParticipant.objects.get(room=room, user=request.user)
     except GameParticipant.DoesNotExist:
-        messages.error(request, 'Vous devez rejoindre cette salle pour y accéder.')
+        messages.error(request, 'You must join this room to access it.')
         return redirect('quiz:join_room')
     
     participants = room.participants.filter(is_active=True).order_by('joined_at')
@@ -102,14 +102,14 @@ def room_detail(request, room_code):
 
 @login_required
 def multiplayer_game(request, room_code):
-    """Interface de jeu multijoueur"""
+    """Multiplayer game interface"""
     room = get_object_or_404(GameRoom, code=room_code)
     
-    # Vérifier que l'utilisateur est participant
+    # Check that user is participant
     try:
         participant = GameParticipant.objects.get(room=room, user=request.user, is_active=True)
     except GameParticipant.DoesNotExist:
-        messages.error(request, 'Vous n\'êtes pas autorisé à accéder à cette partie.')
+        messages.error(request, 'You are not authorized to access this game.')
         return redirect('quiz:lobby')
     
     context = {
@@ -121,9 +121,9 @@ def multiplayer_game(request, room_code):
 @login_required
 def quiz_start(request):
     mode = request.GET.get('mode', 'solo')
-    topic = request.GET.get('topic', 'Python général')
+    topic = request.GET.get('topic', 'General Python')
 
-    # Générer un quiz avec l'IA
+    # Generate quiz with AI
     orchestrator = get_orchestrator(request.user)
     try:
         num_questions = int(request.GET.get('num_questions', 10))
@@ -134,21 +134,21 @@ def quiz_start(request):
         
     result = orchestrator.create_quiz(topic, num_questions)
 
-    # Vérifie que des questions ont bien été retournées
+    # Check that questions were actually returned
     quiz_data = result if result and "questions" in result and result["questions"] else None
 
     context = {
         'mode': mode,
         'topic': topic,
         'quiz_data': quiz_data,
-        'error': None if quiz_data else "⚠️ Aucun quiz n’a pu être généré."
+        'error': None if quiz_data else "⚠️ No quiz could be generated."
     }
     return render(request, 'quiz/quiz_start.html', context)
 
 @csrf_exempt
 @login_required
 def submit_quiz(request):
-    """API endpoint pour soumettre les résultats d'un quiz"""
+    """API endpoint to submit quiz results"""
     if request.method == 'POST':
         data = json.loads(request.body)
         session_id = data.get('session_id')

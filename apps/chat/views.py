@@ -18,23 +18,23 @@ def send_message(request):
             message = data.get('message')
             
             if not message:
-                return JsonResponse({'error': 'Message vide'}, status=400)
+                return JsonResponse({'error': 'Empty message'}, status=400)
         except json.JSONDecodeError:
-            return JsonResponse({'error': 'Format JSON invalide'}, status=400)
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
         
-        # Utiliser l'orchestrateur IA pour répondre
+        # Use AI orchestrator to respond
         orchestrator = get_orchestrator(request.user)
         result = orchestrator.answer_question(message)
         
         if result['success']:
-            # Ne pas inclure les sources dans la réponse
+            # Don't include sources in response
             response = {
                 'response': result['answer'],
                 'timestamp': '12:34:56'
             }
         else:
             response = {
-                'response': f"Désolé, je n'ai pas pu traiter votre question : {result.get('error', 'Erreur inconnue')}",
+                'response': f"Sorry, I couldn't process your question: {result.get('error', 'Unknown error')}",
                 'timestamp': '12:34:56'
             }
         

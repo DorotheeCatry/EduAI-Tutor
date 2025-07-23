@@ -8,9 +8,9 @@ class Exercise(models.Model):
     """Modèle pour les exercices de code Python"""
     
     DIFFICULTY_CHOICES = [
-        ('beginner', 'Débutant'),
-        ('intermediate', 'Intermédiaire'),
-        ('advanced', 'Avancé'),
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
     ]
     
     title = models.CharField(max_length=200)
@@ -18,100 +18,100 @@ class Exercise(models.Model):
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
     topic = models.CharField(max_length=100)  # Ex: "functions", "loops", "classes"
     
-    # Code de départ fourni à l'utilisateur
-    starter_code = models.TextField(default="# Votre code ici\n")
+    # Starting code provided to user
+    starter_code = models.TextField(default="# Your code here\n")
     
-    # Solution de référence (pour les formateurs)
+    # Reference solution (for trainers)
     solution = models.TextField()
     
-    # Tests à exécuter (format JSON)
+    # Tests to execute (JSON format)
     tests = models.JSONField(default=list)
     
-    # Métadonnées
+    # Metadata
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     
-    # Statistiques
+    # Statistics
     attempts_count = models.PositiveIntegerField(default=0)
     success_count = models.PositiveIntegerField(default=0)
     
     class Meta:
         ordering = ['-created_at']
-        verbose_name = "Exercice"
-        verbose_name_plural = "Exercices"
+        verbose_name = "Exercise"
+        verbose_name_plural = "Exercises"
     
     def __str__(self):
         return f"{self.title} ({self.get_difficulty_display()})"
     
     @property
     def success_rate(self):
-        """Calcule le taux de réussite de l'exercice"""
+        """Calculate exercise success rate"""
         if self.attempts_count == 0:
             return 0
         return round((self.success_count / self.attempts_count) * 100, 1)
 
 class ExerciseSubmission(models.Model):
-    """Modèle pour les soumissions d'exercices"""
+    """Model for exercise submissions"""
     
     STATUS_CHOICES = [
-        ('pending', 'En attente'),
-        ('success', 'Réussi'),
-        ('failed', 'Échoué'),
-        ('error', 'Erreur'),
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('error', 'Error'),
         ('timeout', 'Timeout'),
     ]
     
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='submissions')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     
-    # Code soumis par l'utilisateur
+    # Code submitted by user
     submitted_code = models.TextField()
     
-    # Résultats de l'exécution
+    # Execution results
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     execution_output = models.TextField(blank=True)
     error_message = models.TextField(blank=True)
-    execution_time = models.FloatField(null=True, blank=True)  # en secondes
+    execution_time = models.FloatField(null=True, blank=True)  # in seconds
     
-    # Résultats des tests (format JSON)
+    # Test results (JSON format)
     test_results = models.JSONField(default=list)
     
-    # Métadonnées
+    # Metadata
     submitted_at = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     
     class Meta:
         ordering = ['-submitted_at']
-        verbose_name = "Soumission"
-        verbose_name_plural = "Soumissions"
+        verbose_name = "Submission"
+        verbose_name_plural = "Submissions"
     
     def __str__(self):
         return f"{self.user.username} - {self.exercise.title} ({self.status})"
     
     @property
     def is_successful(self):
-        """Vérifie si la soumission est réussie"""
+        """Check if submission is successful"""
         return self.status == 'success'
     
     @property
     def passed_tests_count(self):
-        """Nombre de tests réussis"""
+        """Number of passed tests"""
         return sum(1 for result in self.test_results if result.get('passed', False))
     
     @property
     def total_tests_count(self):
-        """Nombre total de tests"""
+        """Total number of tests"""
         return len(self.test_results)
 
 class UserExerciseProgress(models.Model):
-    """Modèle pour suivre la progression des utilisateurs sur les exercices"""
+    """Model to track user progress on exercises"""
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
     
-    # Progression
+    # Progress
     is_completed = models.BooleanField(default=False)
     best_submission = models.ForeignKey(
         ExerciseSubmission, 
@@ -121,15 +121,15 @@ class UserExerciseProgress(models.Model):
         related_name='best_for_progress'
     )
     
-    # Statistiques
+    # Statistics
     attempts_count = models.PositiveIntegerField(default=0)
     first_attempt_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
         unique_together = ['user', 'exercise']
-        verbose_name = "Progression exercice"
-        verbose_name_plural = "Progressions exercices"
+        verbose_name = "Exercise progress"
+        verbose_name_plural = "Exercise progress"
     
     def __str__(self):
         status = "✅" if self.is_completed else "⏳"

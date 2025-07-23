@@ -71,8 +71,8 @@ class ModuleLoader:
         # Ajouter le module "général" en premier
         modules.insert(0, {
             'id': 'general',
-            'name': 'Général',
-            'description': 'Questions générales tous sujets confondus',
+            'name': 'General',
+            'description': 'General questions on all topics',
             'sections_count': 0,
             'files_count': 0
         })
@@ -117,14 +117,14 @@ class ModuleLoader:
         Formate le nom du module pour l'affichage
         """
         name_mapping = {
-            'python': 'Python - Complet',
-            'javascript': 'JavaScript - Complet',
+            'python': 'Python - Complete',
+            'javascript': 'JavaScript - Complete',
             'react': 'React - Framework',
             'django': 'Django - Framework',
             'fastapi': 'FastAPI - Framework',
-            'sql': 'SQL - Bases de données',
-            'docker': 'Docker - Conteneurisation',
-            'git': 'Git - Contrôle de version'
+            'sql': 'SQL - Databases',
+            'docker': 'Docker - Containerization',
+            'git': 'Git - Version Control'
         }
         
         return name_mapping.get(module_key, module_key.replace('_', ' ').title())
@@ -136,18 +136,18 @@ class ModuleLoader:
         sections = list(module_data.keys())
         
         if not sections:
-            return "Module vide"
+            return "Empty module"
         
-        # Prendre les 3 premières sections pour la description
+        # Take first 3 sections for description
         main_sections = []
         for section in sections[:3]:
-            # Nettoyer le nom de section
+            # Clean section name
             clean_name = section.replace('_', ' ').replace(str(section.split('_')[0]) + '_', '').title()
             main_sections.append(clean_name)
         
         description = ", ".join(main_sections)
         if len(sections) > 3:
-            description += f" et {len(sections) - 3} autres sections"
+            description += f" and {len(sections) - 3} other sections"
         
         return description
     
@@ -179,7 +179,7 @@ class ModuleLoader:
         query_lower = query.lower()
         
         for section_key, files in module_data.items():
-            # Recherche dans le nom de section
+            # Search in section name
             if query_lower in section_key.lower():
                 results.append({
                     'type': 'section',
@@ -189,7 +189,7 @@ class ModuleLoader:
                     'relevance': 'high' if query_lower == section_key.lower() else 'medium'
                 })
             
-            # Recherche dans les noms de fichiers
+            # Search in file names
             for file in files:
                 if query_lower in file.lower():
                     results.append({
@@ -200,17 +200,17 @@ class ModuleLoader:
                         'relevance': 'high' if query_lower in file.lower() else 'low'
                     })
         
-        # Trier par pertinence
+        # Sort by relevance
         results.sort(key=lambda x: {'high': 3, 'medium': 2, 'low': 1}[x['relevance']], reverse=True)
         return results
     
     def reload_modules(self):
         """
-        Recharge tous les modules (utile pour le développement)
+        Reload all modules (useful for development)
         """
         self._modules_cache.clear()
         self.module_index_map = self._load_module_index_map()
-        print("🔄 Modules rechargés")
+        print("🔄 Modules reloaded")
 
-# Instance globale
+# Global instance
 module_loader = ModuleLoader()

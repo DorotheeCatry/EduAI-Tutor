@@ -1,135 +1,135 @@
-# 🎓 EduAI Tutor – Tuteur pédagogique intelligent assisté par IA
+# 🎓 EduAI Tutor – AI-Powered Educational Platform
 
-## 🧭 Objectif du projet
+## 🧭 Project Objective
 
-EduAI Tutor est une plateforme web éducative propulsée par une intelligence artificielle multi-agents.  
-Elle permet à tout apprenant de se former efficacement en développement (Python, FastAPI, etc.) grâce à :
+EduAI Tutor is an AI-powered educational web platform with multi-agent intelligence.  
+It allows any learner to efficiently train in development (Python, FastAPI, etc.) through:
 
-- des **cours générés dynamiquement**,
-- des **quiz interactifs** (en solo ou en groupe),
-- une **recherche intelligente** (chatbot pédagogique),
-- une **révision personnalisée** basée sur les erreurs.
+- **dynamically generated courses**,
+- **interactive quizzes** (solo or group),
+- **intelligent search** (educational chatbot),
+- **personalized revision** based on mistakes.
 
-Le tout est développé avec **Django** et intègre des composants IA générative via **LangChain + Mistral**.
-
----
-
-## 🧠 Architecture IA – Multi-agents spécialisés
-
-| Agent IA        | Rôle                      | Fonction principale                                               |
-|------------------|---------------------------|-------------------------------------------------------------------|
-| 🧠 Chercheur      | Retriever                 | Récupère les ressources pédagogiques pertinentes                  |
-| 📖 Pédagogue      | Synthétiseur              | Génère un cours structuré à partir des ressources trouvées        |
-| 🎯 Coach IA       | Générateur d’exercices    | Crée QCM, complétions, bugs à corriger                            |
-| 📊 Surveillant (*)| Analyse & suivi           | Observe les performances, détecte les erreurs, déclenche la révision |
-
-(*) optionnel dans un premier MVP
+Everything is developed with **Django** and integrates generative AI components via **LangChain + Mistral**.
 
 ---
 
-## 🧩 Fonctionnalités – Parcours logique
+## 🧠 AI Architecture – Specialized Multi-agents
 
-### 1. 📖 Génération de cours à la demande
+| AI Agent        | Role                      | Main Function                                               |
+|------------------|---------------------------|-----------------------------------------------------------|
+| 🧠 Researcher      | Retriever                 | Retrieves relevant educational resources                    |
+| 📖 Pedagogue      | Synthesizer              | Generates structured course from found resources            |
+| 🎯 AI Coach       | Exercise Generator       | Creates MCQs, completions, bugs to fix                     |
+| 📊 Watcher (*)| Analysis & tracking       | Observes performance, detects errors, triggers revision    |
 
-- L’utilisateur choisit un thème (ex : décorateurs Python)
-- L’IA génère un cours complet : introduction, explication, exemples, résumé
-- Agents impliqués : **Chercheur + Pédagogue**
-
-### 2. 🔍 Recherche intelligente (chatbot)
-
-- L’utilisateur pose librement des questions (ex : “Différence POST/PUT ?”)
-- L’IA utilise un moteur **RAG** pour chercher et synthétiser la réponse
-- Agents impliqués : **Chercheur + Pédagogue**
-
-### 3. 📝 Quiz & QCM (solo ou multi-joueurs)
-
-- QCM générés dynamiquement à partir du cours ou du thème
-- Mode **solo** pour l'entraînement individuel
-- Mode **multi-joueurs** (type Kahoot!) avec classement en direct
-- Agent impliqué : **Coach IA**
-
-### 4. 📊 Suivi des performances
-
-- Tableau de bord de progression
-- Analyse des erreurs, temps de réponse, score global
-- Agent impliqué : **Surveillant**
-
-### 5. 🔁 Révision intelligente personnalisée
-
-- Génération de cartes de révision (type Anki)
-- Mini-quizz ciblés pour combler les lacunes détectées
-- Agents impliqués : **Surveillant + Coach IA**
+(*) optional in first MVP
 
 ---
 
-## 🏗️ Structure Django prévue
+## 🧩 Features – Logical Journey
+
+### 1. 📖 On-demand course generation
+
+- User chooses a theme (e.g.: Python decorators)
+- AI generates a complete course: introduction, explanation, examples, summary
+- Agents involved: **Researcher + Pedagogue**
+
+### 2. 🔍 Intelligent search (chatbot)
+
+- User freely asks questions (e.g.: "Difference POST/PUT?")
+- AI uses **RAG** engine to search and synthesize the answer
+- Agents involved: **Researcher + Pedagogue**
+
+### 3. 📝 Quiz & MCQ (solo or multiplayer)
+
+- MCQs dynamically generated from course or theme
+- **Solo** mode for individual training
+- **Multiplayer** mode (Kahoot-style!) with live leaderboard
+- Agent involved: **AI Coach**
+
+### 4. 📊 Performance tracking
+
+- Progress dashboard
+- Error analysis, response time, overall score
+- Agent involved: **Watcher**
+
+### 5. 🔁 Personalized intelligent revision
+
+- Revision card generation (Anki-style)
+- Targeted mini-quizzes to fill detected gaps
+- Agents involved: **Watcher + AI Coach**
+
+---
+
+## 🏗️ Expected Django Structure
 
 ```python
 eduai-tutor/
 │
 ├── apps/
-│ ├── core/ # Pages générales, accueil, layout, base.html, etc.
-│ ├── users/ # Gestion des utilisateurs, rôles, profils
-│ ├── courses/ # Génération + affichage des cours (Agent Chercheur + Pédagogue)
-│ ├── quiz/ # QCM, complétion de code, multi-joueur (Agent Coach IA)
-│ ├── revision/ # Révision intelligente, cartes Anki, feedback (Coach + Surveillant)
-│ ├── agents/ # Orchestration IA multi-agents, prompts, logique LangChain
-│ ├── rag/ # Recherche vectorielle, embeddings, gestion documents RAG
-│ ├── chat/ # Chatbot pédagogique (interface + moteur RAG)
-│ ├── tracker/ # Suivi de progression, score, erreurs (Agent Surveillant)
+│ ├── core/ # General pages, home, layout, base.html, etc.
+│ ├── users/ # User management, roles, profiles
+│ ├── courses/ # Course generation + display (Researcher + Pedagogue Agent)
+│ ├── quiz/ # MCQ, code completion, multiplayer (AI Coach Agent)
+│ ├── revision/ # Intelligent revision, Anki cards, feedback (Coach + Watcher)
+│ ├── agents/ # AI multi-agent orchestration, prompts, LangChain logic
+│ ├── rag/ # Vector search, embeddings, RAG document management
+│ ├── chat/ # Educational chatbot (interface + RAG engine)
+│ ├── tracker/ # Progress tracking, score, errors (Watcher Agent)
 │
-├── eduai_project/ # Fichiers de config Django (settings.py, urls.py, wsgi.py)
+├── eduai_project/ # Django config files (settings.py, urls.py, wsgi.py)
 │
-├── db.sqlite3 # Base de données locale (à remplacer par PostgreSQL)
-├── manage.py # Commande de gestion Django
-├── pyproject.toml # Dépendances gérées avec Poetry
+├── db.sqlite3 # Local database (to be replaced by PostgreSQL)
+├── manage.py # Django management command
+├── pyproject.toml # Dependencies managed with Poetry
 ├── poetry.lock
 └── .gitignore
 ```
 
 ---
 
-### 📂 Détail des apps
+### 📂 App Details
 
-| Dossier      | Rôle |
+| Folder      | Role |
 |--------------|------|
-| `core/`      | Pages génériques, layout, accueil |
-| `users/`     | Authentification, rôles (étudiant, formateur), profils |
-| `courses/`   | Génération automatique de cours par IA |
-| `quiz/`      | QCM et exercices générés dynamiquement |
-| `revision/`  | Révision personnalisée (Anki-like, quiz ciblés) |
-| `agents/`    | Appels LLM, prompts, coordination des agents IA |
-| `rag/`       | Recherche documentaire vectorielle (LangChain + FAISS/Chroma) |
-| `chat/`      | Interface du chatbot IA éducatif |
-| `tracker/`   | Suivi de progression et erreurs apprenant |
+| `core/`      | Generic pages, layout, home |
+| `users/`     | Authentication, roles (student, trainer), profiles |
+| `courses/`   | Automatic course generation by AI |
+| `quiz/`      | Dynamically generated MCQs and exercises |
+| `revision/`  | Personalized revision (Anki-like, targeted quizzes) |
+| `agents/`    | LLM calls, prompts, AI agent coordination |
+| `rag/`       | Vector document search (LangChain + FAISS/Chroma) |
+| `chat/`      | Educational AI chatbot interface |
+| `tracker/`   | Progress tracking and learner errors |
 
 ---
 
-## 🧪 Technologies utilisées
+## 🧪 Technologies Used
 
 - **Framework** : Django + Django Rest Framework
-- **Base de données** : PostgreSQL
-- **IA / NLP** : LangChain + Mistral (ou autre LLM open-source)
-- **Recherche vectorielle** : FAISS ou ChromaDB
-- **Frontend** : Django templates (MVP) ou Gradio / React
-- **Déploiement** : Docker (local), Azure ou Railway
+- **Database** : PostgreSQL
+- **AI / NLP** : LangChain + Mistral (or other open-source LLM)
+- **Vector Search** : FAISS or ChromaDB
+- **Frontend** : Django templates (MVP) or Gradio / React
+- **Deployment** : Docker (local), Azure or Railway
 
 ---
 
-## ✅ Objectif MVP
+## ✅ MVP Objective
 
-- [x] Génération de cours à la demande  
-- [x] QCM interactifs (solo & multi-joueur)  
-- [x] Chatbot IA pour questions techniques (RAG)  
-- [x] Révision automatique basée sur les erreurs
+- [x] On-demand course generation  
+- [x] Interactive MCQs (solo & multiplayer)  
+- [x] AI chatbot for technical questions (RAG)  
+- [x] Automatic revision based on errors
 
 ---
 
-## 🧭 Parcours utilisateur type
+## 🧭 Typical User Journey
 
-- Je choisis un thème à apprendre
-- Je consulte un cours généré par l’IA
-- Je pose mes questions à l’IA via le chatbot
-- Je m’entraîne avec des QCM (seul ou à plusieurs)
-- Je consulte mes résultats et erreurs
-- Je révise avec des cartes et quizz ciblés
+- I choose a topic to learn
+- I consult a course generated by AI
+- I ask my questions to AI via the chatbot
+- I train with MCQs (alone or with others)
+- I check my results and errors
+- I revise with targeted cards and quizzes

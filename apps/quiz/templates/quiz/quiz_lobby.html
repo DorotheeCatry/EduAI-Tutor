@@ -9,7 +9,7 @@
         <h1 class="text-xl font-bold text-white">Quiz & MCQ</h1>
     </div>
 
-    <!-- Modes de jeu -->
+    <!-- Game modes -->
     <div class="space-y-6">
         <!-- Solo Mode -->
         <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:border-green-500 transition-colors duration-300">
@@ -20,7 +20,7 @@
                 <h3 class="text-lg font-bold text-white">Solo Mode</h3>
                 <p class="text-sm text-gray-400 leading-relaxed">Train at your own pace with personalized quizzes</p>
                 
-                <!-- Formulaire solo intégré -->
+                <!-- Integrated solo form -->
                 <form action="{% url 'quiz:start' %}" method="get" class="space-y-3 mt-4">
                     <input type="hidden" name="mode" value="solo">
                     <input
@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <!-- Modes multijoueur -->
+        <!-- Multiplayer modes -->
         <div>
             <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-center space-x-2">
                 <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
@@ -75,7 +75,7 @@
         </div>
     </div>
 
-    <!-- Salles actives -->
+    <!-- Active rooms -->
     {% if active_rooms %}
     <div class="bg-gray-800 rounded-lg p-5 border border-gray-700">
         <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
@@ -102,7 +102,7 @@
     </div>
     {% endif %}
 
-    <!-- Statistiques -->
+    <!-- Statistics -->
     <div class="bg-gray-800 rounded-lg p-2 border border-gray-700">
         <div class="flex items-center space-x-3 mb-6">
             <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>

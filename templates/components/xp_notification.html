@@ -1,4 +1,4 @@
-<!-- Notification XP/Level Up -->
+<!-- XP/Level Up Notification -->
 <div id="xp-notification" class="fixed top-4 right-4 z-50 hidden">
     <div class="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-4 rounded-lg shadow-2xl border border-green-400 transform transition-all duration-500 scale-95 opacity-0">
         <div class="flex items-center space-x-3">
@@ -6,14 +6,14 @@
                 <i data-lucide="zap" class="w-6 h-6 text-yellow-300"></i>
             </div>
             <div>
-                <div class="font-bold text-lg" id="xp-title">+15 XP Gagné !</div>
-                <div class="text-sm opacity-90" id="xp-description">Génération de cours</div>
+                <div class="font-bold text-lg" id="xp-title">+15 XP Earned!</div>
+                <div class="text-sm opacity-90" id="xp-description">Course generation</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Notification Level Up -->
+<!-- Level Up Notification -->
 <div id="levelup-notification" class="fixed top-4 right-4 z-50 hidden">
     <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-4 rounded-lg shadow-2xl border border-yellow-300 transform transition-all duration-500 scale-95 opacity-0">
         <div class="flex items-center space-x-3">
@@ -21,8 +21,8 @@
                 <i data-lucide="crown" class="w-8 h-8 text-yellow-200"></i>
             </div>
             <div>
-                <div class="font-bold text-xl" id="levelup-title">Niveau Supérieur !</div>
-                <div class="text-sm opacity-90" id="levelup-description">Vous êtes maintenant niveau 3</div>
+                <div class="font-bold text-xl" id="levelup-title">Level Up!</div>
+                <div class="text-sm opacity-90" id="levelup-description">You are now level 3</div>
             </div>
         </div>
     </div>
@@ -31,13 +31,13 @@
 <script>
 function showXPNotification(xpGained, activityType, levelUp = false, newLevel = null) {
     if (levelUp && newLevel) {
-        // Notification de montée de niveau
+        // Level up notification
         const notification = document.getElementById('levelup-notification');
         const title = document.getElementById('levelup-title');
         const description = document.getElementById('levelup-description');
         
-        title.textContent = `Niveau ${newLevel} Atteint !`;
-        description.textContent = `Félicitations ! Vous progressez bien.`;
+        title.textContent = `Level ${newLevel} Reached!`;
+        description.textContent = `Congratulations! You're progressing well.`;
         
         notification.classList.remove('hidden');
         const content = notification.querySelector('div');
@@ -54,22 +54,22 @@ function showXPNotification(xpGained, activityType, levelUp = false, newLevel = 
         }, 4000);
         
     } else {
-        // Notification XP normale
+        // Normal XP notification
         const notification = document.getElementById('xp-notification');
         const title = document.getElementById('xp-title');
         const description = document.getElementById('xp-description');
         
-        title.textContent = `+${xpGained} XP Gagné !`;
+        title.textContent = `+${xpGained} XP Earned!`;
         
         const activityNames = {
-            'course_generation': 'Génération de cours',
-            'course_save': 'Cours sauvegardé',
-            'quiz_completion': 'Quiz terminé',
-            'chat_interaction': 'Recherche IA',
-            'general': 'Activité générale'
+            'course_generation': 'Course generation',
+            'course_save': 'Course saved',
+            'quiz_completion': 'Quiz completed',
+            'chat_interaction': 'AI search',
+            'general': 'General activity'
         };
         
-        description.textContent = activityNames[activityType] || 'Activité';
+        description.textContent = activityNames[activityType] || 'Activity';
         
         notification.classList.remove('hidden');
         const content = notification.querySelector('div');
@@ -87,6 +87,6 @@ function showXPNotification(xpGained, activityType, levelUp = false, newLevel = 
     }
 }
 
-// Fonction globale pour déclencher les notifications
+// Global function to trigger notifications
 window.showXPGain = showXPNotification;
 </script>

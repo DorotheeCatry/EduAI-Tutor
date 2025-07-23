@@ -1,4 +1,4 @@
-Tu es un expert en programmation. Réponds de manière détaillée et pédagogique à la question suivante :
+You are a programming expert. Answer in detail and pedagogically to the following question:
 {question}
 
-Fournis une réponse complète avec des explications claires et des exemples si pertinent.
+Provide a complete answer with clear explanations and examples if relevant.

@@ -159,49 +159,49 @@ class KodaUser(AbstractUser):
     
     @property
     def level_title(self):
-        """Titre basé sur le niveau"""
+        """Title based on level"""
         level = self.level
         if level == 1:
-            return "Débutant"
+            return "Beginner"
         elif level <= 3:
-            return "Apprenti"
+            return "Apprentice"
         elif level <= 5:
-            return "Étudiant"
+            return "Student"
         elif level <= 8:
-            return "Développeur"
+            return "Developer"
         elif level <= 12:
             return "Expert"
         elif level <= 20:
-            return "Maître"
+            return "Master"
         elif level <= 30:
             return "Sage"
         else:
-            return "Légende"
+            return "Legend"
     
     def add_xp(self, amount, activity_type="general"):
-        """Ajoute de l'XP et met à jour les statistiques"""
+        """Add XP and update statistics"""
         from datetime import date
         
         old_level = self.level
         self.xp += amount
         new_level = self.level
         
-        # Mettre à jour la date de dernière activité et le streak
+        # Update last activity date and streak
         today = date.today()
         if self.last_activity_date:
             if self.last_activity_date == today:
-                pass  # Même jour, pas de changement de streak
+                pass  # Same day, no streak change
             elif (today - self.last_activity_date).days == 1:
-                self.current_streak += 1  # Jour consécutif
+                self.current_streak += 1  # Consecutive day
             else:
-                self.current_streak = 1  # Reset du streak
+                self.current_streak = 1  # Reset streak
         else:
             self.current_streak = 1
         
         self.last_activity_date = today
         self.save()
         
-        # Retourner les informations sur le gain de niveau
+        # Return level up information
         return {
             'xp_gained': amount,
             'total_xp': self.xp,

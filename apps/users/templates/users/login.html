@@ -53,10 +53,10 @@
                 
                 <h2 class="text-3xl font-bold text-white mb-2">Bon retour !</h2>
                 <p class="text-gray-400 mb-6">
-                    Continuez votre apprentissage en quelques secondes. 
-                    Pas encore de compte ? 
+                    Continue your learning in seconds. 
+                    Don't have an account yet? 
                     <a href="{% url 'users:register' %}" class="text-primary-blue hover:text-blue-400 transition-colors">
-                        Inscrivez-vous
+                        Sign up
                     </a>
                 </p>
             </div>
@@ -68,7 +68,7 @@
                     <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4">
                         <div class="flex items-center space-x-2">
                             <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                            <span class="text-red-400 text-sm">Erreur de connexion</span>
+                            <span class="text-red-400 text-sm">Login error</span>
                         </div>
                         {% for field, errors in form.errors.items %}
                             {% for error in errors %}

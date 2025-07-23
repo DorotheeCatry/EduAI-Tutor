@@ -23,17 +23,17 @@
                 
                 <div class="flex items-center space-x-2">
                     {% if exercise.difficulty == 'beginner' %}
-                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">Débutant</span>
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">Beginner</span>
                     {% elif exercise.difficulty == 'intermediate' %}
-                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">Intermédiaire</span>
+                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">Intermediate</span>
                     {% else %}
-                        <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium">Avancé</span>
+                        <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium">Advanced</span>
                     {% endif %}
                     
                     {% if progress.is_completed %}
                         <span class="px-3 py-1 bg-primary-green/20 text-primary-green rounded-full text-sm font-medium flex items-center space-x-1">
                             <i data-lucide="check" class="w-3 h-3"></i>
-                            <span>Complété</span>
+                            <span>Completed</span>
                         </span>
                     {% endif %}
                 </div>
@@ -46,7 +46,7 @@
                 </span>
                 <span class="flex items-center space-x-1">
                     <i data-lucide="clock" class="w-4 h-4"></i>
-                    <span>{{ progress.attempts_count }} tentative{{ progress.attempts_count|pluralize }}</span>
+                    <span>{{ progress.attempts_count }} attempt{{ progress.attempts_count|pluralize }}</span>
                 </span>
             </div>
         </div>
@@ -54,13 +54,13 @@
         <!-- Description -->
         <div class="flex-1 overflow-y-auto p-6">
             <div class="prose prose-invert max-w-none">
-                <h3 class="text-lg font-bold text-white mb-4">📋 Énoncé</h3>
+                <h3 class="text-lg font-bold text-white mb-4">📋 Statement</h3>
                 <div class="text-gray-300 leading-relaxed mb-6">
                     {{ exercise.description|linebreaks }}
                 </div>
                 
-                <!-- Tests à passer -->
-                <h3 class="text-lg font-bold text-white mb-4">🧪 Tests à passer</h3>
+                <!-- Tests to pass -->
+                <h3 class="text-lg font-bold text-white mb-4">🧪 Tests to pass</h3>
                 <div class="space-y-3" id="tests-display">
                     {% for test in exercise.tests %}
                         <div class="bg-gray-900 rounded-lg p-4 border border-gray-600 test-case" data-test-index="{{ forloop.counter0 }}">
@@ -71,30 +71,30 @@
                                     </div>
                                     <div>
                                         <code class="text-primary-blue text-sm">{{ test.input }}</code>
-                                        <div class="text-xs text-gray-500 mt-1">Attendu: <code class="text-primary-green">{{ test.expected }}</code></div>
+                                        <div class="text-xs text-gray-500 mt-1">Expected: <code class="text-primary-green">{{ test.expected }}</code></div>
                                     </div>
                                 </div>
                                 <div class="test-result hidden">
-                                    <div class="text-xs text-gray-400">Obtenu: <code class="test-actual"></code></div>
+                                    <div class="text-xs text-gray-400">Got: <code class="test-actual"></code></div>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
                 
-                <!-- Soumissions récentes -->
+                <!-- Recent submissions -->
                 {% if recent_submissions %}
-                    <h3 class="text-lg font-bold text-white mb-4 mt-8">📊 Tentatives récentes</h3>
+                    <h3 class="text-lg font-bold text-white mb-4 mt-8">📊 Recent attempts</h3>
                     <div class="space-y-2">
                         {% for submission in recent_submissions %}
                             <div class="bg-gray-900 rounded-lg p-3 border border-gray-600 flex items-center justify-between">
                                 <div class="flex items-center space-x-3">
                                     {% if submission.status == 'success' %}
                                         <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
-                                        <span class="text-green-400 text-sm">Réussi</span>
+                                        <span class="text-green-400 text-sm">Success</span>
                                     {% else %}
                                         <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
-                                        <span class="text-red-400 text-sm">Échoué</span>
+                                        <span class="text-red-400 text-sm">Failed</span>
                                     {% endif %}
                                     <span class="text-gray-400 text-sm">{{ submission.passed_tests_count }}/{{ submission.total_tests_count }} tests</span>
                                 </div>
@@ -107,15 +107,15 @@
         </div>
     </div>
     
-    <!-- Panneau de droite - Éditeur de code -->
+    <!-- Right panel - Code editor -->
     <div class="w-1/2 bg-gray-900 flex flex-col">
-        <!-- Header éditeur -->
+        <!-- Editor header -->
         <div class="p-6 border-b border-gray-700 flex items-center justify-between flex-shrink-0 bg-gray-800">
             <div class="flex items-center space-x-3">
                 <i data-lucide="code" class="w-5 h-5 text-primary-green"></i>
                 <div>
-                    <span class="text-white font-semibold">Éditeur Python</span>
-                    <div class="text-xs text-gray-400">Écrivez votre solution ici</div>
+                    <span class="text-white font-semibold">Python Editor</span>
+                    <div class="text-xs text-gray-400">Write your solution here</div>
                 </div>
             </div>
             
@@ -127,30 +127,30 @@
                 
                 <button id="run-code" class="px-6 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2 font-medium shadow-lg">
                     <i data-lucide="play" class="w-4 h-4"></i>
-                    <span>Tester le code</span>
+                    <span>Test Code</span>
                 </button>
             </div>
         </div>
         
-        <!-- Éditeur Monaco -->
+        <!-- Monaco Editor -->
         <div class="flex-1 relative bg-[#1e1e1e] min-h-0">
-            <!-- Container pour Monaco avec fallback immédiat -->
+            <!-- Monaco container with immediate fallback -->
             <div id="editor-container" class="w-full h-full relative">
-                <!-- Fallback textarea toujours présent -->
+                <!-- Always present fallback textarea -->
                 <textarea 
                     id="code-editor" 
                     class="w-full h-full bg-[#1e1e1e] text-white font-mono text-sm p-4 border-none outline-none resize-none"
                     style="font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace; line-height: 1.6; tab-size: 4;"
-                    placeholder="Écrivez votre code Python ici..."
+                    placeholder="Write your Python code here..."
                     spellcheck="false"
                 >{{ exercise.starter_code }}</textarea>
                 
-                <!-- Monaco container (sera créé par JS si disponible) -->
+                <!-- Monaco container (will be created by JS if available) -->
                 <div id="monaco-editor" class="absolute inset-0 hidden"></div>
             </div>
         </div>
         
-        <!-- Résultats -->
+        <!-- Results -->
         <div id="results-panel" class="border-t border-gray-700 bg-gray-800 hidden">
             <div class="p-4">
                 <div id="results-content"></div>
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
         editor.focus();
 
         resetBtn.addEventListener('click', function () {
-            if (confirm('Êtes-vous sûr de vouloir réinitialiser le code ?')) {
+            if (confirm('Are you sure you want to reset the code?')) {
                 editor.setValue(starterCode);
                 editor.focus();
             }
@@ -197,12 +197,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         runBtn.addEventListener('click', async function () {
             const code = editor.getValue().trim();
-            if (!code) return alert("Veuillez écrire du code avant de tester.");
+            if (!code) return alert("Please write code before testing.");
 
             textArea.value = code;
             const original = runBtn.innerHTML;
             runBtn.disabled = true;
-            runBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i>Exécution...';
+            runBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i>Running...';
             lucide.createIcons();
 
             try {
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (!badgeExist) {
                             const badge = document.createElement('span');
                             badge.className = "px-3 py-1 bg-primary-green/20 text-primary-green rounded-full text-sm font-medium flex items-center space-x-1";
-                            badge.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i><span>Complété</span>`;
+                            badge.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i><span>Completed</span>`;
                             badgeContainer.appendChild(badge);
                             lucide.createIcons();
                         }
@@ -240,10 +240,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             attempt.innerHTML = `
                                 <div class="flex items-center space-x-3">
                                     <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
-                                    <span class="text-green-400 text-sm">Réussi</span>
+                                    <span class="text-green-400 text-sm">Success</span>
                                     <span class="text-gray-400 text-sm">${data.test_results.length}/${data.test_results.length} tests</span>
                                 </div>
-                                <span class="text-gray-500 text-xs">à l’instant</span>
+                                <span class="text-gray-500 text-xs">just now</span>
                             `;
                             historySection.prepend(attempt);
                             lucide.createIcons();
@@ -263,11 +263,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         }, 1000);
                     }
                 } else {
-                    showResults('error', data.error || 'Erreur inconnue.');
+                    showResults('error', data.error || 'Unknown error.');
                 }
             } catch (err) {
                 console.error(err);
-                showResults('error', 'Erreur de connexion. Veuillez réessayer.');
+                showResults('error', 'Connection error. Please try again.');
             } finally {
                 runBtn.disabled = false;
                 runBtn.innerHTML = original;
@@ -358,18 +358,18 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="flex items-center space-x-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                         <i data-lucide="trophy" class="w-6 h-6 text-yellow-400"></i>
                         <div>
-                            <div class="text-green-400 font-bold text-lg">🎉 Exercice réussi !</div>
-                            <div class="text-green-300 text-sm">Tous les tests sont passés (${data.passed_tests}/${data.total_tests})</div>
+                            <div class="text-green-400 font-bold text-lg">🎉 Exercise completed!</div>
+                            <div class="text-green-300 text-sm">All tests passed (${data.passed_tests}/${data.total_tests})</div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
                             <div class="text-yellow-400 font-bold text-xl">+${xp}</div>
-                            <div class="text-yellow-300 text-xs">Points XP</div>
+                            <div class="text-yellow-300 text-xs">XP Points</div>
                         </div>
                         <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-center">
                             <div class="text-blue-400 font-bold text-xl">${time}ms</div>
-                            <div class="text-blue-300 text-xs">Temps d'exécution</div>
+                            <div class="text-blue-300 text-xs">Execution time</div>
                         </div>
                     </div>
                 </div>
@@ -380,12 +380,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="flex items-center space-x-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
                         <i data-lucide="x-circle" class="w-5 h-5 text-red-400"></i>
                         <div>
-                            <div class="text-red-400 font-bold">Tests échoués</div>
-                            <div class="text-red-300 text-sm">${data.passed_tests}/${data.total_tests} tests réussis</div>
+                            <div class="text-red-400 font-bold">Tests failed</div>
+                            <div class="text-red-300 text-sm">${data.passed_tests}/${data.total_tests} tests passed</div>
                         </div>
                     </div>
                     <div class="p-3 bg-gray-800 rounded-lg">
-                        <div class="text-gray-300 text-sm">💡 <strong>Conseil :</strong> Vérifiez votre code et réessayez !</div>
+                        <div class="text-gray-300 text-sm">💡 <strong>Tip:</strong> Check your code and try again!</div>
                     </div>
                 </div>
             `;
@@ -410,7 +410,6 @@ document.addEventListener('DOMContentLoaded', function () {
     border-radius: 0 !important;
 }
 
-    function showResults(status, data) {
 #code-editor {
     font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace !important;
     font-size: 14px !important;

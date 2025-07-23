@@ -6,18 +6,18 @@
 <div class="p-6 space-y-6 h-full overflow-y-auto">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="trending-up" class="w-6 h-6 text-primary-blue"></i>
-        <h1 class="text-xl font-bold text-white">Ma Progression - Exercices Python</h1>
+        <h1 class="text-xl font-bold text-white">My Progress - Python Exercises</h1>
     </div>
 
-    <!-- Statistiques générales -->
+    <!-- General statistics -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Exercices complétés</h3>
+                <h3 class="text-sm font-medium text-gray-400">Completed exercises</h3>
                 <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
             </div>
             <div class="text-2xl font-bold text-green-500 mb-2">{{ completed_exercises }}</div>
-            <div class="text-xs text-gray-500">sur {{ total_exercises }} disponibles</div>
+            <div class="text-xs text-gray-500">out of {{ total_exercises }} available</div>
             <div class="w-full bg-gray-700 rounded-full h-2 mt-3">
                 <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ completion_percentage }}%"></div>
             </div>
@@ -25,39 +25,39 @@
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Taux de réussite</h3>
+                <h3 class="text-sm font-medium text-gray-400">Success rate</h3>
                 <i data-lucide="target" class="w-5 h-5 text-blue-500"></i>
             </div>
             <div class="text-2xl font-bold text-blue-500 mb-2">
                 {% if completed_exercises > 0 %}{{ completion_percentage }}%{% else %}0%{% endif %}
             </div>
-            <div class="text-xs text-gray-500">Premier essai</div>
+            <div class="text-xs text-gray-500">First try</div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Série actuelle</h3>
+                <h3 class="text-sm font-medium text-gray-400">Current streak</h3>
                 <i data-lucide="flame" class="w-5 h-5 text-orange-500"></i>
             </div>
             <div class="text-2xl font-bold text-orange-500 mb-2">{{ user.current_streak }}</div>
-            <div class="text-xs text-gray-500">jours consécutifs</div>
+            <div class="text-xs text-gray-500">consecutive days</div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">XP gagné</h3>
+                <h3 class="text-sm font-medium text-gray-400">XP earned</h3>
                 <i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i>
             </div>
             <div class="text-2xl font-bold text-yellow-500 mb-2">{{ user.xp }}</div>
-            <div class="text-xs text-gray-500">points d'expérience</div>
+            <div class="text-xs text-gray-500">experience points</div>
         </div>
     </div>
 
-    <!-- Progression par difficulté -->
+    <!-- Progress by difficulty -->
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
         <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-primary-green"></i>
-            <span>Progression par difficulté</span>
+            <span>Progress by difficulty</span>
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -79,19 +79,19 @@
                             {% else %}bg-red-500{% endif %}" 
                             style="width: {{ stats.percentage }}%"></div>
                     </div>
-                    <div class="text-xs text-gray-400">{{ stats.percentage }}% complété</div>
+                    <div class="text-xs text-gray-400">{{ stats.percentage }}% completed</div>
                 </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Activité récente -->
+    <!-- Recent activity -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Exercices récents -->
+        <!-- Recent exercises -->
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
                 <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i>
-                <span>Exercices récents</span>
+                <span>Recent exercises</span>
             </h3>
             
             <div class="space-y-3">
@@ -105,7 +105,7 @@
                             {% endif %}
                             <div>
                                 <div class="text-sm font-medium text-white">{{ progress.exercise.title }}</div>
-                                <div class="text-xs text-gray-400">{{ progress.attempts_count }} tentative{{ progress.attempts_count|pluralize }}</div>
+                                <div class="text-xs text-gray-400">{{ progress.attempts_count }} attempt{{ progress.attempts_count|pluralize }}</div>
                             </div>
                         </div>
                         <div class="text-xs text-gray-500">{{ progress.first_attempt_at|timesince }}</div>
@@ -113,20 +113,20 @@
                 {% empty %}
                     <div class="text-center py-8 text-gray-400">
                         <i data-lucide="code" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
-                        <p>Aucun exercice commencé</p>
+                        <p>No exercises started</p>
                         <a href="{% url 'exercises:list' %}" class="text-primary-blue hover:text-blue-400 text-sm">
-                            Commencer maintenant
+                            Start now
                         </a>
                     </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Soumissions récentes -->
+        <!-- Recent submissions -->
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
                 <i data-lucide="send" class="w-5 h-5 text-purple-500"></i>
-                <span>Soumissions récentes</span>
+                <span>Recent submissions</span>
             </h3>
             
             <div class="space-y-3">
@@ -141,7 +141,7 @@
                             <div>
                                 <div class="text-sm font-medium text-white">{{ submission.exercise.title }}</div>
                                 <div class="text-xs text-gray-400">
-                                    {{ submission.passed_tests_count }}/{{ submission.total_tests_count }} tests réussis
+                                    {{ submission.passed_tests_count }}/{{ submission.total_tests_count }} tests passed
                                 </div>
                             </div>
                         </div>
@@ -150,23 +150,23 @@
                 {% empty %}
                     <div class="text-center py-8 text-gray-400">
                         <i data-lucide="send" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
-                        <p>Aucune soumission</p>
+                        <p>No submissions</p>
                     </div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- Actions rapides -->
+    <!-- Quick actions -->
     <div class="flex justify-center space-x-4">
         <a href="{% url 'exercises:list' %}" class="px-6 py-3 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
             <i data-lucide="code" class="w-5 h-5"></i>
-            <span>Continuer les exercices</span>
+            <span>Continue exercises</span>
         </a>
         
         <a href="{% url 'courses:generator' %}" class="px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
             <i data-lucide="book-open" class="w-5 h-5"></i>
-            <span>Générer un cours</span>
+            <span>Generate a course</span>
         </a>
     </div>
 </div>

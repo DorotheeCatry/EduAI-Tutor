@@ -17,7 +17,7 @@ def test_template(request):
 
 @login_required
 def course_generator(request):
-    """Vue principale pour la génération de cours"""
+    """Main view for course generation"""
     
     print(f"DEBUG: course_generator called, method: {request.method}")
     print(f"DEBUG: user authenticated: {request.user.is_authenticated}")
@@ -27,14 +27,14 @@ def course_generator(request):
         module = request.POST.get('module', '')
         
         if not topic:
-            messages.error(request, 'Veuillez saisir un sujet pour générer le cours.')
+            messages.error(request, 'Please enter a topic to generate the course.')
             context = {'modules': module_loader.get_available_modules()}
             return render(request, 'courses/generate.html', context)
         
-        # Utiliser l'orchestrateur IA pour générer le cours
+        # Use AI orchestrator to generate the course
         orchestrator = get_orchestrator(request.user)
         
-        # Passer le contexte du module à l'orchestrateur
+        # Pass module context to orchestrator
         if module and module != 'general':
             module_info = next((m for m in module_loader.get_available_modules() if m['id'] == module), None)
             if module_info:
@@ -43,15 +43,15 @@ def course_generator(request):
         result = orchestrator.generate_course(topic)
         
         if result['success']:
-            # Ajouter de l'XP pour la génération de cours
+            # Add XP for course generation
             xp_result = request.user.add_xp(15, 'course_generation')
             
-            # Traitement direct du markdown
+            # Direct markdown processing
             content = result['content']
             
-            # Extraire le titre du markdown
+            # Extract title from markdown
             title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
-            course_title = title_match.group(1) if title_match else f"Cours sur {topic}"
+            course_title = title_match.group(1) if title_match else f"Course on {topic}"
             
             context = {
                 'course': {
@@ -68,7 +68,7 @@ def course_generator(request):
             }
         else:
             context = {
-                'error': result.get('error', 'Erreur lors de la génération du cours'),
+                'error': result.get('error', 'Error during course generation'),
                 'topic': topic,
                 'modules': module_loader.get_available_modules(),
                 'is_saved_course': False
@@ -76,7 +76,7 @@ def course_generator(request):
             
         return render(request, 'courses/course_detail.html', context)
     
-    # GET request - afficher le formulaire
+    # GET request - show form
     context = {
         'modules': module_loader.get_available_modules()
     }
@@ -86,16 +86,16 @@ def course_generator(request):
 
 @login_required
 def save_course(request):
-    """Sauvegarde un cours généré"""
+    """Save a generated course"""
     if request.method == 'POST':
         try:
-            # Récupérer les données du formulaire
-            title = request.POST.get('title', 'Cours sans titre')
+            # Get form data
+            title = request.POST.get('title', 'Untitled Course')
             topic = request.POST.get('topic', '')
             module = request.POST.get('module', 'general')
             content = request.POST.get('content', '')
             
-            # Créer le cours en base
+            # Create course in database
             course = Course.objects.create(
                 title=title,
                 topic=topic,
@@ -105,17 +105,17 @@ def save_course(request):
                 created_by=request.user
             )
             
-            # Ajouter de l'XP pour sauvegarder un cours
+            # Add XP for saving a course
             xp_result = request.user.add_xp(10, 'course_save')
             request.user.total_courses_completed += 1
             request.user.save()
             
-            messages.success(request, f'✨ Cours "{course.title}" sauvegardé avec succès !')
+            messages.success(request, f'✨ Course "{course.title}" saved successfully!')
             return redirect('courses:detail', course_id=course.id)
             
         except Exception as save_error:
-            print(f"❌ Erreur lors de la sauvegarde : {save_error}")
-            messages.error(request, f'❌ Erreur lors de la sauvegarde : {save_error}')
+            print(f"❌ Save error: {save_error}")
+            messages.error(request, f'❌ Save error: {save_error}')
             return redirect('courses:generator')
     
     return redirect('courses:generator')
@@ -124,12 +124,12 @@ def save_course(request):
 
 @login_required
 def course_detail(request, course_id):
-    """Affiche un cours sauvegardé"""
+    """Display a saved course"""
     try:
         course = get_object_or_404(Course, id=course_id, created_by=request.user)
         course.increment_view_count()
         
-        # Extraire le titre du markdown si pas de titre explicite
+        # Extract title from markdown if no explicit title
         content = course.content
         title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
         course_title = title_match.group(1) if title_match else course.title
@@ -146,23 +146,23 @@ def course_detail(request, course_id):
             'is_saved_course': True  # Flag pour identifier un cours sauvegardé
         }
     except Course.DoesNotExist:
-        messages.error(request, '❌ Cours non trouvé.')
+        messages.error(request, '❌ Course not found.')
         return redirect('courses:generator')
     
     return render(request, 'courses/course_detail.html', context)
 
 @require_http_methods(["GET"])
 def get_modules_api(request):
-    """API pour récupérer la liste des modules disponibles"""
+    """API to get list of available modules"""
     modules = module_loader.get_available_modules()
     return JsonResponse({'modules': modules})
 
 @require_http_methods(["GET"])
 def get_sections_api(request, module_id):
-    """API pour récupérer les sections d'un module"""
+    """API to get sections of a module"""
     sections = module_loader.get_module_sections(module_id)
     
-    # Formater les sections pour l'API
+    # Format sections for API
     formatted_sections = []
     for section_key, files in sections.items():
         formatted_sections.append({
@@ -179,7 +179,7 @@ def get_sections_api(request, module_id):
 
 @login_required
 def my_courses(request):
-    """Liste des cours sauvegardés de l'utilisateur"""
+    """List of user's saved courses"""
     courses = Course.objects.filter(created_by=request.user).order_by('-created_at')
     
     context = {
@@ -189,16 +189,16 @@ def my_courses(request):
 
 @login_required
 def delete_course(request, course_id):
-    """Supprime un cours sauvegardé"""
+    """Delete a saved course"""
     if request.method == 'POST':
         try:
             course = get_object_or_404(Course, id=course_id, created_by=request.user)
             course_title = course.title
             course.delete()
-            messages.success(request, f'🗑️ Cours "{course_title}" supprimé avec succès !')
+            messages.success(request, f'🗑️ Course "{course_title}" deleted successfully!')
         except Course.DoesNotExist:
-            messages.error(request, '❌ Cours non trouvé.')
+            messages.error(request, '❌ Course not found.')
         except Exception as delete_error:
-            messages.error(request, f'❌ Erreur lors de la suppression : {delete_error}')
+            messages.error(request, f'❌ Delete error: {delete_error}')
     
     return redirect('courses:my_courses')
