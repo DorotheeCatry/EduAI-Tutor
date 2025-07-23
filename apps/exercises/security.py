@@ -62,6 +62,12 @@ class SecurePythonExecutor:
             'round': round, 'min': min, 'max': max
         }
         
+        # Ajouter functools.wraps directement
+        import functools
+        functools_functions = {
+            'wraps': functools.wraps,
+        }
+        
         # Ajouter les modules sécurisés nécessaires
         safe_modules = {
             'time': time,
@@ -71,11 +77,13 @@ class SecurePythonExecutor:
         safe_globals = {
             '__builtins__': restricted_builtins,
             **math_functions,
+            **functools_functions,
             **safe_modules
         }
         
-        print(f"🔧 Builtins disponibles: {list(restricted_builtins.keys())}")
+        print(f"🔧 Builtins disponibles: {sorted(restricted_builtins.keys())}")
         print(f"🔧 Modules disponibles: {list(safe_modules.keys())}")
+        print(f"🔧 Fonctions disponibles: {list(functools_functions.keys())}")
         return safe_globals
     
     def _validate_code(self, code):
