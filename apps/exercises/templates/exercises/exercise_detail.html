@@ -61,13 +61,22 @@
                 
                 <!-- Tests à passer -->
                 <h3 class="text-lg font-bold text-white mb-4">🧪 Tests à passer</h3>
-                <div class="space-y-3">
+                <div class="space-y-3" id="tests-display">
                     {% for test in exercise.tests %}
-                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-600">
+                        <div class="bg-gray-900 rounded-lg p-4 border border-gray-600 test-case" data-test-index="{{ forloop.counter0 }}">
                             <div class="flex items-center justify-between">
-                                <code class="text-primary-blue text-sm">{{ test.input }}</code>
-                                <span class="text-gray-400">→</span>
-                                <code class="text-primary-green text-sm">{{ test.expected }}</code>
+                                <div class="flex items-center space-x-3">
+                                    <div class="test-status w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center">
+                                        <span class="text-xs font-bold text-gray-400">{{ forloop.counter }}</span>
+                                    </div>
+                                    <div>
+                                        <code class="text-primary-blue text-sm">{{ test.input }}</code>
+                                        <div class="text-xs text-gray-500 mt-1">Attendu: <code class="text-primary-green">{{ test.expected }}</code></div>
+                                    </div>
+                                </div>
+                                <div class="test-result hidden">
+                                    <div class="text-xs text-gray-400">Obtenu: <code class="test-actual"></code></div>
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
@@ -101,19 +110,22 @@
     <!-- Panneau de droite - Éditeur de code -->
     <div class="w-1/2 bg-gray-900 flex flex-col">
         <!-- Header éditeur -->
-        <div class="p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
+        <div class="p-6 border-b border-gray-700 flex items-center justify-between flex-shrink-0 bg-gray-800">
             <div class="flex items-center space-x-3">
                 <i data-lucide="code" class="w-5 h-5 text-primary-green"></i>
-                <span class="text-white font-medium">Éditeur Python</span>
+                <div>
+                    <span class="text-white font-semibold">Éditeur Python</span>
+                    <div class="text-xs text-gray-400">Écrivez votre solution ici</div>
+                </div>
             </div>
             
             <div class="flex items-center space-x-3">
-                <button id="reset-code" class="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors">
-                    <i data-lucide="rotate-ccw" class="w-4 h-4 mr-1"></i>
-                    Reset
+                <button id="reset-code" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    <span>Reset</span>
                 </button>
                 
-                <button id="run-code" class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                <button id="run-code" class="px-6 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2 font-medium shadow-lg">
                     <i data-lucide="play" class="w-4 h-4"></i>
                     <span>Tester le code</span>
                 </button>
@@ -121,7 +133,7 @@
         </div>
         
         <!-- Éditeur Monaco -->
-        <div class="flex-1 relative">
+        <div class="flex-1 relative bg-[#1e1e1e]">
             <div id="monaco-editor" class="w-full h-full" style="min-height: 400px;"></div>
         </div>
         
@@ -148,18 +160,44 @@ document.addEventListener('DOMContentLoaded', function() {
             value: starterCode,
             language: 'python',
             theme: 'vs-dark',
-            fontSize: 14,
-            minimap: { enabled: false },
+            fontSize: 15,
+            fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace",
+            fontLigatures: true,
+            minimap: { enabled: true, scale: 0.8 },
             scrollBeyondLastLine: false,
             automaticLayout: true,
             tabSize: 4,
             insertSpaces: true,
             wordWrap: 'on',
             lineNumbers: 'on',
-            glyphMargin: false,
-            folding: false,
-            lineDecorationsWidth: 0,
-            lineNumbersMinChars: 3
+            glyphMargin: true,
+            folding: true,
+            lineDecorationsWidth: 15,
+            lineNumbersMinChars: 3,
+            renderLineHighlight: 'all',
+            cursorBlinking: 'smooth',
+            smoothScrolling: true,
+            padding: { top: 25, bottom: 25 },
+            bracketPairColorization: { enabled: true },
+            guides: {
+                bracketPairs: true,
+                indentation: true
+            },
+            suggest: {
+                showKeywords: true,
+                showSnippets: true,
+                showFunctions: true
+            },
+            quickSuggestions: {
+                other: true,
+                comments: false,
+                strings: false
+            },
+            parameterHints: { enabled: true },
+            hover: { enabled: true },
+            contextmenu: true,
+            mouseWheelZoom: true,
+            rulers: [80, 120]
         });
         
         // Forcer le redimensionnement après initialisation
@@ -208,7 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             if (response.ok) {
+                updateTestResults(data);
                 showResults(data.success ? 'success' : 'failed', data);
+                updateTestsDisplay(data.test_results);
                 
                 // Afficher notification XP si réussi
                 if (data.success && data.xp_result) {
@@ -234,6 +274,84 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    function updateTestsDisplay(testResults) {
+        if (!testResults) return;
+        
+        testResults.forEach((result, index) => {
+            const testCase = document.querySelector(`[data-test-index="${index}"]`);
+            if (!testCase) return;
+            
+            const statusEl = testCase.querySelector('.test-status');
+            const resultEl = testCase.querySelector('.test-result');
+            const actualEl = testCase.querySelector('.test-actual');
+            const errorEl = testCase.querySelector('.test-error');
+            const errorMessageEl = testCase.querySelector('.test-error-message');
+            
+            // Mettre à jour le statut
+            if (result.passed) {
+                statusEl.className = 'test-status w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 transition-all duration-300';
+                statusEl.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-white"></i>';
+                testCase.className = 'bg-gray-900 rounded-xl p-5 border border-green-500/50 test-case transition-all duration-300 shadow-lg shadow-green-500/10';
+            } else {
+                statusEl.className = 'test-status w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 transition-all duration-300';
+                statusEl.innerHTML = '<i data-lucide="x" class="w-4 h-4 text-white"></i>';
+                testCase.className = 'bg-gray-900 rounded-xl p-5 border border-red-500/50 test-case transition-all duration-300 shadow-lg shadow-red-500/10';
+            }
+            
+            // Afficher le résultat obtenu
+            if (result.actual !== undefined) {
+                resultEl.classList.remove('hidden');
+                actualEl.textContent = result.actual;
+                actualEl.className = `test-actual text-sm bg-gray-800 px-2 py-1 rounded ${result.passed ? 'text-green-400' : 'text-red-400'}`;
+            }
+            
+            // Afficher l'erreur si présente
+            if (result.error) {
+                errorEl.classList.remove('hidden');
+                errorMessageEl.textContent = result.error;
+            } else {
+                errorEl.classList.add('hidden');
+            }
+        });
+        
+        lucide.createIcons();
+    }
+    
+    function updateTestResults(data) {
+        if (!data.test_results) return;
+        
+        data.test_results.forEach((testResult, index) => {
+            const testCase = document.querySelector(`[data-test-index="${index}"]`);
+            if (!testCase) return;
+            
+            const statusIcon = testCase.querySelector('.test-status');
+            const resultDiv = testCase.querySelector('.test-result');
+            const actualCode = testCase.querySelector('.test-actual');
+            
+            // Mettre à jour l'icône de statut
+            if (testResult.passed) {
+                statusIcon.className = 'test-status w-6 h-6 rounded-full bg-green-500 flex items-center justify-center';
+                statusIcon.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-white"></i>';
+                testCase.classList.remove('border-gray-600', 'border-red-500/30');
+                testCase.classList.add('border-green-500/30', 'bg-green-500/5');
+            } else {
+                statusIcon.className = 'test-status w-6 h-6 rounded-full bg-red-500 flex items-center justify-center';
+                statusIcon.innerHTML = '<i data-lucide="x" class="w-4 h-4 text-white"></i>';
+                testCase.classList.remove('border-gray-600', 'border-green-500/30');
+                testCase.classList.add('border-red-500/30', 'bg-red-500/5');
+            }
+            
+            // Afficher le résultat obtenu
+            if (testResult.actual !== undefined) {
+                actualCode.textContent = testResult.actual;
+                actualCode.className = `test-actual ${testResult.passed ? 'text-green-400' : 'text-red-400'}`;
+                resultDiv.classList.remove('hidden');
+            }
+            
+            lucide.createIcons();
+        });
+    }
+    
     function showResults(type, data) {
         const panel = document.getElementById('results-panel');
         const content = document.getElementById('results-content');
@@ -242,50 +360,48 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (type === 'error') {
             content.innerHTML = `
-                <div class="flex items-center space-x-2 text-red-400 mb-3">
+                <div class="flex items-center space-x-3 text-red-400 mb-4">
                     <i data-lucide="x-circle" class="w-5 h-5"></i>
-                    <span class="font-medium">Erreur</span>
+                    <span class="font-semibold text-lg">Erreur d'exécution</span>
                 </div>
-                <p class="text-red-300 text-sm">${data}</p>
+                <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                    <p class="text-red-300 text-sm leading-relaxed">${data}</p>
+                <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                    <p class="text-red-300 text-sm leading-relaxed">${data}</p>
+                </div>
             `;
         } else {
             const isSuccess = type === 'success';
-            const iconClass = isSuccess ? 'check-circle text-green-400' : 'x-circle text-red-400';
+            const iconClass = isSuccess ? 'check-circle' : 'x-circle';
             const titleClass = isSuccess ? 'text-green-400' : 'text-red-400';
+            const bgClass = isSuccess ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30';
+            const bgClass = isSuccess ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30';
             
             let html = `
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2 ${titleClass}">
-                        <i data-lucide="${iconClass.split(' ')[0]}" class="w-5 h-5"></i>
-                        <span class="font-medium">${data.message}</span>
-                    </div>
-                    ${data.execution_time ? `<div class="text-sm text-gray-400">${data.execution_time}s</div>` : ''}
-                </div>
-            `;
-            
-            // Résultats des tests
-            if (data.test_results && data.test_results.length > 0) {
-                html += '<div class="space-y-2">';
-                data.test_results.forEach((test, index) => {
-                    const testIcon = test.passed ? 'check' : 'x';
-                    const testColor = test.passed ? 'text-green-400' : 'text-red-400';
-                    
-                    html += `
-                        <div class="bg-gray-900 rounded-lg p-3 border ${test.passed ? 'border-green-500/30' : 'border-red-500/30'}">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-medium text-white">Test ${test.test_number}</span>
-                                <i data-lucide="${testIcon}" class="w-4 h-4 ${testColor}"></i>
-                            </div>
-                            <div class="text-xs text-gray-400 space-y-1">
-                                <div>Input: <code class="text-primary-blue">${test.input}</code></div>
-                                <div>Attendu: <code class="text-primary-green">${test.expected}</code></div>
-                                ${test.actual ? `<div>Obtenu: <code class="${test.passed ? 'text-primary-green' : 'text-red-400'}">${test.actual}</code></div>` : ''}
-                                ${test.error ? `<div class="text-red-400 mt-2 p-2 bg-red-500/10 rounded border border-red-500/30"><strong>Erreur:</strong> ${test.error}</div>` : ''}
-                            </div>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-3 ${titleClass}">
+                        <i data-lucide="${iconClass}" class="w-6 h-6"></i>
+            // Résumé global
+            if (isSuccess) {
+                html += `
+                    <div class="${bgClass} border rounded-lg p-4 mb-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+                            <span class="font-medium text-white">Exercice complété avec succès !</span>
                         </div>
-                    `;
-                });
-                html += '</div>';
+                        <p class="text-green-300 text-sm">Tous les tests sont passés. Excellent travail ! 🎉</p>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="${bgClass} border rounded-lg p-4 mb-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i data-lucide="info" class="w-5 h-5 text-blue-400"></i>
+                            <span class="font-medium text-white">Continuez vos efforts !</span>
+                        </div>
+                        <p class="text-gray-300 text-sm">Regardez les tests qui ont échoué et corrigez votre code.</p>
+                    </div>
+                `;
             }
             
             content.innerHTML = html;
@@ -325,13 +441,67 @@ document.addEventListener('DOMContentLoaded', function() {
 <style>
 /* Styles pour l'éditeur Monaco */
 .monaco-editor {
-    border-radius: 0;
+    border-radius: 0 !important;
+}
+
+/* Amélioration de l'éditeur */
+.monaco-editor .margin {
+    background-color: #1e1e1e !important;
+}
+
+.monaco-editor .monaco-editor-background {
+    background-color: #1e1e1e !important;
+}
+
+/* Styles pour les tests */
+.test-case {
+    position: relative;
+    overflow: hidden;
+}
+
+.test-case::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.3), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.test-case.test-passed::before {
+    background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.6), transparent);
+    opacity: 1;
+}
+
+.test-case.test-failed::before {
+    background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.6), transparent);
+    opacity: 1;
 }
 
 /* Styles pour les résultats */
 #results-panel {
-    max-height: 300px;
+    max-height: 350px;
     overflow-y: auto;
+    border-top: 2px solid #374151;
+}
+
+/* Animation pour les résultats */
+#results-panel {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Scrollbar pour les résultats */
