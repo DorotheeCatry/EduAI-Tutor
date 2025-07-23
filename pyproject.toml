@@ -6,7 +6,7 @@ authors = [
     { name = "Dorothée Catry", email = "catrydorothee@gmail.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.12,<4.0"  # ✅ Limite haute pour django-tailwind
+requires-python = ">=3.12,<3.14"  # Limité pour RestrictedPython et django-tailwind
 
 dependencies = [
     "django >=5.2.4,<6.0.0",
@@ -24,7 +24,8 @@ dependencies = [
     "ollama (>=0.5.1,<0.6.0)",
     "langchain-groq (>=0.3.5,<0.4.0)",
     "channels (>=4.2.2,<5.0.0)",
-    "channels-redis (>=4.3.0,<5.0.0)"
+    "channels-redis (>=4.3.0,<5.0.0)",
+    "restrictedpython (>=8.0,<9.0)"
 ]
 
 [build-system]
