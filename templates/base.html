@@ -26,12 +26,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-900 text-white min-h-screen overflow-hidden">
+<body class="min-h-screen bg-gray-900 text-white">
     <div class="flex h-screen">
         <!-- Sidebar -->
         {% if user.is_authenticated %}
@@ -40,13 +37,9 @@
         
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col min-w-0">
-            <!-- Tab Bar - Visible uniquement si connecté -->
+            <!-- Tab Bar -->
             {% if user.is_authenticated %}
-                <div class="bg-gray-800 border-b border-gray-700 px-4 py-2 flex-shrink-0 h-10">
-                    <div class="flex space-x-1 overflow-x-auto" id="tabs-container">
-                        <!-- Les onglets seront générés dynamiquement par JavaScript -->
-                    </div>
-                </div>
+                {% include 'components/tabbar.html' %}
             {% endif %}
             
             <!-- Page Content -->
@@ -68,9 +61,6 @@
     
     <!-- Notifications XP -->
     {% include 'components/xp_notification.html' %}
-
-    <!-- Include tabbar JavaScript -->
-    {% include 'components/tabbar.html' %}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

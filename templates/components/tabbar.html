@@ -1,6 +1,13 @@
+<!-- Tab Bar Component - Exact KodaTheme Design with Dynamic Behavior -->
+<div class="h-10 bg-gray-800/80 backdrop-blur-md border-b border-gray-700/50 flex items-center shadow-sm flex-shrink-0">
+    <div class="flex" id="tabs-container">
+        <!-- Les onglets seront ajoutés dynamiquement ici -->
+    </div>
+</div>
+
 <script>
-// Gestion simplifiée des onglets
-let openTabs = new Set(); // Utiliser un Set pour éviter les doublons
+// Gestion dynamique des onglets avec ordre chronologique
+let openTabsOrder = []; // Array pour maintenir l'ordre d'ouverture
 
 // Configuration des onglets disponibles
 const availableTabs = {
@@ -41,9 +48,10 @@ const availableTabs = {
 // Détecter l'onglet actuel basé sur l'URL
 function getCurrentTab() {
     const path = window.location.pathname;
-    if (path.includes('/auth/profile')) return 'profile';
-    if (path.includes('/courses/my-courses')) return 'my-courses';
-    if (path.includes('/courses/generator') || path.includes('/courses/detail')) return 'courses';
+    if (path.includes('profile')) return 'profile';
+    if (path.includes('courses')) return 'courses';
+        if (path.includes('my-courses')) return 'my-courses';
+    }
     if (path.includes('chat')) return 'chat';
     if (path.includes('quiz')) return 'quiz';
     if (path.includes('exercises')) return 'exercises';
@@ -52,25 +60,34 @@ function getCurrentTab() {
     return null;
 }
 
-// Ajouter un onglet
+// Ajouter un onglet dans l'ordre chronologique
 function addTab(tabId) {
     if (!availableTabs[tabId]) return;
-    openTabs.add(tabId);
-    renderTabs();
-    saveTabsToStorage();
+    
+    // Si l'onglet n'est pas déjà ouvert, l'ajouter à la fin
+    if (!openTabsOrder.includes(tabId)) {
+        openTabsOrder.push(tabId);
+        renderTabs();
+        saveTabsToStorage();
+    }
 }
 
 // Fermer un onglet
 function closeTab(event, tabId) {
     event.stopPropagation();
-    openTabs.delete(tabId);
+    
+    // Retirer l'onglet de la liste ordonnée
+    const index = openTabsOrder.indexOf(tabId);
+    if (index > -1) {
+        openTabsOrder.splice(index, 1);
+    }
     
     // Si on ferme l'onglet actuel et qu'il y en a d'autres, aller au premier
     const currentTab = getCurrentTab();
-    if (tabId === currentTab && openTabs.size > 0) {
-        const firstTab = Array.from(openTabs)[0];
+    if (tabId === currentTab && openTabsOrder.length > 0) {
+        const firstTab = openTabsOrder[0];
         window.location.href = availableTabs[firstTab].url;
-    } else if (openTabs.size === 0) {
+    } else if (openTabsOrder.length === 0) {
         // Si plus d'onglets, aller à l'accueil
         window.location.href = "/courses/generator/";
     } else {
@@ -84,39 +101,30 @@ function navigateToTab(tabId) {
     window.location.href = availableTabs[tabId].url;
 }
 
-// Rendre les onglets
+// Rendre les onglets dans l'ordre chronologique
 function renderTabs() {
     const container = document.getElementById('tabs-container');
     const currentTab = getCurrentTab();
     
     if (!container) return;
     
-    // Toujours ajouter l'onglet actuel s'il existe
-    if (currentTab && availableTabs[currentTab]) {
-        openTabs.add(currentTab);
-    }
-    
     container.innerHTML = '';
     
-    // Ordre fixe des onglets pour plus de stabilité
-    const tabOrder = ['courses', 'my-courses', 'chat', 'quiz', 'exercises', 'tracker', 'revision', 'profile'];
-    
-    tabOrder.forEach(tabId => {
-        if (!openTabs.has(tabId)) return;
-        
+    // Afficher les onglets dans l'ordre chronologique d'ouverture
+    openTabsOrder.forEach(tabId => {
         const tab = availableTabs[tabId];
         if (!tab) return;
         
         const isActive = tabId === currentTab;
         
         const tabElement = document.createElement('div');
-        tabElement.className = `px-3 py-1 text-sm cursor-pointer transition-colors duration-150 group relative rounded flex items-center space-x-2 ${
-            isActive ? 'bg-primary-green text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-        }`;
+        tabElement.className = `h-10 px-4 flex items-center text-sm border-r border-gray-700 cursor-pointer transition-colors duration-150 group relative ${
+            isActive ? 'bg-gray-900/90 text-white backdrop-blur-sm' : 'bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 backdrop-blur-sm'
+        } z-10`;
         
         tabElement.innerHTML = `
-            <span class="truncate max-w-32">${tab.title}</span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 ml-2 hover:bg-gray-600 rounded p-1" onclick="closeTab(event, '${tabId}')">
+            <span class="mr-2 truncate max-w-32">${tab.title}</span>
+            <button class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 p-1 hover:bg-gray-600 rounded" onclick="closeTab(event, '${tabId}')">
                 <i data-lucide="x" class="w-3 h-3"></i>
             </button>
         `;
@@ -133,19 +141,19 @@ function renderTabs() {
 
 // Sauvegarder l'ordre des onglets
 function saveTabsToStorage() {
-    localStorage.setItem('openTabs', JSON.stringify(Array.from(openTabs)));
+    localStorage.setItem('openTabsOrder', JSON.stringify(openTabsOrder));
 }
 
 // Charger l'ordre des onglets
 function loadTabsFromStorage() {
-    const savedTabs = localStorage.getItem('openTabs');
+    const savedTabs = localStorage.getItem('openTabsOrder');
     if (savedTabs) {
         try {
             const tabsArray = JSON.parse(savedTabs);
-            openTabs = new Set(tabsArray.filter(tabId => availableTabs[tabId]));
+            openTabsOrder = tabsArray.filter(tabId => availableTabs[tabId]);
         } catch (e) {
             console.log('Erreur lors du chargement des onglets sauvegardés');
-            openTabs = new Set();
+            openTabsOrder = [];
         }
     }
 }
@@ -155,10 +163,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Charger les onglets sauvegardés
     loadTabsFromStorage();
     
-    // Toujours ajouter l'onglet actuel
+    // Ajouter l'onglet actuel s'il n'est pas déjà dans la liste
     const currentTab = getCurrentTab();
-    if (currentTab) {
-        openTabs.add(currentTab);
+    if (currentTab && !openTabsOrder.includes(currentTab)) {
+        openTabsOrder.push(currentTab);
     }
     
     renderTabs();
@@ -171,8 +179,7 @@ window.addEventListener('beforeunload', function() {
 
 // Fonction globale pour ouvrir un onglet depuis la sidebar
 window.openTab = function(tabId) {
-    openTabs.add(tabId);
-    saveTabsToStorage();
+    addTab(tabId);
     navigateToTab(tabId);
 };
 </script>
