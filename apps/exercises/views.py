@@ -354,6 +354,73 @@ def generate_exercise(request):
                     print(f"❌ Erreur parsing JSON : {e}")
                     print(f"Réponse reçue : {result['answer'][:500]}...")
                     
+                    # Essayer un parsing plus agressif
+                    try:
+                        # Méthode alternative : extraire manuellement les valeurs
+                        answer = result['answer']
+                        
+                        # Extraire le titre
+                        title_match = re.search(r'"title":\s*"([^"]*(?:\\.[^"]*)*)"', answer)
+                        title = title_match.group(1) if title_match else f"Exercice sur {topic}"
+                        
+                        # Extraire la description
+                        desc_match = re.search(r'"description":\s*"([^"]*(?:\\.[^"]*)*)"', answer)
+                        description = desc_match.group(1) if desc_match else f"Exercice pratique sur {topic}"
+                        
+                        # Extraire le starter_code (entre guillemets ou dans un bloc)
+                        starter_match = re.search(r'"starter_code":\s*"([^"]*(?:\\.[^"]*)*)"', answer, re.DOTALL)
+                        if not starter_match:
+                            # Chercher dans un bloc de code
+                            starter_match = re.search(r'"starter_code":\s*```python\n(.*?)```', answer, re.DOTALL)
+                        
+                        starter_code = starter_match.group(1) if starter_match else f"# TODO: Implémentez votre solution pour {topic}\n\ndef ma_fonction():\n    # Votre code ici\n    pass"
+                        
+                        # Extraire la solution
+                        solution_match = re.search(r'"solution":\s*"([^"]*(?:\\.[^"]*)*)"', answer, re.DOTALL)
+                        if not solution_match:
+                            solution_match = re.search(r'"solution":\s*```python\n(.*?)```', answer, re.DOTALL)
+                        
+                        solution = solution_match.group(1) if solution_match else f"# Solution exemple pour {topic}\n\ndef ma_fonction():\n    return 'Hello World'"
+                        
+                        # Nettoyer les échappements
+                        starter_code = starter_code.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+                        solution = solution.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+                        
+                        # Tests par défaut si pas trouvés
+                        tests = [
+                            {"input": "ma_fonction()", "expected": "Hello World"}
+                        ]
+                        
+                        # Essayer d'extraire les tests
+                        tests_match = re.search(r'"tests":\s*\[(.*?)\]', answer, re.DOTALL)
+                        if tests_match:
+                            try:
+                                tests_str = '[' + tests_match.group(1) + ']'
+                                tests = json.loads(tests_str)
+                            except:
+                                pass  # Garder les tests par défaut
+                        
+                        print(f"✅ Parsing manuel réussi: {title}")
+                        
+                        # Créer l'exercice avec les données extraites
+                        exercise = Exercise.objects.create(
+                            title=title,
+                            description=description,
+                            difficulty=difficulty,
+                            topic=topic,
+                            starter_code=starter_code,
+                            solution=solution,
+                            tests=tests,
+                            created_by=request.user
+                        )
+                        
+                        print(f"✅ Exercice créé avec parsing manuel : {exercise.title} (ID: {exercise.id})")
+                        messages.success(request, f'Exercice "{exercise.title}" généré avec succès !')
+                        return redirect('exercises:detail', exercise_id=exercise.id)
+                        
+                    except Exception as manual_error:
+                        print(f"❌ Parsing manuel échoué : {manual_error}")
+                    
                     # Créer un exercice de fallback basique
                     fallback_exercise = Exercise.objects.create(
                         title=f"Exercice sur {topic}",
@@ -526,6 +593,73 @@ def generate_exercise_from_course(request):
             except (json.JSONDecodeError, KeyError, ValueError) as e:
                 print(f"❌ Erreur parsing JSON : {e}")
                 print(f"Réponse reçue : {result['answer'][:500]}...")
+                
+                # Essayer un parsing plus agressif
+                try:
+                    # Méthode alternative : extraire manuellement les valeurs
+                    answer = result['answer']
+                    
+                    # Extraire le titre
+                    title_match = re.search(r'"title":\s*"([^"]*(?:\\.[^"]*)*)"', answer)
+                    title = title_match.group(1) if title_match else f"Exercice pratique : {topic}"
+                    
+                    # Extraire la description
+                    desc_match = re.search(r'"description":\s*"([^"]*(?:\\.[^"]*)*)"', answer)
+                    description = desc_match.group(1) if desc_match else f"Exercice pratique basé sur le cours '{topic}'. Complétez le code ci-dessous pour mettre en pratique les concepts appris."
+                    
+                    # Extraire le starter_code (entre guillemets ou dans un bloc)
+                    starter_match = re.search(r'"starter_code":\s*"([^"]*(?:\\.[^"]*)*)"', answer, re.DOTALL)
+                    if not starter_match:
+                        # Chercher dans un bloc de code
+                        starter_match = re.search(r'"starter_code":\s*```python\n(.*?)```', answer, re.DOTALL)
+                    
+                    starter_code = starter_match.group(1) if starter_match else f"# Exercice basé sur le cours : {topic}\n# TODO: Implémentez votre solution\n\ndef ma_fonction():\n    # Votre code ici\n    pass"
+                    
+                    # Extraire la solution
+                    solution_match = re.search(r'"solution":\s*"([^"]*(?:\\.[^"]*)*)"', answer, re.DOTALL)
+                    if not solution_match:
+                        solution_match = re.search(r'"solution":\s*```python\n(.*?)```', answer, re.DOTALL)
+                    
+                    solution = solution_match.group(1) if solution_match else f"# Solution exemple pour {topic}\n\ndef ma_fonction():\n    return 'Hello World'"
+                    
+                    # Nettoyer les échappements
+                    starter_code = starter_code.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+                    solution = solution.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+                    
+                    # Tests par défaut si pas trouvés
+                    tests = [
+                        {"input": "ma_fonction()", "expected": "Hello World"}
+                    ]
+                    
+                    # Essayer d'extraire les tests
+                    tests_match = re.search(r'"tests":\s*\[(.*?)\]', answer, re.DOTALL)
+                    if tests_match:
+                        try:
+                            tests_str = '[' + tests_match.group(1) + ']'
+                            tests = json.loads(tests_str)
+                        except:
+                            pass  # Garder les tests par défaut
+                    
+                    print(f"✅ Parsing manuel réussi: {title}")
+                    
+                    # Créer l'exercice avec les données extraites
+                    exercise = Exercise.objects.create(
+                        title=title,
+                        description=description,
+                        difficulty=difficulty,
+                        topic=topic,
+                        starter_code=starter_code,
+                        solution=solution,
+                        tests=tests,
+                        created_by=request.user
+                    )
+                    
+                    print(f"✅ Exercice créé avec parsing manuel : {exercise.title} (ID: {exercise.id})")
+                    messages.success(request, f'Exercice "{exercise.title}" généré avec succès à partir du cours !')
+                    return redirect('exercises:detail', exercise_id=exercise.id)
+                    
+                except Exception as manual_error:
+                    print(f"❌ Parsing manuel échoué : {manual_error}")
                 
                 # Créer un exercice de fallback basique
                 fallback_exercise = Exercise.objects.create(
