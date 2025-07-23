@@ -85,9 +85,9 @@
                     <div class="p-6">
                         <div class="prose prose-invert max-w-none" id="course-content">
                             {% if generated_course %}
-                                <div class="raw-markdown">{{ generated_course.content }}</div>
+                                {{ generated_course.content|safe }}
                             {% elif course %}
-                                <div class="raw-markdown">{{ course.content }}</div>
+                                {{ course.content|safe }}
                             {% endif %}
                         </div>
                     </div>
@@ -114,9 +114,7 @@
         const content = document.getElementById('course-content');
         if (!content) return;
 
-        // Récupérer le contenu markdown brut
-        const rawMarkdownDiv = content.querySelector('.raw-markdown');
-        let html = rawMarkdownDiv ? rawMarkdownDiv.textContent : content.innerHTML;
+        let html = content.innerHTML;
 
         // Étape 1 : Sauvegarder les blocs de code pour ne pas les altérer
         const codeBlocks = [];

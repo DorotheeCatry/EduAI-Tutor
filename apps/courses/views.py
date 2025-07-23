@@ -93,16 +93,12 @@ def save_course(request):
             module = request.POST.get('module', 'general')
             content = request.POST.get('content', '')
             
-            # Convertir le contenu markdown en HTML avec le même traitement que lors de la génération
-            import markdown2
-            html_content = markdown2.markdown(content, extras=['fenced-code-blocks', 'code-friendly'])
-            
             # Créer le cours en base
             course = Course.objects.create(
                 title=title,
                 topic=topic,
                 module=module,
-                content=html_content,
+                content=content,
                 sources=[],
                 created_by=request.user
             )
