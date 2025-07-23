@@ -36,7 +36,7 @@
         
         <!-- Actions rapides -->
         <div class="flex items-center space-x-3">
-            {% if generated_course %}
+            {% if generated_course and not course %}
                 <form method="post" action="{% url 'courses:save' %}" class="inline">
                     {% csrf_token %}
                     <input type="hidden" name="title" value="{{ generated_course.title }}">
@@ -49,14 +49,16 @@
                         <span>Sauvegarder</span>
                     </button>
                 </form>
+            {% endif %}
                 
+            {% if generated_course %}
                 <a href="{% url 'quiz:start' %}?topic={{ generated_course.topic }}" class="px-4 py-2 bg-primary-rose text-white rounded-lg hover:bg-pink-600 transition-colors flex items-center space-x-2">
                     <i data-lucide="brain" class="w-4 h-4"></i>
                     <span>Quiz</span>
                 </a>
             {% endif %}
             
-            <a href="{% url 'courses:generator' %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
+            <a href="{% if course %}{% url 'courses:my_courses' %}{% else %}{% url 'courses:generator' %}{% endif %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 <span>Retour</span>
             </a>
