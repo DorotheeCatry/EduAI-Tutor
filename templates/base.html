@@ -5,9 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}EduAI Tutor - Plateforme d'apprentissage intelligente{% endblock %}</title>
-    <meta name="description" content="Plateforme d'apprentissage avec IA pour générer des cours, quiz et révisions personnalisées">
     
-    <!-- Tailwind CSS avec configuration personnalisée -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -17,24 +16,19 @@
                         'primary-rose': '#C586C0',
                         'primary-blue': '#007ACC',
                         'primary-green': '#4CAF50',
-                        'primary-gray': '#D4D4D4',
-                        'gray-750': '#3F3F46',
-                        'gray-850': '#1F2937'
+                        'primary-gray': '#D4D4D4'
                     }
                 }
             }
         }
     </script>
     
-    <!-- CSS personnalisé après Tailwind -->
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
     {% block extra_head %}{% endblock %}
 </head>
-<body class="h-screen bg-gray-900 text-white overflow-hidden">
+<body class="min-h-screen bg-gray-900 text-white">
     <div class="flex h-screen">
         <!-- Sidebar -->
         {% if user.is_authenticated %}
@@ -49,9 +43,9 @@
             {% endif %}
             
             <!-- Page Content -->
-            <main class="flex-1 bg-gray-900 overflow-hidden">
+            <main class="flex-1 bg-gray-900 overflow-y-auto">
                 {% block content %}
-                <div class="p-6 h-full overflow-y-auto text-white">
+                <div class="p-6 text-white">
                     <h1 class="text-2xl font-bold text-white mb-4">Template de base fonctionne !</h1>
                     <p class="text-gray-300">Si vous voyez ce message, le template de base est chargé correctement.</p>
                 </div>
@@ -59,11 +53,6 @@
             </main>
         </div>
     </div>
-    
-    <!-- Status Bar -->
-    {% if user.is_authenticated %}
-        {% include 'components/statusbar.html' %}
-    {% endif %}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -71,19 +60,7 @@
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
-            
-            // Mettre à jour l'heure
-            updateTime();
-            setInterval(updateTime, 1000);
         });
-
-        function updateTime() {
-            const timeElement = document.getElementById('current-time');
-            if (timeElement) {
-                const now = new Date();
-                timeElement.textContent = now.toLocaleTimeString();
-            }
-        }
     </script>
 </body>
 </html>
