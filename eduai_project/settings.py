@@ -78,7 +78,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'tailwind',
     'rest_framework',
-    'django_browser_reload'
+    'django_browser_reload',
     'channels',
 ]
 
