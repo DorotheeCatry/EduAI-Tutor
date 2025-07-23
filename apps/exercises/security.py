@@ -239,10 +239,13 @@ if result is not None:
                     expected_output = str(test['expected']).strip()
                     
                     # Si l'erreur attendue est dans le résultat espéré, c'est un succès
-                    if 'TypeError' in expected_output or 'ValueError' in expected_output:
-                        if 'TypeError' in error_msg or 'ValueError' in error_msg:
+                    if any(error_type in expected_output for error_type in ['TypeError', 'ValueError', 'Exception']):
+                        # Vérifier si le type d'erreur correspond
+                        if ('TypeError' in expected_output and 'TypeError' in error_msg) or \
+                           ('ValueError' in expected_output and 'ValueError' in error_msg) or \
+                           ('Exception' in expected_output and ('TypeError' in error_msg or 'ValueError' in error_msg)):
                             test_result['passed'] = True
-                            test_result['actual'] = 'TypeError levée'
+                            test_result['actual'] = expected_output
                             print(f"   Attendu: Erreur")
                             print(f"   Obtenu: Erreur levée correctement")
                             print(f"   Résultat: ✅")
