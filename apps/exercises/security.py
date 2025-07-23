@@ -137,7 +137,7 @@ class SecurePythonExecutor:
             except SyntaxError as e:
                 raise CodeExecutionError(f"Erreur de syntaxe: {str(e)}")
             
-            # Créer un nouvel environnement d'exécution sécurisé à chaque fois
+            # Créer l'environnement d'exécution sécurisé
             safe_globals = self._create_safe_globals()
             safe_locals = {}
             
@@ -170,22 +170,6 @@ class SecurePythonExecutor:
             
         return result
     
-    def execute_single_test(self, code, test_input):
-        """
-        Exécute un seul test de manière complètement isolée
-        """
-        # Créer le code de test
-        test_code = f"""{code}
-
-# Exécuter le test
-result = {test_input}
-if result is not None:
-    print(result)
-"""
-        
-        # Exécuter dans un environnement complètement frais
-        return self.execute_code(test_code)
-    
     def run_tests(self, code, tests):
         """
         Exécute une série de tests sur le code
@@ -210,42 +194,45 @@ if result is not None:
             }
             
             try:
+                # Créer le code de test simple sans import sys
+                test_code = f"""{code}
+
+# Exécuter le test
+result = {test['input']}
+if result is not None:
+    print(result)
+"""
+                
                 print(f"🧪 Exécution du test {i+1}: {test['input']}")
                 
-                # Exécuter le test dans un environnement complètement isolé
-                execution_result = self.execute_single_test(code, test['input'])
+                # Exécuter le test
+                execution_result = self.execute_code(test_code)
                 
                 if execution_result['success']:
                     actual_output = str(execution_result['output']).strip()
                     
                     # Nettoyer la sortie plus simplement
                     lines = actual_output.split('\n')
-                    # Pour les décorateurs qui affichent plusieurs lignes, garder tout
-                    actual_output = actual_output.strip()
-                    
-                    # Si on a plusieurs lignes, les rejoindre avec des espaces pour comparaison
-                    if '\n' in actual_output:
-                        # Remplacer les retours à la ligne par des espaces pour la comparaison
-                        actual_output_for_comparison = actual_output.replace('\n', ' ')
+                    # Prendre la première ligne non vide qui n'est pas "None"
+                    for line in lines:
+                        line = line.strip()
+                        if line and line != 'None':
+                            actual_output = line
+                            break
                     else:
-                        actual_output_for_comparison = actual_output
+                        actual_output = actual_output.strip()
                     
                     expected_output = str(test['expected']).strip()
-                    # Même traitement pour l'attendu
-                    if '\n' in expected_output:
-                        expected_output_for_comparison = expected_output.replace('\n', ' ')
-                    else:
-                        expected_output_for_comparison = expected_output
                     
                     test_result['actual'] = actual_output
-                    test_result['passed'] = actual_output_for_comparison == expected_output_for_comparison
+                    test_result['passed'] = actual_output == expected_output
                     
-                    print(f"   Attendu: {expected_output_for_comparison}")
-                    print(f"   Obtenu: {actual_output_for_comparison}")
+                    print(f"   Attendu: {expected_output}")
+                    print(f"   Obtenu: {actual_output}")
                     print(f"   Résultat: {'✅' if test_result['passed'] else '❌'}")
                     
                     if not test_result['passed']:
-                        test_result['error'] = f"Attendu: {expected_output_for_comparison}, Obtenu: {actual_output_for_comparison}"
+                        test_result['error'] = f"Attendu: {expected_output}, Obtenu: {actual_output}"
                 else:
                     test_result['error'] = execution_result['error']
                     print(f"   Erreur: {execution_result['error']}")
