@@ -173,22 +173,22 @@ class SecurePythonExecutor:
             }
             
             try:
-                # Créer le code de test complet
+                # Créer le code de test qui capture le résultat sans print
                 test_code = f"""
 {code}
 
-# Exécuter le test et afficher le résultat
-result = {test['input']}
-print(result)
+# Exécuter le test et capturer le résultat
+_test_result = {test['input']}
 """
                 
                 print(f"🧪 Exécution du test {i+1}: {test['input']}")
                 
-                # Exécuter le test
-                execution_result = self.execute_code(test_code)
+                # Exécuter le test avec environnement modifié
+                execution_result = self.execute_code_with_result_capture(test_code)
                 
                 if execution_result['success']:
-                    actual_output = str(execution_result['output']).strip()
+                    # Récupérer le résultat depuis l'environnement d'exécution
+                    actual_output = str(execution_result.get('result', execution_result['output'])).strip()
                     expected_output = str(test['expected']).strip()
                     
                     test_result['actual'] = actual_output
@@ -211,6 +211,70 @@ print(result)
             test_results.append(test_result)
         
         return test_results
+    
+    def execute_code_with_result_capture(self, code):
+        """
+        Exécute le code et capture le résultat de _test_result
+        """
+        result = {
+            'success': False,
+            'output': '',
+            'error': '',
+            'result': None,
+            'execution_time': 0,
+            'timeout': False
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # Valider le code
+            self._validate_code(code)
+            
+            # Compiler le code
+            try:
+                compiled_code = compile(code, '<user_code>', 'exec')
+            except SyntaxError as e:
+                raise CodeExecutionError(f"Erreur de syntaxe: {str(e)}")
+            
+            # Créer l'environnement d'exécution sécurisé
+            safe_globals = self._create_safe_globals()
+            safe_locals = {}
+            
+            # Capturer les sorties
+            output_buffer = io.StringIO()
+            error_buffer = io.StringIO()
+            
+            try:
+                with redirect_stdout(output_buffer), redirect_stderr(error_buffer):
+                    exec(compiled_code, safe_globals, safe_locals)
+                
+                result['output'] = output_buffer.getvalue()
+                result['success'] = True
+                
+                # Récupérer le résultat du test si disponible
+                if '_test_result' in safe_locals:
+                    result['result'] = safe_locals['_test_result']
+                else:
+                    result['result'] = result['output'].strip()
+                    
+            except Exception as e:
+                error_output = error_buffer.getvalue()
+                if error_output:
+                    result['error'] = f"Erreur d'exécution: {error_output}"
+                else:
+                    result['error'] = f"Erreur d'exécution: {str(e)}"
+                
+        except CodeExecutionError as e:
+            result['error'] = str(e)
+            
+        except Exception as e:
+            result['error'] = f"Erreur inattendue: {str(e)}"
+            
+        finally:
+            result['execution_time'] = time.time() - start_time
+            
+        return result
 
 
 # Instance globale de l'exécuteur
