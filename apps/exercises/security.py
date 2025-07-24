@@ -1,6 +1,6 @@
 """
-Système de sécurité simplifié pour l'exécution de code Python
-Utilise exec() avec un environnement restreint
+Simplified security system for Python code execution
+Uses exec() with restricted environment
 """
 
 import sys
@@ -12,14 +12,14 @@ from contextlib import redirect_stdout, redirect_stderr
 
 
 class CodeExecutionError(Exception):
-    """Exception levée en cas d'erreur d'exécution"""
+    """Exception raised on execution error"""
     pass
 
 
 class SecurePythonExecutor:
-    """Exécuteur Python simplifié et sécurisé"""
+    """Simplified and secure Python executor"""
     
-    # Fonctions autorisées (whitelist)
+    # Allowed functions (whitelist)
     ALLOWED_BUILTINS = {
         'abs', 'all', 'any', 'bin', 'bool', 'chr', 'dict', 'divmod',
         'enumerate', 'filter', 'float', 'format', 'frozenset', 'hex',
@@ -31,7 +31,7 @@ class SecurePythonExecutor:
         '__import__'
     }
     
-    # Modules interdits (blacklist)
+    # Forbidden modules (blacklist)
     FORBIDDEN_MODULES = {
         'os', 'subprocess', 'socket', 'urllib', 'requests',
         'shutil', 'glob', 'pickle', 'marshal', 'shelve', 'dbm',
@@ -44,8 +44,8 @@ class SecurePythonExecutor:
         self.timeout = timeout
     
     def _create_safe_globals(self):
-        """Crée un environnement global sécurisé"""
-        # Créer un dictionnaire de builtins restreint
+        """Creates a secure global environment"""
+        # Create restricted builtins dictionary
         restricted_builtins = {}
         for name in self.ALLOWED_BUILTINS:
             if isinstance(__builtins__, dict):
@@ -55,20 +55,20 @@ class SecurePythonExecutor:
                 if hasattr(__builtins__, name):
                     restricted_builtins[name] = getattr(__builtins__, name)
         
-        # Ajouter des fonctions mathématiques de base
+        # Add basic math functions
         import math
         math_functions = {
             'sqrt': math.sqrt, 'pow': pow, 'abs': abs,
             'round': round, 'min': min, 'max': max
         }
         
-        # Ajouter functools.wraps directement
+        # Add functools.wraps directly
         import functools
         functools_functions = {
             'wraps': functools.wraps,
         }
         
-        # Ajouter les modules sécurisés nécessaires
+        # Add necessary secure modules
         safe_modules = {
             'time': time,
             'functools': functools,
@@ -81,41 +81,41 @@ class SecurePythonExecutor:
             **safe_modules
         }
         
-        print(f"🔧 Builtins disponibles: {sorted(restricted_builtins.keys())}")
-        print(f"🔧 Modules disponibles: {list(safe_modules.keys())}")
-        print(f"🔧 Fonctions disponibles: {list(functools_functions.keys())}")
+        print(f"🔧 Available builtins: {sorted(restricted_builtins.keys())}")
+        print(f"🔧 Available modules: {list(safe_modules.keys())}")
+        print(f"🔧 Available functions: {list(functools_functions.keys())}")
         return safe_globals
     
     def _validate_code(self, code):
-        """Valide le code avant exécution"""
-        # Vérifier les imports interdits
+        """Validates code before execution"""
+        # Check forbidden imports
         lines = code.split('\n')
         for line in lines:
             line = line.strip()
             if line.startswith('import ') or line.startswith('from '):
-                # Permettre les imports sécurisés
+                # Allow secure imports
                 if any(safe_module in line for safe_module in ['time', 'functools']):
                     continue
                 for forbidden in self.FORBIDDEN_MODULES:
                     if forbidden in line:
-                        raise CodeExecutionError(f"Import interdit détecté: {forbidden}")
+                        raise CodeExecutionError(f"Forbidden import detected: {forbidden}")
         
-        # Vérifier les mots-clés dangereux
+        # Check dangerous keywords
         dangerous_keywords = ['exec', 'eval', 'compile', 'open', 'file']
         for keyword in dangerous_keywords:
             if keyword in code:
-                raise CodeExecutionError(f"Mot-clé interdit détecté: {keyword}")
+                raise CodeExecutionError(f"Forbidden keyword detected: {keyword}")
     
     def execute_code(self, code, test_input=None):
         """
-        Exécute le code de manière sécurisée
+        Executes code securely
         
         Args:
-            code (str): Code Python à exécuter
-            test_input (str): Input optionnel pour le code
+            code (str): Python code to execute
+            test_input (str): Optional input for code
             
         Returns:
-            dict: Résultat de l'exécution avec output, erreurs, etc.
+            dict: Execution result with output, errors, etc.
         """
         result = {
             'success': False,
@@ -128,20 +128,20 @@ class SecurePythonExecutor:
         start_time = time.time()
         
         try:
-            # Valider le code
+            # Validate code
             self._validate_code(code)
             
-            # Compiler le code
+            # Compile code
             try:
                 compiled_code = compile(code, '<user_code>', 'exec')
             except SyntaxError as e:
-                raise CodeExecutionError(f"Erreur de syntaxe: {str(e)}")
+                raise CodeExecutionError(f"Syntax error: {str(e)}")
             
-            # Créer l'environnement d'exécution sécurisé
+            # Create secure execution environment
             safe_globals = self._create_safe_globals()
             safe_locals = {}
             
-            # Capturer les sorties
+            # Capture outputs
             output_buffer = io.StringIO()
             error_buffer = io.StringIO()
             
@@ -153,20 +153,20 @@ class SecurePythonExecutor:
                 result['success'] = True
                     
             except Exception as e:
-                # Capturer le type d'exception réel
+                # Capture actual exception type
                 result['exception_type'] = type(e).__name__
                 
                 error_output = error_buffer.getvalue()
                 if error_output:
-                    result['error'] = f"Erreur d'exécution: {error_output}"
+                    result['error'] = f"Execution error: {error_output}"
                 else:
-                    result['error'] = f"Erreur d'exécution: {str(e)}"
+                    result['error'] = f"Execution error: {str(e)}"
                 
         except CodeExecutionError as e:
             result['error'] = str(e)
             
         except Exception as e:
-            result['error'] = f"Erreur inattendue: {str(e)}"
+            result['error'] = f"Unexpected error: {str(e)}"
             
         finally:
             result['execution_time'] = time.time() - start_time
@@ -175,14 +175,14 @@ class SecurePythonExecutor:
     
     def run_tests(self, code, tests):
         """
-        Exécute une série de tests sur le code
+        Executes a series of tests on the code
         
         Args:
-            code (str): Code Python à tester
-            tests (list): Liste des tests à exécuter
+            code (str): Python code to test
+            tests (list): List of tests to execute
             
         Returns:
-            list: Résultats des tests
+            list: Test results
         """
         test_results = []
         
@@ -197,26 +197,26 @@ class SecurePythonExecutor:
             }
             
             try:
-                # Créer le code de test simple sans import sys
+                # Create simple test code without import sys
                 test_code = f"""{code}
 
-# Exécuter le test
+# Execute test
 result = {test['input']}
 if result is not None:
     print(result)
 """
                 
-                print(f"🧪 Exécution du test {i+1}: {test['input']}")
+                print(f"🧪 Executing test {i+1}: {test['input']}")
                 
-                # Exécuter le test
+                # Execute test
                 execution_result = self.execute_code(test_code)
                 
                 if execution_result['success']:
                     actual_output = str(execution_result['output']).strip()
                     
-                    # Nettoyer la sortie plus simplement
+                    # Clean output more simply
                     lines = actual_output.split('\n')
-                    # Prendre la première ligne non vide qui n'est pas "None"
+                    # Take first non-empty line that isn't "None"
                     for line in lines:
                         line = line.strip()
                         if line and line != 'None':
@@ -230,40 +230,40 @@ if result is not None:
                     test_result['actual'] = actual_output
                     test_result['passed'] = actual_output == expected_output
                     
-                    print(f"   Attendu: {expected_output}")
-                    print(f"   Obtenu: {actual_output}")
-                    print(f"   Résultat: {'✅' if test_result['passed'] else '❌'}")
+                    print(f"   Expected: {expected_output}")
+                    print(f"   Got: {actual_output}")
+                    print(f"   Result: {'✅' if test_result['passed'] else '❌'}")
                     
                     if not test_result['passed']:
                         test_result['error'] = f"Attendu: {expected_output}, Obtenu: {actual_output}"
                 else:
-                    # Gérer les erreurs attendues (comme TypeError, ValueError)
+                    # Handle expected errors (like TypeError, ValueError)
                     error_msg = execution_result['error']
                     expected_output = str(test['expected']).strip()
                     
-                    # Si l'erreur attendue est dans le résultat espéré, c'est un succès
+                    # If expected error is in expected result, it's a success
                     if any(error_type in expected_output for error_type in ['TypeError', 'ValueError', 'Exception']):
-                        # Extraire le vrai type d'exception depuis execution_result
+                        # Extract real exception type from execution_result
                         actual_exception_type = execution_result.get('exception_type', '')
                         
-                        # Vérifier si le type d'erreur correspond
+                        # Check if error type matches
                         if ('TypeError' in expected_output and actual_exception_type == 'TypeError') or \
                            ('ValueError' in expected_output and actual_exception_type == 'ValueError') or \
                            ('Exception' in expected_output and actual_exception_type in ['TypeError', 'ValueError', 'Exception']):
                             test_result['passed'] = True
                             test_result['actual'] = expected_output
-                            print(f"   Attendu: Erreur")
-                            print(f"   Obtenu: Erreur levée correctement")
-                            print(f"   Résultat: ✅")
+                            print(f"   Expected: Error")
+                            print(f"   Got: Error raised correctly")
+                            print(f"   Result: ✅")
                         else:
-                            test_result['error'] = f"Erreur attendue ({expected_output}) mais obtenu: {actual_exception_type or 'erreur inconnue'}"
-                            print(f"   Erreur: Erreur attendue mais obtenu: {error_msg}")
+                            test_result['error'] = f"Expected error ({expected_output}) but got: {actual_exception_type or 'unknown error'}"
+                            print(f"   Error: Expected error but got: {error_msg}")
                     else:
                         test_result['error'] = error_msg
                     print(f"   Erreur: {execution_result['error']}")
                     
             except Exception as e:
-                test_result['error'] = f"Erreur lors du test: {str(e)}"
+                test_result['error'] = f"Error during test: {str(e)}"
                 print(f"   Exception: {str(e)}")
             
             test_results.append(test_result)
@@ -271,5 +271,5 @@ if result is not None:
         return test_results
 
 
-# Instance globale de l'exécuteur
+# Global executor instance
 secure_executor = SecurePythonExecutor()

@@ -11,11 +11,11 @@ import random
 
 def get_coach_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     """
-    Agent Coach IA : génère des QCM et exercices à partir d'un sujet donné.
+    AI Coach Agent: generates MCQs and exercises from a given topic.
     """
     llm = get_llm(model_name=model_name)
     
-    # Prompt pour générer des QCM
+    # Prompt for generating MCQs
     quiz_prompt = PromptTemplate(
         input_variables=["topic", "num_questions"],
         template=load_prompt("coach")
@@ -24,37 +24,37 @@ def get_coach_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
 
 def get_code_exercise_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     """
-    Agent Coach IA : génère des exercices de code à compléter.
+    AI Coach Agent: generates code completion exercises.
     """
     llm = get_llm(model_name=model_name)
     
     code_prompt = PromptTemplate(
         input_variables=["topic"],
         template="""
-Tu es un expert en programmation qui crée des exercices de code.
+You are a programming expert who creates code exercises.
 
-SUJET : {topic}
+TOPIC: {topic}
 
-Crée un exercice de code pratique sur "{topic}" de niveau intermédiaire.
+Create a practical code exercise on "{topic}" at intermediate level.
 
-L'exercice doit inclure :
-- Un énoncé clair
-- Du code à compléter avec des parties manquantes (marquées par # TODO)
-- La solution complète
-- Des tests pour vérifier la solution
+The exercise should include:
+- A clear statement
+- Code to complete with missing parts (marked with # TODO)
+- The complete solution
+- Tests to verify the solution
 
-FORMAT DE RÉPONSE (JSON strict) :
+RESPONSE FORMAT (strict JSON):
 {{
-  "title": "Titre de l'exercice",
-  "description": "Description détaillée de ce qu'il faut faire",
-  "starter_code": "Code de départ avec # TODO",
-  "solution": "Code solution complet",
+  "title": "Exercise title",
+  "description": "Detailed description of what to do",
+  "starter_code": "Starting code with # TODO",
+  "solution": "Complete solution code",
   "tests": [
-    {{"input": "valeur d'entrée", "expected": "résultat attendu"}}
+    {{"input": "input value", "expected": "expected result"}}
   ]
 }}
 
-Réponds UNIQUEMENT avec le JSON, sans texte supplémentaire.
+Respond ONLY with JSON, no additional text.
 """
     )
     
@@ -90,23 +90,23 @@ def generate_quiz(topic, num_questions=5):
 
 def generate_code_exercise(topic):
     """
-    Génère un exercice de code sur un sujet donné.
+    Generates a code exercise on a given topic.
     """
     try:
         chain = get_code_exercise_chain()
         result = chain.run(topic=topic)
         
-        # Parser le JSON
+        # Parse the JSON
         exercise_data = json.loads(result)
         return exercise_data
         
     except Exception as e:
-        print(f"Erreur lors de la génération de l'exercice : {e}")
-        # Fallback avec un exercice exemple
+        print(f"Error during exercise generation: {e}")
+        # Fallback with example exercise
         return {
-            "title": f"Exercice sur {topic}",
-            "description": f"Exercice pratique sur {topic}",
-            "starter_code": f"# TODO: Implémentez {topic}\npass",
-            "solution": f"# Solution pour {topic}\nprint('Hello World')",
+            "title": f"Exercise on {topic}",
+            "description": f"Practical exercise on {topic}",
+            "starter_code": f"# TODO: Implement {topic}\npass",
+            "solution": f"# Solution for {topic}\nprint('Hello World')",
             "tests": [{"input": "test", "expected": "result"}]
         }

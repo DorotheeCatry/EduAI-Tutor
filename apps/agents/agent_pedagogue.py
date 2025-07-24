@@ -10,9 +10,9 @@ from apps.rag.utils import load_embedding_function
 
 def get_pedagogue_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     """
-    Agent Pédagogue : génère un cours structuré au format JSON plat.
+    Pedagogue Agent: generates a structured course in flat JSON format.
     """
-    # Initialisation du LLM et du vectorstore
+    # Initialize LLM and vectorstore
     embedding_fn = load_embedding_function()
     vectorstore = Chroma(
         persist_directory="apps/rag/chroma",
@@ -22,7 +22,7 @@ def get_pedagogue_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
     llm = get_llm(model_name=model_name)
 
-    # Prompt structuré pour un JSON plat
+    # Structured prompt for flat JSON
     prompt = PromptTemplate(
         input_variables=["context", "question"],
         template=load_prompt("pedagogue")
@@ -37,7 +37,7 @@ def get_pedagogue_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
 
 
 def test_pedagogue_output():
-    """Fonction de test pour vérifier la sortie du pédagogue"""
+    """Test function to verify pedagogue output"""
     chain = get_pedagogue_chain()
     result = chain.invoke({"question": "les fonctions python"})
     print("🔍 Test output:", result)

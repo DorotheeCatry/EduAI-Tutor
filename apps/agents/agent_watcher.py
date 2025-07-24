@@ -9,21 +9,21 @@ import json
 User = get_user_model()
 
 class LearningSession(models.Model):
-    """Modèle pour tracker les sessions d'apprentissage"""
+    """Model for tracking learning sessions"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     topic = models.CharField(max_length=200)
     activity_type = models.CharField(max_length=50)  # 'course', 'quiz', 'chat', 'revision'
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     duration_seconds = models.IntegerField(default=0)
-    score = models.FloatField(null=True, blank=True)  # Pour les quiz
-    metadata = models.JSONField(default=dict)  # Données supplémentaires
+    score = models.FloatField(null=True, blank=True)  # For quizzes
+    metadata = models.JSONField(default=dict)  # Additional data
     
     class Meta:
         app_label = 'agents'
 
 class UserMistake(models.Model):
-    """Modèle pour tracker les erreurs des utilisateurs"""
+    """Model for tracking user mistakes"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     topic = models.CharField(max_length=200)
     mistake_type = models.CharField(max_length=100)
@@ -37,13 +37,13 @@ class UserMistake(models.Model):
         app_label = 'agents'
 
 class WatcherAgent:
-    """Agent Surveillant pour analyser les performances et détecter les lacunes"""
+    """Watcher Agent for analyzing performance and detecting gaps"""
     
     def __init__(self, user):
         self.user = user
     
     def track_session(self, topic, activity_type, metadata=None):
-        """Démarre le tracking d'une session"""
+        """Starts session tracking"""
         session = LearningSession.objects.create(
             user=self.user,
             topic=topic,
@@ -53,7 +53,7 @@ class WatcherAgent:
         return session
     
     def end_session(self, session_id, score=None):
-        """Termine une session et calcule la durée"""
+        """Ends a session and calculates duration"""
         try:
             session = LearningSession.objects.get(id=session_id, user=self.user)
             session.end_time = datetime.now()
@@ -66,7 +66,7 @@ class WatcherAgent:
             return None
     
     def record_mistake(self, topic, mistake_type, question, user_answer, correct_answer):
-        """Enregistre une erreur de l'utilisateur"""
+        """Records a user mistake"""
         mistake = UserMistake.objects.create(
             user=self.user,
             topic=topic,
@@ -78,17 +78,17 @@ class WatcherAgent:
         return mistake
     
     def get_user_stats(self):
-        """Retourne les statistiques de l'utilisateur"""
+        """Returns user statistics"""
         sessions = LearningSession.objects.filter(user=self.user)
         
         total_time = sum(s.duration_seconds for s in sessions if s.duration_seconds)
         total_sessions = sessions.count()
         
-        # Calcul du score moyen pour les quiz
+        # Calculate average score for quizzes
         quiz_sessions = sessions.filter(activity_type='quiz', score__isnull=False)
         avg_score = quiz_sessions.aggregate(models.Avg('score'))['score__avg'] or 0
         
-        # Sessions par sujet
+        # Sessions by topic
         topics_stats = defaultdict(lambda: {'sessions': 0, 'time': 0, 'avg_score': 0})
         for session in sessions:
             topics_stats[session.topic]['sessions'] += 1
@@ -105,28 +105,28 @@ class WatcherAgent:
         }
     
     def calculate_level(self):
-        """Calcule le niveau de l'utilisateur basé sur son XP"""
+        """Calculates user level based on XP"""
         return self.user.level
     
     def get_weak_topics(self, limit=5):
-        """Identifie les sujets où l'utilisateur a le plus d'erreurs"""
+        """Identifies topics where user has the most errors"""
         mistakes = UserMistake.objects.filter(user=self.user, reviewed=False)
         
         topic_mistakes = defaultdict(int)
         for mistake in mistakes:
             topic_mistakes[mistake.topic] += 1
         
-        # Trier par nombre d'erreurs décroissant
+        # Sort by decreasing error count
         weak_topics = sorted(topic_mistakes.items(), key=lambda x: x[1], reverse=True)
         return weak_topics[:limit]
     
     def get_revision_recommendations(self):
-        """Génère des recommandations de révision basées sur les erreurs"""
+        """Generates revision recommendations based on errors"""
         weak_topics = self.get_weak_topics()
         
         recommendations = []
         for topic, mistake_count in weak_topics:
-            # Récupérer les erreurs spécifiques pour ce sujet
+            # Get specific errors for this topic
             recent_mistakes = UserMistake.objects.filter(
                 user=self.user,
                 topic=topic,
@@ -149,7 +149,7 @@ class WatcherAgent:
         return recommendations
     
     def mark_mistakes_reviewed(self, topic):
-        """Marque les erreurs d'un sujet comme révisées"""
+        """Marks topic errors as reviewed"""
         UserMistake.objects.filter(
             user=self.user,
             topic=topic,
@@ -157,5 +157,5 @@ class WatcherAgent:
         ).update(reviewed=True)
 
 def get_watcher_agent(user):
-    """Factory function pour créer un agent surveillant"""
+    """Factory function to create a watcher agent"""
     return WatcherAgent(user)

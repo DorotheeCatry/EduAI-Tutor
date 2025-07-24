@@ -29,7 +29,7 @@ def get_section(filepath: Path):
     filename = filepath.name
     parent_dir = filepath.parent.name
 
-    # --- Cas cours ---
+    # --- Course case ---
     if parent_dir in MODULE_INDEX_MAP:
         index_file = MODULE_INDEX_MAP[parent_dir]
         if index_file not in _loaded_indexes:
@@ -37,7 +37,7 @@ def get_section(filepath: Path):
                 with open(INDEX_FOLDER / index_file, "r", encoding="utf-8") as f:
                     _loaded_indexes[index_file] = json.load(f)
             except Exception as e:
-                print(f"❌ Erreur lecture {index_file}: {e}")
+                print(f"❌ Error reading {index_file}: {e}")
                 return "unknown"
 
         index = _loaded_indexes[index_file]
@@ -46,7 +46,7 @@ def get_section(filepath: Path):
                 return section
         return "unknown"
 
-    # --- Cas ressources ---
+    # --- Resources case ---
     elif parent_dir == "resources":
         index_file = "ressources_index.json"
         if index_file not in _loaded_indexes:
@@ -54,7 +54,7 @@ def get_section(filepath: Path):
                 with open(INDEX_FOLDER / index_file, "r", encoding="utf-8") as f:
                     _loaded_indexes[index_file] = json.load(f)
             except Exception as e:
-                print(f"❌ Erreur lecture {index_file}: {e}")
+                print(f"❌ Error reading {index_file}: {e}")
                 _loaded_indexes[index_file] = {}
 
         index = _loaded_indexes[index_file]
@@ -62,7 +62,7 @@ def get_section(filepath: Path):
             if filename in files:
                 return section
 
-        # Fallback par nom
+        # Fallback by name
         if "__" in filename:
             return filename.split("__")[0]
 
@@ -70,7 +70,7 @@ def get_section(filepath: Path):
 
     return "unknown"
 
-# === OCR pour images ===
+# === OCR for images ===
 def ocr_image_to_document(filepath: Path):
     try:
         text = pytesseract.image_to_string(Image.open(filepath))
@@ -86,7 +86,7 @@ def ocr_image_to_document(filepath: Path):
         print(f"❌ OCR failed for {filepath.name}: {e}")
         return None
 
-# === Loader unitaire ===
+# === Unit loader ===
 def load_document(filepath: Path):
     suffix = filepath.suffix.lower()
 
@@ -103,10 +103,10 @@ def load_document(filepath: Path):
         else:
             raise ValueError(f"Unsupported file type: {suffix}")
     except Exception as e:
-        print(f"❌ Erreur lors du chargement de {filepath.name} : {e}")
+        print(f"❌ Error loading {filepath.name}: {e}")
         return []
 
-# === Indexation d’un dossier complet ===
+# === Complete folder indexing ===
 def process_directory(path: Path, collection, splitter, file_type: str):
     for file in tqdm(path.rglob("*"), desc=f"Indexing {file_type}"):
         if not file.is_file():
@@ -126,13 +126,13 @@ def process_directory(path: Path, collection, splitter, file_type: str):
                 for s in MODULE_INDEX_MAP.keys()
             }
             if section not in existing_sections:
-                print(f"⏩ Skip {file.name} (section '{section}' non encore couverte)")
+                print(f"⏩ Skip {file.name} (section '{section}' not yet covered)")
                 continue
 
         for doc in docs:
             doc.metadata.update({
                 "source": file.name,
-                "type": file.suffix[1:],  # "md", "pdf"…
+                "type": file.suffix[1:],  # "md", "pdf"...
                 "section": section
             })
 
@@ -149,7 +149,7 @@ def process_directory(path: Path, collection, splitter, file_type: str):
             
         print(f"✅ {file.name} → {len(chunks)} chunk(s)")
 
-# === POINT D’ENTRÉE ===
+# === ENTRY POINT ===
 def main():
     collection = get_chroma_collection_native()
     splitter = get_splitter()
@@ -159,7 +159,7 @@ def main():
         if full_path.exists():
             process_directory(full_path, collection, splitter, "courses")
         else:
-            print(f"⚠️ Dossier {full_path} non trouvé, ignoré.")
+            print(f"⚠️ Folder {full_path} not found, ignored.")
 
     if RESOURCES_FOLDER.exists():
         process_directory(RESOURCES_FOLDER, collection, splitter, "resources")

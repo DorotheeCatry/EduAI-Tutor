@@ -22,23 +22,23 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 def redirect_to_login(request):
-    """Redirige vers la page de connexion par défaut"""
+    """Redirects to default login page"""
     return redirect('users:login')
 
 def redirect_to_courses(request):
-    """Redirige vers les cours si connecté, sinon vers login"""
+    """Redirects to courses if logged in, otherwise to login"""
     if request.user.is_authenticated:
         return redirect('courses:generator')
     return redirect('users:login')
 
 urlpatterns = [
-    path('i18n/setlang/', set_language, name='set_language'),  # 💬 Vue pour changer la langue
+    path('i18n/setlang/', set_language, name='set_language'),  # 💬 View to change language
     path('admin/', admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
 
-    # Routes des apps personnalisées
-    path('', redirect_to_courses),                      # Redirection intelligente
-    path('auth/', include('apps.users.urls')),          # authentification
+    # Custom app routes
+    path('', redirect_to_courses),                      # Smart redirection
+    path('auth/', include('apps.users.urls')),          # authentication
     path('courses/', include('apps.courses.urls')),
     path('quiz/', include('apps.quiz.urls')),
     path('revision/', include('apps.revision.urls')),
@@ -47,7 +47,7 @@ urlpatterns = [
     path('exercises/', include('apps.exercises.urls')),
 ]
 
-# Servir les fichiers statiques et media en développement
+# Serve static and media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

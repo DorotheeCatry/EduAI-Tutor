@@ -9,13 +9,13 @@ class ExerciseAdmin(admin.ModelAdmin):
     readonly_fields = ('attempts_count', 'success_count', 'created_at', 'updated_at')
     
     fieldsets = (
-        ('Informations générales', {
+        ('General Information', {
             'fields': ('title', 'description', 'difficulty', 'topic', 'is_active')
         }),
         ('Code', {
             'fields': ('starter_code', 'solution', 'tests')
         }),
-        ('Statistiques', {
+        ('Statistics', {
             'fields': ('attempts_count', 'success_count', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
@@ -29,7 +29,7 @@ class ExerciseSubmissionAdmin(admin.ModelAdmin):
     readonly_fields = ('submitted_at', 'execution_time', 'test_results')
     
     def has_change_permission(self, request, obj=None):
-        return False  # Lecture seule
+        return False  # Read only
 
 @admin.register(UserExerciseProgress)
 class UserExerciseProgressAdmin(admin.ModelAdmin):

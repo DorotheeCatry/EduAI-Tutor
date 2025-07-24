@@ -1,4 +1,4 @@
-# apps/agents/orchestrator.py
+# apps/agents/agent_orchestrator.py
 
 from .agent_researcher import get_researcher_chain
 from .agent_pedagogue import get_pedagogue_chain
@@ -10,7 +10,7 @@ User = get_user_model()
 
 class AIOrchestrator:
     """
-    Orchestrateur principal qui coordonne tous les agents IA
+    Main orchestrator that coordinates all AI agents
     """
     
     def __init__(self, user=None):
@@ -22,39 +22,39 @@ class AIOrchestrator:
     
     def generate_course(self, topic, difficulty="intermediate"):
         """
-        Génère un cours complet en utilisant Chercheur + Pédagogue
+        Generates a complete course using Researcher + Pedagogue
         """
         try:
-            print(f"🎓 Génération de cours sur : {topic}")
+            print(f"🎓 Generating course on: {topic}")
             
-            # Améliorer le prompt avec le contexte du module
+            # Enhance prompt with module context
             enhanced_topic = topic
             if hasattr(self, 'current_module') and self.current_module:
                 enhanced_topic = f"{topic} (dans le contexte de {self.current_module})"
             
-            # 1. Génération du cours structuré
+            # 1. Generate structured course
             try:
-                # Améliorer le contexte pour le pédagogue
+                # Enhance context for pedagogue
                 if hasattr(self.pedagogue, 'invoke'):
-                    # Avec RAG
+                    # With RAG
                     course_result = self.pedagogue.invoke({"query": enhanced_topic})
                 else:
-                    # Sans RAG
+                    # Without RAG
                     course_result = self.pedagogue.invoke({"question": enhanced_topic})
                     
                 content = course_result.get('result', course_result)
                 sources = [doc.metadata.get('source', 'Unknown') for doc in course_result.get('source_documents', [])]
             except Exception as e:
-                print(f"Erreur avec RAG, utilisation du fallback : {e}")
-                # Fallback sans RAG
+                print(f"Error with RAG, using fallback: {e}")
+                # Fallback without RAG
                 try:
                     course_result = self.pedagogue.invoke({"question": enhanced_topic})
                 except:
                     course_result = self.pedagogue.run(question=enhanced_topic)
                 content = course_result.get('text', str(course_result))
-                sources = ["IA générative"]
+                sources = ["Generative AI"]
             
-            # 3. Tracking de la session si utilisateur connecté
+            # 3. Session tracking if user is connected
             session = None
             if self.user:
                 try:
@@ -64,8 +64,8 @@ class AIOrchestrator:
                         metadata={}
                     )
                 except Exception as e:
-                    print(f"⚠️ Tracking désactivé (table manquante) : {e}")
-                    # Continuer sans tracking si les tables n'existent pas encore
+                    print(f"⚠️ Tracking disabled (missing table): {e}")
+                    # Continue without tracking if tables don't exist yet
             
             return {
                 'success': True,
@@ -76,7 +76,7 @@ class AIOrchestrator:
             }
             
         except Exception as e:
-            print(f"Erreur lors de la génération du cours : {e}")
+            print(f"Error during course generation: {e}")
             import traceback
             traceback.print_exc()
             return {
@@ -87,35 +87,35 @@ class AIOrchestrator:
     
     def answer_question(self, question):
         """
-        Répond à une question en utilisant le système RAG
+        Answers a question using the RAG system
         """
         try:
-            print(f"🔍 Recherche pour : {question}")
+            print(f"🔍 Searching for: {question}")
             
-            # Utiliser le chercheur pour trouver et synthétiser la réponse
+            # Use researcher to find and synthesize answer
             try:
                 result = self.researcher.invoke(question)
                 answer = result.get('result', result)
                 sources = [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])]
             except Exception as e:
-                print(f"Erreur avec RAG, utilisation du fallback : {e}")
-                # Fallback sans RAG
+                print(f"Error with RAG, using fallback: {e}")
+                # Fallback without RAG
                 result = self.researcher.invoke({"question": question})
                 answer = result.get('text', str(result))
-                sources = ["IA générative"]
+                sources = ["Generative AI"]
             
-            # Tracking de la session si utilisateur connecté
+            # Session tracking if user is connected
             session = None
             if self.user:
                 try:
                     session = self.watcher.track_session(
-                        topic=question[:100],  # Limiter la longueur
+                        topic=question[:100],  # Limit length
                         activity_type='chat',
                         metadata={'question': question}
                     )
                 except Exception as e:
-                    print(f"⚠️ Tracking désactivé (table manquante) : {e}")
-                    # Continuer sans tracking si les tables n'existent pas encore
+                    print(f"⚠️ Tracking disabled (missing table): {e}")
+                    # Continue without tracking if tables don't exist yet
             
             return {
                 'success': True,
@@ -126,7 +126,7 @@ class AIOrchestrator:
             }
             
         except Exception as e:
-            print(f"Erreur lors de la réponse à la question : {e}")
+            print(f"Error answering question: {e}")
             import traceback
             traceback.print_exc()
             return {
@@ -137,12 +137,12 @@ class AIOrchestrator:
     
     def create_quiz(self, topic, num_questions):
         """
-        Crée un quiz sur un sujet donné et retourne un dict directement exploitable.
+        Creates a quiz on a given topic and returns a directly usable dict.
         """
         try:
             quiz_data = generate_quiz(topic, num_questions)
 
-            # Tracking session (facultatif)
+            # Session tracking (optional)
             session = None
             if self.user:
                 session = self.watcher.track_session(
@@ -153,7 +153,7 @@ class AIOrchestrator:
                     }
                 )
 
-            # Ajoute les métadonnées directement dans le retour
+            # Add metadata directly to return
             return {
                 "questions": quiz_data["questions"],
                 "topic": topic,
@@ -161,7 +161,7 @@ class AIOrchestrator:
             }
 
         except Exception as e:
-            print(f"Erreur lors de la création du quiz : {e}")
+            print(f"Error creating quiz: {e}")
             return {
                 "questions": [],
                 "error": str(e),
@@ -171,13 +171,13 @@ class AIOrchestrator:
     
     def submit_quiz_results(self, session_id, answers, quiz_data):
         """
-        Traite les résultats d'un quiz et met à jour les statistiques
+        Processes quiz results and updates statistics
         """
         if not self.user or not session_id:
             return {'success': False, 'error': 'User or session not found'}
         
         try:
-            # Calculer le score
+            # Calculate score
             correct_answers = 0
             total_questions = len(quiz_data['questions'])
             
@@ -188,9 +188,9 @@ class AIOrchestrator:
                 if user_answer == correct_answer:
                     correct_answers += 1
                 else:
-                    # Enregistrer l'erreur
+                    # Record the error
                     self.watcher.record_mistake(
-                        topic=session_id,  # Utiliser session_id comme topic temporaire
+                        topic=session_id,  # Use session_id as temporary topic
                         mistake_type='quiz_wrong_answer',
                         question=question['question'],
                         user_answer=question['options'][user_answer] if user_answer < len(question['options']) else 'No answer',
@@ -199,17 +199,17 @@ class AIOrchestrator:
             
             score = (correct_answers / total_questions) * 100
             
-            # Terminer la session
+            # End session
             session = self.watcher.end_session(session_id, score)
             
-            # Calculer l'XP basé sur la performance
-            base_xp = 10  # XP de base pour compléter un quiz
-            bonus_xp = int(score / 10)  # Bonus basé sur le score (0-10 XP)
-            streak_bonus = min(self.user.current_streak * 2, 20)  # Bonus streak (max 20 XP)
+            # Calculate XP based on performance
+            base_xp = 10  # Base XP for completing a quiz
+            bonus_xp = int(score / 10)  # Score-based bonus (0-10 XP)
+            streak_bonus = min(self.user.current_streak * 2, 20)  # Streak bonus (max 20 XP)
             
             total_xp = base_xp + bonus_xp + streak_bonus
             
-            # Ajouter l'XP et mettre à jour les stats
+            # Add XP and update stats
             xp_result = self.user.add_xp(total_xp, 'quiz_completion')
             self.user.total_quizzes_completed += 1
             self.user.save()
@@ -225,7 +225,7 @@ class AIOrchestrator:
             }
             
         except Exception as e:
-            print(f"Erreur lors du traitement des résultats : {e}")
+            print(f"Error processing results: {e}")
             return {
                 'success': False,
                 'error': str(e)
@@ -233,7 +233,7 @@ class AIOrchestrator:
     
     def get_user_dashboard(self):
         """
-        Génère les données du tableau de bord utilisateur
+        Generates user dashboard data
         """
         if not self.user:
             return {'success': False, 'error': 'User not authenticated'}
@@ -251,12 +251,12 @@ class AIOrchestrator:
             }
             
         except Exception as e:
-            print(f"Erreur lors de la génération du dashboard : {e}")
+            print(f"Error generating dashboard: {e}")
             return {
                 'success': False,
                 'error': str(e)
             }
 
 def get_orchestrator(user=None):
-    """Factory function pour créer un orchestrateur"""
+    """Factory function to create an orchestrator"""
     return AIOrchestrator(user)

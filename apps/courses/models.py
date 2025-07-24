@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Course(models.Model):
-    """Modèle pour sauvegarder les cours générés"""
+    """Model for saving generated courses"""
     
     title = models.CharField(max_length=200)
     topic = models.CharField(max_length=200)
@@ -12,41 +12,41 @@ class Course(models.Model):
     content = models.TextField()
     sources = models.JSONField(default=list, blank=True)
     
-    # Métadonnées
+    # Metadata
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_favorite = models.BooleanField(default=False)
     
-    # Statistiques
+    # Statistics
     view_count = models.PositiveIntegerField(default=0)
-    completion_rate = models.FloatField(default=0.0)  # Pourcentage de lecture
+    completion_rate = models.FloatField(default=0.0)  # Reading percentage
     
     class Meta:
         ordering = ['-created_at']
-        verbose_name = "Cours"
-        verbose_name_plural = "Cours"
+        verbose_name = "Course"
+        verbose_name_plural = "Courses"
     
     def __str__(self):
         return f"{self.title}"
     
     def increment_view_count(self):
-        """Incrémente le compteur de vues"""
+        """Increments view counter"""
         self.view_count += 1
         self.save(update_fields=['view_count'])
 
 class CourseSection(models.Model):
-    """Sections d'un cours pour un meilleur tracking"""
+    """Course sections for better tracking"""
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
     title = models.CharField(max_length=200)
     content = models.TextField()
     order = models.PositiveIntegerField()
     section_type = models.CharField(max_length=50, choices=[
         ('introduction', 'Introduction'),
-        ('explanation', 'Explication'),
-        ('examples', 'Exemples'),
-        ('summary', 'Résumé'),
-        ('advanced', 'Approfondissement'),
+        ('explanation', 'Explanation'),
+        ('examples', 'Examples'),
+        ('summary', 'Summary'),
+        ('advanced', 'Advanced'),
     ])
     
     class Meta:

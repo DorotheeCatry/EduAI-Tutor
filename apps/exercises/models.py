@@ -5,7 +5,7 @@ import json
 User = get_user_model()
 
 class Exercise(models.Model):
-    """Modèle pour les exercices de code Python"""
+    """Model for Python code exercises"""
     
     DIFFICULTY_CHOICES = [
         ('beginner', 'Beginner'),

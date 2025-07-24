@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 class ModuleLoader:
     """
-    Chargeur dynamique de modules basé sur les fichiers d'index JSON
+    Dynamic module loader based on JSON index files
     """
     
     def __init__(self):
@@ -15,45 +15,45 @@ class ModuleLoader:
     
     def _load_module_index_map(self) -> Dict[str, str]:
         """
-        Charge automatiquement tous les fichiers d'index disponibles
+        Automatically loads all available index files
         """
         module_map = {}
         
         if not self.index_folder.exists():
-            print(f"⚠️ Dossier d'index non trouvé : {self.index_folder}")
+            print(f"⚠️ Index folder not found: {self.index_folder}")
             return module_map
         
-        # Scanner tous les fichiers JSON dans le dossier index
+        # Scan all JSON files in index folder
         for json_file in self.index_folder.glob("*_index.json"):
-            # Vérifier que le fichier n'est pas vide et est valide
+            # Check that file is not empty and is valid
             try:
                 if json_file.stat().st_size == 0:
-                    print(f"⚠️ Fichier vide ignoré : {json_file.name}")
+                    print(f"⚠️ Empty file ignored: {json_file.name}")
                     continue
                     
-                # Test de lecture pour vérifier la validité du JSON
+                # Read test to verify JSON validity
                 with open(json_file, 'r', encoding='utf-8') as f:
                     test_data = json.load(f)
                     if not test_data:  # Fichier JSON vide ou null
-                        print(f"⚠️ Fichier JSON vide ignoré : {json_file.name}")
+                        print(f"⚠️ Empty JSON file ignored: {json_file.name}")
                         continue
                         
             except (json.JSONDecodeError, FileNotFoundError, PermissionError) as e:
-                print(f"❌ Fichier JSON invalide ignoré {json_file.name}: {e}")
+                print(f"❌ Invalid JSON file ignored {json_file.name}: {e}")
                 continue
             except Exception as e:
-                print(f"❌ Erreur lors de la vérification de {json_file.name}: {e}")
+                print(f"❌ Error checking {json_file.name}: {e}")
                 continue
                 
             module_name = json_file.stem.replace("_index", "")
             module_map[module_name] = json_file.name
-            print(f"📚 Module détecté : {module_name} → {json_file.name}")
+            print(f"📚 Module detected: {module_name} → {json_file.name}")
         
         return module_map
     
     def get_available_modules(self) -> List[Dict[str, str]]:
         """
-        Retourne la liste des modules disponibles avec leurs métadonnées
+        Returns list of available modules with their metadata
         """
         modules = []
         
@@ -68,7 +68,7 @@ class ModuleLoader:
                     'files_count': sum(len(files) for files in module_data.values())
                 })
         
-        # Ajouter le module "général" en premier
+        # Add "general" module first
         modules.insert(0, {
             'id': 'general',
             'name': 'General',
@@ -81,7 +81,7 @@ class ModuleLoader:
     
     def _load_module_data(self, module_key: str) -> Optional[Dict]:
         """
-        Charge les données d'un module depuis son fichier JSON
+        Loads module data from its JSON file
         """
         if module_key in self._modules_cache:
             return self._modules_cache[module_key]
@@ -92,29 +92,29 @@ class ModuleLoader:
         index_file = self.index_folder / self.module_index_map[module_key]
         
         try:
-            # Vérifier que le fichier existe et n'est pas vide
+            # Check that file exists and is not empty
             if not index_file.exists():
-                print(f"❌ Fichier d'index non trouvé : {index_file}")
+                print(f"❌ Index file not found: {index_file}")
                 return None
                 
             if index_file.stat().st_size == 0:
-                print(f"❌ Fichier d'index vide : {index_file}")
+                print(f"❌ Empty index file: {index_file}")
                 return None
                 
             with open(index_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 if not data:
-                    print(f"❌ Données JSON vides dans : {index_file}")
+                    print(f"❌ Empty JSON data in: {index_file}")
                     return None
                 self._modules_cache[module_key] = data
                 return data
         except Exception as e:
-            print(f"❌ Erreur lors du chargement de {index_file}: {e}")
+            print(f"❌ Error loading {index_file}: {e}")
             return None
     
     def _format_module_name(self, module_key: str) -> str:
         """
-        Formate le nom du module pour l'affichage
+        Formats module name for display
         """
         name_mapping = {
             'python': 'Python - Complete',
@@ -131,7 +131,7 @@ class ModuleLoader:
     
     def _generate_module_description(self, module_data: Dict) -> str:
         """
-        Génère une description basée sur les sections du module
+        Generates description based on module sections
         """
         sections = list(module_data.keys())
         
@@ -153,13 +153,13 @@ class ModuleLoader:
     
     def get_module_sections(self, module_key: str) -> Dict[str, List[str]]:
         """
-        Retourne les sections d'un module spécifique
+        Returns sections of a specific module
         """
         return self._load_module_data(module_key) or {}
     
     def get_section_files(self, module_key: str, section_key: str) -> List[str]:
         """
-        Retourne les fichiers d'une section spécifique
+        Returns files of a specific section
         """
         module_data = self._load_module_data(module_key)
         if not module_data:
@@ -169,7 +169,7 @@ class ModuleLoader:
     
     def search_in_module(self, module_key: str, query: str) -> List[Dict]:
         """
-        Recherche dans un module spécifique
+        Search in a specific module
         """
         module_data = self._load_module_data(module_key)
         if not module_data:

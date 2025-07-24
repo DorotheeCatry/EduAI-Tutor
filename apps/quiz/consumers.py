@@ -28,16 +28,17 @@ class QuizConsumer(AsyncWebsocketConsumer):
         await self.accept()
         
         # Ajouter le joueur à la salle
+        # Add player to room
         await self.add_player_to_room()
         
-        # Envoyer l'état actuel de la salle
+        # Send current room state
         await self.send_room_state()
 
     async def disconnect(self, close_code):
-        # Retirer le joueur de la salle
+        # Remove player from room
         await self.remove_player_from_room()
         
-        # Quitter le groupe
+        # Leave group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -129,12 +130,13 @@ class QuizConsumer(AsyncWebsocketConsumer):
             return
         
         # Générer les questions
+        # Generate questions
         await self.generate_questions()
         
-        # Changer le statut de la salle
+        # Change room status
         await self.update_room_status('starting')
         
-        # Envoyer le signal de démarrage
+        # Send start signal
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -143,7 +145,7 @@ class QuizConsumer(AsyncWebsocketConsumer):
             }
         )
         
-        # Attendre 5 secondes puis commencer
+        # Wait 5 seconds then start
         await asyncio.sleep(5)
         await self.send_first_question()
 
@@ -152,11 +154,11 @@ class QuizConsumer(AsyncWebsocketConsumer):
         try:
             room = GameRoom.objects.get(code=self.room_code)
             
-            # Utiliser l'orchestrateur IA pour générer le quiz
+            # Use AI orchestrator to generate quiz
             orchestrator = get_orchestrator()
             quiz_data = orchestrator.create_quiz(room.topic, room.num_questions)
             
-            # Sauvegarder les questions
+            # Save questions
             for i, question_data in enumerate(quiz_data['questions']):
                 GameQuestion.objects.create(
                     room=room,
@@ -169,7 +171,7 @@ class QuizConsumer(AsyncWebsocketConsumer):
             
             return True
         except Exception as e:
-            print(f"Erreur génération questions: {e}")
+            print(f"Question generation error: {e}")
             return False
 
     @database_sync_to_async
@@ -220,15 +222,16 @@ class QuizConsumer(AsyncWebsocketConsumer):
         response_time = data.get('response_time', 60)
         
         # Sauvegarder la réponse
+        # Save answer
         points = await self.save_answer(answer_index, response_time)
         
-        # Envoyer confirmation au joueur
+        # Send confirmation to player
         await self.send(text_data=json.dumps({
             'type': 'answer_submitted',
             'points': points
         }))
         
-        # Vérifier si tous les joueurs ont répondu
+        # Check if all players answered
         if await self.all_players_answered():
             await self.show_results()
 
@@ -239,7 +242,7 @@ class QuizConsumer(AsyncWebsocketConsumer):
             participant = GameParticipant.objects.get(room=room, user=self.user)
             question = GameQuestion.objects.get(room=room, question_number=room.current_question)
             
-            # Créer la réponse
+            # Create answer
             game_answer = GameAnswer.objects.create(
                 participant=participant,
                 question=question,
@@ -247,11 +250,11 @@ class QuizConsumer(AsyncWebsocketConsumer):
                 response_time=response_time
             )
             
-            # Calculer les points
+            # Calculate points
             points = game_answer.calculate_points()
             game_answer.save()
             
-            # Mettre à jour le score du participant
+            # Update participant score
             participant.score += points
             if game_answer.is_correct:
                 participant.correct_answers += 1
@@ -259,7 +262,7 @@ class QuizConsumer(AsyncWebsocketConsumer):
             
             return points
         except Exception as e:
-            print(f"Erreur sauvegarde réponse: {e}")
+            print(f"Answer save error: {e}")
             return 0
 
     @database_sync_to_async
@@ -286,7 +289,7 @@ class QuizConsumer(AsyncWebsocketConsumer):
             }
         )
         
-        # Attendre 5 secondes puis passer à la question suivante
+        # Wait 5 seconds then move to next question
         await asyncio.sleep(5)
         await self.next_question()
 
@@ -296,14 +299,14 @@ class QuizConsumer(AsyncWebsocketConsumer):
             room = GameRoom.objects.get(code=self.room_code)
             question = GameQuestion.objects.get(room=room, question_number=room.current_question)
             
-            # Statistiques des réponses
+            # Answer statistics
             answers = GameAnswer.objects.filter(question=question)
             stats = [0, 0, 0, 0]  # Compteur pour chaque option
             
             for answer in answers:
                 stats[answer.selected_answer] += 1
             
-            # Classement actuel
+            # Current leaderboard
             leaderboard = list(room.participants.filter(is_active=True).order_by('-score').values(
                 'user__username', 'score', 'correct_answers'
             ))
@@ -315,7 +318,7 @@ class QuizConsumer(AsyncWebsocketConsumer):
                 'leaderboard': leaderboard
             }
         except Exception as e:
-            print(f"Erreur résultats: {e}")
+            print(f"Results error: {e}")
             return {}
 
     async def next_question(self):
@@ -365,8 +368,8 @@ class QuizConsumer(AsyncWebsocketConsumer):
             
             results = []
             for i, participant in enumerate(participants):
-                # Ajouter XP bonus selon le classement
-                bonus_xp = max(50 - (i * 10), 10)  # 50 XP pour le 1er, 40 pour le 2e, etc.
+                # Add XP bonus based on ranking
+                bonus_xp = max(50 - (i * 10), 10)  # 50 XP for 1st, 40 for 2nd, etc.
                 participant.user.add_xp(bonus_xp, 'multiplayer_quiz')
                 
                 results.append({
@@ -381,10 +384,10 @@ class QuizConsumer(AsyncWebsocketConsumer):
             
             return results
         except Exception as e:
-            print(f"Erreur résultats finaux: {e}")
+            print(f"Final results error: {e}")
             return []
 
-    # Handlers pour les messages de groupe
+    # Handlers for group messages
     async def room_update(self, event):
         await self.send(text_data=json.dumps({
             'type': 'room_update',

@@ -7,7 +7,7 @@ from chromadb.utils import embedding_functions
 
 CHROMA_PATH = "apps/rag/chroma"
 
-# === Pour LangChain (utilisé dans agent_researcher.py) ===
+# === For LangChain (used in agent_researcher.py) ===
 def load_embedding_function():
     return OllamaEmbeddings(model="mxbai-embed-large")
 
@@ -18,7 +18,7 @@ def get_chroma_collection_langchain():
     )
 
 
-# === Pour Chroma natif (utilisé dans prepare_chroma.py) ===
+# === For native Chroma (used in prepare_chroma.py) ===
 def get_chroma_collection_native():
     embedding_fn = embedding_functions.OllamaEmbeddingFunction(
         model_name="mxbai-embed-large"

@@ -11,14 +11,14 @@ class RegisterForm(UserCreationForm):
         required=True,
         widget=forms.EmailInput(attrs={
             'class': 'w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors',
-            'placeholder': 'votre@email.com'
+            'placeholder': 'your@email.com'
         })
     )
     
     username = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors',
-            'placeholder': 'Nom d\'utilisateur'
+            'placeholder': 'Username'
         })
     )
     
@@ -32,7 +32,7 @@ class RegisterForm(UserCreationForm):
     password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors',
-            'placeholder': 'Confirmer le mot de passe'
+            'placeholder': 'Confirm password'
         })
     )
     

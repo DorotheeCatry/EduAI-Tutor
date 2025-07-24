@@ -1,4 +1,4 @@
-# agents/tools/agent_researcher.py
+# apps/agents/agent_researcher.py
 
 from langchain.chains import RetrievalQA
 from apps.agents.tools.llm_loader import get_llm
@@ -8,7 +8,7 @@ from apps.agents.utils import load_prompt
 
 def get_researcher_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     """
-    Initialise le Chercheur RAG, compatible Groq (ou Ollama fallback).
+    Initialize RAG Researcher, compatible with Groq (or Ollama fallback).
     """
     try:
         embedding_fn = load_embedding_function()
@@ -26,8 +26,8 @@ def get_researcher_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct")
             return_source_documents=True
         )
     except Exception as e:
-        print(f"Erreur lors de l'initialisation du chercheur : {e}")
-        # Fallback sans RAG
+        print(f"Error initializing researcher: {e}")
+        # Fallback without RAG
         llm = get_llm(model_name=model_name)
         from langchain.chains import LLMChain
         from langchain.prompts import PromptTemplate

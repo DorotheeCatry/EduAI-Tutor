@@ -6,7 +6,7 @@ User = get_user_model()
 
 class EmailOrUsernameModelBackend(ModelBackend):
     """
-    Authentification backend qui permet la connexion par email ou nom d'utilisateur.
+    Authentication backend that allows login by email or username.
     """
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None:
@@ -16,12 +16,12 @@ class EmailOrUsernameModelBackend(ModelBackend):
             return None
         
         try:
-            # Chercher l'utilisateur par email ou nom d'utilisateur
+            # Search user by email or username
             user = User.objects.get(
                 Q(email__iexact=username) | Q(username__iexact=username)
             )
         except User.DoesNotExist:
-            # Exécuter le hashage par défaut pour éviter les attaques de timing
+            # Execute default hashing to avoid timing attacks
             User().set_password(password)
             return None
         

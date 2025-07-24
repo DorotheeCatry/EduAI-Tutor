@@ -6,13 +6,13 @@ import random
 User = get_user_model()
 
 class GameRoom(models.Model):
-    """Salle de jeu multijoueur"""
+    """Multiplayer game room"""
     
     STATUS_CHOICES = [
-        ('waiting', 'En attente'),
-        ('starting', 'Démarrage'),
-        ('in_progress', 'En cours'),
-        ('finished', 'Terminé'),
+        ('waiting', 'Waiting'),
+        ('starting', 'Starting'),
+        ('in_progress', 'In Progress'),
+        ('finished', 'Finished'),
     ]
     
     code = models.CharField(max_length=10, unique=True)
@@ -36,7 +36,7 @@ class GameRoom(models.Model):
     
     @classmethod
     def generate_code(cls):
-        """Génère un code unique pour la salle"""
+        """Generates unique code for room"""
         while True:
             code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
             if not cls.objects.filter(code=code).exists():
@@ -51,7 +51,7 @@ class GameRoom(models.Model):
         return self.player_count >= self.max_players
 
 class GameParticipant(models.Model):
-    """Participant dans une salle de jeu"""
+    """Participant in a game room"""
     
     room = models.ForeignKey(GameRoom, on_delete=models.CASCADE, related_name='participants')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -68,13 +68,13 @@ class GameParticipant(models.Model):
         return f"{self.user.username} in {self.room.code}"
 
 class GameQuestion(models.Model):
-    """Question d'une partie"""
+    """Question in a game"""
     
     room = models.ForeignKey(GameRoom, on_delete=models.CASCADE, related_name='questions')
     question_number = models.IntegerField()
     question_text = models.TextField()
     options = models.JSONField()  # Liste des 4 options
-    correct_answer = models.IntegerField()  # Index de la bonne réponse (0-3)
+    correct_answer = models.IntegerField()  # Index of correct answer (0-3)
     explanation = models.TextField(blank=True)
     
     class Meta:
@@ -85,12 +85,12 @@ class GameQuestion(models.Model):
         return f"Q{self.question_number} - {self.room.code}"
 
 class GameAnswer(models.Model):
-    """Réponse d'un joueur à une question"""
+    """Player's answer to a question"""
     
     participant = models.ForeignKey(GameParticipant, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(GameQuestion, on_delete=models.CASCADE, related_name='answers')
-    selected_answer = models.IntegerField()  # Index de la réponse choisie (0-3)
-    response_time = models.FloatField()  # Temps de réponse en secondes
+    selected_answer = models.IntegerField()  # Index of chosen answer (0-3)
+    response_time = models.FloatField()  # Response time in seconds
     points_earned = models.IntegerField(default=0)
     answered_at = models.DateTimeField(auto_now_add=True)
     
@@ -102,16 +102,16 @@ class GameAnswer(models.Model):
         return self.selected_answer == self.question.correct_answer
     
     def calculate_points(self):
-        """Calcule les points basés sur justesse et rapidité"""
+        """Calculates points based on accuracy and speed"""
         if not self.is_correct:
             return 0
         
-        # Points de base pour une bonne réponse
+        # Base points for correct answer
         base_points = 1000
         
-        # Bonus de rapidité (max 500 points)
-        # Plus on répond vite, plus on gagne de points
-        max_time = 60  # 60 secondes max
+        # Speed bonus (max 500 points)
+        # Faster response = more points
+        max_time = 60  # 60 seconds max
         time_bonus = max(0, int((max_time - self.response_time) / max_time * 500))
         
         total_points = base_points + time_bonus

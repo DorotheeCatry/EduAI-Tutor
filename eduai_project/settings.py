@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-xjyz739t!+h+cdti4sk4nw$_l%9rew5w9&+#_qc+jt=h$e+6hy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Logging pour debug
+# Logging for debug
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -154,13 +154,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "users.KodaUser"
 
-# Backend d'authentification personnalisé
+# Custom authentication backend
 AUTHENTICATION_BACKENDS = [
     'apps.users.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# URLs de redirection pour l'authentification
+# Authentication redirect URLs
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/courses/generator/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
@@ -190,12 +190,13 @@ LOCALE_PATHS = [
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Toujours défini pour collectstatic
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Always defined for collectstatic
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Dossier pour les fichiers statiques globaux
+    BASE_DIR / 'static',  # Folder for global static files
 ]
 
-# Finders pour les fichiers statiques
+# Static file finders
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -213,7 +214,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/dashboard/'    
 LOGOUT_REDIRECT_URL = '/auth/login/'
-LOGIN_URL = '/auth/login/'            # protection @login_required
+LOGIN_URL = '/auth/login/'            # @login_required protection
 
 # Channels configuration
 ASGI_APPLICATION = 'eduai_project.asgi.application'
