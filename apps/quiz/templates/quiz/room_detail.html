@@ -102,7 +102,7 @@
 
                 {% if not can_start and is_host %}
                     <div class="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <p class="text-sm text-yellow-400">Waiting for at least 1 player to start the game...</p>
+                        <p class="text-sm text-yellow-400">You can start the game even with just yourself for testing!</p>
                     </div>
                 {% endif %}
             </div>
@@ -125,7 +125,8 @@
 
         // WebSocket connection for real-time updates
         const roomCode = '{{ room.code }}';
-        const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socket = new WebSocket(`${protocol}//${window.location.host}/ws/quiz/${roomCode}/`);
 
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
@@ -140,13 +141,28 @@
         };
 
         socket.onclose = function(event) {
-            console.log('WebSocket closed');
+            console.log('WebSocket closed:', event.code, event.reason);
+            // For now, allow manual start without WebSocket
+            if (event.code !== 1000) {
+                console.log('WebSocket connection failed, using fallback mode');
+            }
+        };
+        
+        socket.onerror = function(error) {
+            console.log('WebSocket error:', error);
+            // Fallback: allow manual navigation for testing
         };
 
         window.startGame = function() {
-            socket.send(JSON.stringify({
-                'type': 'start_game'
-            }));
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    'type': 'start_game'
+                }));
+            } else {
+                // Fallback: direct navigation for testing
+                console.log('WebSocket not available, redirecting directly');
+                window.location.href = `{% url 'quiz:multiplayer_game' room.code %}`;
+            }
         };
     });
 

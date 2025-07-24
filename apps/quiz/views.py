@@ -96,7 +96,7 @@ def room_detail(request, room_code):
         'room': room,
         'participants': participants,
         'is_host': room.host == request.user,
-        'can_start': room.status == 'waiting' and room.player_count >= 1
+        'can_start': room.status == 'waiting' and room.player_count >= 1  # Allow single player
     }
     
     return render(request, 'quiz/room_detail.html', context)
