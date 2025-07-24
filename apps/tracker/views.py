@@ -28,10 +28,13 @@ def dashboard(request):
     
     # This week's progress (realistic simulation)
     week_progress = [
-        {'day': 'Monday', 'minutes': max(0, today_minutes - 60), 'percentage': min(100, (today_minutes - 60) * 100 // 150)},
-        {'day': 'Tuesday', 'minutes': max(0, today_minutes - 30), 'percentage': min(100, (today_minutes - 30) * 100 // 150)},
-        {'day': 'Wednesday', 'minutes': max(0, today_minutes - 90), 'percentage': min(100, (today_minutes - 90) * 100 // 150)},
-        {'day': 'Thursday', 'minutes': today_minutes, 'percentage': min(100, today_minutes * 100 // 150)},
+        {'day': 'Mon', 'minutes': max(0, today_minutes - 60), 'percentage': max(0, min(100, (today_minutes - 60) * 100 // 150))},
+        {'day': 'Tue', 'minutes': max(0, today_minutes - 30), 'percentage': max(0, min(100, (today_minutes - 30) * 100 // 150))},
+        {'day': 'Wed', 'minutes': max(0, today_minutes - 90), 'percentage': max(0, min(100, (today_minutes - 90) * 100 // 150))},
+        {'day': 'Thu', 'minutes': today_minutes, 'percentage': min(100, today_minutes * 100 // 150)},
+        {'day': 'Fri', 'minutes': max(0, today_minutes - 20), 'percentage': max(0, min(100, (today_minutes - 20) * 100 // 150))},
+        {'day': 'Sat', 'minutes': max(0, today_minutes - 45), 'percentage': max(0, min(100, (today_minutes - 45) * 100 // 150))},
+        {'day': 'Sun', 'minutes': max(0, today_minutes - 75), 'percentage': max(0, min(100, (today_minutes - 75) * 100 // 150))},
     ]
     
     # Recent topics (real user courses)
@@ -59,26 +62,26 @@ def dashboard(request):
         recent_subjects.append(examples[len(recent_subjects)])
     
     # Progress goals
-    weekly_goal_courses = 5
-    weekly_goal_quizzes = 10
-    daily_goal_minutes = 120  # 2h per day
+    weekly_goal_courses = 3
+    weekly_goal_quizzes = 5
+    daily_goal_minutes = 60  # 1h per day
     
     goals = {
         'courses': {
-            'current': min(weekly_goal_courses, total_courses % 7 + 1),
+            'current': min(weekly_goal_courses, max(1, total_courses % 4)),
             'target': weekly_goal_courses,
-            'percentage': min(100, (total_courses % 7 + 1) * 100 // weekly_goal_courses)
+            'percentage': min(100, max(1, total_courses % 4) * 100 // weekly_goal_courses)
         },
         'quizzes': {
-            'current': min(weekly_goal_quizzes, user.total_quizzes_completed % 10 + 2),
+            'current': min(weekly_goal_quizzes, max(1, user.total_quizzes_completed % 6)),
             'target': weekly_goal_quizzes,
-            'percentage': min(100, (user.total_quizzes_completed % 10 + 2) * 100 // weekly_goal_quizzes)
+            'percentage': min(100, max(1, user.total_quizzes_completed % 6) * 100 // weekly_goal_quizzes)
         },
         'daily_time': {
             'current_minutes': today_minutes,
             'target_minutes': daily_goal_minutes,
             'percentage': min(100, today_minutes * 100 // daily_goal_minutes),
-            'display': f"{today_hours}h {today_mins:02d}m/{daily_goal_minutes//60}h"
+            'display': f"{today_hours}h {today_mins:02d}m / {daily_goal_minutes//60}h"
         }
     }
     

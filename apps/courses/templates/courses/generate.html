@@ -81,23 +81,14 @@
                 {% if user.total_courses_completed > 0 %}
                 <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-white">Last Course</span>
-                        <span class="text-xs text-gray-400">{{ user.level }}%</span>
+                        <span class="text-xs font-bold text-white">Level Progress</span>
+                        <span class="text-xs text-gray-400">{{ user.xp_progress_percentage|floatformat:0 }}%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
                         <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage }}%"></div>
                     </div>
                 </div>
                 {% endif %}
-                <div class="p-3 bg-gray-900 rounded-lg border border-gray-600">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-white">Level Progress</span>
-                        <span class="text-xs text-gray-400">{{ user.xp }}/{{ user.xp_for_next_level }} XP</span>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage }}%"></div>
-                    </div>
-                </div>
             </div>
         </div>
 
