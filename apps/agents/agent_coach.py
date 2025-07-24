@@ -17,7 +17,7 @@ def get_coach_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     
     # Prompt for generating MCQs
     quiz_prompt = PromptTemplate(
-        input_variables=["topic", "num_questions"],
+        input_variables=["topic", "num_questions", "language"],
         template=load_prompt("coach")
     )
     return LLMChain(llm=llm, prompt=quiz_prompt)
@@ -60,12 +60,13 @@ Respond ONLY with JSON, no additional text.
     
     return LLMChain(llm=llm, prompt=code_prompt)
 
-def generate_quiz(topic, num_questions=5):
+def generate_quiz(topic, num_questions=5, language="fr"):
     try:
         chain = get_coach_chain()
         result = chain.run(
             topic=topic,
-            num_questions=num_questions
+            num_questions=num_questions,
+            language=language
         )
         print("🧠 Raw model output:", result)
 
@@ -76,14 +77,29 @@ def generate_quiz(topic, num_questions=5):
     except Exception as e:
         print(f"❌ Quiz generation failed: {e}")
 
-    # Fallback
+    # Fallback with language support
+    fallback_text = {
+        "fr": {
+            "question": f"Question d'exemple sur {topic}",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "explanation": "Explication d'exemple"
+        },
+        "en": {
+            "question": f"Example question on {topic}",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "explanation": "Sample explanation"
+        }
+    }
+    
+    lang_text = fallback_text.get(language, fallback_text["en"])
+    
     return {
         "questions": [
             {
-                "question": f"Example question on {topic}",
-                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "question": lang_text["question"],
+                "options": lang_text["options"],
                 "correct_answer": 0,
-                "explanation": "Sample explanation"
+                "explanation": lang_text["explanation"]
             }
         ]
     }

@@ -213,16 +213,35 @@ document.addEventListener('DOMContentLoaded', function () {
     
     function showFinalResults() {
         const percentage = Math.round((score / questions.length) * 100);
-        let message = `Quiz completed!\n\nScore: ${score}/${questions.length} (${percentage}%)\n\n`;
         
-        if (percentage >= 90) {
-            message += "🏆 Excellent! You have perfect mastery of the subject!";
-        } else if (percentage >= 70) {
-            message += "👍 Very good! A few points to review but it's solid!";
-        } else if (percentage >= 50) {
-            message += "📚 Not bad! There are still things to learn.";
+        // Get quiz language from data
+        const quizLanguage = quizData.language || 'en';
+        
+        let message;
+        if (quizLanguage === 'fr') {
+            message = `Quiz terminé !\n\nScore : ${score}/${questions.length} (${percentage}%)\n\n`;
+            
+            if (percentage >= 90) {
+                message += "🏆 Excellent ! Vous maîtrisez parfaitement le sujet !";
+            } else if (percentage >= 70) {
+                message += "👍 Très bien ! Quelques points à revoir mais c'est solide !";
+            } else if (percentage >= 50) {
+                message += "📚 Pas mal ! Il reste encore des choses à apprendre.";
+            } else {
+                message += "💪 Continuez vos efforts ! C'est en pratiquant qu'on progresse.";
+            }
         } else {
-            message += "💪 Keep up your efforts! Practice makes perfect.";
+            message = `Quiz completed!\n\nScore: ${score}/${questions.length} (${percentage}%)\n\n`;
+            
+            if (percentage >= 90) {
+                message += "🏆 Excellent! You have perfect mastery of the subject!";
+            } else if (percentage >= 70) {
+                message += "👍 Very good! A few points to review but it's solid!";
+            } else if (percentage >= 50) {
+                message += "📚 Not bad! There are still things to learn.";
+            } else {
+                message += "💪 Keep up your efforts! Practice makes perfect.";
+            }
         }
         
         alert(message);

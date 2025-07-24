@@ -140,7 +140,12 @@ class AIOrchestrator:
         Creates a quiz on a given topic and returns a directly usable dict.
         """
         try:
-            quiz_data = generate_quiz(topic, num_questions)
+            # Get user language preference
+            user_language = "fr"  # Default
+            if self.user and hasattr(self.user, 'language_preference'):
+                user_language = self.user.language_preference
+            
+            quiz_data = generate_quiz(topic, num_questions, user_language)
 
             # Session tracking (optional)
             session = None
@@ -150,6 +155,7 @@ class AIOrchestrator:
                     activity_type='quiz',
                     metadata={
                         'num_questions': num_questions,
+                        'language': user_language,
                     }
                 )
 
@@ -157,6 +163,7 @@ class AIOrchestrator:
             return {
                 "questions": quiz_data["questions"],
                 "topic": topic,
+                "language": user_language,
                 "session_id": session.id if session else None
             }
 

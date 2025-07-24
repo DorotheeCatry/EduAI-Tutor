@@ -21,15 +21,15 @@ import re
 
 def parse_text_quiz(text):
     """
-    Parses a free-text quiz with potential code blocks.
+    Parses a free-text quiz with potential code blocks in multiple languages.
     Expected format:
         Q1. ...
         ```python
         code
         ```
         A. ...
-        Answer: X
-        Explanation: ...
+        Answer: X / Réponse: X
+        Explanation: ... / Explication: ...
     Returns:
         {"questions": [...]}
     """
@@ -57,9 +57,9 @@ def parse_text_quiz(text):
                 question_lines.append(line)
             elif re.match(r"^[A-D]\. ", stripped):
                 options.append(stripped[3:].strip())
-            elif stripped.lower().startswith("answer:"):
+            elif stripped.lower().startswith("answer:") or stripped.lower().startswith("réponse:"):
                 correct_letter = stripped.split(":", 1)[1].strip().upper()
-            elif stripped.lower().startswith("explanation:"):
+            elif stripped.lower().startswith("explanation:") or stripped.lower().startswith("explication:"):
                 explanation = stripped.split(":", 1)[1].strip()
 
         question_text = "\n".join(question_lines).strip()
