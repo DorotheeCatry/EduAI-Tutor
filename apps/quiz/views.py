@@ -190,6 +190,8 @@ def room_status_api(request, room_code):
                     avatar_url = p.user.avatar.url
                 else:
                     avatar_url = f'/static/koda/{p.user.avatar}'
+            elif p.user.koda_avatar:
+                avatar_url = f'/static/koda/{p.user.koda_avatar}'
             
             participants_data.append({
                 'username': p.user.username,

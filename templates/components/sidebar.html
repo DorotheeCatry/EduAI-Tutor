@@ -22,6 +22,8 @@
                     {% else %}
                         <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                     {% endif %}
+                {% elif user.koda_avatar %}
+                    <img src="{% static 'koda/' %}{{ user.koda_avatar }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                 {% else %}
                     <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                 {% endif %}
@@ -41,6 +43,8 @@
                             {% else %}
                                 <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                             {% endif %}
+                        {% elif user.koda_avatar %}
+                            <img src="{% static 'koda/' %}{{ user.koda_avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                         {% else %}
                             <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                         {% endif %}

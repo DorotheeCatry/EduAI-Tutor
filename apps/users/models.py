@@ -44,6 +44,7 @@ class KodaUser(AbstractUser):
     koda_avatar = models.CharField(
         max_length=100, 
         blank=True, 
+        default="koda_base.png",
         null=True)    # nom du fichier koda
 
 

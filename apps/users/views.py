@@ -45,6 +45,9 @@ class RegisterView(CreateView):
     def form_valid(self, form):
         # Force student role for all new users
         form.instance.role = KodaUser.Role.STUDENT
+        # Set default Koda avatar
+        if not form.instance.avatar:
+            form.instance.koda_avatar = "koda_base.png"
         response = super().form_valid(form)
         messages.success(self.request, 'Account created successfully! You can now log in.')
         return response
