@@ -10,6 +10,29 @@ from django.contrib import messages
 import json
 
 @login_required
+def delete_room(request, room_code):
+    """Delete a room (host only)"""
+    if request.method == 'POST':
+        try:
+            room = get_object_or_404(GameRoom, code=room_code)
+            
+            # Check if user is host
+            if room.host != request.user:
+                messages.error(request, 'Only the host can delete this room.')
+                return redirect('quiz:room_detail', room_code=room_code)
+            
+            room_topic = room.topic
+            room.delete()
+            messages.success(request, f'Room "{room_topic}" deleted successfully!')
+            
+        except GameRoom.DoesNotExist:
+            messages.error(request, 'Room not found.')
+        except Exception as e:
+            messages.error(request, f'Error deleting room: {str(e)}')
+    
+    return redirect('quiz:lobby')
+
+@login_required
 def quiz_lobby(request):
     # Get active rooms
     active_rooms = GameRoom.objects.filter(status__in=['waiting', 'starting']).order_by('-created_at')[:10]

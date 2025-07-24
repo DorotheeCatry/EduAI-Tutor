@@ -36,12 +36,17 @@
     </div>
 
     <!-- Question + answers block -->
-    <div class="bg-gray-800 rounded-lg p-8 border border-gray-700">
+    <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col" style="max-height: 70vh;">
         <div class="mb-8">
-            <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
+            <div class="p-6 pb-4 border-b border-gray-700 flex-shrink-0">
+                <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
                 <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
             </div>
-            <div id="question-text" class="text-white space-y-4 text-base">
+            
+            <!-- Question content with scroll -->
+            <div class="flex-1 overflow-y-auto px-6" style="max-height: 40vh;">
+                <div id="question-text" class="text-white space-y-4 text-base py-4">
                 <div class="text-center py-12">
                     <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i data-lucide="loader-2" class="w-8 h-8 text-purple-500 animate-spin"></i>
@@ -50,9 +55,11 @@
                     <p class="text-gray-400">Please wait while we load the first question</p>
                 </div>
             </div>
+            </div>
         </div>
 
-        <div class="space-y-4" id="options-container">
+        <!-- Options container with fixed position -->
+        <div class="p-6 pt-4 space-y-4 flex-shrink-0" id="options-container">
             <!-- Dynamically generated options -->
         </div>
     </div>
@@ -462,6 +469,30 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <style>
+/* Scrollbar pour les questions longues */
+.overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #1F2937;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: #1F2937;
+    border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+
 /* Code blocks styling */
 .code-block-container {
     background: #0D1117;

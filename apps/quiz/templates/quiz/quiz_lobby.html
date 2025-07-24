@@ -92,9 +92,19 @@
                 <p class="text-xs text-gray-400 mb-2">{{ room.topic }}</p>
                 <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-500">{{ room.player_count }}/{{ room.max_players }} players</span>
-                    <a href="{% url 'quiz:room_detail' room.code %}" class="text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                    <div class="flex items-center space-x-2">
+                        <a href="{% url 'quiz:room_detail' room.code %}" class="text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
                         Join
-                    </a>
+                        </a>
+                        {% if room.host == user %}
+                            <form method="post" action="{% url 'quiz:delete_room' room.code %}" class="inline" onsubmit="return confirm('Delete this room?')">
+                                {% csrf_token %}
+                                <button type="submit" class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             {% endfor %}
