@@ -13,9 +13,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 h-full overflow-y-auto">
+<div class="p-6 h-full flex flex-col overflow-hidden">
     <!-- Game Header -->
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between mb-6 flex-shrink-0">
         <div class="flex items-center space-x-3">
             <i data-lucide="users" class="w-6 h-6 text-purple-500"></i>
             <div>
@@ -35,47 +35,54 @@
         </div>
     </div>
 
-    <!-- Question + answers block -->
-    <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col" id="quiz-container">
-        <!-- Progress bar - fixed at top -->
-        <div class="p-6 pb-4 border-b border-gray-700 flex-shrink-0">
-            <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
-                <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+    <!-- Main Quiz Area -->
+    <div class="flex-1 flex flex-col min-h-0 space-y-6">
+        <!-- Question Block -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col min-h-0">
+            <!-- Progress bar -->
+            <div class="p-4 border-b border-gray-700 flex-shrink-0">
+                <div class="w-full bg-gray-700 rounded-full h-2">
+                    <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
             </div>
-        </div>
-        
-        <!-- Question content with scroll -->
-        <div class="px-6 min-h-0" id="question-container">
-            <div id="question-text" class="text-white space-y-4 text-base py-4 min-h-32">
-                <div class="text-center py-12">
-                    <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="loader-2" class="w-8 h-8 text-purple-500 animate-spin"></i>
+            
+            <!-- Question content - scrollable if needed -->
+            <div class="flex-1 overflow-y-auto min-h-0">
+                <div class="p-6">
+                    <div id="question-text" class="text-white space-y-4 text-base">
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="loader-2" class="w-8 h-8 text-purple-500 animate-spin"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-white mb-2">Loading question...</h2>
+                            <p class="text-gray-400">Please wait while we load the first question</p>
+                        </div>
                     </div>
-                    <h2 class="text-xl font-bold text-white mb-2">Loading question...</h2>
-                    <p class="text-gray-400">Please wait while we load the first question</p>
+                </div>
+            </div>
+
+            <!-- Options - always visible at bottom -->
+            <div class="p-6 pt-4 border-t border-gray-700 flex-shrink-0">
+                <div class="space-y-3" id="options-container">
+                    <!-- Dynamically generated options -->
                 </div>
             </div>
         </div>
 
-        <!-- Options container with fixed position -->
-        <div class="p-6 pt-4 space-y-4 flex-shrink-0 border-t border-gray-700" id="options-container">
-            <!-- Dynamically generated options -->
-        </div>
-    </div>
-
-    <!-- Leaderboard -->
-    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-            <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
-            <span>Live Leaderboard</span>
-        </h3>
-        <div id="leaderboard-content">
-            <div class="text-center text-gray-400">Loading players...</div>
+        <!-- Leaderboard -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 flex-shrink-0">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+                <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+                <span>Live Leaderboard</span>
+            </h3>
+            <div id="leaderboard-content">
+                <div class="text-center text-gray-400">Loading players...</div>
+            </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center mt-6 flex-shrink-0">
         <a href="{% url 'quiz:room_detail' room.code %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
             Back to Room
         </a>
@@ -104,15 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(updateLeaderboard, 2000);
 
     function loadCurrentQuestion() {
-        console.log('Loading question...');
+        console.log('🔄 Loading question...');
         
         fetch(`/quiz/api/room/{{ room.code }}/quiz/`)
             .then(response => {
-                console.log('Response status:', response.status);
+                console.log('📡 Response status:', response.status);
                 return response.json();
             })
             .then(data => {
-                console.log('Question data:', data);
+                console.log('📊 Question data received:', data);
                 
                 if (data.error) {
                     showError(data.error);
@@ -136,14 +143,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch(err => {
-                console.error('Question load error:', err);
+                console.error('❌ Question load error:', err);
                 showError('Failed to load question. Retrying...');
                 setTimeout(loadCurrentQuestion, 3000);
             });
     }
 
     function showQuestion(question) {
-        console.log('Showing question:', question);
+        console.log('📝 Showing question:', question.number);
         
         currentQuestionNumber = question.number;
         document.getElementById('current-question').textContent = currentQuestionNumber;
@@ -161,11 +168,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         
         document.getElementById('question-text').innerHTML = formattedQuestion;
-        
-        // Adaptive layout based on question content
-        setTimeout(() => {
-            adaptQuizLayout();
-        }, 100);
         
         // Update progress bar
         const progressPercent = (currentQuestionNumber / totalQuestions) * 100;
@@ -190,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Add click event listener
             button.addEventListener('click', function() {
-                console.log('Button clicked, answer:', index);
+                console.log('🖱️ Button clicked, answer:', index);
                 submitAnswer(index);
             });
             
@@ -216,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (timeLeft <= 0) {
                 clearInterval(timer);
                 if (!userAnswered) {
-                    console.log('Time up, auto-submitting...');
+                    console.log('⏰ Time up, auto-submitting...');
                     submitAnswer(-1); // No answer
                 }
             }
@@ -239,11 +241,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function submitAnswer(answerIndex) {
         if (userAnswered) {
-            console.log('Already answered, ignoring click');
+            console.log('⚠️ Already answered, ignoring click');
             return;
         }
         
-        console.log('Submitting answer:', answerIndex);
+        console.log('📤 Submitting answer:', answerIndex);
         userAnswered = true;
         clearInterval(timer);
         
@@ -252,6 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
         buttons.forEach((btn, index) => {
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.style.pointerEvents = 'none';
             
             if (index === answerIndex && answerIndex >= 0) {
                 btn.classList.add('border-blue-500', 'bg-blue-500/20');
@@ -272,14 +275,14 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         })
         .then(response => {
-            console.log('Submit response status:', response.status);
+            console.log('📡 Submit response status:', response.status);
             return response.json();
         })
         .then(data => {
-            console.log('Submit response data:', data);
+            console.log('📊 Submit response data:', data);
             
             if (data.error) {
-                console.error('Submit error:', data.error);
+                console.error('❌ Submit error:', data.error);
                 showError(data.error);
                 return;
             }
@@ -302,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 4000);
         })
         .catch(err => {
-            console.error('Submit error:', err);
+            console.error('❌ Submit error:', err);
             showError('Failed to submit answer. Please try again.');
             
             // Re-enable buttons on error
@@ -310,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
             buttons.forEach(btn => {
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.style.pointerEvents = 'auto';
             });
             userAnswered = false;
         });
@@ -330,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show points and explanation
         const optionsContainer = document.getElementById('options-container');
         const resultDiv = document.createElement('div');
-        resultDiv.className = 'mt-6 space-y-4';
+        resultDiv.className = 'mt-4 space-y-3';
         
         // Points earned
         const pointsDiv = document.createElement('div');
@@ -362,45 +366,6 @@ document.addEventListener('DOMContentLoaded', function () {
         
         optionsContainer.appendChild(resultDiv);
         lucide.createIcons();
-    }
-    
-    function adaptQuizLayout() {
-        const questionContainer = document.getElementById('question-container');
-        const questionText = document.getElementById('question-text');
-        const quizContainer = document.getElementById('quiz-container');
-        
-        if (!questionContainer || !questionText || !quizContainer) return;
-        
-        // Reset styles
-        questionContainer.style.height = 'auto';
-        questionContainer.style.overflowY = 'visible';
-        
-        // Measure content height
-        const contentHeight = questionText.scrollHeight;
-        const viewportHeight = window.innerHeight;
-        const availableHeight = viewportHeight * 0.6; // 60% of viewport
-        const maxQuestionHeight = availableHeight - 200; // Reserve space for progress bar and options
-        
-        console.log('Content height:', contentHeight, 'Max height:', maxQuestionHeight);
-        
-        if (contentHeight > maxQuestionHeight) {
-            // Question is too long, enable scroll
-            questionContainer.style.height = maxQuestionHeight + 'px';
-            questionContainer.style.overflowY = 'auto';
-            questionContainer.classList.add('scrollable-question');
-            console.log('Enabled scroll for long question');
-        } else {
-            // Question fits, no scroll needed
-            questionContainer.style.height = 'auto';
-            questionContainer.style.overflowY = 'visible';
-            questionContainer.classList.remove('scrollable-question');
-            console.log('Question fits, no scroll needed');
-        }
-        
-        // Ensure quiz container adapts
-        quizContainer.style.height = 'auto';
-        quizContainer.style.minHeight = '50vh';
-        quizContainer.style.maxHeight = '80vh';
     }
     
     function showWaitingForOthers() {
@@ -512,31 +477,26 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <style>
-/* Scrollbar personnalisée pour le lobby et les questions */
-#lobby-content,
+/* Scrollbar pour la zone de question */
 .overflow-y-auto {
     scrollbar-width: thin;
     scrollbar-color: #4B5563 #1F2937;
 }
 
-#lobby-content::-webkit-scrollbar,
 .overflow-y-auto::-webkit-scrollbar {
     width: 6px;
 }
 
-#lobby-content::-webkit-scrollbar-track,
 .overflow-y-auto::-webkit-scrollbar-track {
     background: #1F2937;
     border-radius: 3px;
 }
 
-#lobby-content::-webkit-scrollbar-thumb,
 .overflow-y-auto::-webkit-scrollbar-thumb {
     background: #4B5563;
     border-radius: 3px;
 }
 
-#lobby-content::-webkit-scrollbar-thumb:hover,
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
     background: #6B7280;
 }
@@ -597,36 +557,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 .quiz-option:disabled {
     cursor: not-allowed !important;
-    pointer-events: none !important;
-}
-
-/* Adaptive question container */
-.scrollable-question {
-    scrollbar-width: thin;
-    scrollbar-color: #4B5563 #1F2937;
-}
-
-.scrollable-question::-webkit-scrollbar {
-    width: 6px;
-}
-
-.scrollable-question::-webkit-scrollbar-track {
-    background: #1F2937;
-    border-radius: 3px;
-}
-
-.scrollable-question::-webkit-scrollbar-thumb {
-    background: #4B5563;
-    border-radius: 3px;
-}
-
-.scrollable-question::-webkit-scrollbar-thumb:hover {
-    background: #6B7280;
-}
-
-/* Ensure quiz container is flexible */
-#quiz-container {
-    transition: height 0.3s ease;
 }
 
 /* Remove Prism automatic labels */
