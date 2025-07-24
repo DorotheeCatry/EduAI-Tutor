@@ -320,6 +320,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showCorrectAnswer(data) {
+        // Sauvegarder la position de scroll avant modification
+        const questionContainer = document.querySelector('.question-scroll-container');
+        const scrollPosition = questionContainer ? questionContainer.scrollTop : 0;
+        
         const buttons = document.querySelectorAll('.quiz-option');
         
         buttons.forEach((button, index) => {
@@ -366,6 +370,11 @@ document.addEventListener('DOMContentLoaded', function () {
         
         optionsContainer.appendChild(resultDiv);
         lucide.createIcons();
+        
+        // Restaurer la position de scroll après modification
+        if (questionContainer) {
+            questionContainer.scrollTop = scrollPosition;
+        }
     }
     
     function showWaitingForOthers() {
