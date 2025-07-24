@@ -9,5 +9,6 @@ urlpatterns = [
     path('<int:exercise_id>/submit/', views.submit_code, name='submit'),
     path('generate/', views.generate_exercise, name='generate'),
     path('generate-from-course/', views.generate_exercise_from_course, name='generate_from_course'),
+    path('<int:exercise_id>/delete/', views.delete_exercise, name='delete'),
     path('progress/', views.user_progress, name='progress'),
 ]

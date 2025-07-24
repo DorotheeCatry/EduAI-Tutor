@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Avg
 from apps.agents.agent_orchestrator import get_orchestrator
+from django.views.decorators.http import require_POST
 from .models import Exercise, ExerciseSubmission, UserExerciseProgress
 from .security import secure_executor
 import json
@@ -779,3 +780,26 @@ def user_progress(request):
     }
     
     return render(request, 'exercises/user_progress.html', context)
+
+@require_POST
+@login_required
+def delete_exercise(request, exercise_id):
+    """Delete an exercise (creator only)"""
+    try:
+        exercise = get_object_or_404(Exercise, id=exercise_id)
+        
+        # Check if user is the creator
+        if exercise.created_by != request.user:
+            messages.error(request, 'You can only delete exercises you created.')
+            return redirect('exercises:list')
+        
+        exercise_title = exercise.title
+        exercise.delete()
+        messages.success(request, f'Exercise "{exercise_title}" deleted successfully!')
+        
+    except Exercise.DoesNotExist:
+        messages.error(request, 'Exercise not found.')
+    except Exception as e:
+        messages.error(request, f'Error deleting exercise: {str(e)}')
+    
+    return redirect('exercises:list')
