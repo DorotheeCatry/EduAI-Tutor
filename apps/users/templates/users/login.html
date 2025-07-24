@@ -143,31 +143,32 @@
 
         <!-- Illustration -->
         <!-- Illustration -->
-        <div class="hidden lg:flex items-center justify-center relative">
-            <!-- Koda géant -->
-            <div class="floating-animation relative z-0">
-                <img src="{% static 'koda-ia/SALUTE.gif' %}"
-                    alt="EduAI Tutor waving" 
-                    class="w-[800px] h-[800px] object-contain" />
+        <div class="hidden lg:flex items-center justify-center relative overflow-hidden">
+            <!-- Koda géant en arrière-plan -->
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="floating-animation">
+                    <img src="{% static 'koda-ia/SALUTE.gif' %}"
+                        alt="EduAI Tutor waving" 
+                        class="w-[1200px] h-[1200px] object-contain opacity-80" />
+                </div>
             </div>
                 
-                <!-- Éléments décoratifs -->
-                <div class="absolute -top-10 -left-10 w-20 h-20 bg-primary-green bg-opacity-20 rounded-full blur-xl"></div>
-                <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-primary-blue bg-opacity-20 rounded-full blur-xl"></div>
-                <div class="absolute top-1/2 -right-20 w-16 h-16 bg-primary-rose bg-opacity-20 rounded-full blur-xl"></div>
+            <!-- Éléments décoratifs -->
+            <div class="absolute -top-10 -left-10 w-20 h-20 bg-primary-green bg-opacity-20 rounded-full blur-xl z-20"></div>
+            <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-primary-blue bg-opacity-20 rounded-full blur-xl z-20"></div>
+            <div class="absolute top-1/2 -right-20 w-16 h-16 bg-primary-rose bg-opacity-20 rounded-full blur-xl z-20"></div>
 
-                <!-- Icônes flottantes par-dessus -->
-                <div class="absolute top-32 left-16 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center shadow-lg floating-animation z-10" style="animation-delay: -2s;">
-                    <i data-lucide="book-open" class="w-6 h-6 text-primary-green"></i>
-                </div>
-                
-                <div class="absolute top-20 right-32 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center shadow-lg floating-animation z-10" style="animation-delay: -4s;">
-                    <i data-lucide="brain" class="w-6 h-6 text-primary-rose"></i>
-                </div>
-                
-                <div class="absolute top-1/2 right-8 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center shadow-lg floating-animation z-10" style="animation-delay: -1s;">
-                    <i data-lucide="zap" class="w-6 h-6 text-primary-blue"></i>
-                </div>
+            <!-- Icônes flottantes par-dessus -->
+            <div class="absolute top-32 left-16 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center shadow-lg floating-animation z-30" style="animation-delay: -2s;">
+                <i data-lucide="book-open" class="w-6 h-6 text-primary-green"></i>
+            </div>
+            
+            <div class="absolute top-20 right-32 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center shadow-lg floating-animation z-30" style="animation-delay: -4s;">
+                <i data-lucide="brain" class="w-6 h-6 text-primary-rose"></i>
+            </div>
+            
+            <div class="absolute top-1/2 right-8 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center shadow-lg floating-animation z-30" style="animation-delay: -1s;">
+                <i data-lucide="zap" class="w-6 h-6 text-primary-blue"></i>
             </div>
         </div>
     </div>
