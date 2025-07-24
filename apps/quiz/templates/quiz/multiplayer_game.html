@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         question.options.forEach((option, index) => {
             const button = document.createElement('button');
-            button.className = 'quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-800 transition-all duration-200 transform hover:scale-[1.01]';
+            button.className = 'quiz-option w-full p-2 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-800 transition-all duration-200';
             button.setAttribute('data-answer', index);
             button.innerHTML = `
                 <div class="flex items-center space-x-3">
@@ -320,10 +320,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showCorrectAnswer(data) {
-        // Sauvegarder la position de scroll avant modification
-        const questionContainer = document.querySelector('.question-scroll-container');
-        const scrollPosition = questionContainer ? questionContainer.scrollTop : 0;
-        
         const buttons = document.querySelectorAll('.quiz-option');
         
         buttons.forEach((button, index) => {
@@ -335,16 +331,50 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
         
-        // Show points and explanation
+        // Show points and explanation in a compact way
         const optionsContainer = document.getElementById('options-container');
-        const resultDiv = document.createElement('div');
-        resultDiv.className = 'mt-4 space-y-3';
         
-        // Points earned
-        const pointsDiv = document.createElement('div');
-        pointsDiv.className = 'p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg';
-        pointsDiv.innerHTML = `
-            <div class="flex items-center justify-center space-x-3">
+        // Add compact results after options
+        const resultHTML = `
+            <div class="mt-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div class="flex items-center justify-center space-x-3 mb-2">
+                    <i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>
+                    <span class="text-white font-bold text-sm">+${data.points || 0} points!</span>
+                    <span class="text-gray-400 text-sm">Total: ${data.new_score || 0}</span>
+                </div>
+                ${data.explanation ? `
+                <div class="flex items-start space-x-2 pt-2 border-t border-blue-500/20">
+                    <i data-lucide="lightbulb" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <span class="text-xs font-bold text-blue-400">Explanation:</span>
+                        <p class="text-xs text-blue-200 mt-1">${data.explanation}</p>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        
+        optionsContainer.insertAdjacentHTML('beforeend', resultHTML);
+        lucide.createIcons();
+    }
+    
+    function showWaitingForOthers() {
+        const optionsContainer = document.getElementById('options-container');
+        
+        // Add waiting message after options instead of replacing them
+        const waitingHTML = `
+            <div class="mt-3 text-center py-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <div class="flex items-center justify-center space-x-2 mb-2">
+                    <i data-lucide="clock" class="w-4 h-4 text-yellow-500"></i>
+                    <span class="text-sm font-bold text-white">Answer submitted!</span>
+                </div>
+                <p class="text-xs text-gray-400">Waiting for other players...</p>
+            </div>
+        `;
+        
+        optionsContainer.insertAdjacentHTML('beforeend', waitingHTML);
+        lucide.createIcons();
+    }
                 <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i>
                 <span class="text-white font-bold">+${data.points || 0} points!</span>
                 <span class="text-gray-400">Total: ${data.new_score || 0}</span>
@@ -551,17 +581,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /* Quiz options styling */
 .quiz-option {
-    transition: all 0.2s ease !important;
+    transition: border-color 0.2s ease, background-color 0.2s ease !important;
     cursor: pointer !important;
 }
 
 .quiz-option:hover:not(:disabled) {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2) !important;
-}
-
-.quiz-option:active:not(:disabled) {
-    transform: translateY(0) !important;
+    border-color: #4CAF50 !important;
+    background-color: #1F2937 !important;
 }
 
 .quiz-option:disabled {
