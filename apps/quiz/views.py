@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from apps.agents.agent_orchestrator import get_orchestrator
-from .models import GameRoom, GameParticipant, GameQuestion
+from .models import GameRoom, GameParticipant, GameQuestion, GameAnswer
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 import json
