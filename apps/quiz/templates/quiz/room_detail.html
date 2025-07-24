@@ -73,29 +73,29 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="players-list">
                     {% for participant in participants %}
-                    <div class="flex items-center space-x-3 p-3 bg-gray-900 rounded-lg border border-gray-600">
+                    <div class="flex items-center space-x-4 p-4 bg-gray-900 rounded-lg border border-gray-600">
                         {% if participant.user.avatar %}
                             {% if participant.user.avatar.url %}
-                                <img src="{{ participant.user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                                <img src="{{ participant.user.avatar.url }}" alt="Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-gray-500">
                             {% else %}
-                                <img src="{% static 'koda/' %}{{ participant.user.avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                                <img src="{% static 'koda/' %}{{ participant.user.avatar }}" alt="Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-gray-500">
                             {% endif %}
                         {% else %}
-                            <img src="{% static 'koda/koda_base.png' %}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                            <img src="{% static 'koda/koda_base.png' %}" alt="Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-gray-500">
                         {% endif %}
                         
                         <div class="flex-1">
                             <div class="flex items-center space-x-2">
-                                <span class="text-sm font-medium text-white">{{ participant.user.username }}</span>
+                                <span class="text-base font-medium text-white">{{ participant.user.username }}</span>
                                 {% if participant.user == room.host %}
-                                    <i data-lucide="crown" class="w-4 h-4 text-yellow-500"></i>
+                                    <i data-lucide="crown" class="w-5 h-5 text-yellow-500"></i>
                                 {% endif %}
                             </div>
-                            <div class="text-xs text-gray-400">Level {{ participant.user.level }}</div>
+                            <div class="text-sm text-gray-400">Level {{ participant.user.level }} • {{ participant.user.level_title }}</div>
                         </div>
                         
-                        <div class="text-xs text-green-400">
-                            <i data-lucide="wifi" class="w-4 h-4"></i>
+                        <div class="text-sm text-green-400">
+                            <i data-lucide="wifi" class="w-5 h-5"></i>
                         </div>
                     </div>
                     {% endfor %}
