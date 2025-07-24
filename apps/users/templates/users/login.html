@@ -127,30 +127,34 @@
                             <span class="px-2 bg-gray-800 text-gray-400">or</span>
                         </div>
                     </div>
-                    
-                    <button type="button" class="w-full py-3 px-4 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2 border border-gray-600">
-                        <i data-lucide="github" class="w-5 h-5"></i>
-                        <span>Continue with GitHub</span>
-                    </button>
-                    
-                    <button type="button" class="w-full py-3 px-4 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2 border border-gray-600">
-                        <i data-lucide="mail" class="w-5 h-5"></i>
-                        <span>Continue with Google</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Illustration -->
-        <!-- Illustration -->
-        <div class="hidden lg:flex items-center justify-center relative h-full">
-            <!-- Koda principal - TAILLE MAXIMALE -->
-            <div class="relative">
-                <div class="floating-animation">
+        <!-- Illustration - même taille que le formulaire -->
+        <div class="hidden lg:block relative h-full">
+            <!-- GIF en arrière-plan, taille maximale -->
+            <div class="absolute inset-0 flex items-center justify-center z-10">
+                <div class="floating-animation w-full h-full flex items-center justify-center">
                     <img src="{% static 'koda-ia/SALUTE.gif' %}" 
                          alt="EduAI Tutor waving" 
-                         class="w-full h-full min-w-[600px] min-h-[600px] max-w-[900px] max-h-[900px] object-contain" />
+                         class="w-full h-full object-contain max-w-none"
+                         style="min-width: 600px; min-height: 600px;" />
                 </div>
+            </div>
+            
+            <!-- Éléments décoratifs en arrière-plan -->
+            <div class="absolute top-10 left-10 w-24 h-24 bg-primary-green bg-opacity-20 rounded-full blur-xl z-0"></div>
+            <div class="absolute bottom-10 right-10 w-32 h-32 bg-primary-blue bg-opacity-20 rounded-full blur-xl z-0"></div>
+            <div class="absolute top-1/2 right-20 w-20 h-20 bg-primary-rose bg-opacity-20 rounded-full blur-xl z-0"></div>
+
+            <!-- Icônes flottantes DEVANT le GIF -->
+            <div class="absolute top-16 right-16 w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-xl floating-animation z-50" style="animation-delay: -2s;">
+                <i data-lucide="book-open" class="w-8 h-8 text-primary-green"></i>
+            </div>
+            
+            <div class="absolute bottom-24 left-16 w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-xl floating-animation z-50" style="animation-delay: -4s;">
+                <i data-lucide="brain" class="w-8 h-8 text-primary-rose"></i>
+            </div>
+            
+            <div class="absolute top-1/3 left-8 w-16 h-16 bg-gray-800 rounded-xl flex items-center justify-center shadow-xl floating-animation z-50" style="animation-delay: -1s;">
+                <i data-lucide="zap" class="w-8 h-8 text-primary-blue"></i>
             </div>
                 
             <!-- Éléments décoratifs en arrière-plan -->
