@@ -80,7 +80,7 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
     document.getElementById('initial-time').textContent = new Date().toLocaleTimeString();
 
@@ -89,106 +89,111 @@ document.addEventListener('DOMContentLoaded', function () {
     const sendButton = document.getElementById('send-button');
     const chatMessages = document.getElementById('chat-messages');
 
-    function scrollToBottom() {
+    const scrollToBottom = () => {
         setTimeout(() => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }, 100);
-    }
+    };
 
-    function escapeHtml(text) {
+    const escapeHtml = (text) => {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    }
+    };
+
+// ✅ JS complet pour EduAI Chat - formatResponse + styles intelligents (version sobre sans surlignement vert + support tableaux améliorés)
 
     function formatResponse(text) {
-        // Étape 1 – extraire les blocs de code triple backticks
         const blocks = [];
-        const withoutCode = text.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
-            const language = lang || 'code';
-            const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
+
+        const escapeHtml = (t) => {
+            const div = document.createElement("div");
+            div.textContent = t;
+            return div.innerHTML;
+        };
+
+        // Blocs de code ```lang\n...
+        const withoutCode = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang = 'txt', code) => {
             const escaped = escapeHtml(code);
             const block = `
                 <div class="code-block-container my-4">
                     <div class="code-header">
-                        <span class="code-language">${displayLang}</span>
+                        <span class="code-language">${lang.toUpperCase()}</span>
                         <button class="copy-btn" onclick="copyCode(this)">
-                            <i data-lucide="copy" class="w-4 h-4"></i>
-                            <span>Copy</span>
+                            <i data-lucide="copy" class="w-4 h-4"></i><span>Copy</span>
                         </button>
                     </div>
-                    <pre class="code-content language-${language}"><code class="language-${language}">${escaped}</code></pre>
+                    <pre class="code-content language-${lang}"><code class="language-${lang}">${escaped}</code></pre>
                 </div>
             `;
             blocks.push(block);
             return `<!--CODEBLOCK_${blocks.length - 1}-->`;
         });
 
-        // Étape 2 – transformer le markdown hors code
         let formatted = withoutCode
-            .replace(/^### (.*$)/gm, '<h3 class="text-primary-blue font-bold text-base mb-2 mt-3">$1</h3>')
-            .replace(/^## (.*$)/gm, '<h2 class="text-primary-green font-bold text-lg mb-2 mt-3">$1</h2>')
-            .replace(/^# (.*$)/gm, '<h1 class="text-white font-bold text-xl mb-3 mt-4">$1</h1>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong class="keyword-highlight">$1</strong>')
-            .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>')
-            .replace(/^[\-\*] (.+)$/gm, '<li class="list-item">$1</li>')
-            .replace(/\n\n/g, '</p><p class="mb-2">')
-            .replace(/\n/g, '<br>');
+            .replace(/^### (.*)$/gm, '<h3 class="text-blue-400 font-semibold text-base mb-1 mt-3">$1</h3>')
+            .replace(/^## (.*)$/gm, '<h2 class="text-green-400 font-semibold text-lg mb-1 mt-3">$1</h2>')
+            .replace(/^# (.*)$/gm, '<h1 class="text-white font-bold text-xl mb-2 mt-4">$1</h1>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>')
+            .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
 
-        // Étape 3 – emballer dans des paragraphes
+        // Tableaux Markdown améliorés (|...|...| avec séparateur ---)
+        formatted = formatted.replace(/((?:\|[^\n]+)+)\n\|(?:\s*[-:]+\s*\|)+\n((?:\|[^\n]+\n)+)/g, (_, header, body) => {
+            const thead = header.split('|').filter(Boolean).map(h => `<th class="border border-gray-600 px-2 py-1 text-sm text-white bg-gray-700 font-semibold">${h.trim()}</th>`).join('');
+            const rows = body.trim().split('\n').map(row => {
+                const tds = row.split('|').filter(Boolean).map(c => `<td class="border border-gray-700 px-2 py-1 text-sm text-gray-100">${c.trim()}</td>`).join('');
+                return `<tr>${tds}</tr>`;
+            }).join('');
+            return `<table class="table-auto border-collapse border border-gray-700 my-4 rounded overflow-hidden w-full"><thead><tr>${thead}</tr></thead><tbody>${rows}</tbody></table>`;
+        });
+
+        // Listes à puce (ul)
+        formatted = formatted.replace(/(^|\n)[\*-]\s+(.+)/g, '\n<li class="list-item">$2</li>');
+        formatted = formatted.replace(/(<li class="list-item">[\s\S]*?<\/li>)/gs, '<ul class="list-container">$1</ul>');
+
+        // Listes ordonnées (ol)
+        formatted = formatted.replace(/(^|\n)\d+\.\s+(.+)/g, '\n<li class="list-ordered">$2</li>');
+        formatted = formatted.replace(/(<li class="list-ordered">[\s\S]*?<\/li>)/gs, '<ol class="list-container numbered">$1</ol>');
+
+        // Paragraphes
+        formatted = formatted.replace(/\n{2,}/g, '</p><p class="mb-2">');
         formatted = '<p class="mb-2">' + formatted + '</p>';
 
-        // Étape 4 – transformer les <li> en <ul>
-        formatted = formatted.replace(/(<li class="list-item">.*?<\/li>(\s*<li class="list-item">.*?<\/li>)*)/gs, match => '<ul class="list-container">' + match + '</ul>');
-
-        // Étape 5 – réinjecter les blocs de code
+        // Réinjection blocs code
         formatted = formatted.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => blocks[parseInt(i)]);
-
         return formatted;
-    }
+    };
 
-    function addMessage(text, isUser) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
+    const addMessage = (text, isUser) => {
         const time = new Date().toLocaleTimeString();
+        const wrapper = document.createElement('div');
+        wrapper.className = `flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`;
 
-        if (isUser) {
-            messageDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-primary-green flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="user" class="w-4 h-4 text-white"></i>
-                </div>
-                <div class="flex-1 flex flex-col items-end">
-                    <div class="bg-primary-green rounded-lg px-4 py-3 border border-green-600 max-w-2xl">
-                        <p class="text-white text-sm leading-relaxed">${escapeHtml(text)}</p>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">${time}</p>
-                </div>
-            `;
-        } else {
-            messageDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="bot" class="w-4 h-4 text-white"></i>
-                </div>
-                <div class="flex-1">
-                    <div class="bg-gray-800 rounded-lg px-4 py-3 border border-gray-700 max-w-2xl">
-                        <div class="text-white text-sm leading-relaxed">${formatResponse(text)}</div>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">${time}</p>
-                </div>
-            `;
-        }
+        const icon = `
+            <div class="w-8 h-8 rounded-full ${isUser ? 'bg-primary-green' : 'bg-primary-blue'} flex items-center justify-center flex-shrink-0">
+                <i data-lucide="${isUser ? 'user' : 'bot'}" class="w-4 h-4 text-white"></i>
+            </div>`;
 
-        chatMessages.appendChild(messageDiv);
+        const content = `
+            <div class="flex-1 ${isUser ? 'flex flex-col items-end' : ''}">
+                <div class="${isUser ? 'bg-primary-green' : 'bg-gray-800'} rounded-lg px-4 py-3 border ${isUser ? 'border-green-600' : 'border-gray-700'} max-w-2xl">
+                    <div class="text-white text-sm leading-relaxed">${isUser ? escapeHtml(text) : formatResponse(text)}</div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">${time}</p>
+            </div>`;
+
+        wrapper.innerHTML = isUser ? content + icon : icon + content;
+        chatMessages.appendChild(wrapper);
         lucide.createIcons();
         if (window.Prism) Prism.highlightAll();
         scrollToBottom();
-    }
+    };
 
-    function showLoading() {
-        const loadingDiv = document.createElement('div');
-        loadingDiv.id = 'loading-message';
-        loadingDiv.className = 'flex items-start space-x-3';
-        loadingDiv.innerHTML = `
+    const showLoading = () => {
+        const loader = document.createElement('div');
+        loader.id = 'loading-message';
+        loader.className = 'flex items-start space-x-3';
+        loader.innerHTML = `
             <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
                 <i data-lucide="bot" class="w-4 h-4 text-white"></i>
             </div>
@@ -197,41 +202,38 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="flex items-center space-x-2">
                         <div class="flex space-x-1">
                             <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce"></div>
-                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
-                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay:0.1s;"></div>
+                            <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay:0.2s;"></div>
                         </div>
                         <span class="text-xs text-gray-400">AI is thinking...</span>
                     </div>
                 </div>
-            </div>
-        `;
-        chatMessages.appendChild(loadingDiv);
-        lucide.createIcons();
+            </div>`;
+        chatMessages.appendChild(loader);
         scrollToBottom();
-    }
+    };
 
-    function hideLoading() {
-        const loadingMessage = document.getElementById('loading-message');
-        if (loadingMessage) loadingMessage.remove();
-    }
+    const hideLoading = () => {
+        const loading = document.getElementById('loading-message');
+        if (loading) loading.remove();
+    };
 
-    messageInput.addEventListener('input', function () {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    messageInput.addEventListener('input', () => {
+        messageInput.style.height = 'auto';
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
     });
 
-    messageInput.addEventListener('keydown', function (e) {
+    messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            if (!sendButton.disabled && this.value.trim()) {
+            if (messageInput.value.trim()) {
                 chatForm.dispatchEvent(new Event('submit'));
             }
         }
     });
 
-    chatForm.addEventListener('submit', async function (e) {
+    chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const message = messageInput.value.trim();
         if (!message) return;
 
@@ -265,30 +267,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    window.copyCode = function (button) {
-        const codeContainer = button.closest('.code-block-container');
-        const codeElement = codeContainer.querySelector('code');
-        const text = codeElement.textContent;
+    window.copyCode = (btn) => {
+        const code = btn.closest('.code-block-container').querySelector('code').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            const icon = btn.querySelector('i');
+            const label = btn.querySelector('span');
+            const original = icon.getAttribute('data-lucide');
 
-        navigator.clipboard.writeText(text).then(() => {
-            const icon = button.querySelector('i');
-            const span = button.querySelector('span');
-            const originalIcon = icon.getAttribute('data-lucide');
-            const originalText = span.textContent;
-
-            button.classList.add('copied');
+            btn.classList.add('copied');
             icon.setAttribute('data-lucide', 'check');
-            span.textContent = 'Copied!';
+            label.textContent = 'Copied!';
             lucide.createIcons();
 
             setTimeout(() => {
-                button.classList.remove('copied');
-                icon.setAttribute('data-lucide', originalIcon);
-                span.textContent = originalText;
+                btn.classList.remove('copied');
+                icon.setAttribute('data-lucide', original);
+                label.textContent = 'Copy';
                 lucide.createIcons();
             }, 2000);
-        }).catch(err => {
-            console.error('Copy error:', err);
         });
     };
 });
@@ -315,26 +311,83 @@ document.addEventListener('DOMContentLoaded', function () {
     background: #6B7280;
 }
 
-/* Text emphasis */
+/* Titres Markdown */
+h1 {
+    font-size: 1.25rem;
+    margin: 1rem 0 0.5rem;
+    font-weight: 700;
+    color: white;
+}
+h2 {
+    font-size: 1.125rem;
+    margin: 1rem 0 0.5rem;
+    font-weight: 700;
+    color: #38BDF8;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 0.2rem;
+}
+h3 {
+    font-size: 1rem;
+    margin-top: 0.75rem;
+    font-weight: 600;
+    color: #60A5FA;
+}
+
+/* Texte mis en valeur (gras Markdown avec **) */
 .keyword-highlight {
     background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: #FFFFFF;
+    color: white;
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-weight: 600;
     font-size: 0.875rem;
 }
+
+/* `inline-code` */
 .inline-code {
-    background: #0D1117;
-    color: #79C0FF;
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    font-size: 0.8125rem;
-    border: 1px solid #30363D;
+    background: #1E293B;
+    color: #A5F3FC;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.75rem;
+    border: 1px solid #334155;
 }
 
-/* Code blocks */
+/* Listes stylées */
+.list-container {
+    margin: 0.5rem 0;
+    padding-left: 0;
+    list-style: none;
+}
+.list-item {
+    position: relative;
+    margin-bottom: 0.35rem;
+    padding-left: 1.5rem;
+    color: #E5E7EB;
+    line-height: 1.6;
+    font-size: 0.875rem;
+}
+.list-item::before {
+    content: "▸";
+    color: #22C55E;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+}
+
+/* Zone de réponse de l’IA */
+.ai-response {
+    background: #1F2937;
+    border: 1px solid #334155;
+    border-left: 4px solid #4ADE80;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* Blocs de code */
 .code-block-container {
     background: #0D1117;
     border: 1px solid #30363D;
@@ -375,12 +428,12 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 .copy-btn:hover {
     background: #4B5563;
-    color: #FFFFFF;
+    color: white;
     transform: translateY(-1px);
 }
 .copy-btn.copied {
     background: #4CAF50;
-    color: #FFFFFF;
+    color: white;
 }
 .code-content {
     padding: 0.8rem 1rem;
@@ -402,29 +455,6 @@ pre.code-content > code {
     border: none;
     box-shadow: none;
     background: transparent;
-}
-
-/* ✅ Listes corrigées - version compacte et alignée */
-.list-container {
-    margin: 0.5rem 0;
-    padding-left: 0;
-    list-style: none;
-}
-.list-item {
-    position: relative;
-    margin-bottom: 0.125rem;
-    padding-left: 1.25rem;
-    color: #E5E7EB;
-    line-height: 1.5;
-    font-size: 0.875rem;
-}
-.list-item::before {
-    content: "•";
-    color: #4CAF50;
-    font-weight: bold;
-    position: absolute;
-    left: 0.5rem;
-    top: 0;
 }
 
 /* Responsive */
