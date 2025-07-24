@@ -221,12 +221,11 @@ LOGIN_URL = '/auth/login/'            # @login_required protection
 # Channels configuration
 ASGI_APPLICATION = 'eduai_project.asgi.application'
 
-# Channel layers configuration for WebSockets
+# WebSocket configuration
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
-        'CONFIG': {
-            # Use in-memory channel layer for development
-        },
     },
 }
+
+# Channel layers configuration for WebSockets
