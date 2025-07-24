@@ -137,6 +137,16 @@ class KodaUser(AbstractUser):
         return min(100, max(0, progress))
     
     @property
+    def xp_in_current_level(self):
+        """XP gagnés dans le niveau actuel"""
+        return self.xp - self.xp_for_current_level
+    
+    @property
+    def xp_needed_for_next_level(self):
+        """XP nécessaires pour passer au niveau suivant"""
+        return self.xp_for_next_level - self.xp_for_current_level
+    
+    @property
     def xp_for_current_level(self):
         """XP requis pour le niveau actuel"""
         current_level = self.level
