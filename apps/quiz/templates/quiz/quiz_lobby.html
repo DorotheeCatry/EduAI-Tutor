@@ -94,15 +94,12 @@
                     <span class="text-xs text-gray-500">{{ room.player_count }}/{{ room.max_players }} players</span>
                     <div class="flex items-center space-x-2">
                         <a href="{% url 'quiz:room_detail' room.code %}" class="text-xs px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                        Join
+                            Join
                         </a>
                         {% if room.host == user %}
-                            <form method="post" action="{% url 'quiz:delete_room' room.code %}" class="inline" onsubmit="return confirm('Delete this room?')">
-                                {% csrf_token %}
-                                <button type="submit" class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-                                    <i data-lucide="trash-2" class="w-3 h-3"></i>
-                                </button>
-                            </form>
+                            <button onclick="deleteRoomFromLobby('{{ room.code }}')" class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                            </button>
                         {% endif %}
                     </div>
                 </div>
@@ -145,5 +142,43 @@
             lucide.createIcons();
         }
     });
+
+    function deleteRoomFromLobby(roomCode) {
+        if (confirm('Delete this room? This action cannot be undone.')) {
+            fetch(`/quiz/room/${roomCode}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload(); // Reload the lobby to update the list
+                } else {
+                    alert('Error deleting room. Please try again.');
+                }
+            })
+            .catch(err => {
+                console.error('Delete error:', err);
+                alert('Error deleting room. Please try again.');
+            });
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 </script>
 {% endblock %}
