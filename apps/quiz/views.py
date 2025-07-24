@@ -150,6 +150,147 @@ def room_detail(request, room_code):
     return render(request, 'quiz/room_detail.html', context)
 
 @login_required
+def room_status_api(request, room_code):
+    """API pour récupérer le statut de la room en temps réel"""
+    try:
+        room = get_object_or_404(GameRoom, code=room_code)
+        
+        # Vérifier que l'utilisateur est dans la room
+        participant = GameParticipant.objects.get(room=room, user=request.user, is_active=True)
+        
+        participants = room.participants.filter(is_active=True).order_by('-score', 'joined_at')
+        
+        participants_data = []
+        for p in participants:
+            avatar_url = '/static/koda/koda_base.png'  # Default
+            if p.user.avatar:
+                if hasattr(p.user.avatar, 'url'):
+                    avatar_url = p.user.avatar.url
+                else:
+                    avatar_url = f'/static/koda/{p.user.avatar}'
+            
+            participants_data.append({
+                'username': p.user.username,
+                'score': p.score,
+                'correct_answers': p.correct_answers,
+                'is_host': p.user == room.host,
+                'avatar_url': avatar_url
+            })
+        
+        return JsonResponse({
+            'status': room.status,
+            'current_question': room.current_question,
+            'participants': participants_data,
+            'player_count': room.player_count,
+            'can_start': room.status == 'waiting' and room.host == request.user
+        })
+        
+    except (GameRoom.DoesNotExist, GameParticipant.DoesNotExist):
+        return JsonResponse({'error': 'Room or participant not found'}, status=404)
+
+@login_required
+def multiplayer_quiz_api(request, room_code):
+    """API pour le quiz multijoueur en temps réel"""
+    room = get_object_or_404(GameRoom, code=room_code)
+    
+    try:
+        participant = GameParticipant.objects.get(room=room, user=request.user, is_active=True)
+    except GameParticipant.DoesNotExist:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    
+    if request.method == 'GET':
+        # Récupérer la question actuelle
+        try:
+            current_question = GameQuestion.objects.get(
+                room=room, 
+                question_number=room.current_question
+            )
+            
+            # Vérifier si l'utilisateur a déjà répondu
+            has_answered = GameAnswer.objects.filter(
+                participant=participant,
+                question=current_question
+            ).exists()
+            
+            return JsonResponse({
+                'question': {
+                    'number': current_question.question_number,
+                    'total': room.num_questions,
+                    'text': current_question.question_text,
+                    'options': current_question.options
+                },
+                'has_answered': has_answered,
+                'time_left': 60,  # Simplification pour l'instant
+                'room_status': room.status
+            })
+            
+        except GameQuestion.DoesNotExist:
+            return JsonResponse({'error': 'Question not found'}, status=404)
+    
+    elif request.method == 'POST':
+        # Soumettre une réponse
+        data = json.loads(request.body)
+        answer_index = data.get('answer')
+        response_time = data.get('response_time', 60)
+        
+        try:
+            current_question = GameQuestion.objects.get(
+                room=room, 
+                question_number=room.current_question
+            )
+            
+            # Vérifier si déjà répondu
+            existing_answer = GameAnswer.objects.filter(
+                participant=participant,
+                question=current_question
+            ).first()
+            
+            if existing_answer:
+                return JsonResponse({'error': 'Already answered'}, status=400)
+            
+            # Créer la réponse
+            game_answer = GameAnswer.objects.create(
+                participant=participant,
+                question=current_question,
+                selected_answer=answer_index,
+                response_time=response_time
+            )
+            
+            # Calculer les points
+            points = game_answer.calculate_points()
+            game_answer.save()
+            
+            # Mettre à jour le score du participant
+            participant.score += points
+            if game_answer.is_correct:
+                participant.correct_answers += 1
+            participant.save()
+            
+            # Vérifier si tous les joueurs ont répondu
+            active_players = room.participants.filter(is_active=True).count()
+            answered_players = GameAnswer.objects.filter(
+                question=current_question
+            ).count()
+            
+            all_answered = answered_players >= active_players
+            
+            return JsonResponse({
+                'success': True,
+                'points': points,
+                'is_correct': game_answer.is_correct,
+                'correct_answer': current_question.correct_answer,
+                'explanation': current_question.explanation,
+                'all_answered': all_answered,
+                'new_score': participant.score
+            })
+            
+        except GameQuestion.DoesNotExist:
+            return JsonResponse({'error': 'Question not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+@login_required
 def multiplayer_game(request, room_code):
     """Multiplayer game interface"""
     room = get_object_or_404(GameRoom, code=room_code)

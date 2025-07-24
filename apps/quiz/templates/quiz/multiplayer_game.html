@@ -1,72 +1,303 @@
 {% extends 'base.html' %}
 
-{% block title %}Quiz Game - Room {{ room.code }}{% endblock %}
+{% block title %}Multiplayer Quiz - Room {{ room.code }}{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6 h-full overflow-hidden flex flex-col">
     <!-- Game Header -->
     <div class="flex items-center justify-between flex-shrink-0">
         <div class="flex items-center space-x-3">
-            <i data-lucide="zap" class="w-6 h-6 text-yellow-500"></i>
+            <i data-lucide="users" class="w-6 h-6 text-purple-500"></i>
             <div>
                 <h1 class="text-xl font-bold text-white">{{ room.topic }}</h1>
-                <p class="text-sm text-gray-400">Room {{ room.code }}</p>
+                <p class="text-sm text-gray-400">Room {{ room.code }} - Multiplayer Mode</p>
             </div>
         </div>
         
         <div class="flex items-center space-x-4">
-            <div class="text-white">
-                Questions: {{ room.num_questions }}
+            <div class="text-white text-sm">
+                <span id="player-count">{{ room.player_count }}</span> player{{ room.player_count|pluralize }}
+            </div>
+            <div class="text-green-400 text-sm">● Live</div>
+        </div>
+    </div>
+
+    <!-- Game Status -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 flex-1">
+        <div id="game-status" class="text-center h-full flex flex-col justify-center">
+            <!-- Contenu dynamique géré par JavaScript -->
+            <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="clock" class="w-8 h-8 text-purple-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Waiting for questions...</h2>
+            <p class="text-gray-400 mb-6">The game will start automatically when ready</p>
+            
+            <div class="flex justify-center">
+                <div class="flex space-x-1">
+                    <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                    <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Game info -->
-    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <div class="text-center">
-            <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-white mb-2">Game Ready!</h2>
-            <p class="text-gray-400 mb-6">Questions have been generated for "{{ room.topic }}"</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-gray-900 rounded-lg p-4">
-                    <div class="text-2xl font-bold text-blue-500">{{ room.num_questions }}</div>
-                    <div class="text-sm text-gray-400">Questions</div>
-                </div>
-                <div class="bg-gray-900 rounded-lg p-4">
-                    <div class="text-2xl font-bold text-green-500">{{ participants.count }}</div>
-                    <div class="text-sm text-gray-400">Player{{ participants.count|pluralize }}</div>
-                </div>
-                <div class="bg-gray-900 rounded-lg p-4">
-                    <div class="text-2xl font-bold text-yellow-500">{{ room.code }}</div>
-                    <div class="text-sm text-gray-400">Room Code</div>
-                </div>
-            </div>
-            
-            <div class="space-y-4">
-                <a href="{% url 'quiz:start' %}?topic={{ room.topic }}&num_questions={{ room.num_questions }}&mode=multiplayer&room_code={{ room.code }}" 
-                   class="w-full py-3 px-6 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2 text-lg font-medium">
-                    <i data-lucide="play" class="w-5 h-5"></i>
-                    <span>Start Quiz</span>
-                </a>
-                
-                <a href="{% url 'quiz:room_detail' room.code %}" 
-                   class="w-full py-2 px-4 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span>Back to Lobby</span>
-                </a>
-            </div>
+    <!-- Leaderboard (caché au début) -->
+    <div id="leaderboard" class="bg-gray-800 rounded-lg p-6 border border-gray-700 hidden">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+            <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+            <span>Live Leaderboard</span>
+        </h3>
+        <div id="leaderboard-content">
+            <!-- Contenu dynamique -->
         </div>
+    </div>
+
+    <!-- Back button -->
+    <div class="flex justify-center flex-shrink-0">
+        <a href="{% url 'quiz:room_detail' room.code %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+            Back to Room
+        </a>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+    
+    let gameStarted = false;
+    let currentQuestion = 0;
+    let userAnswered = false;
+    let timeLeft = 60;
+    let timer = null;
+    
+    // Polling pour vérifier le statut du jeu
+    const pollInterval = setInterval(checkGameStatus, 1000);
+    
+    function checkGameStatus() {
+        fetch(`/quiz/api/room/{{ room.code }}/status/`)
+            .then(response => response.json())
+            .then(data => {
+                updateLeaderboard(data.participants);
+                
+                if (data.status === 'in_progress' && !gameStarted) {
+                    gameStarted = true;
+                    startQuiz();
+                } else if (data.status === 'finished') {
+                    clearInterval(pollInterval);
+                    showFinalResults();
+                }
+            })
+            .catch(err => console.log('Status check error:', err));
+    }
+    
+    function startQuiz() {
+        document.getElementById('game-status').innerHTML = `
+            <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Game Started!</h2>
+            <p class="text-gray-400 mb-6">Loading first question...</p>
+        `;
+        lucide.createIcons();
+        
+        document.getElementById('leaderboard').classList.remove('hidden');
+        
+        setTimeout(loadCurrentQuestion, 2000);
+    }
+    
+    function loadCurrentQuestion() {
+        fetch(`/quiz/api/room/{{ room.code }}/quiz/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.question) {
+                    showQuestion(data.question);
+                    userAnswered = data.has_answered;
+                    if (!userAnswered) {
+                        startTimer();
+                    }
+                }
+            })
+            .catch(err => console.log('Question load error:', err));
+    }
+    
+    function showQuestion(question) {
+        const gameStatus = document.getElementById('game-status');
+        gameStatus.innerHTML = `
+            <div class="space-y-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-white">Question ${question.number}/${question.total}</h3>
+                    <div class="text-purple-500 font-mono text-lg" id="timer">60s</div>
+                </div>
+                
+                <div class="w-full bg-gray-700 rounded-full h-2 mb-6">
+                    <div class="bg-purple-500 h-2 rounded-full transition-all duration-300" style="width: ${(question.number / question.total) * 100}%"></div>
+                </div>
+                
+                <div class="text-white text-lg mb-6" id="question-text">${question.text}</div>
+                
+                <div class="space-y-3" id="options-container">
+                    ${question.options.map((option, index) => `
+                        <button onclick="submitAnswer(${index})" 
+                                class="quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-purple-500 hover:bg-gray-850 transition-all duration-200">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">
+                                    ${String.fromCharCode(65 + index)}
+                                </div>
+                                <span>${option}</span>
+                            </div>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        currentQuestion = question.number;
+        timeLeft = 60;
+    }
+    
+    function startTimer() {
+        timer = setInterval(() => {
+            timeLeft--;
+            const timerEl = document.getElementById('timer');
+            if (timerEl) {
+                timerEl.textContent = timeLeft + 's';
+                if (timeLeft <= 10) {
+                    timerEl.classList.add('text-red-500');
+                }
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                if (!userAnswered) {
+                    submitAnswer(-1); // Pas de réponse
+                }
+            }
+        }, 1000);
+    }
+    
+    function submitAnswer(answerIndex) {
+        if (userAnswered) return;
+        
+        userAnswered = true;
+        clearInterval(timer);
+        
+        // Désactiver tous les boutons
+        document.querySelectorAll('.quiz-option').forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+        });
+        
+        const responseTime = 60 - timeLeft;
+        
+        fetch(`/quiz/api/room/{{ room.code }}/quiz/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                answer: answerIndex,
+                response_time: responseTime
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            showAnswerResult(data);
+            
+            // Attendre 3 secondes puis passer à la question suivante
+            setTimeout(() => {
+                if (currentQuestion < {{ room.num_questions }}) {
+                    userAnswered = false;
+                    loadCurrentQuestion();
+                } else {
+                    showFinalResults();
+                }
+            }, 3000);
+        })
+        .catch(err => console.log('Submit error:', err));
+    }
+    
+    function showAnswerResult(data) {
+        const options = document.querySelectorAll('.quiz-option');
+        
+        options.forEach((option, index) => {
+            if (index === data.correct_answer) {
+                option.classList.add('border-green-500', 'bg-green-500/20');
+            } else {
+                option.classList.add('opacity-60');
+            }
+        });
+        
+        // Afficher les points gagnés
+        const gameStatus = document.getElementById('game-status');
+        const pointsDiv = document.createElement('div');
+        pointsDiv.className = 'mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg';
+        pointsDiv.innerHTML = `
+            <div class="flex items-center justify-center space-x-3">
+                <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i>
+                <span class="text-white font-bold">+${data.points} points!</span>
+                <span class="text-gray-400">Total: ${data.new_score}</span>
+            </div>
+        `;
+        gameStatus.appendChild(pointsDiv);
+        lucide.createIcons();
+    }
+    
+    function updateLeaderboard(participants) {
+        const leaderboard = document.getElementById('leaderboard-content');
+        if (!leaderboard) return;
+        
+        leaderboard.innerHTML = participants.map((p, index) => `
+            <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg mb-2">
+                <div class="flex items-center space-x-3">
+                    <div class="text-lg font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-300' : index === 2 ? 'text-orange-500' : 'text-gray-400'}">
+                        #${index + 1}
+                    </div>
+                    <img src="${p.avatar_url}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                    <span class="text-white font-medium">${p.username}</span>
+                    ${p.is_host ? '<i data-lucide="crown" class="w-4 h-4 text-yellow-500"></i>' : ''}
+                </div>
+                <div class="text-right">
+                    <div class="text-white font-bold">${p.score}</div>
+                    <div class="text-xs text-gray-400">${p.correct_answers} correct</div>
+                </div>
+            </div>
+        `).join('');
+        
+        lucide.createIcons();
+    }
+    
+    function showFinalResults() {
+        document.getElementById('game-status').innerHTML = `
+            <div class="text-center">
+                <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="trophy" class="w-8 h-8 text-yellow-500"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Game Finished!</h2>
+                <p class="text-gray-400 mb-6">Check the final leaderboard below</p>
+                <a href="/quiz/lobby/" class="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                    Back to Lobby
+                </a>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-    });
+        return cookieValue;
+    }
+});
 </script>
 {% endblock %}

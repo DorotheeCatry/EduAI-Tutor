@@ -64,10 +64,10 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-bold text-white">Players ({{ participants.count }}/{{ room.max_players }})</h3>
                     {% if is_host and can_start %}
-                        <a href="{% url 'quiz:start_multiplayer_game' room.code %}" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                        <button onclick="startGame()" id="start-game-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
                             <i data-lucide="play" class="w-4 h-4"></i>
                             <span>Start Game</span>
-                        </a>
+                        </button>
                     {% endif %}
                 </div>
 
@@ -102,7 +102,7 @@
 
                 {% if not can_start and is_host %}
                     <div class="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <p class="text-sm text-yellow-400">You can start the game even with just yourself for testing!</p>
+                        <p class="text-sm text-yellow-400">Perfect for testing! You can start the game solo.</p>
                     </div>
                 {% endif %}
             </div>
@@ -122,8 +122,73 @@
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+        
+        // Polling pour mettre à jour la liste des joueurs en temps réel
+        if ('{{ room.status }}' === 'waiting') {
+            setInterval(updateRoomStatus, 2000); // Toutes les 2 secondes
+        }
     });
 
+    function updateRoomStatus() {
+        fetch(`/quiz/api/room/{{ room.code }}/status/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'waiting') {
+                    // Le jeu a commencé, rediriger
+                    window.location.href = `/quiz/play/{{ room.code }}/`;
+                    return;
+                }
+                
+                // Mettre à jour le nombre de joueurs
+                const playersTitle = document.querySelector('h3');
+                if (playersTitle) {
+                    playersTitle.textContent = `Players (${data.player_count}/{{ room.max_players }})`;
+                }
+                
+                // Mettre à jour le bouton start si nécessaire
+                const startBtn = document.getElementById('start-game-btn');
+                if (startBtn && data.can_start) {
+                    startBtn.style.display = 'flex';
+                } else if (startBtn) {
+                    startBtn.style.display = 'none';
+                }
+            })
+            .catch(err => console.log('Update error:', err));
+    }
+
+    function startGame() {
+        const btn = document.getElementById('start-game-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Starting...</span>';
+            lucide.createIcons();
+        }
+        
+        // Démarrer le jeu via API
+        fetch(`/quiz/room/{{ room.code }}/start/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Rediriger vers la page de jeu
+                window.location.href = `/quiz/play/{{ room.code }}/`;
+            } else {
+                throw new Error('Failed to start game');
+            }
+        })
+        .catch(err => {
+            console.error('Start game error:', err);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="play" class="w-4 h-4"></i><span>Start Game</span>';
+                lucide.createIcons();
+            }
+        });
+    }
     function copyRoomCode() {
         const roomCode = '{{ room.code }}';
         navigator.clipboard.writeText(roomCode).then(() => {
@@ -138,6 +203,21 @@
                 lucide.createIcons();
             }, 2000);
         });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 </script>
 {% endblock %}
