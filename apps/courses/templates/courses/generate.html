@@ -85,7 +85,7 @@
                         <span class="text-xs text-gray-400">{{ user.xp_progress_percentage|floatformat:0 }}%</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage }}%"></div>
+                        <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage|floatformat:0 }}%"></div>
                     </div>
                 </div>
                 {% endif %}

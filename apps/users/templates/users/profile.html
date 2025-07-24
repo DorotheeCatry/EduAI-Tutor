@@ -218,7 +218,7 @@
                             <span class="text-sm text-gray-300">{{ user.xp }}/{{ user.xp_for_next_level }} XP ({{ user.xp_progress_percentage|floatformat:1 }}%)</span>
                         </div>
                         <div class="w-full bg-gray-700 rounded-full h-2">
-                            <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage|floatformat:1 }}%"></div>
+                            <div class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: {{ user.xp_progress_percentage }}%"></div>
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
