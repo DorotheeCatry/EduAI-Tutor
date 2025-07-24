@@ -103,12 +103,17 @@ document.addEventListener('DOMContentLoaded', function () {
     let userAnswered = false;
     let gameFinished = false;
     let myScore = 0;
+    let pollInterval = null;
+    let waitingForNextQuestion = false;
 
     // Start the game loop
     loadCurrentQuestion();
     
     // Update leaderboard every 2 seconds
     setInterval(updateLeaderboard, 2000);
+    
+    // Start polling for question changes
+    startQuestionPolling();
 
     function loadCurrentQuestion() {
         console.log('🔄 Loading question...');
@@ -137,8 +142,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     if (!userAnswered && !gameFinished) {
                         startTimer();
+                        waitingForNextQuestion = false;
                     } else if (userAnswered) {
                         showWaitingForOthers();
+                        waitingForNextQuestion = true;
+                        // Poll more frequently when waiting
+                        startWaitingPolling();
                     }
                 }
             })
@@ -146,6 +155,56 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('❌ Question load error:', err);
                 showError('Failed to load question. Retrying...');
                 setTimeout(loadCurrentQuestion, 3000);
+            });
+    }
+    
+    function startQuestionPolling() {
+        // Poll every 3 seconds for question changes
+        pollInterval = setInterval(() => {
+            if (waitingForNextQuestion) {
+                checkForNextQuestion();
+            }
+        }, 3000);
+    }
+    
+    function startWaitingPolling() {
+        // Poll more frequently when waiting for others
+        if (pollInterval) {
+            clearInterval(pollInterval);
+        }
+        pollInterval = setInterval(() => {
+            checkForNextQuestion();
+        }, 1500); // Every 1.5 seconds when waiting
+    }
+    
+    function checkForNextQuestion() {
+        fetch(`/quiz/api/room/{{ room.code }}/quiz/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    return;
+                }
+                
+                if (data.room_status === 'finished') {
+                    clearInterval(pollInterval);
+                    showFinalResults();
+                    return;
+                }
+                
+                // Check if we moved to next question
+                const newQuestionNumber = data.question ? data.question.number : currentQuestionNumber;
+                
+                if (newQuestionNumber > currentQuestionNumber) {
+                    console.log('🔄 New question detected, loading...');
+                    clearInterval(pollInterval);
+                    waitingForNextQuestion = false;
+                    userAnswered = false;
+                    loadCurrentQuestion();
+                    startQuestionPolling(); // Resume normal polling
+                }
+            })
+            .catch(err => {
+                console.log('Poll error:', err);
             });
     }
 
@@ -298,11 +357,12 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
                 if (currentQuestionNumber < totalQuestions) {
                     userAnswered = false;
+                    waitingForNextQuestion = false;
                     loadCurrentQuestion();
                 } else {
                     showFinalResults();
                 }
-            }, 4000);
+            }, 2000); // Reduced wait time
         })
         .catch(err => {
             console.error('❌ Submit error:', err);
@@ -381,11 +441,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = `
             <div class="text-center py-8">
-                <div class="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="clock" class="w-6 h-6 text-yellow-500"></i>
+                <div class="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <i data-lucide="users" class="w-6 h-6 text-yellow-500"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white mb-2">Answer submitted!</h3>
                 <p class="text-gray-400">Waiting for other players...</p>
+                <div class="mt-4">
+                    <div class="flex justify-center space-x-1">
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                    </div>
+                </div>
             </div>
         `;
         lucide.createIcons();

@@ -331,7 +331,8 @@ def multiplayer_quiz_api(request, room_code):
                 'correct_answer': current_question.correct_answer,
                 'explanation': current_question.explanation,
                 'all_answered': all_answered,
-                'new_score': participant.score
+                'new_score': participant.score,
+                'next_question_ready': all_answered
             })
             
         except GameQuestion.DoesNotExist:
