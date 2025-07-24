@@ -66,21 +66,25 @@ def dashboard(request):
     weekly_goal_quizzes = 5
     daily_goal_minutes = 60  # 1h per day
     
+    # Calculs corrigés pour les objectifs
+    current_week_courses = min(weekly_goal_courses, user.total_courses_completed % (weekly_goal_courses + 1))
+    current_week_quizzes = min(weekly_goal_quizzes, user.total_quizzes_completed % (weekly_goal_quizzes + 1))
+    
     goals = {
         'courses': {
-            'current': min(weekly_goal_courses, max(1, total_courses % 4)),
+            'current': current_week_courses,
             'target': weekly_goal_courses,
-            'percentage': min(100, max(1, total_courses % 4) * 100 // weekly_goal_courses)
+            'percentage': min(100, (current_week_courses * 100) // weekly_goal_courses) if weekly_goal_courses > 0 else 0
         },
         'quizzes': {
-            'current': min(weekly_goal_quizzes, max(1, user.total_quizzes_completed % 6)),
+            'current': current_week_quizzes,
             'target': weekly_goal_quizzes,
-            'percentage': min(100, max(1, user.total_quizzes_completed % 6) * 100 // weekly_goal_quizzes)
+            'percentage': min(100, (current_week_quizzes * 100) // weekly_goal_quizzes) if weekly_goal_quizzes > 0 else 0
         },
         'daily_time': {
             'current_minutes': today_minutes,
             'target_minutes': daily_goal_minutes,
-            'percentage': min(100, today_minutes * 100 // daily_goal_minutes),
+            'percentage': min(100, (today_minutes * 100) // daily_goal_minutes) if daily_goal_minutes > 0 else 0,
             'display': f"{today_hours}h {today_mins:02d}m / {daily_goal_minutes//60}h"
         }
     }

@@ -125,11 +125,14 @@ class KodaUser(AbstractUser):
     @property
     def xp_progress_percentage(self):
         """Pourcentage de progression vers le prochain niveau"""
-        if self.level == 1:
-            return (self.xp / 100) * 100
-        
         current_level_xp = self.xp_for_current_level
         next_level_xp = self.xp_for_next_level
+        
+        # Éviter la division par zéro
+        if next_level_xp <= current_level_xp:
+            return 100.0
+        
+        # Calculer le pourcentage de progression dans le niveau actuel
         progress = ((self.xp - current_level_xp) / (next_level_xp - current_level_xp)) * 100
         return min(100, max(0, progress))
     
