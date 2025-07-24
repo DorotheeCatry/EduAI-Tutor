@@ -191,6 +191,8 @@ def room_status_api(request, room_code):
 @login_required
 def multiplayer_quiz_api(request, room_code):
     """API pour le quiz multijoueur en temps réel"""
+    print(f"🎯 API Quiz called for room {room_code}, method: {request.method}")
+    
     room = get_object_or_404(GameRoom, code=room_code)
     
     try:
@@ -201,10 +203,14 @@ def multiplayer_quiz_api(request, room_code):
     if request.method == 'GET':
         # Récupérer la question actuelle
         try:
+            print(f"📝 Getting question {room.current_question} for room {room_code}")
+            
             current_question = GameQuestion.objects.get(
                 room=room, 
                 question_number=room.current_question
             )
+            
+            print(f"✅ Found question: {current_question.question_text[:50]}...")
             
             # Vérifier si l'utilisateur a déjà répondu
             has_answered = GameAnswer.objects.filter(
@@ -225,13 +231,18 @@ def multiplayer_quiz_api(request, room_code):
             })
             
         except GameQuestion.DoesNotExist:
+            print(f"❌ Question {room.current_question} not found for room {room_code}")
             return JsonResponse({'error': 'Question not found'}, status=404)
     
     elif request.method == 'POST':
         # Soumettre une réponse
+        print(f"📤 Submitting answer for room {room_code}")
+        
         data = json.loads(request.body)
         answer_index = data.get('answer')
         response_time = data.get('response_time', 60)
+        
+        print(f"📊 Answer: {answer_index}, Response time: {response_time}s")
         
         try:
             current_question = GameQuestion.objects.get(
@@ -248,6 +259,8 @@ def multiplayer_quiz_api(request, room_code):
             if existing_answer:
                 return JsonResponse({'error': 'Already answered'}, status=400)
             
+            print(f"💾 Creating answer record...")
+            
             # Créer la réponse
             game_answer = GameAnswer.objects.create(
                 participant=participant,
@@ -259,6 +272,8 @@ def multiplayer_quiz_api(request, room_code):
             # Calculer les points
             points = game_answer.calculate_points()
             game_answer.save()
+            
+            print(f"🎯 Points calculated: {points}")
             
             # Mettre à jour le score du participant
             participant.score += points
@@ -274,6 +289,19 @@ def multiplayer_quiz_api(request, room_code):
             
             all_answered = answered_players >= active_players
             
+            print(f"📈 Updated participant score: {participant.score}")
+            print(f"👥 All answered: {all_answered} ({answered_players}/{active_players})")
+            
+            # Move to next question if all answered
+            if all_answered and room.current_question < room.num_questions:
+                room.current_question += 1
+                room.save()
+                print(f"➡️ Moving to question {room.current_question}")
+            elif all_answered and room.current_question >= room.num_questions:
+                room.status = 'finished'
+                room.save()
+                print(f"🏁 Game finished!")
+            
             return JsonResponse({
                 'success': True,
                 'points': points,
@@ -285,8 +313,10 @@ def multiplayer_quiz_api(request, room_code):
             })
             
         except GameQuestion.DoesNotExist:
+            print(f"❌ Question not found when submitting answer")
             return JsonResponse({'error': 'Question not found'}, status=404)
         except Exception as e:
+            print(f"❌ Error submitting answer: {e}")
             return JsonResponse({'error': str(e)}, status=500)
     
     return JsonResponse({'error': 'Method not allowed'}, status=405)
