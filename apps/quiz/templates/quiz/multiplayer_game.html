@@ -36,7 +36,7 @@
     </div>
 
     <!-- Question + answers block -->
-    <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col" style="height: 60vh;">
+    <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col" id="quiz-container">
         <!-- Progress bar - fixed at top -->
         <div class="p-6 pb-4 border-b border-gray-700 flex-shrink-0">
             <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
@@ -45,8 +45,8 @@
         </div>
         
         <!-- Question content with scroll -->
-        <div class="flex-1 overflow-y-auto px-6 min-h-0">
-            <div id="question-text" class="text-white space-y-4 text-base py-4">
+        <div class="px-6 min-h-0" id="question-container">
+            <div id="question-text" class="text-white space-y-4 text-base py-4 min-h-32">
                 <div class="text-center py-12">
                     <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i data-lucide="loader-2" class="w-8 h-8 text-purple-500 animate-spin"></i>
@@ -58,7 +58,7 @@
         </div>
 
         <!-- Options container with fixed position -->
-        <div class="p-6 pt-4 space-y-4 flex-shrink-0" id="options-container">
+        <div class="p-6 pt-4 space-y-4 flex-shrink-0 border-t border-gray-700" id="options-container">
             <!-- Dynamically generated options -->
         </div>
     </div>
@@ -161,6 +161,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         
         document.getElementById('question-text').innerHTML = formattedQuestion;
+        
+        // Adaptive layout based on question content
+        setTimeout(() => {
+            adaptQuizLayout();
+        }, 100);
         
         // Update progress bar
         const progressPercent = (currentQuestionNumber / totalQuestions) * 100;
@@ -359,6 +364,45 @@ document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
     }
     
+    function adaptQuizLayout() {
+        const questionContainer = document.getElementById('question-container');
+        const questionText = document.getElementById('question-text');
+        const quizContainer = document.getElementById('quiz-container');
+        
+        if (!questionContainer || !questionText || !quizContainer) return;
+        
+        // Reset styles
+        questionContainer.style.height = 'auto';
+        questionContainer.style.overflowY = 'visible';
+        
+        // Measure content height
+        const contentHeight = questionText.scrollHeight;
+        const viewportHeight = window.innerHeight;
+        const availableHeight = viewportHeight * 0.6; // 60% of viewport
+        const maxQuestionHeight = availableHeight - 200; // Reserve space for progress bar and options
+        
+        console.log('Content height:', contentHeight, 'Max height:', maxQuestionHeight);
+        
+        if (contentHeight > maxQuestionHeight) {
+            // Question is too long, enable scroll
+            questionContainer.style.height = maxQuestionHeight + 'px';
+            questionContainer.style.overflowY = 'auto';
+            questionContainer.classList.add('scrollable-question');
+            console.log('Enabled scroll for long question');
+        } else {
+            // Question fits, no scroll needed
+            questionContainer.style.height = 'auto';
+            questionContainer.style.overflowY = 'visible';
+            questionContainer.classList.remove('scrollable-question');
+            console.log('Question fits, no scroll needed');
+        }
+        
+        // Ensure quiz container adapts
+        quizContainer.style.height = 'auto';
+        quizContainer.style.minHeight = '50vh';
+        quizContainer.style.maxHeight = '80vh';
+    }
+    
     function showWaitingForOthers() {
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = `
@@ -554,6 +598,35 @@ document.addEventListener('DOMContentLoaded', function () {
 .quiz-option:disabled {
     cursor: not-allowed !important;
     pointer-events: none !important;
+}
+
+/* Adaptive question container */
+.scrollable-question {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #1F2937;
+}
+
+.scrollable-question::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-question::-webkit-scrollbar-track {
+    background: #1F2937;
+    border-radius: 3px;
+}
+
+.scrollable-question::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 3px;
+}
+
+.scrollable-question::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+
+/* Ensure quiz container is flexible */
+#quiz-container {
+    transition: height 0.3s ease;
 }
 
 /* Remove Prism automatic labels */
