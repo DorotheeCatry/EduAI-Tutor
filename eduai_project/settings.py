@@ -221,11 +221,12 @@ LOGIN_URL = '/auth/login/'            # @login_required protection
 # Channels configuration
 ASGI_APPLICATION = 'eduai_project.asgi.application'
 
+# Channel layers configuration for WebSockets
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            # Use in-memory channel layer for development
         },
     },
 }
