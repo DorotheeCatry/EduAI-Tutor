@@ -15,54 +15,48 @@
         </div>
         
         <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-                <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i>
-                <span class="text-blue-500 font-mono text-lg" id="timer">60s</span>
-            </div>
             <div class="text-white">
-                Question <span id="current-question">1</span> of <span id="total-questions">{{ room.num_questions }}</span>
+                Questions: {{ room.num_questions }}
             </div>
         </div>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="w-full bg-gray-700 rounded-full h-2 flex-shrink-0">
-        <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-    </div>
-
-    <!-- Game Content -->
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
-        <!-- Question Area -->
-        <div class="lg:col-span-3 bg-gray-800 rounded-lg p-6 border border-gray-700 flex flex-col">
-            <div id="question-container" class="flex-1">
-                <div id="question-text" class="text-white text-lg mb-6 min-h-[100px] flex items-center">
-                    Waiting for question...
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="options-container">
-                    <!-- Options will be populated by JavaScript -->
-                </div>
+    <!-- Game info -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
             </div>
-
-            <!-- Results overlay (hidden by default) -->
-            <div id="results-overlay" class="hidden absolute inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center rounded-lg">
-                <div class="text-center">
-                    <div id="result-icon" class="w-16 h-16 mx-auto mb-4"></div>
-                    <div id="result-text" class="text-2xl font-bold text-white mb-2"></div>
-                    <div id="result-explanation" class="text-gray-300 max-w-md"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div class="lg:col-span-1 bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-                <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
-                <span>Leaderboard</span>
-            </h3>
+            <h2 class="text-2xl font-bold text-white mb-2">Game Ready!</h2>
+            <p class="text-gray-400 mb-6">Questions have been generated for "{{ room.topic }}"</p>
             
-            <div id="leaderboard" class="space-y-2">
-                <!-- Leaderboard will be populated by JavaScript -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-blue-500">{{ room.num_questions }}</div>
+                    <div class="text-sm text-gray-400">Questions</div>
+                </div>
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-green-500">{{ participants.count }}</div>
+                    <div class="text-sm text-gray-400">Player{{ participants.count|pluralize }}</div>
+                </div>
+                <div class="bg-gray-900 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-yellow-500">{{ room.code }}</div>
+                    <div class="text-sm text-gray-400">Room Code</div>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <a href="{% url 'quiz:start' %}?topic={{ room.topic }}&num_questions={{ room.num_questions }}&mode=multiplayer&room_code={{ room.code }}" 
+                   class="w-full py-3 px-6 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2 text-lg font-medium">
+                    <i data-lucide="play" class="w-5 h-5"></i>
+                    <span>Start Quiz</span>
+                </a>
+                
+                <a href="{% url 'quiz:room_detail' room.code %}" 
+                   class="w-full py-2 px-4 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center space-x-2">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span>Back to Lobby</span>
+                </a>
             </div>
         </div>
     </div>
@@ -72,179 +66,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
-        }
-
-        // WebSocket connection
-        const roomCode = '{{ room.code }}';
-        const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
-        
-        let currentQuestion = null;
-        let hasAnswered = false;
-        let timeLeft = 60;
-        let timer = null;
-
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            
-            switch(data.type) {
-                case 'new_question':
-                    showQuestion(data.question);
-                    startTimer(data.time_limit || 60);
-                    break;
-                case 'question_results':
-                    showResults(data.results);
-                    break;
-                case 'game_finished':
-                    showFinalResults(data.results);
-                    break;
-                case 'room_update':
-                    updateLeaderboard(data.data.participants);
-                    break;
-            }
-        };
-
-        function showQuestion(question) {
-            hasAnswered = false;
-            currentQuestion = question;
-            
-            document.getElementById('current-question').textContent = question.number;
-            document.getElementById('total-questions').textContent = question.total;
-            document.getElementById('question-text').innerHTML = formatQuestionText(question.text);
-            
-            // Update progress bar
-            const progress = (question.number / question.total) * 100;
-            document.getElementById('progress-bar').style.width = progress + '%';
-            
-            // Show options
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            
-            question.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = 'quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-green-500 hover:bg-gray-800 transition-all duration-200 transform hover:scale-[1.02]';
-                button.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">
-                            ${String.fromCharCode(65 + index)}
-                        </div>
-                        <span>${option}</span>
-                    </div>
-                `;
-                button.addEventListener('click', () => submitAnswer(index));
-                optionsContainer.appendChild(button);
-            });
-            
-            // Hide results overlay
-            document.getElementById('results-overlay').classList.add('hidden');
-        }
-
-        function submitAnswer(answerIndex) {
-            if (hasAnswered) return;
-            
-            hasAnswered = true;
-            const responseTime = 60 - timeLeft;
-            
-            // Disable all options
-            document.querySelectorAll('.quiz-option').forEach(btn => {
-                btn.disabled = true;
-                btn.classList.add('opacity-50');
-            });
-            
-            // Send answer to server
-            socket.send(JSON.stringify({
-                'type': 'submit_answer',
-                'answer': answerIndex,
-                'response_time': responseTime
-            }));
-        }
-
-        function startTimer(duration) {
-            timeLeft = duration;
-            document.getElementById('timer').textContent = timeLeft + 's';
-            
-            timer = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft + 's';
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    if (!hasAnswered) {
-                        submitAnswer(-1); // No answer
-                    }
-                }
-            }, 1000);
-        }
-
-        function showResults(results) {
-            clearInterval(timer);
-            
-            const overlay = document.getElementById('results-overlay');
-            const icon = document.getElementById('result-icon');
-            const text = document.getElementById('result-text');
-            const explanation = document.getElementById('result-explanation');
-            
-            // Show correct answer
-            const correctIndex = results.correct_answer;
-            const options = document.querySelectorAll('.quiz-option');
-            options.forEach((option, index) => {
-                if (index === correctIndex) {
-                    option.classList.add('border-green-500', 'bg-green-500/20');
-                } else {
-                    option.classList.add('border-red-500/50');
-                }
-            });
-            
-            // Show explanation if available
-            if (results.explanation) {
-                icon.innerHTML = '<i data-lucide="lightbulb" class="w-16 h-16 text-yellow-500"></i>';
-                text.textContent = 'Correct Answer: ' + String.fromCharCode(65 + correctIndex);
-                explanation.textContent = results.explanation;
-                
-                overlay.classList.remove('hidden');
-                lucide.createIcons();
-                
-                setTimeout(() => {
-                    overlay.classList.add('hidden');
-                }, 3000);
-            }
-            
-            // Update leaderboard
-            updateLeaderboard(results.leaderboard);
-        }
-
-        function updateLeaderboard(participants) {
-            const leaderboard = document.getElementById('leaderboard');
-            leaderboard.innerHTML = '';
-            
-            participants.forEach((participant, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-2 bg-gray-900 rounded border border-gray-600';
-                div.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-bold ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-300' : index === 2 ? 'text-orange-500' : 'text-gray-400'}">${index + 1}</span>
-                        <span class="text-sm text-white">${participant.user__username}</span>
-                    </div>
-                    <span class="text-sm font-bold text-green-500">${participant.score}</span>
-                `;
-                leaderboard.appendChild(div);
-            });
-        }
-
-        function formatQuestionText(text) {
-            // Format code blocks and other markdown
-            return text.replace(/```(\w+)?\n?([\s\S]*?)```/g, function(match, lang, code) {
-                const language = lang || 'code';
-                return `<div class="bg-gray-900 rounded-lg p-4 border border-gray-600 my-4">
-                    <pre class="text-sm"><code class="language-${language}">${code.trim()}</code></pre>
-                </div>`;
-            });
-        }
-
-        function showFinalResults(results) {
-            // Redirect to results page or show final overlay
-            setTimeout(() => {
-                window.location.href = '{% url "quiz:lobby" %}';
-            }, 5000);
         }
     });
 </script>

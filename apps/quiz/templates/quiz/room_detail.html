@@ -64,10 +64,10 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-bold text-white">Players ({{ participants.count }}/{{ room.max_players }})</h3>
                     {% if is_host and can_start %}
-                        <button onclick="startGame()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                        <a href="{% url 'quiz:start_multiplayer_game' room.code %}" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
                             <i data-lucide="play" class="w-4 h-4"></i>
                             <span>Start Game</span>
-                        </button>
+                        </a>
                     {% endif %}
                 </div>
 
@@ -122,48 +122,6 @@
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-
-        // WebSocket connection for real-time updates
-        const roomCode = '{{ room.code }}';
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const socket = new WebSocket(`${protocol}//${window.location.host}/ws/quiz/${roomCode}/`);
-
-        socket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            
-            if (data.type === 'room_update') {
-                updatePlayersList(data.data.participants);
-            } else if (data.type === 'game_starting') {
-                showGameStarting(data.countdown);
-            } else if (data.type === 'new_question') {
-                window.location.href = `{% url 'quiz:multiplayer_game' room.code %}`;
-            }
-        };
-
-        socket.onclose = function(event) {
-            console.log('WebSocket closed:', event.code, event.reason);
-            // For now, allow manual start without WebSocket
-            if (event.code !== 1000) {
-                console.log('WebSocket connection failed, using fallback mode');
-            }
-        };
-        
-        socket.onerror = function(error) {
-            console.log('WebSocket error:', error);
-            // Fallback: allow manual navigation for testing
-        };
-
-        window.startGame = function() {
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    'type': 'start_game'
-                }));
-            } else {
-                // Fallback: direct navigation for testing
-                console.log('WebSocket not available, redirecting directly');
-                window.location.href = `{% url 'quiz:multiplayer_game' room.code %}`;
-            }
-        };
     });
 
     function copyRoomCode() {
@@ -180,35 +138,6 @@
                 lucide.createIcons();
             }, 2000);
         });
-    }
-
-    function updatePlayersList(participants) {
-        const playersList = document.getElementById('players-list');
-        // Update players list with new data
-        // Implementation depends on your needs
-    }
-
-    function showGameStarting(countdown) {
-        // Show countdown overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
-        overlay.innerHTML = `
-            <div class="text-center">
-                <div class="text-6xl font-bold text-white mb-4" id="countdown">${countdown}</div>
-                <div class="text-xl text-gray-300">Game starting...</div>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-
-        const countdownEl = document.getElementById('countdown');
-        let count = countdown;
-        const interval = setInterval(() => {
-            count--;
-            countdownEl.textContent = count;
-            if (count <= 0) {
-                clearInterval(interval);
-            }
-        }, 1000);
     }
 </script>
 {% endblock %}

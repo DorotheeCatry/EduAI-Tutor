@@ -13,5 +13,6 @@ urlpatterns = [
     path('create/', views.create_room, name='create_room'),
     path('join/', views.join_room, name='join_room'),
     path('room/<str:room_code>/', views.room_detail, name='room_detail'),
+    path('room/<str:room_code>/start/', views.start_multiplayer_game, name='start_multiplayer_game'),
     path('play/<str:room_code>/', views.multiplayer_game, name='multiplayer_game'),
 ]

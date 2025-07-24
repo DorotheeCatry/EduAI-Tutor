@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from apps.agents.agent_orchestrator import get_orchestrator
-from .models import GameRoom, GameParticipant
+from .models import GameRoom, GameParticipant, GameQuestion
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 import json
@@ -46,6 +46,54 @@ def create_room(request):
         return redirect('quiz:room_detail', room_code=room.code)
     
     return render(request, 'quiz/create_room.html')
+
+@login_required
+def start_multiplayer_game(request, room_code):
+    """Start multiplayer game (host only)"""
+    room = get_object_or_404(GameRoom, code=room_code)
+    
+    # Check if user is host
+    if room.host != request.user:
+        messages.error(request, 'Only the host can start the game.')
+        return redirect('quiz:room_detail', room_code=room_code)
+    
+    # Check if room is in waiting state
+    if room.status != 'waiting':
+        messages.error(request, 'Game already started or finished.')
+        return redirect('quiz:room_detail', room_code=room_code)
+    
+    # Generate questions using AI
+    try:
+        orchestrator = get_orchestrator(request.user)
+        quiz_data = orchestrator.create_quiz(room.topic, room.num_questions)
+        
+        if quiz_data and quiz_data.get('questions'):
+            # Save questions to database
+            for i, question_data in enumerate(quiz_data['questions']):
+                GameQuestion.objects.create(
+                    room=room,
+                    question_number=i + 1,
+                    question_text=question_data['question'],
+                    options=question_data['options'],
+                    correct_answer=question_data['correct_answer'],
+                    explanation=question_data.get('explanation', '')
+                )
+            
+            # Update room status
+            room.status = 'in_progress'
+            room.current_question = 1
+            room.save()
+            
+            messages.success(request, f'Game started! {len(quiz_data["questions"])} questions generated.')
+            return redirect('quiz:multiplayer_game', room_code=room_code)
+        else:
+            messages.error(request, 'Failed to generate questions. Please try again.')
+            
+    except Exception as e:
+        print(f"Error generating questions: {e}")
+        messages.error(request, f'Error generating questions: {str(e)}')
+    
+    return redirect('quiz:room_detail', room_code=room_code)
 
 @login_required
 def join_room(request):
