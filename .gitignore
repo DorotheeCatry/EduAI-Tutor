@@ -238,3 +238,7 @@ test-agents.ipynb
 apps/rag/chroma/
 apps/rag/chroma/*
 apps/rag/chroma/**/*
+
+# Téléversements d'exécution (MEDIA_ROOT) : données personnelles d'apprenants,
+# potentiellement mineurs. Minimisation RGPD — cf. C4.
+media/
