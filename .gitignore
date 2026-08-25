@@ -227,7 +227,6 @@ staticfiles/
 */locale/*
 */locale/*/LC_MESSAGES/*
 
-**/migrations/
 !*/migrations/__init__.py
 
 key_groq.txt
