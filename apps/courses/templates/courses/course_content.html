@@ -68,7 +68,10 @@
                 <div class="bg-gray-900 mt-6">
                     <div class="p-6">
                         <div class="prose prose-invert max-w-none" id="course-content">
-                            {{ course.content|safe }}
+                            {# HTML produit par render_markdown() côté serveur, #}
+                            {# markdown2 en safe_mode : le HTML brut du modèle  #}
+                            {# est déjà échappé.                                #}
+                            {{ course.content_html|safe }}
                         </div>
                     </div>
                 </div>
@@ -88,71 +91,55 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
-        
-        // Ensure formatting is ALWAYS applied
-        setTimeout(function() {
-            formatMarkdownContent();
-        }, 100);
 
-    function formatMarkdownContent() {
+        // Le Markdown est désormais converti en HTML côté serveur par
+        // render_markdown() (apps/courses/views.py). Il ne reste au navigateur
+        // qu'à habiller les blocs de code déjà produits : en-tête indiquant le
+        // langage et bouton de copie.
+        decorateCodeBlocks();
+
+    function decorateCodeBlocks() {
         const content = document.getElementById('course-content');
         if (!content) return;
 
-        let html = content.innerHTML;
+        // markdown2 (extra highlightjs-lang) produit :
+        //   <pre><code class="python language-python">…</code></pre>
+        content.querySelectorAll('pre > code').forEach(function (code) {
+            const pre = code.parentElement;
+            if (pre.closest('.code-block-container')) return;   // déjà habillé
 
-        // Step 1: Save code blocks to avoid altering them
-        const codeBlocks = [];
-        html = html.replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
-            const language = lang || 'code';
-            const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
-            const block = `<div class="code-block-container my-4">
-                <div class="code-header">
-                    <span class="code-language">${displayLang}</span>
-                    <button class="copy-btn" onclick="copyCode(this)">
-                        <i data-lucide="copy" class="w-4 h-4"></i>
-                        <span>Copy</span>
-                    </button>
-                </div>
-                <pre class="code-content language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
-            </div>`;
-            codeBlocks.push(block);
-            return `<!--CODEBLOCK_${codeBlocks.length - 1}-->`;
+            const match = /language-([\w+-]+)/.exec(code.className);
+            const language = match ? match[1] : 'code';
+            const displayLang = language.charAt(0).toUpperCase() + language.slice(1);
+
+            const container = document.createElement('div');
+            container.className = 'code-block-container my-4';
+
+            const header = document.createElement('div');
+            header.className = 'code-header';
+
+            // textContent, pas innerHTML : le nom du langage vient du document
+            // généré par le modèle et ne doit pas pouvoir injecter de balise.
+            const label = document.createElement('span');
+            label.className = 'code-language';
+            label.textContent = displayLang;
+
+            const button = document.createElement('button');
+            button.className = 'copy-btn';
+            button.setAttribute('type', 'button');
+            button.setAttribute('aria-label', 'Copier le bloc de code');
+            button.addEventListener('click', function () { copyCode(button); });
+            button.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i><span>Copy</span>';
+
+            header.appendChild(label);
+            header.appendChild(button);
+
+            pre.parentNode.insertBefore(container, pre);
+            container.appendChild(header);
+            container.appendChild(pre);
+            pre.classList.add('code-content', 'language-' + language);
         });
 
-        // Step 2: Enhanced Markdown formatting
-        html = html.replace(/^# (.*$)/gm, '<h1 class="text-3xl font-bold text-white mb-6 mt-8 first:mt-0 flex items-center">$1</h1>');
-        html = html.replace(/^## (.*$)/gm, '<h2 class="text-2xl font-bold text-primary-green mb-4 mt-6 flex items-center">$1</h2>');
-        html = html.replace(/^### (.*$)/gm, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
-        html = html.replace(/^#### (.*$)/gm, '<h4 class="text-lg font-semibold text-primary-blue mt-4 mb-2">$1</h4>');
-        html = html.replace(/^##### (.*$)/gm, '<h5 class="text-base font-semibold text-primary-blue mt-4 mb-2">$1</h5>');
-
-        // Formatage des titres avec **Titre**
-        html = html.replace(/\*\*([^*\n]+)\*\*/g, '<h3 class="text-xl font-bold text-primary-blue mb-3 mt-5">$1</h3>');
-        
-        // Formatage du texte en gras simple
-        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="keyword-highlight">$1</strong>');
-        
-        // Code inline
-        html = html.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
-
-        // Amélioration des listes
-        html = html.replace(/^[\-\*\+•] (.+)$/gm, '<li class="list-item">$1</li>');
-        
-        // Grouper les listes consécutives
-        html = html.replace(/(<li class="list-item">.*?<\/li>(\s*<li class="list-item">.*?<\/li>)*)/gs,
-            match => '<ul class="list-container">' + match + '</ul>');
-
-        // Paragraph formatting
-        html = html.replace(/\n\n/g, '</p><p class="mb-4 text-gray-300 leading-relaxed">');
-        html = '<p class="mb-4 text-gray-300 leading-relaxed">' + html + '</p>';
-
-        // Clean empty paragraphs
-        html = html.replace(/<p class="mb-4 text-gray-300 leading-relaxed">\s*<\/p>/g, '');
-        
-        // Step 3: Reinject code blocks
-        html = html.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => codeBlocks[parseInt(i)]);
-
-        content.innerHTML = html;
         lucide.createIcons();
 
         if (window.Prism) {
@@ -190,6 +177,142 @@
 </script>
 
 <style>
+/* ------------------------------------------------------------------ */
+/* Rendu du cours                                                      */
+/*                                                                     */
+/* markdown2 produit du HTML sémantique (h1..h4, p, ul, ol, table,     */
+/* strong, code). Les styles ci-dessous le mettent en forme            */
+/* explicitement : le plugin Tailwind Typography n'est pas installé,   */
+/* donc les classes « prose » ne suffisent pas. Sélecteurs préfixés    */
+/* par #course-content pour ne rien changer au reste de l'application. */
+/* ------------------------------------------------------------------ */
+
+#course-content {
+    color: #E5E7EB;
+    line-height: 1.7;
+}
+
+#course-content h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 2rem 0 1.5rem 0;
+}
+
+#course-content h1:first-child {
+    margin-top: 0;
+}
+
+#course-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4CAF50;
+    margin: 1.75rem 0 1rem 0;
+}
+
+#course-content h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #79C0FF;
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+#course-content h4,
+#course-content h5,
+#course-content h6 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: #79C0FF;
+    margin: 1.25rem 0 0.5rem 0;
+}
+
+#course-content p {
+    margin: 0 0 1rem 0;
+}
+
+/* Le gras reste du gras : c'est le défaut que corrige ce correctif.
+   L'ancien parseur en transformait chaque occurrence en titre <h3>. */
+#course-content strong {
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+#course-content em {
+    font-style: italic;
+}
+
+#course-content a {
+    color: #79C0FF;
+    text-decoration: underline;
+}
+
+#course-content ul,
+#course-content ol {
+    margin: 0.5rem 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+#course-content ul { list-style: disc; }
+#course-content ol { list-style: decimal; }
+
+#course-content li {
+    margin-bottom: 0.375rem;
+}
+
+#course-content li::marker {
+    color: #4CAF50;
+}
+
+#course-content blockquote {
+    border-left: 3px solid #4CAF50;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: #9CA3AF;
+}
+
+#course-content hr {
+    border: none;
+    border-top: 1px solid #30363D;
+    margin: 1.5rem 0;
+}
+
+/* Tableaux : en-têtes <th> explicites, restituables par un lecteur
+   d'écran. Le conteneur défile horizontalement afin que la page
+   elle-même ne déborde jamais sur petit écran. */
+#course-content table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+}
+
+#course-content th,
+#course-content td {
+    border: 1px solid #30363D;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+}
+
+#course-content th {
+    background: #21262D;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+/* Code au fil du texte. Le bloc de code délimité est habillé par
+   decorateCodeBlocks() et utilise .code-block-container plus bas. */
+#course-content :not(pre) > code {
+    background: #0D1117;
+    color: #79C0FF;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.875rem;
+    border: 1px solid #30363D;
+}
+
 /* Styles identiques pour le formatage */
 .keyword-highlight {
     background: linear-gradient(135deg, #4CAF50, #45a049);

@@ -11,6 +11,57 @@ import re
 import markdown2
 
 
+# Extras markdown2 retenus pour le rendu des cours. Regroupés ici plutôt que
+# répétés dans chaque vue : le rendu doit être identique pour un cours qui vient
+# d'être généré et pour un cours rechargé depuis la base.
+MARKDOWN_EXTRAS = [
+    "fenced-code-blocks",   # blocs délimités par ```python
+    "highlightjs-lang",     # ajoute la classe language-* attendue par Prism
+    "tables",               # tableaux avec <thead> et <th>
+    "break-on-newline",     # un saut de ligne simple devient un <br>
+    "cuddled-lists",        # liste collée au paragraphe qui la précède
+]
+
+
+def render_markdown(content):
+    """
+    Convertit en HTML le Markdown produit par les agents, côté serveur.
+
+    Compétence visée : C17 (épreuve E4) — interface de l'application web
+    Compétence visée : C9 (épreuve E2) — sécurisation du service exposé
+
+    Choix : conversion côté serveur avec markdown2 plutôt qu'un parseur en
+    expressions régulières côté navigateur. Le parseur JavaScript précédent
+    convertissait tout `**gras**` en titre `<h3>`, ce qui coupait les phrases
+    en trois et produisait une hiérarchie de titres incohérente ; il plaçait
+    aussi des blocs `<h2>` et `<ul>` à l'intérieur de `<p>`, et ne traitait
+    pas les tableaux.
+
+    Choix : safe_mode="escape" pour neutraliser le HTML brut. Le sujet saisi
+    par l'apprenant alimente le prompt du Pedagogue ; sans échappement, une
+    injection amenant le modèle à produire une balise <script> ou un attribut
+    onerror s'exécuterait dans la page (XSS, OWASP A03).
+
+    Choix : extra "tables" afin d'obtenir des <table> à en-têtes <th>, que les
+    lecteurs d'écran peuvent restituer — critère d'accessibilité transversal
+    des grilles (WCAG 2.1 AA / RGAA).
+
+    Args:
+        content: le Markdown renvoyé par l'agent, ou une chaîne vide.
+
+    Returns:
+        Le HTML correspondant, prêt à être inséré dans le template.
+    """
+    if not content:
+        return ""
+
+    return markdown2.markdown(
+        content,
+        extras=MARKDOWN_EXTRAS,
+        safe_mode="escape",
+    )
+
+
 def test_template(request):
     """Vue de test pour vérifier les templates"""
     return render(request, 'test.html')
@@ -59,7 +110,11 @@ def course_generator(request):
                     'topic': topic,
                     'module': module,
                     'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == module), module),
+                    # Le Markdown brut reste dans le contexte : c'est lui qui est
+                    # renvoyé au formulaire d'enregistrement, donc stocké en base.
                     'content': content,
+                    # Le HTML n'est destiné qu'à l'affichage.
+                    'content_html': render_markdown(content),
                     'sources': result['sources']
                 },
                 'modules': module_loader.get_available_modules(),
@@ -141,6 +196,7 @@ def course_detail(request, course_id):
                 'module': course.module,
                 'module_name': next((m['name'] for m in module_loader.get_available_modules() if m['id'] == course.module), course.module.replace('_', ' ').title()) if course.module and course.module != 'general' else None,
                 'content': course.content,
+                'content_html': render_markdown(course.content),
                 'sources': course.sources
             },
             'is_saved_course': True  # Flag pour identifier un cours sauvegardé
