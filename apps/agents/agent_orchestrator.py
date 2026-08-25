@@ -46,13 +46,21 @@ class AIOrchestrator:
                 sources = [doc.metadata.get('source', 'Unknown') for doc in course_result.get('source_documents', [])]
             except Exception as e:
                 print(f"Error with RAG, using fallback: {e}")
-                # Fallback without RAG
+                # Fallback without RAG (direct LLM call instead of RetrievalQA)
                 try:
-                    course_result = self.pedagogue.invoke({"question": enhanced_topic})
-                except:
-                    course_result = self.pedagogue.run(question=enhanced_topic)
-                content = course_result.get('text', str(course_result))
-                sources = ["Generative AI"]
+                    from apps.agents.tools.llm_loader import get_llm
+                    from apps.agents.utils import load_prompt
+                    from langchain.prompts import PromptTemplate
+                    llm = get_llm()
+                    prompt_template = load_prompt("pedagogue")
+                    prompt = PromptTemplate(input_variables=["context", "question"], template=prompt_template)
+                    formatted_prompt = prompt.format(context="Pas de contexte disponible (RAG désactivé)", question=enhanced_topic)
+                    course_result = llm.invoke(formatted_prompt)
+                    content = course_result.content if hasattr(course_result, 'content') else str(course_result)
+                except Exception as inner_e:
+                    print(f"Fallback direct LLM error: {inner_e}")
+                    content = f"Désolé, une erreur technique est survenue: {inner_e}"
+                sources = ["Generative AI (Fallback)"]
             
             # 3. Session tracking if user is connected
             session = None
@@ -99,10 +107,21 @@ class AIOrchestrator:
                 sources = [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])]
             except Exception as e:
                 print(f"Error with RAG, using fallback: {e}")
-                # Fallback without RAG
-                result = self.researcher.invoke({"question": question})
-                answer = result.get('text', str(result))
-                sources = ["Generative AI"]
+                # Fallback without RAG (direct LLM call instead of RetrievalQA)
+                try:
+                    from apps.agents.tools.llm_loader import get_llm
+                    from apps.agents.utils import load_prompt
+                    from langchain.prompts import PromptTemplate
+                    llm = get_llm()
+                    prompt_template = load_prompt("researcher")
+                    prompt = PromptTemplate(input_variables=["question"], template=prompt_template)
+                    formatted_prompt = prompt.format(question=question)
+                    result = llm.invoke(formatted_prompt)
+                    answer = result.content if hasattr(result, 'content') else str(result)
+                except Exception as inner_e:
+                    print(f"Fallback direct LLM error: {inner_e}")
+                    answer = f"Je ne peux pas répondre pour le moment. Erreur technique: {inner_e}"
+                sources = ["Generative AI (Fallback)"]
             
             # Session tracking if user is connected
             session = None
