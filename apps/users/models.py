@@ -1,6 +1,23 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+
+class UserProgress(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='progress')
+    xp = models.PositiveIntegerField(default=0)
+    total_courses_completed = models.PositiveIntegerField(default=0)
+    total_quizzes_completed = models.PositiveIntegerField(default=0)
+    total_study_time_minutes = models.PositiveIntegerField(default=0)
+    current_streak = models.PositiveIntegerField(default=0)
+    last_activity_date = models.DateField(null=True, blank=True)
+    
+    class Meta:
+        verbose_name = _("User Progress")
+        verbose_name_plural = _("User Progresses")
+
+    def __str__(self):
+        return f"Progress for {self.user.username}"
 
 class KodaUser(AbstractUser):
     class Role(models.TextChoices):
@@ -122,6 +139,16 @@ class KodaUser(AbstractUser):
         else:
             return (current_level - 9) * 1000 + 4500
     
+    @property
+    def xp_progress(self):
+        """XP gagné dans le niveau actuel"""
+        return self.xp - self.xp_for_current_level
+        
+    @property
+    def xp_needed_for_level_up(self):
+        """Total d'XP requis pour passer ce niveau"""
+        return self.xp_for_next_level - self.xp_for_current_level
+
     @property
     def xp_progress_percentage(self):
         """Pourcentage de progression vers le prochain niveau"""
