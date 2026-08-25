@@ -3,16 +3,23 @@
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from apps.agents.tools.llm_loader import get_llm
+from apps.agents.tools.model_config import get_model_for
 from langchain_community.vectorstores import Chroma
 from apps.rag.utils import load_embedding_function
 from apps.agents.utils import load_prompt, parse_text_quiz
 import json
 import random
 
-def get_coach_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
+def get_coach_chain(model_name=None):
     """
     AI Coach Agent: generates MCQs and exercises from a given topic.
+
+    Compétence visée : C10 (épreuve E3)
+    Choix : le modèle n'est plus codé en dur mais résolu par get_model_for.
     """
+    if model_name is None:
+        model_name = get_model_for("coach")
+
     llm = get_llm(model_name=model_name)
     
     # Prompt for generating MCQs
@@ -22,10 +29,16 @@ def get_coach_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
     )
     return LLMChain(llm=llm, prompt=quiz_prompt)
 
-def get_code_exercise_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
+def get_code_exercise_chain(model_name=None):
     """
     AI Coach Agent: generates code completion exercises.
+
+    Compétence visée : C10 (épreuve E3)
+    Choix : le modèle n'est plus codé en dur mais résolu par get_model_for.
     """
+    if model_name is None:
+        model_name = get_model_for("coach")
+
     llm = get_llm(model_name=model_name)
     
     code_prompt = PromptTemplate(

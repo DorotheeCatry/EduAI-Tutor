@@ -2,14 +2,23 @@
 
 from langchain.chains import RetrievalQA
 from apps.agents.tools.llm_loader import get_llm
+from apps.agents.tools.model_config import get_model_for
 from langchain_community.vectorstores import Chroma
 from apps.rag.utils import load_embedding_function
 from apps.agents.utils import load_prompt
 
-def get_researcher_chain(model_name="meta-llama/llama-4-scout-17b-16e-instruct"):
+def get_researcher_chain(model_name=None):
     """
     Initialize RAG Researcher, compatible with Groq (or Ollama fallback).
+
+    Compétence visée : C10 (épreuve E3)
+    Choix : le modèle n'est plus codé en dur mais résolu par get_model_for.
+    L'argument model_name reste accepté pour permettre une surcharge ponctuelle
+    (démonstration, comparaison de modèles pour C7).
     """
+    if model_name is None:
+        model_name = get_model_for("researcher")
+
     try:
         embedding_fn = load_embedding_function()
         vectorstore = Chroma(
