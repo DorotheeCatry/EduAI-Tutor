@@ -247,3 +247,11 @@ media/
 # Les sorties d'extraction sont reproductibles en relançant les scripts.
 # On versionne le code du pipeline, jamais les dumps qu'il produit.
 data_pipeline/data/
+
+# --- Variantes du fichier d'environnement ---
+# La règle « .env » seule ne couvrait que ce nom exact : une copie de
+# travail (.env.local, .env.sauvegarde, .env.prod) était versionnable
+# alors qu'elle contient les mêmes secrets. On ignore donc toutes les
+# variantes, en gardant le seul modèle sans valeurs.
+.env.*
+!.env.example
