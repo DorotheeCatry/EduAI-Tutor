@@ -1,0 +1,61 @@
+# Services de données du projet EduAI Tutor.
+#
+# Compétence visée : C4 (épreuve E1) — création de la base de données
+# Compétence visée : C13 (épreuve E3) — conteneurisation du service
+#
+# Choix : PostgreSQL en conteneur plutôt qu'installé sur le système. Motivation :
+# la configuration devient une preuve versionnée et lisible par le jury, et
+# l'environnement est reproductible à partir du seul dépôt. Une installation
+# système ne laisse aucune trace exploitable dans les livrables.
+#
+# Choix : un volume nommé plutôt qu'un montage de dossier hôte. Motivation :
+# le data-root de Docker est déjà dévié vers la grande partition de la machine
+# de développement, les données sont donc stockées au bon endroit sans coder
+# de chemin absolu dans un fichier destiné à être partagé.
+#
+# Lancement : docker compose up -d
+# Arrêt      : docker compose down          (les données sont conservées)
+# Purge      : docker compose down -v       (les données sont supprimées)
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: eduai_postgres
+    restart: unless-stopped
+
+    environment:
+      # Valeurs lues depuis le fichier .env, jamais écrites en dur ici :
+      # ce fichier est versionné, contrairement à .env.
+      POSTGRES_DB: ${POSTGRES_DB:-eduai_data}
+      POSTGRES_USER: ${POSTGRES_USER:-eduai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD doit être défini dans .env}
+      # Encodage et collation explicites : la base contient du texte français
+      # et anglais, une collation par défaut mal choisie fausserait les tris.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+
+    ports:
+      # Port hôte 5433 et non 5432 : évite le conflit avec une éventuelle
+      # instance PostgreSQL déjà installée sur la machine.
+      - "${POSTGRES_PORT:-5433}:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Les scripts de ce dossier sont exécutés au premier démarrage, dans
+      # l'ordre alphabétique. C'est ici que vit le schéma (MPD) du jeu de
+      # données, ce qui rend la création de la base reproductible et traçable.
+      - ./data_pipeline/load/sql:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      # Choix : un healthcheck plutôt qu'une simple attente. Motivation :
+      # le pipeline d'import doit pouvoir attendre que la base soit réellement
+      # prête, pas seulement que le conteneur soit démarré.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eduai} -d ${POSTGRES_DB:-eduai_data}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    name: eduai_postgres_data
