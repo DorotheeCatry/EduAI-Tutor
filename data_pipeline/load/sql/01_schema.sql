@@ -470,3 +470,62 @@ CREATE TABLE description (
 
 COMMENT ON TABLE description IS
     'Association entre un document et les mots-clés qui le qualifient. Relation pure, sans attribut propre.';
+
+
+-- ===========================================================================
+-- 6. Descriptions des clés
+-- ===========================================================================
+--
+-- Les clés techniques et les clés étrangères méritent une description au même
+-- titre que les colonnes métier : c'est par elles qu'un lecteur du
+-- dictionnaire de données comprend comment les tables s'articulent. Elles sont
+-- regroupées ici pour ne pas alourdir la lecture des CREATE TABLE.
+
+COMMENT ON COLUMN extraction.id_extraction IS
+    'Clé technique de l''exécution, engendrée par la base.';
+COMMENT ON COLUMN extraction.code_source IS
+    'Source sur laquelle porte l''exécution.';
+
+COMMENT ON COLUMN document.id_document IS
+    'Clé technique du document, engendrée par la base. Préférée à l''identifiant de la source, dont le format peut changer sans préavis.';
+COMMENT ON COLUMN document.code_source IS
+    'Source dont provient le document. Référencée conjointement avec code_type_source, par une clé étrangère composite.';
+COMMENT ON COLUMN document.code_licence IS
+    'Licence couvrant le document. Référencée conjointement avec attribution_requise, par une clé étrangère composite.';
+
+COMMENT ON COLUMN document_api_rest.id_document IS
+    'Document dont cette ligne porte les attributs propres. Clé primaire et clé étrangère à la fois : la sous-entité n''a pas d''existence indépendante.';
+COMMENT ON COLUMN document_api_rest.code_type_source IS
+    'Contraint à api_rest. C''est cette colonne qui, via la clé étrangère composite, rend l''exclusivité de la partition déclarative.';
+
+COMMENT ON COLUMN document_web.id_document IS
+    'Document dont cette ligne porte les attributs propres. Clé primaire et clé étrangère à la fois.';
+COMMENT ON COLUMN document_web.code_type_source IS
+    'Contraint à scraping. Support de l''exclusivité de la partition.';
+
+COMMENT ON COLUMN document_fichier.id_document IS
+    'Document dont cette ligne porte les attributs propres. Clé primaire et clé étrangère à la fois.';
+COMMENT ON COLUMN document_fichier.code_type_source IS
+    'Contraint à fichier. Support de l''exclusivité de la partition.';
+
+COMMENT ON COLUMN document_base_donnees.id_document IS
+    'Document dont cette ligne porte les attributs propres. Clé primaire et clé étrangère à la fois.';
+COMMENT ON COLUMN document_base_donnees.code_type_source IS
+    'Contraint à base_donnees. Support de l''exclusivité de la partition.';
+
+COMMENT ON COLUMN document_big_data.id_document IS
+    'Document dont cette ligne porte les attributs propres. Clé primaire et clé étrangère à la fois.';
+COMMENT ON COLUMN document_big_data.code_type_source IS
+    'Contraint à big_data. Support de l''exclusivité de la partition.';
+
+COMMENT ON COLUMN collecte.id_collecte IS
+    'Clé technique de la collecte. Préférée au triplet naturel (extraction, document, critère), qui serait recopié dans chaque index.';
+COMMENT ON COLUMN collecte.id_extraction IS
+    'Exécution au cours de laquelle le document a été vu. Suppression en RESTRICT : l''historique ne s''efface pas par effet de bord.';
+COMMENT ON COLUMN collecte.id_document IS
+    'Document collecté. Suppression en CASCADE : une collecte sans document n''a aucun sens.';
+
+COMMENT ON COLUMN description.id_document IS
+    'Document qualifié par le mot-clé.';
+COMMENT ON COLUMN description.code_mot_cle IS
+    'Mot-clé qualifiant le document. Suppression en RESTRICT : un mot-clé encore employé ne se supprime pas par mégarde.';
