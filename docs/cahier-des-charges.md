@@ -266,7 +266,11 @@ reconstituer une semaine de travail de mémoire.
 - API : authentification, permissions, throttling. OWASP API Top 10 implémenté
   et documenté (C5, C9).
 - Données personnelles : minimisation, durée de conservation, pseudonymisation,
-  effacement (C4). Le public visé peut inclure des mineurs.
+  effacement (C4). Le public visé est **exclusivement adulte** — plateforme de
+  formation professionnelle au développement (cf. `docs/decisions/005`). Ce
+  cadre écarte le consentement parental de l'article 8 du RGPD et l'information
+  en termes compréhensibles par un enfant de l'article 12.1, et rien d'autre :
+  c'est un rétrécissement de périmètre, pas un allègement du RGPD.
 - Secrets en variables d'environnement uniquement.
 - Accessibilité : critère transversal présent dans les grilles de C6, C9, C10,
   C14, C17, C19, C20. Interfaces visant WCAG 2.1 AA / RGAA ; documentation avec
