@@ -1,7 +1,7 @@
 # Modèle logique de données — base `eduai_data`
 
 **Date :** 26/08/2026
-**Statut :** proposé, en attente de validation avant le MPD
+**Statut :** validé le 26/08/2026 — quatre corrections de relecture intégrées
 **Compétence visée :** C4 (épreuve E1)
 **Source :** [modèle conceptuel](mcd_eduai_data.md), validé le 26/08/2026
 
@@ -19,7 +19,7 @@ Un attribut suivi de `?` est nullable.
 | Règle | Application |
 |---|---|
 | Une entité devient une relation | `SOURCE`, `EXTRACTION`, `DOCUMENT`, `LICENCE`, `MOT_CLE` |
-| Une association 1:n se traduit par une clé étrangère du côté (1,1) | `EXTRACTION.#code_source`, `DOCUMENT.#code_source`, `DOCUMENT.#code_licence` |
+| Une association 1:n se traduit par une clé étrangère du côté (1,1) | `EXTRACTION.#code_source` ; pour `DOCUMENT`, les clés sont composites — voir §3 |
 | Une association n:m devient une relation propre | `COLLECTE`, `DESCRIPTION` |
 | Une association porteuse d'attributs devient une relation | `COLLECTE` porte `critere_collecte` et `vu_le` |
 | Une spécialisation se traduit au choix | Une table par sous-type — voir §3 |
@@ -33,24 +33,27 @@ source            (**code_source**, nom, type_source, url_racine?,
                    contraintes_acces, duree_conservation_jours?)
 
 licence           (**code_licence**, libelle, url_texte?,
-                   redistribution_autorisee, attribution_requise)
+                   redistribution_autorisee, attribution_requise,
+                   mention_copyright?)
 
 extraction        (**id_extraction**, #code_source, horodatage_debut,
                    duree_secondes, statut, nb_enregistrements, nb_erreurs,
                    fichier_sortie)
 
-document          (**id_document**, #code_source, type_source,
-                   identifiant_source, #code_licence, titre, contenu,
-                   url_source?, langue, extrait_le)
+document          (**id_document**, #(code_source, type_source),
+                   identifiant_source, #(code_licence, attribution_requise),
+                   titre, contenu, url_source?, langue, extrait_le)
 
 document_api_rest (**#id_document**, type_source, score, nombre_reponses,
                    nombre_vues, cree_le)
 
-document_web      (**#id_document**, type_source, page, ancre_section?,
-                   mention_copyright)
+document_web      (**#id_document**, type_source, page, ancre_section?)
 
 document_fichier  (**#id_document**, type_source, chemin_fichier, format,
                    module_pedagogique, index_section, origine_declaree)
+
+document_base_donnees (**#id_document**, type_source)      -- S4, à compléter
+document_big_data     (**#id_document**, type_source)      -- S5, à compléter
 
 collecte          (**id_collecte**, #id_extraction, #id_document,
                    critere_collecte, vu_le)
@@ -105,7 +108,20 @@ de ligne dans `document_api_rest` : la clé étrangère composite ne trouverait
 aucune ligne mère correspondante. L'exclusivité est structurelle, pas
 procédurale — aucun code applicatif ne peut la contourner.
 
-### Totalité : par déclencheur différé
+### Les cinq tables filles existent dès le premier schéma
+
+`document_base_donnees` et `document_big_data` sont créées vides, alors que S4
+et S5 ne sont pas écrites. Sans elles, la première ligne chargée par S4
+n'aurait aucune table fille où atterrir et échouerait sur la partition — or les
+scripts de `/docker-entrypoint-initdb.d` ne s'exécutent qu'au premier démarrage
+du volume : corriger après coup imposerait un `docker compose down -v`.
+
+Elles ne portent pour l'instant que l'armature de la partition, sans attribut
+propre : les métadonnées de S4 et S5 seront ajoutées par `ALTER TABLE` quand
+ces extracteurs existeront. Une table sans attribut propre est inhabituelle,
+mais elle est ici le prix d'un schéma qui n'aura pas à être rejoué.
+
+### Totalité : déclencheur différé, avec repli
 
 Aucune contrainte déclarative SQL n'exprime « toute ligne mère a exactement une
 ligne fille » : ce serait une assertion inter-tables, que PostgreSQL
@@ -120,10 +136,15 @@ Deux voies possibles :
 - **Requête de contrôle en fin de chargement**, faisant échouer le pipeline si
   elle retourne des lignes.
 
-**Retenu : les deux.** Le déclencheur protège la base contre toute écriture,
-d'où qu'elle vienne ; la requête de contrôle rend le résultat lisible dans le
-rapport d'exécution du pipeline, ce qu'un échec de transaction ne fait pas.
-C'est de la redondance assumée : l'une garantit, l'autre documente.
+**Retenu : les deux, avec une clause de retrait.** Le déclencheur protège la
+base contre toute écriture, d'où qu'elle vienne ; la requête de contrôle rend
+le résultat lisible dans le rapport d'exécution du pipeline, ce qu'un échec de
+transaction ne fait pas.
+
+Si le déclencheur complique l'import — insertions par lots, `COPY`, ordre
+d'écriture contraint — **il est retiré et seule la requête de contrôle est
+conservée**. La garantie est alors plus faible, mais le chantier ne s'arrête
+pas dessus : l'échéance du 4 septembre prime sur l'élégance de la contrainte.
 
 La requête de contrôle est le complément arithmétique de la vérification déjà
 faite sur les données brutes :
@@ -134,6 +155,32 @@ faite sur les données brutes :
 
 Toute somme des tables filles différente du total de la mère signale une
 partition rompue.
+
+### Le même mécanisme pour la contrainte d'attribution
+
+La règle « si la licence exige l'attribution, alors `url_source` est
+obligatoire » traverse `document` et `licence`. Une version antérieure de ce
+document la confiait au déclencheur. C'est inutile : `attribution_requise` est
+entièrement déterminé par `code_licence`, exactement comme `type_source` l'est
+par `code_source`. Le mécanisme déjà retenu pour la partition s'y applique tel
+quel.
+
+```sql
+-- côté licence
+UNIQUE (code_licence, attribution_requise)
+
+-- côté document
+attribution_requise  BOOLEAN NOT NULL,
+FOREIGN KEY (code_licence, attribution_requise)
+    REFERENCES licence (code_licence, attribution_requise),
+CHECK (NOT attribution_requise OR url_source IS NOT NULL)
+```
+
+La clé étrangère composite interdit qu'un document annonce une valeur
+d'`attribution_requise` différente de celle de sa licence ; le `CHECK`, devenu
+purement local à la ligne, impose alors l'URL. **Aucun déclencheur, aucune
+procédure** : la contrainte est entièrement déclarative, donc vérifiée par le
+moteur à chaque écriture et impossible à contourner.
 
 ---
 
@@ -174,9 +221,20 @@ comportement recherché.
 | `url_texte` | chaîne(255) | **oui** | Nul pour `PROPRIETAIRE` et `A_VERIFIER` |
 | `redistribution_autorisee` | booléen | non | `faux` pour `A_VERIFIER` |
 | `attribution_requise` | booléen | non | `vrai` pour `CC-BY-SA-4.0` et `PSF` |
+| `mention_copyright` | chaîne(255) | **oui** | Notice fixe imposée par certaines licences |
 
 Ces deux booléens ne documentent pas, ils **filtrent** : c'est par eux que les
 82 documents à licence incertaine sont écartés de l'indexation RAG.
+
+`UNIQUE (code_licence, attribution_requise)` : support de la clé étrangère
+composite qui rend la contrainte d'attribution déclarative (§3).
+
+**`mention_copyright` était initialement placée dans `document_web`.** Une
+vérification sur les données a montré qu'elle y prend une valeur unique sur les
+235 lignes — « Copyright (c) 2001-2026 Python Software Foundation » — et
+qu'elle dépend de la licence PSF, non du document. C'était une seconde entorse
+à la 3NF, non repérée à la première rédaction. Elle est corrigée par
+déplacement : la notice appartient à la licence qui l'impose.
 
 ### `extraction` — 3 lignes aujourd'hui, une par exécution ensuite
 
@@ -207,10 +265,11 @@ filtre d'API inadapté renvoyait des réponses vides. Le bilan annonçait
 | Attribut | Domaine logique | Null | Max observé | Contrainte |
 |---|---|---|---|---|
 | `id_document` | entier auto | non | | PK |
-| `code_source` | chaîne(2) | non | | FK → `source` |
+| `code_source` | chaîne(2) | non | | FK composite avec `type_source` → `source` |
 | `type_source` | énuméré | non | | Dénormalisation contrôlée — voir §5 |
 | `identifiant_source` | chaîne(120) | non | 89 | |
-| `code_licence` | chaîne(20) | non | | FK → `licence` |
+| `code_licence` | chaîne(20) | non | | FK composite avec `attribution_requise` → `licence` |
+| `attribution_requise` | booléen | non | | Dénormalisation contrôlée — voir §5 |
 | `titre` | chaîne(255) | non | 130 | Non vide après suppression des espaces |
 | `contenu` | texte | non | 149 083 | **Non vide** après suppression des espaces |
 | `url_source` | chaîne(500) | **oui** | 125 | Voir ci-dessous |
@@ -226,14 +285,21 @@ Overflow ne collisionne jamais avec un identifiant du corpus local.
 `contenu` est un texte sans longueur maximale, assorti d'une contrainte de
 non-vacuité, conformément à l'arbitrage. Le découpage relève de C3.
 
+**Une seule clé étrangère vers `source`.** La clé composite
+`(code_source, type_source)` garantit à elle seule l'intégrité référentielle de
+`code_source` : une clé étrangère supplémentaire sur `code_source` seul serait
+redondante, coûterait un index de plus et n'ajouterait aucune garantie. Elle est
+supprimée. Même raisonnement pour `code_licence`, couvert par
+`(code_licence, attribution_requise)`.
+
 **Nullabilité de `url_source`.** Les 1 928 enregistrements en portent tous une,
 mais S4 (base de données) et S5 (big data) n'en auront pas nécessairement. La
-colonne est donc nullable, sous une contrainte inter-tables : *si la licence du
-document exige l'attribution, alors `url_source` doit être renseignée.* Sans
-elle, on pourrait charger un document sous CC BY-SA sans moyen de créditer son
-auteur — violation de licence silencieuse. Cette contrainte traverse deux
-tables : elle sera portée par le même déclencheur que la totalité de la
-partition.
+colonne est donc nullable, sous la contrainte
+`CHECK (NOT attribution_requise OR url_source IS NOT NULL)` : sans elle, on
+pourrait charger un document sous CC BY-SA sans moyen de créditer son auteur —
+violation de licence silencieuse. Grâce à la dénormalisation
+d'`attribution_requise`, ce `CHECK` est **local à la ligne**, donc entièrement
+déclaratif (§3).
 
 ### Tables filles
 
@@ -256,7 +322,8 @@ partition.
 | `type_source` | énuméré | non | | `CHECK = 'scraping'` |
 | `page` | chaîne(255) | non | 31 | |
 | `ancre_section` | chaîne(255) | **oui** | 56 | Toutes renseignées aujourd'hui, mais une section Sphinx sans `id` est possible |
-| `mention_copyright` | chaîne(255) | non | 50 | Notice imposée par la licence PSF |
+
+`mention_copyright` a été déplacée dans `licence` — voir plus haut.
 
 **`document_fichier`** — 380 lignes
 
@@ -324,19 +391,33 @@ Le schéma est en **troisième forme normale**, à une exception délibérée.
 | `collecte` | `critere_collecte` et `vu_le` dépendent du triplet complet, pas d'une partie — pas de dépendance partielle |
 | `description` | Relation pure, sans attribut non clé |
 
-**L'exception : `document.type_source`.** Cet attribut dépend de `code_source`,
-lui-même non clé : c'est une dépendance transitive, donc une entorse à la 3NF.
+**Les exceptions : `document.type_source` et `document.attribution_requise`.**
+Ces deux attributs dépendent respectivement de `code_source` et de
+`code_licence`, eux-mêmes non clés : ce sont des dépendances transitives, donc
+deux entorses à la 3NF.
 
-Elle est assumée, pour une raison précise : sans cette colonne, la clé
-étrangère composite qui garantit l'exclusivité de la partition (§3) est
-impossible. Le choix est donc entre une redondance contrôlée et une contrainte
-d'intégrité applicative.
+Elles sont assumées, pour la même raison : sans ces colonnes, les clés
+étrangères composites qui rendent l'exclusivité de la partition et la
+contrainte d'attribution **déclaratives** (§3) sont impossibles. Le choix est
+donc entre une redondance contrôlée et une intégrité confiée au code
+applicatif — c'est-à-dire non garantie.
 
-Et la redondance est **rendue inoffensive** : `document` porte une clé étrangère
-composite `(code_source, type_source)` vers `source (code_source, type_source)`.
-Une valeur de `type_source` incohérente avec sa source est donc rejetée par la
-base. La donnée est dupliquée, mais elle ne peut pas diverger — ce qui est la
-seule chose qu'on reproche vraiment à une dénormalisation.
+Et les redondances sont **rendues inoffensives** : `document` porte les clés
+étrangères composites `(code_source, type_source)` vers `source` et
+`(code_licence, attribution_requise)` vers `licence`. Une valeur incohérente
+avec sa source ou sa licence est rejetée par le moteur. La donnée est
+dupliquée, mais elle ne peut pas diverger — ce qui est la seule chose qu'on
+reproche vraiment à une dénormalisation.
+
+C'est un cas où la 3NF stricte donnerait un schéma *moins* sûr : la forme
+normale interdirait la redondance, donc la clé composite, donc la contrainte
+déclarative, et l'intégrité retomberait sur du code.
+
+**Une entorse involontaire, corrigée.** `document_web.mention_copyright`
+dépendait de la licence et non du document : valeur unique sur les 235 lignes.
+Elle n'avait aucune justification, contrairement aux deux précédentes, et a été
+déplacée dans `licence`. C'est la différence entre une dénormalisation choisie
+et une erreur de modélisation.
 
 ---
 
@@ -370,7 +451,7 @@ au chargement.
 
 ---
 
-## 7. Ce qui reste au MPD
+## 7. Ce que le MPD met en œuvre
 
 - Types PostgreSQL concrets — `VARCHAR` contre `TEXT`, `ENUM` natif contre
   table de référence et clé étrangère, `TIMESTAMPTZ`, `NUMERIC`.
@@ -384,19 +465,23 @@ au chargement.
 
 ---
 
-## 8. Points à valider avant le MPD
+## 8. Arbitrages retenus
 
-1. **`ENUM` natif ou table de référence ?** Un `ENUM` PostgreSQL est compact et
-   contraint fortement, mais ajouter une valeur exige un `ALTER TYPE` et
-   l'ordre de tri est celui de la déclaration. Une table de référence est plus
-   souple et permet de porter un libellé. Mon avis : `ENUM` pour `statut`,
-   `langue` et `format`, qui sont fermés et stables ; table de référence pour
-   `type_source`, déjà porté par `source`.
-2. **`ON DELETE` des clés étrangères de `collecte`.** `CASCADE` depuis
-   `extraction` supprimerait l'historique avec l'exécution — ce qui contredit
-   la décision de tout historiser. Je propose `RESTRICT` sur `extraction` et
-   `CASCADE` sur `document`.
-3. **Durée de conservation de S4**, à fixer une fois la source choisie.
-4. **Casse des mots-clés.** Normaliser `code_mot_cle` en minuscules à
-   l'import : Stack Overflow renvoie déjà des tags en minuscules, mais rien ne
-   le garantit pour S4 et S5.
+| Point | Décision |
+|---|---|
+| Énumérés | `ENUM` natif PostgreSQL pour `statut`, `langue`, `format` et `type_mot_cle` — domaines fermés et stables. **Table de référence** pour `type_source`, déjà porté par `source` et destiné à recevoir un libellé |
+| `ON DELETE` de `collecte` | `RESTRICT` vers `extraction` — supprimer une exécution ne doit pas emporter l'historique qu'on a décidé de conserver ; `CASCADE` vers `document` |
+| Conservation de S4 | **90 jours** |
+| Casse des mots-clés | Normalisation en minuscules à l'import, garantie par un `CHECK` |
+
+### Ce que la durée de 90 jours suppose sur S4
+
+Aucun `user_id`, aucune adresse IP, aucune adresse électronique n'entre dans
+`eduai_data`. Un identifiant pseudonyme n'est retenu que si le lien entre
+plusieurs soumissions d'un même apprenant est nécessaire au traitement — et
+dans ce seul cas.
+
+C'est cohérent avec l'absence d'entité « personne » posée au MCD : la
+contrainte est ici reportée sur l'extracteur S4, qui devra écarter ces champs à
+la source plutôt que les charger puis les purger. Une donnée qu'on ne collecte
+pas n'a pas besoin de durée de conservation.
