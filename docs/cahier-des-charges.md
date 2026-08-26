@@ -174,13 +174,74 @@ data. Ne pas remplacer Spark SQL par de l'API DataFrame seule.
 
 ---
 
-## Git
+## Git — règles de travail
 
-- Un commit = une unité de preuve. Messages en français, format conventionnel,
-  avec la compétence entre crochets :
-  `feat(extract): ajoute l'extracteur API education.gouv [C1]`
-- Jamais de secrets, de données personnelles ni de dumps volumineux.
-- Pas de force-push sur `main`.
+### Avant toute session
+
+Vérifier la branche courante avec `git branch --show-current` et l'annoncer.
+Ne jamais supposer qu'on est sur la bonne branche.
+
+### Branches
+
+- **Jamais de commit direct sur `main`**, sauf correctif urgent explicitement
+  demandé.
+- Une branche par chantier, nommée `<type>/<bloc>-<sujet>` :
+  - `feat/bloc1-pipeline-donnees`
+  - `feat/bloc2-api-service-ia`
+  - `test/bloc3-pytest-ci`
+  - `fix/...` pour les correctifs
+  - `docs/...` pour la documentation seule
+- Créer la branche **avant** la première modification, jamais après.
+- Fusion dans `main` seulement quand le chantier est testé et fonctionnel.
+- Pas de Git Flow, pas de branches de release, pas de pull requests : projet
+  individuel avec échéance courte, la simplicité prime.
+
+### Commits
+
+Format imposé, en français :
+
+```
+<type>(<portée>): <description à l'infinitif ou au présent> [<compétence>]
+```
+
+- Types : `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `perf`
+- Portée : le module concerné (`extract`, `api`, `rag`, `agents`, `db`…)
+- Compétence entre crochets : `[C1]`, `[C4]`, `[C18]`… **obligatoire** dès que
+  le commit produit une preuve d'évaluation. Plusieurs compétences possibles :
+  `[C1][C3]`.
+- Description en minuscule, sans point final, sous 72 caractères.
+
+Exemples valides :
+
+```
+feat(extract): ajoute l'extracteur API education.gouv [C1]
+fix(db): versionne les migrations exclues à tort du dépôt [C4]
+test(api): couvre les points de terminaison du service IA [C18]
+docs(decisions): consigne le choix du routage par agent [C10]
+```
+
+### Granularité
+
+- **Un commit = une unité de preuve.** Un extracteur, une migration, une série
+  de tests, une décision documentée.
+- Ne pas mélanger dans un même commit du code fonctionnel et du formatage.
+- Ne pas accumuler une journée de travail dans un commit unique : l'historique
+  doit montrer la progression.
+- Commiter dès qu'une étape fonctionne, sans attendre la perfection.
+
+### Interdits
+
+- Pas de `git push --force` sur `main`.
+- Pas de réécriture d'historique (`rebase -i`, `commit --amend` sur du
+  poussé) : les dates de commit sont une trace de la démarche réelle.
+- Jamais de secret, de clé API, de `.env`, de base de données ni de données
+  brutes dans un commit. Vérifier `git status` avant chaque `git add`.
+- Pas de `git add .` aveugle : ajouter les fichiers explicitement.
+
+### Après chaque commit significatif
+
+Si le commit acte une décision d'architecture, créer ou compléter l'entrée
+correspondante dans `docs/decisions/` **avant** de passer à la suite.
 
 ## Journal de décisions
 
