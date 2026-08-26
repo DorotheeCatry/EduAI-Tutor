@@ -242,3 +242,8 @@ apps/rag/chroma/**/*
 # Téléversements d'exécution (MEDIA_ROOT) : données personnelles d'apprenants,
 # potentiellement mineurs. Minimisation RGPD — cf. C4.
 media/
+
+# --- Pipeline de données (C1) ---
+# Les sorties d'extraction sont reproductibles en relançant les scripts.
+# On versionne le code du pipeline, jamais les dumps qu'il produit.
+data_pipeline/data/
