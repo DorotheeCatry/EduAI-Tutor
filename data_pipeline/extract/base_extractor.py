@@ -174,9 +174,8 @@ class ExtracteurBase(ABC):
 
         with fichier_temporaire.open("w", encoding="utf-8") as flux:
             for enregistrement in enregistrements:
-                flux.write(
-                    json.dumps(asdict(enregistrement), ensure_ascii=False) + "\n"
-                )
+                ligne = json.dumps(asdict(enregistrement), ensure_ascii=False)
+                flux.write(self._neutraliser_separateurs(ligne) + "\n")
                 self.compteur_extraits += 1
 
         fichier_temporaire.replace(self.fichier_sortie)
@@ -185,6 +184,37 @@ class ExtracteurBase(ABC):
             self.nom, self.compteur_extraits, self.fichier_sortie,
         )
         return self.fichier_sortie
+
+    @staticmethod
+    def _neutraliser_separateurs(ligne: str) -> str:
+        """
+        Échappe les caractères que JSON accepte mais qui coupent une ligne.
+
+        Compétence visée : C1 (épreuve E1)
+
+        Choix : échapper U+2028, U+2029 et U+0085 alors que `json.dumps` les
+        laisse tels quels. Motivation : le format JSON Lines repose sur
+        l'équivalence « une ligne = un enregistrement ». Or ces trois
+        caractères sont des séparateurs de ligne Unicode : `str.splitlines()`
+        en Python, `JSON.parse` en JavaScript avant ES2019 et plusieurs
+        lecteurs de flux coupent dessus, ce qui scinde un enregistrement en
+        deux fragments illisibles.
+
+        Le cas n'est pas théorique : l'extraction des PDF du corpus (S3) a
+        produit 331 occurrences d'U+2028, pour 380 enregistrements. Sans cet
+        échappement, un fichier de 380 lignes en compte 711 selon la
+        définition retenue par le lecteur. Le contrat de sortie doit tenir
+        quelle que soit la manière dont l'aval découpe les lignes.
+
+        Les autres caractères de contrôle (U+000B, U+000C, U+001C à U+001F)
+        n'ont pas besoin de ce traitement : `json.dumps` les échappe déjà,
+        comme tout caractère inférieur à U+0020.
+        """
+        return (
+            ligne.replace("\u2028", "\\u2028")
+            .replace("\u2029", "\\u2029")
+            .replace("\u0085", "\\u0085")
+        )
 
     def nettoyer(self) -> None:
         """
