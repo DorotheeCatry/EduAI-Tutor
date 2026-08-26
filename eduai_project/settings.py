@@ -11,19 +11,49 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 import sys
+
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
+from dotenv import load_dotenv
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR / "apps"))
 
+# Chargement des variables d'environnement avant toute lecture de réglage.
+# Jusqu'ici, load_dotenv() n'était appelé que dans apps/agents/tools/llm_loader.py,
+# donc les réglages Django ne pouvaient pas lire le fichier .env.
+load_dotenv(BASE_DIR / ".env")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xjyz739t!+h+cdti4sk4nw$_l%9rew5w9&+#_qc+jt=h$e+6hy'
+#
+# Compétence visée : C13 (épreuve E3) — sécurité de l'application
+#
+# Choix : lecture depuis l'environnement, sans valeur de repli. Motivation :
+# la clé était jusqu'ici écrite en dur dans ce fichier, donc versionnée et
+# lisible par quiconque ouvre le dépôt. Une valeur de repli dans le code
+# reproduirait exactement le problème, en le rendant seulement moins visible.
+# La clé versionnée a été révoquée : celle qui est en service a été
+# régénérée et ne vit que dans .env, ignoré par Git.
+#
+# L'absence de la variable interrompt le démarrage plutôt que de laisser
+# l'application tourner avec une clé devinable — une signature de session
+# forgée permettrait de se faire passer pour n'importe quel apprenant.
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY est absente de l'environnement. "
+        "La renseigner dans le fichier .env à la racine du projet "
+        "(voir .env.example). Générer une valeur avec : "
+        "uv run python -c \"from django.core.management.utils import "
+        "get_random_secret_key as g; print(g())\""
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
