@@ -104,8 +104,12 @@ Sont pourtant collectés : e-mail (identifiant de connexion), `bio` en texte
 libre, avatar uploadé, et **l'adresse IP de chaque soumission de code**
 (`ExerciseSubmission.ip_address`, remplie en `apps/exercises/views.py:120`).
 Aucune route de suppression de compte, aucun export, aucune durée de
-conservation, aucune politique de confidentialité. Le public visé peut inclure
-des mineurs.
+conservation, aucune politique de confidentialité. Le public visé est
+exclusivement adulte (cf. `docs/decisions/005`), ce qui écarte le régime de
+consentement parental mais laisse entières les obligations de minimisation, de
+conservation et d'effacement. L'adresse IP est une donnée à caractère personnel
+quel que soit l'âge : sa finalité n'étant pas établie, elle sera supprimée et
+non conservée sous une durée.
 
 **Sur le corpus :** `data/contents/` est du matériel de cours personnel. Il
 alimente correctement le RAG, mais **ne constitue pas une source C1** : un seul
