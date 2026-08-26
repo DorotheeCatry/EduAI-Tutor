@@ -1,7 +1,7 @@
 # Modèle conceptuel de données — base `eduai_data`
 
 **Date :** 26/08/2026
-**Statut :** proposé, en attente de validation
+**Statut :** validé sur le fond le 26/08/2026 — corrections de cardinalité, de partition et de clés étrangères intégrées
 **Compétence visée :** C4 (épreuve E1) — création d'une base de données dans le
 respect du RGPD
 **Périmètre :** uniquement les documents collectés par les cinq extracteurs du
@@ -24,9 +24,15 @@ données réelles, et non sur une projection théorique :
 | Source | Type de source | Documents | Langue | Licences distinctes |
 |---|---|---|---|---|
 | Stack Overflow | `api_rest` | 1 313 | en | 1 — CC BY-SA 4.0 |
-| Documentation Python | `scraping` | 235 | en | 1 — PSF License Agreement |
+| Documentation Python | `scraping` | 235 [^s2] | en | 1 — PSF License Agreement |
 | Corpus pédagogique local | `fichier` | 380 | fr | 2 — Propriétaire (298), à vérifier (82) |
 | **Total** | | **1 928** | | **4** |
+
+[^s2]: Compte revérifié en réexécutant l'extracteur : 235 enregistrements, avec
+    un jeu d'identifiants strictement identique à celui du fichier en place. Les
+    16 pages parcourues contiennent 247 balises `<section>` ; 12 sont écartées
+    par le seuil de 200 caractères, qui élimine les sommaires et les renvois sans
+    contenu propre. 247 et 235 sont donc les deux seuls comptes reproductibles.
 
 Les deux sources restantes — S4 (base de données) et S5 (système big data) —
 ne sont pas encore écrites. Le modèle doit les accueillir sans être remanié.
@@ -127,6 +133,8 @@ Sphinx, une section de cours.
 | Attribut | Nature | Rôle |
 |---|---|---|
 | `id_document` | identifiant | Clé technique |
+| `code_source` | référence | Source dont provient le document — association PROVIENT_DE |
+| `code_licence` | référence | Licence couvrant le document — association EST_COUVERT_PAR |
 | `identifiant_source` | texte | Identifiant stable côté source (`so_16476924`, `pydoc_…`) |
 | `titre` | texte | Médiane 41 caractères, maximum relevé 130 |
 | `contenu` | texte long | Médiane 1 224 caractères, maximum relevé 149 083 |
@@ -142,7 +150,26 @@ collisionne jamais avec un identifiant du corpus local.
 
 Chaque type de source apporte ses propres attributs, tous renseignés à 100 %
 dans leur sous-ensemble et absents ailleurs. Ils sont donc modélisés en
-**spécialisation** — héritage exclusif et total.
+**spécialisation**.
+
+> **Contrainte de partition (X,T).** La spécialisation est à la fois
+> **exclusive** — un document appartient à une sous-entité et une seule, jamais
+> à deux — et **totale** : tout document appartient à exactement une
+> sous-entité, aucun ne reste au niveau de `DOCUMENT` seul. Les deux moitiés de
+> la contrainte se déduisent du type de sa source, qui est unique et toujours
+> renseigné.
+>
+> Le diagramme ci-dessous la représente par trois relations un-à-zéro-ou-un
+> (`||--o|`) : la notation `erDiagram` de Mermaid ne sait pas exprimer une
+> partition. Le zéro-ou-un y traduit le point de vue d'une sous-entité prise
+> isolément — un document donné n'a pas de ligne dans `DOCUMENT_WEB` s'il vient
+> de l'API — et non une autorisation d'appartenir à aucune.
+>
+> Cet écart entre le modèle et sa représentation impose une implémentation
+> explicite au MPD. L'exclusivité sera garantie de façon déclarative par une
+> clé étrangère composite portant le type de source ; la totalité, qu'aucune
+> contrainte déclarative ne couvre en SQL, par un déclencheur ou par une
+> vérification à la fin du chargement. Le MLD en précisera le mécanisme.
 
 **DOCUMENT_API_REST** (1 313 documents)
 
@@ -212,7 +239,7 @@ l'arborescence du corpus).
 | Association | Entités | Cardinalités (Merise) | Lecture |
 |---|---|---|---|
 | **FAIT_OBJET_DE** | SOURCE → EXTRACTION | SOURCE (0,n) — EXTRACTION (1,1) | Une source donne lieu à plusieurs exécutions ; une exécution porte sur une seule source |
-| **COLLECTE** | EXTRACTION ↔ DOCUMENT | EXTRACTION (1,n) — DOCUMENT (1,n) | Une exécution collecte plusieurs documents ; un document peut être collecté par plusieurs exécutions, et plusieurs fois dans la même |
+| **COLLECTE** | EXTRACTION ↔ DOCUMENT | EXTRACTION (0,n) — DOCUMENT (1,n) | Une exécution collecte zéro à plusieurs documents — zéro lorsqu'elle échoue ; un document est collecté au moins une fois, et peut l'être plusieurs fois, y compris dans une même exécution |
 | **PROVIENT_DE** | DOCUMENT → SOURCE | DOCUMENT (1,1) — SOURCE (0,n) | Un document appartient à une source et une seule |
 | **EST_COUVERT_PAR** | DOCUMENT → LICENCE | DOCUMENT (1,1) — LICENCE (0,n) | Tout document porte exactement une licence — jamais aucune |
 | **EST_DECRIT_PAR** | DOCUMENT ↔ MOT_CLE | DOCUMENT (0,n) — MOT_CLE (0,n) | Un document porte zéro à plusieurs mots-clés |
@@ -309,7 +336,7 @@ erDiagram
     SOURCE   ||--o{ EXTRACTION : "fait l'objet de"
     SOURCE   ||--o{ DOCUMENT   : "fournit"
     LICENCE  ||--o{ DOCUMENT   : "couvre"
-    EXTRACTION ||--|{ COLLECTE : "enregistre"
+    EXTRACTION ||--o{ COLLECTE : "enregistre"
     DOCUMENT   ||--|{ COLLECTE : "est vu dans"
     DOCUMENT   ||--o{ DESCRIPTION : "porte"
     MOT_CLE    ||--o{ DESCRIPTION : "qualifie"
@@ -327,12 +354,15 @@ exécutions) et `DOCUMENT` (une source, plusieurs documents). `LICENCE` couvre
 `DOCUMENT` : chaque document porte exactement une licence, une licence couvre
 plusieurs documents. `EXTRACTION` et `DOCUMENT` sont reliés par l'entité
 associative `COLLECTE`, qui matérialise une relation plusieurs-à-plusieurs et
-porte le critère de collecte ainsi que l'horodatage. `MOT_CLE` et `DOCUMENT`
+porte le critère de collecte ainsi que l'horodatage. Une extraction peut
+n'enregistrer aucune collecte — c'est le cas d'une exécution en échec, qui
+reste malgré tout tracée. `MOT_CLE` et `DOCUMENT`
 sont reliés par l'entité associative `DESCRIPTION`, également
 plusieurs-à-plusieurs. Enfin, `DOCUMENT` se spécialise en trois sous-entités
-mutuellement exclusives — `DOCUMENT_API_REST`, `DOCUMENT_WEB` et
-`DOCUMENT_FICHIER` — chacune reliée par une relation un-à-zéro-ou-un et portant
-les attributs propres à son type de source.
+— `DOCUMENT_API_REST`, `DOCUMENT_WEB` et `DOCUMENT_FICHIER` — chacune reliée
+par une relation un-à-zéro-ou-un et portant les attributs propres à son type de
+source. Cette notation est une limite de Mermaid : la spécialisation réelle est
+une partition, exclusive et totale, décrite au paragraphe 3.
 
 ---
 
@@ -393,17 +423,69 @@ légale et procédure d'effacement.
 
 ---
 
-## 9. Points à trancher avant l'étape 2
+## 9. Arbitrages retenus
 
-1. **Durée de conservation par source** — quelle valeur retenir ? Une durée
-   courte sur les sources externes limite l'exposition, mais impose de
-   réextraire ; le quota Stack Exchange est de 300 requêtes par jour.
-2. **Les 82 documents « A VERIFIER »** — les charger en base avec
-   `redistribution_autorisee = faux`, ou les écarter à l'import ? Les charger
-   les rend visibles et traçables ; les écarter garantit qu'ils ne sortiront
-   jamais par erreur.
-3. **`contenu` de 149 083 caractères** — faut-il une longueur maximale, ou la
-   laisser libre et traiter le découpage en aval ?
-4. **Historisation des collectes** — conserver toutes les lignes de `COLLECTE`,
-   ou ne garder que la dernière par document ? Tout conserver documente
-   l'évolution de la source, mais la table croît à chaque exécution.
+Les quatre points laissés ouverts ont été tranchés le 26/08/2026. Ils sont
+consignés ici parce qu'ils conditionnent le MLD.
+
+### Durée de conservation
+
+365 jours pour S1, S2 et S5 ; `NULL` — conservation sans terme — pour S3, dont
+les droits sont détenus par l'autrice du projet.
+
+Le motif n'est pas juridique : CC BY-SA 4.0 et la licence PSF sont
+irrévocables, un retrait de la source ne retire pas le droit d'usage déjà
+acquis. Le motif est la **fraîcheur** : une réponse Stack Overflow de plus d'un
+an peut décrire une API obsolète, et un tuteur qui la cite induit l'apprenant
+en erreur. Le quota n'est pas un frein — S1 a consommé 15 requêtes sur 300
+pour produire 1 313 documents, une réextraction annuelle est indolore.
+
+`duree_conservation_jours` est donc **nullable**, et `NULL` y signifie « sans
+terme » et non « non renseigné ». Le MLD documentera cette sémantique.
+
+La valeur pour S4 reste à fixer : elle dépendra de la base retenue comme
+source, qui n'est pas encore choisie.
+
+### Les 82 documents « A VERIFIER »
+
+Chargés en base avec `redistribution_autorisee = faux`, puis **exclus de
+l'indexation RAG par requête**.
+
+Le raisonnement à retenir pour l'oral : afficher un contenu à un utilisateur
+est une redistribution. Un document dont on ignore la licence ne peut donc pas
+alimenter les réponses du tuteur. Les charger malgré tout les rend dénombrables
+et traçables — on peut prouver qu'ils sont écartés, ce qu'un rejet silencieux à
+l'import ne permettrait pas.
+
+C'est ce qui donne leur portée réelle aux deux booléens de `LICENCE` : ils ne
+documentent pas, ils filtrent.
+
+### Contenu
+
+`contenu` est un texte sans longueur maximale, assorti d'une **contrainte de
+non-vacuité**. Le découpage relève de C3, pas du stockage.
+
+Le document le plus long — 149 083 caractères — a été identifié :
+`data/contents/resources/python__total_cheatsheet.md`, la *Comprehensive Python
+Cheatsheet* du dépôt `gto76/python-cheatsheet`. **Ce n'est pas un artefact
+d'extraction.** Le fichier produit un seul enregistrement pour une raison
+vérifiée : il ne contient aucun titre ATX (`#`, `##`). Ses 71 titres sont au
+format Setext — soulignés par `===` ou `---` — que le découpeur de S3 ne
+reconnaît pas. Les 23 lignes commençant par `#` du fichier sont toutes des
+commentaires Python situés dans des blocs de code, correctement neutralisés
+avant découpage : le mécanisme prévu pour ne pas couper les exemples de code a
+fonctionné exactement comme voulu.
+
+Deux conséquences. La première est sans effet ici : ce fichier est justement
+l'un des 82 « A VERIFIER », donc écarté de l'indexation — il provient d'un
+dépôt tiers. La seconde vaut pour C3 : le découpeur devra gérer les titres
+Setext, sans quoi tout document rédigé dans ce style arrivera d'un bloc.
+
+### Historisation des collectes
+
+Toutes les lignes de `COLLECTE` sont conservées. Le coût est négligeable au
+regard du volume, et l'historique a une valeur propre : **une chute de
+volumétrie entre deux exécutions d'une même source signale un incident** —
+sélecteur CSS obsolète, changement de schéma d'API, fichier disparu. C'est une
+mesure exploitable pour le suivi en production (E5), obtenue sans instrumenter
+quoi que ce soit de plus.
