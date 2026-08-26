@@ -37,7 +37,13 @@ services:
     ports:
       # Port hôte 5433 et non 5432 : évite le conflit avec une éventuelle
       # instance PostgreSQL déjà installée sur la machine.
-      - "${POSTGRES_PORT:-5433}:5432"
+      #
+      # Publication sur 127.0.0.1 et non sur toutes les interfaces. Sans cette
+      # adresse explicite, Docker publie sur 0.0.0.0 : la base serait joignable
+      # depuis tout le réseau local, protégée par le seul mot de passe. Le
+      # pipeline et l'application s'exécutant sur la machine hôte, aucun accès
+      # distant n'est nécessaire — et ce qui n'est pas nécessaire ne s'expose pas.
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
