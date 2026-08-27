@@ -158,10 +158,48 @@ WSGI_APPLICATION = 'eduai_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Compétence visée : C17 (épreuve E4) — application web adossée à une base
+# Compétence visée : C4 (épreuve E1) — séparation des bases
+#
+# Choix : PostgreSQL plutôt que SQLite. Motivation : SQLite écrit dans un
+# fichier unique verrouillé en écriture, ce qui exclut les accès concurrents
+# dont l'application a besoin (WebSockets, tâches d'agents). Il ne connaît par
+# ailleurs ni les types natifs ni les contraintes que le jeu de données du
+# Bloc 1 utilise, ce qui aurait laissé l'application et le pipeline sur deux
+# moteurs différents.
+#
+# Choix : la base applicative eduai_app est distincte de eduai_data, sur la
+# même instance. Motivation : leurs cycles de vie diffèrent — le pipeline
+# purge et recharge son jeu de données, et aucune erreur de ciblage ne doit
+# pouvoir atteindre les comptes des apprenants. PostgreSQL n'autorise pas de
+# requête inter-bases sans extension : l'isolation est structurelle.
+# Voir docs/decisions/006.
+#
+# Choix : les variables d'instance (hôte, port, rôle, mot de passe) sont
+# partagées avec le pipeline, seul le nom de la base diffère. Motivation :
+# dupliquer le mot de passe dans une seconde variable créerait deux sources
+# de vérité à maintenir, donc une occasion de divergence silencieuse.
+POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
+if not POSTGRES_PASSWORD:
+    raise ImproperlyConfigured(
+        "POSTGRES_PASSWORD est absente de l'environnement. "
+        "La renseigner dans le fichier .env à la racine du projet "
+        "(voir .env.example). C'est la même valeur que celle utilisée par "
+        "le conteneur PostgreSQL de docker-compose.yml."
+    )
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get("DJANGO_DB_NAME", "eduai_app"),
+        'USER': os.environ.get("POSTGRES_USER", "eduai"),
+        'PASSWORD': POSTGRES_PASSWORD,
+        # 127.0.0.1 et non localhost : le conteneur ne publie son port que sur
+        # la boucle locale en IPv4, et localhost peut se résoudre en ::1.
+        'HOST': os.environ.get("POSTGRES_HOST", "127.0.0.1"),
+        # 5433 et non 5432 : le port publié par le conteneur évite le conflit
+        # avec une éventuelle instance PostgreSQL installée sur la machine.
+        'PORT': os.environ.get("POSTGRES_PORT", "5433"),
     }
 }
 
