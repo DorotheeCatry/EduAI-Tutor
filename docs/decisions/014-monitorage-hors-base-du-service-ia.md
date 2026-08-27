@@ -109,6 +109,70 @@ identifiante. Le journal de monitorage n'a pas à en garder copie : c'est la mê
 règle de minimisation que celle appliquée au corpus (voir
 `docs/rgpd_eduai_data.md` § 5).
 
+## Décision 7 — Prometheus agrège, le fichier détaille
+
+Les deux sorties coexistent parce qu'aucune ne remplace l'autre.
+
+| | Prometheus | JSON Lines |
+|---|---|---|
+| Répond à | quel est le quantile de latence sur sept jours ? | quelle requête a échoué à 14 h 32, avec quel message ? |
+| Ne sait pas | conserver le détail d'un appel | calculer un quantile sans tout relire |
+| Dépend de | un service tiers | le seul système de fichiers |
+
+Si Prometheus tombe, le détail continue de s'écrire. C'est précisément la panne
+qu'on veut pouvoir observer.
+
+**Cardinalité.** Les étiquettes Prometheus sont toutes bornées — agent, modèle,
+fournisseur, issue, code de retour, classe d'exception. Prometheus crée une
+série par combinaison ; y mettre un identifiant de requête ou un message
+d'erreur rendrait la base inutilisable en quelques heures. Le détail variable
+appartient au fichier, qui n'a pas cette contrainte. C'est l'une des raisons
+d'avoir les deux, et pas seulement une commodité.
+
+## Décision 8 — tout provisionné depuis des fichiers versionnés
+
+Configuration de collecte, source de données et tableau de bord vivent dans
+`monitoring/`, montés en lecture seule dans les conteneurs.
+
+Un tableau de bord cliqué dans l'interface vit dans la base interne de Grafana,
+donc dans un volume Docker. Il n'est pas dans le dépôt, ne se relit pas en
+revue, ne se reproduit pas sur une autre machine, et **disparaît au premier
+`down -v`**. C'est le même écart que des migrations exclues du dépôt, que le
+projet a déjà rencontré.
+
+`allowUiUpdates` est à `false` : une modification faite dans l'interface est
+écrasée au rechargement. Sans cela, fichier et interface divergent sans que
+personne ne sache lequel fait foi.
+
+### Deux écarts rencontrés en montant la chaîne
+
+**Le conteneur ne joignait pas le service.** `host.docker.internal` était résolu
+vers 172.17.0.1, mais Django n'écoute que sur la boucle locale — délibérément.
+Les deux issues étaient d'exposer Django sur `0.0.0.0`, ce qui défait la
+précaution, ou de partager le réseau de l'hôte. La seconde a été retenue : les
+deux conteneurs se lient explicitement à `127.0.0.1`, rien n'est joignable de
+plus. Limite : `network_mode: host` est propre à Linux.
+
+**La source de données recevait un identifiant engendré** — `PBFA97CFB590B2093`
+— tandis que les huit panneaux du tableau de bord référençaient `prometheus`. Le
+tableau de bord serait apparu correctement provisionné et n'aurait affiché
+aucune donnée, avec pour seul indice un discret « datasource not found » dans
+chaque panneau. L'identifiant est désormais fixé dans le fichier de
+provisionnement. C'est exactement le motif des cinq incidents : une
+configuration qui se déclare réussie sans produire d'effet.
+
+## Indicateurs du tableau de bord
+
+| Panneau | Ce qu'il montre |
+|---|---|
+| Taux d'erreur par agent | part des appels qui échouent, fenêtre de 5 min, seuil à 20 pour cent |
+| Latence au 95e centile | ce que subissent les 5 pour cent les moins bien servis — la moyenne ne décrit l'expérience de personne |
+| Volume d'appels | par agent et modèle ; un effondrement sans erreur signale un service sans trafic, pas en panne |
+| Coût cumulé estimé | séparé selon que le tarif a été vérifié ou non |
+| **Écart émis − écrits** | cœur de la démarche : toute valeur non nulle invalide toutes les autres mesures |
+| Fragments rendus et recherches vides | le nombre rendu, jamais le k demandé |
+| Disponibilité vue par le collecteur | la seule mesure qui ne dépende pas du service observé |
+
 ## Limites assumées
 
 - **La fenêtre d'alerte est propre au processus.** Avec plusieurs processus
@@ -121,6 +185,16 @@ règle de minimisation que celle appliquée au corpus (voir
   portent le décorateur `@sous_agent`. Les appels passant par un autre chemin
   sont tracés avec l'agent « inconnu » — modèle, latence et jetons restent
   mesurés, seule la répartition par agent manque.
+- **Les compteurs Prometheus vivent dans un seul processus.** Le serveur de
+  développement étant mono-processus, `/metrics` décrit aujourd'hui la totalité
+  du trafic. Derrière plusieurs travailleurs, le collecteur en verrait une
+  fraction. La réponse existe — agrégation par répertoire partagé, via
+  `PROMETHEUS_MULTIPROC_DIR` — et sera mise en place quand le service passera
+  derrière gunicorn. Elle ne l'est pas d'avance : un mécanisme d'agrégation non
+  éprouvé donnerait des chiffres faux plutôt qu'absents. Les traces JSON Lines
+  n'ont pas cette limite, tous les processus écrivant dans le même fichier.
+- **`network_mode: host` est propre à Linux.** Le jour où le service Django sera
+  lui-même conteneurisé, un réseau pont partagé sera la solution naturelle.
 
 ## Vérification
 
