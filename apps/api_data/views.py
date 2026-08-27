@@ -31,7 +31,7 @@ from .models import (
     Document,
     Extraction,
     Source,
-    condition_redistribuable_depuis_source,
+    condition_exposable_depuis_source,
 )
 from .serializers import (
     DocumentDetailSerializer,
@@ -88,7 +88,7 @@ class DocumentViewSet(viewsets.ReadOnlyModelViewSet):
         Le filtrage par licence n'apparaît pas ici : il est porté par le
         gestionnaire par défaut du modèle. C'est délibéré — une exigence qu'on
         peut oublier vue par vue n'est pas une garantie. Voir
-        `DocumentRedistribuableManager` dans models.py.
+        `DocumentExposableManager` dans models.py.
         """
         jeu = Document.objects.select_related("source", "source__type_source", "licence")
 
@@ -150,7 +150,7 @@ class SourceViewSet(viewsets.ReadOnlyModelViewSet):
         return Source.objects.select_related("type_source").annotate(
             nb_documents=Count(
                 "documents",
-                filter=condition_redistribuable_depuis_source(),
+                filter=condition_exposable_depuis_source(),
                 distinct=True,
             ),
         )

@@ -120,25 +120,32 @@ class MotCle(models.Model):
         return self.code_mot_cle
 
 
-def condition_redistribuable_depuis_source() -> models.Q:
+def condition_exposable_depuis_source() -> models.Q:
     """
-    Condition « la licence du document autorise la redistribution », vue depuis Source.
+    Les deux critères d'exposition d'un document, vus depuis Source.
 
     Compétence visée : C4 (épreuve E1)
 
-    Choix : cette condition vit à côté du gestionnaire qui porte la même règle,
-    et non dans le fichier des vues. Motivation : les agrégations traversant la
-    relation inverse `source -> documents` n'appliquent pas le gestionnaire du
-    modèle lié ; il faut donc réécrire la règle. La placer ici rend les deux
-    formulations voisines et rend leur divergence visible — sans quoi l'API
-    annoncerait un décompte que sa propre liste ne servirait pas.
+    Choix : cette condition vit à côté du gestionnaire qui porte les mêmes
+    règles, et non dans le fichier des vues. Motivation : les agrégations
+    traversant la relation inverse `source -> documents` n'appliquent pas le
+    gestionnaire du modèle lié ; il faut donc réécrire les règles. Les placer
+    ici rend les deux formulations voisines et leur divergence visible — sans
+    quoi l'API annoncerait un décompte que sa propre liste ne servirait pas.
+
+    Le second critère vient d'un écart constaté : `/sources/` annonçait 235
+    documents pour la documentation Python quand la source n'en fournissait plus
+    que 234, une section ayant disparu entre deux scrapings.
     """
-    return models.Q(documents__licence__redistribution_autorisee=True)
+    return models.Q(
+        documents__licence__redistribution_autorisee=True,
+        documents__retire_le__isnull=True,
+    )
 
 
-class DocumentRedistribuableManager(models.Manager):
+class DocumentExposableManager(models.Manager):
     """
-    Gestionnaire n'exposant que les documents dont la licence permet la diffusion.
+    Gestionnaire n'exposant que les documents diffusables et toujours observés.
 
     Compétence visée : C4 (épreuve E1) — respect des conditions de licence
     Compétence visée : C5 (épreuve E1) — API du jeu de données
@@ -155,6 +162,13 @@ class DocumentRedistribuableManager(models.Manager):
     `A_VERIFIER`, et les productions d'apprenants de la source S4, dont la
     licence `PRODUCTION-APPRENANT` réserve l'usage à l'organisme de formation.
 
+    **Second critère : les documents retirés sont exclus.** Un document dont
+    `retire_le` est renseigné a disparu de sa source entre deux extractions. Il
+    reste en base, avec ses lignes de `collecte` qui attestent qu'il a bien été
+    collecté un jour — sa disparition est une information sur la source, pas
+    une erreur à effacer. Mais l'API ne le sert plus : il ne fait plus partie du
+    corpus que la source fournit aujourd'hui.
+
     Choix : aucun gestionnaire non filtré n'est fourni. Motivation : en ajouter
     un « pour les cas particuliers » rendrait le contournement disponible, donc
     tôt ou tard utilisé. Le pipeline, qui a besoin de tout voir, n'utilise pas
@@ -165,6 +179,7 @@ class DocumentRedistribuableManager(models.Manager):
         return (
             super().get_queryset()
             .filter(licence__redistribution_autorisee=True)
+            .filter(retire_le__isnull=True)
         )
 
 
@@ -204,11 +219,20 @@ class Document(models.Model):
     langue = models.CharField(max_length=2, choices=LANGUES)
     extrait_le = models.DateTimeField()
 
+    #: Dernier chargement ayant retrouvé ce document dans le corpus.
+    dernier_vu_le = models.DateTimeField()
+
+    #: Date à laquelle le chargeur a constaté sa disparition de la source,
+    #: ou None s'il est toujours observé. Un document retiré reste en base —
+    #: sa disparition est une information sur la source, pas une erreur — mais
+    #: il sort du corpus servi par l'API.
+    retire_le = models.DateTimeField(null=True)
+
     mots_cles = models.ManyToManyField(
         MotCle, through="Description", related_name="documents",
     )
 
-    objects = DocumentRedistribuableManager()
+    objects = DocumentExposableManager()
 
     class Meta:
         managed = False

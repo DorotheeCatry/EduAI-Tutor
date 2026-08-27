@@ -162,13 +162,22 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
     licence = LicenceSerializer(read_only=True)
     mots_cles = MotCleSerializer(many=True, read_only=True)
     detail = serializers.SerializerMethodField()
+    dernier_vu_le = serializers.DateTimeField(
+        read_only=True,
+        help_text=(
+            "Dernier chargement ayant retrouvé ce document dans sa source. "
+            "Un document que sa source ne fournit plus est marqué retiré et "
+            "cesse d'être servi par l'API."
+        ),
+    )
 
     class Meta:
         model = Document
         fields = [
             "id_document", "source", "code_type_source", "identifiant_source",
             "titre", "contenu", "url_source", "langue", "licence",
-            "attribution_requise", "mots_cles", "extrait_le", "detail",
+            "attribution_requise", "mots_cles", "extrait_le", "dernier_vu_le",
+            "detail",
         ]
 
     def get_detail(self, document: Document) -> dict | None:

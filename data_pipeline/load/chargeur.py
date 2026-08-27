@@ -135,8 +135,11 @@ class Chargeur:
             "campagnes_chargees": {},
             "sources_sans_bilan": [],
             "collectes_chargees": 0,
+            "documents_retires": [],
+            "sources_balayees": [],
             "rejets": [],
         }
+        self.horodatage_chargement: datetime | None = None
 
     # --- 1. Initialisation ---
 
@@ -305,6 +308,10 @@ class Chargeur:
         avant qu'on s'y réfère.
         """
         debut = datetime.now(timezone.utc)
+        # Un seul horodatage pour toute la passe : c'est lui qui distingue les
+        # documents revus de ceux qui ne l'ont pas été. Rafraîchir l'heure
+        # document par document rendrait la comparaison finale illisible.
+        self.horodatage_chargement = debut
         documents = list(self.lire_corpus())
         self.rapport["documents_lus"] = len(documents)
         logger.info("%d documents lus dans %s", len(documents), self.chemin_corpus)
@@ -314,6 +321,7 @@ class Chargeur:
             self._charger_mots_cles(documents)
             for document in documents:
                 self._charger_document(document)
+            self._marquer_documents_retires(documents)
 
         # Contrôle explicite : à la sortie du bloc, la transaction doit être
         # close. Si elle ne l'est pas, c'est qu'une transaction implicite
@@ -459,6 +467,7 @@ class Chargeur:
             "url_source": (document.get("source_url") or None),
             "langue": document.get("langue") or "en",
             "extrait_le": _horodatage(document.get("extrait_le")),
+            "dernier_vu_le": self.horodatage_chargement,
         }
 
         with self.connexion.cursor() as curseur:
@@ -548,6 +557,73 @@ class Chargeur:
                 "code_mot_cle": mot[:60],
             })
             self.rapport["rattachements_charges"] += 1
+
+    def _marquer_documents_retires(self, documents: list[dict[str, Any]]) -> None:
+        """
+        Marque les documents que ce chargement n'a pas revus.
+
+        Compétence visée : C4 (épreuve E1) — cohérence du jeu de données
+        Compétence visée : C1 (épreuve E1) — traçabilité
+
+        Choix : marquer plutôt que supprimer. Motivation : une section de
+        documentation qui disparaît entre deux scrapings n'est pas une erreur
+        du pipeline, c'est une information sur la source. La supprimer
+        effacerait cette information, et avec elle les lignes de `collecte` qui
+        attestent qu'elle avait bien été collectée. Le marquage conserve les
+        deux et corrige le décompte servi par l'API.
+
+        Choix : ne balayer que les sources présentes dans le corpus chargé.
+        Motivation : une source absente ne permet pas de distinguer « rien
+        n'a été extrait cette fois » de « tout a disparu ». Sans ce garde-fou,
+        recharger après avoir réextrait une seule source retirerait tout le
+        reste du corpus — un effacement de masse déclenché par une commande
+        anodine.
+        """
+        sources_chargees = sorted({d["code_type_source"] for d in documents})
+        sources_chargees = sorted({
+            self.source_par_type[type_source]
+            for type_source in sources_chargees
+            if type_source in self.source_par_type
+        })
+
+        if not sources_chargees:
+            logger.info(
+                "Aucune source dans le corpus chargé : aucun marquage de "
+                "retrait, faute de pouvoir distinguer une absence d'extraction "
+                "d'une disparition.",
+            )
+            return
+
+        with self.connexion.cursor() as curseur:
+            curseur.execute(self.requetes["marquer_documents_retires"], {
+                "horodatage": self.horodatage_chargement,
+                "sources_chargees": sources_chargees,
+            })
+            retires = curseur.fetchall()
+
+        self.rapport["documents_retires"] = [
+            {
+                "id_document": ligne[0],
+                "code_source": ligne[1].strip(),
+                "identifiant_source": ligne[2],
+                "titre": ligne[3],
+            }
+            for ligne in retires
+        ]
+        self.rapport["sources_balayees"] = sources_chargees
+
+        if retires:
+            logger.warning(
+                "%d document(s) marqué(s) retirés — absents de leur source "
+                "lors de ce chargement : %s",
+                len(retires),
+                ", ".join(f"{ligne[1].strip()}/{ligne[2]}" for ligne in retires[:5]),
+            )
+        else:
+            logger.info(
+                "Aucun document retiré : tous ceux des sources %s ont été revus.",
+                ", ".join(sources_chargees),
+            )
 
     def _rattacher_collecte(self, curseur, id_document: int,
                             document: dict[str, Any], code_source: str) -> None:
@@ -712,11 +788,12 @@ def main(argv: list[str] | None = None) -> int:
     ecrire_rapport(rapport, arguments.corpus.parent)
     logger.info(
         "Bilan — %d documents lus, %d chargés, %d campagnes, %d mots-clés, "
-        "%d rattachements, %d collectes, %d rejets, %.2f s",
+        "%d rattachements, %d collectes, %d retirés, %d rejets, %.2f s",
         rapport["documents_lus"], rapport["documents_charges"],
         len(rapport["campagnes_chargees"]), rapport["mots_cles_charges"],
         rapport["rattachements_charges"], rapport["collectes_chargees"],
-        len(rapport["rejets"]), rapport["duree_secondes"],
+        len(rapport["documents_retires"]), len(rapport["rejets"]),
+        rapport["duree_secondes"],
     )
     return 0
 

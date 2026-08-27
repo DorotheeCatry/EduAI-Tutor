@@ -71,7 +71,7 @@ sur `eduai_app`.
 
 ## Décision 4 — le filtrage par licence vit dans le gestionnaire
 
-`DocumentRedistribuableManager` filtre sur
+`DocumentExposableManager` filtre sur
 `licence__redistribution_autorisee = True`, et c'est le gestionnaire **par
 défaut** du modèle `Document`.
 
@@ -88,7 +88,7 @@ Le pipeline, qui doit tout voir, n'utilise pas l'ORM.
 **Une exception à surveiller.** Les agrégations traversant la relation inverse
 `source → documents` n'appliquent pas le gestionnaire du modèle lié : le
 décompte `nb_documents` de `/sources/` doit réécrire la condition. Elle est
-donc isolée dans `condition_redistribuable_depuis_source()`, placée juste à côté
+donc isolée dans `condition_exposable_depuis_source()`, placée juste à côté
 du gestionnaire pour que leur divergence soit visible.
 
 **Vérifié sur les trois vecteurs.** Un document sous licence `A_VERIFIER`

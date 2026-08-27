@@ -246,7 +246,31 @@ CREATE TABLE document (
     langue               langue_document NOT NULL,
     extrait_le           TIMESTAMPTZ  NOT NULL,
 
+    -- Dernière campagne de chargement où ce document était présent dans le
+    -- corpus. Mis à jour à chaque chargement qui le retrouve.
+    dernier_vu_le        TIMESTAMPTZ  NOT NULL,
+
+    -- Date à laquelle le chargeur a constaté la disparition du document, ou
+    -- NULL s'il est toujours observé.
+    --
+    -- Motivation : une section de documentation qui disparaît entre deux
+    -- scrapings n'est pas une erreur du pipeline, c'est une information sur la
+    -- source. La purger effacerait cette information ; la marquer la conserve.
+    -- Le document reste consultable en base et par requête directe, mais sort
+    -- du corpus servi par l'API.
+    --
+    -- La trace détaillée vit dans `collecte`, qui dit campagne par campagne
+    -- quels documents ont été vus. Cette colonne n'en est que la conclusion,
+    -- dénormalisée pour que le filtrage de l'API tienne en un prédicat.
+    retire_le            TIMESTAMPTZ,
+
     CONSTRAINT document_pk PRIMARY KEY (id_document),
+
+    -- Un document ne peut pas être retiré avant d'avoir été vu pour la
+    -- dernière fois : l'inverse signalerait une erreur de chronologie dans le
+    -- chargeur, pas une donnée légitime.
+    CONSTRAINT document_retrait_posterieur
+        CHECK (retire_le IS NULL OR retire_le >= dernier_vu_le),
 
     -- Clé étrangère composite, et non deux clés séparées : elle garantit à la
     -- fois l'intégrité référentielle de code_source et la cohérence de

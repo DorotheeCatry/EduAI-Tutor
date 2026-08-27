@@ -38,7 +38,7 @@ son identifiant.
 authentifié voit les mêmes documents. La règle d'autorisation n'est donc pas
 « à qui appartient cet objet ? » mais « cet objet est-il diffusable ? », et
 elle est portée par le gestionnaire par défaut du modèle
-(`DocumentRedistribuableManager`), non par les vues.
+(`DocumentExposableManager`), non par les vues.
 
 **Vérifié.** Un document sous licence `A_VERIFIER` existant en base sous
 l'identifiant 15484 renvoie **404** en accès direct, **0 résultat** par filtre,
