@@ -32,15 +32,16 @@ absente.
 
 ## État d'avancement
 
-Relevé du 27/08/2026. **À lire avant de commencer : ne pas refaire ce qui
-existe.**
+Relevé du 27/08/2026, en fin de journée. **À lire avant de commencer : ne pas
+refaire ce qui existe.**
 
 | Chantier | État |
 |---|---|
-| Extracteurs (C1) | **3 sur 5** — S1 API Stack Overflow, S2 scraping doc Python, S3 fichiers. Manquent S4 (base de données) et S5 (big data) |
+| Extracteurs (C1) | **4 sur 5** — S1 API Stack Overflow, S2 scraping doc Python, S3 fichiers, S5 big data Spark sur dump Stack Exchange. Manque S4 (base de données) |
 | Base de données (C4) | **En place** — deux bases PostgreSQL, 13 tables, index, contraintes, données de référence chargées, MCD, MLD, dictionnaire, document RGPD |
 | Application web (C17) | **Fonctionnelle**, bascule de SQLite vers `eduai_app` faite |
-| Journal de décisions (C19) | **8 entrées** dans `docs/decisions/` |
+| Journal de décisions (C19) | **9 entrées** dans `docs/decisions/` |
+| Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL dans `data_pipeline/load/sql/`, Spark SQL dans `data_pipeline/extract/sql/` |
 | API données DRF (C5) | **Absente** — `rest_framework` est installé, aucun point de terminaison n'existe |
 | API service IA FastAPI (C9) | **Absente** — la dépendance n'est pas encore ajoutée |
 | Tests et CI (C18) | **Absents** — les `tests.py` sont des gabarits vides, aucun workflow GitHub Actions |

@@ -73,7 +73,7 @@ traitement au lieu de le fonder.
 | S2 — Documentation Python | Scraping | **Aucune** | 235 documents |
 | S3 — Corpus local | Fichier | **Aucune** | 380 documents |
 | S4 — à écrire | Base de données | Identifiant pseudonyme, sous conditions du §5 | — |
-| S5 — à écrire | Big data | **Aucune** prévue | — |
+| S5 — Dump Stack Exchange | Big data | **Aucune** | 4 948 documents |
 
 Le schéma ne comporte **aucune entité « personne »**. Les treize tables de
 `eduai_data` décrivent des documents, des sources, des licences, des mots-clés
@@ -83,8 +83,8 @@ et des exécutions d'extraction — jamais des individus.
 
 ## 5. Minimisation appliquée
 
-L'article 5.1.c impose des données « adéquates, pertinentes et limitées ». Trois
-applications concrètes, vérifiables dans le code.
+L'article 5.1.c impose des données « adéquates, pertinentes et limitées ».
+Quatre applications concrètes, vérifiables dans le code et chiffrées.
 
 **S1 — les auteurs ne sont pas collectés.** L'API Stack Exchange expose pour
 chaque question un objet `owner` contenant `display_name`, `user_id`,
@@ -96,6 +96,37 @@ personne.
 L'attribution exigée par la licence CC BY-SA est assurée par `url_source`, qui
 pointe vers la question d'origine où Stack Overflow crédite lui-même son
 auteur. **L'obligation de licence est honorée sans détenir la donnée.**
+
+**S5 — les identifiants d'auteur ne sont pas projetés.** Le dump Stack
+Exchange comprend un fichier `Users.xml` qui ne contient que des données
+personnelles — nom d'affichage, site web, localisation déclarée, biographie.
+Il n'est jamais ouvert : un garde-fou dans l'extracteur refuse le traitement,
+plutôt qu'une consigne qui ne vivrait que dans ce document.
+
+L'écarter ne suffit pourtant pas. `Posts.xml`, le seul fichier lu, porte
+lui-même des données personnelles. Comptages relevés sur le dump du
+07/04/2024, vérifiables par `grep -c` sur le fichier :
+
+| Attribut | Occurrences | Nature |
+|---|---|---|
+| `OwnerUserId` | 78 448 | identifiant persistant de personne |
+| `LastEditorUserId` | 28 401 | identifiant persistant de personne |
+| `OwnerDisplayName` | 635 | nom d'affichage en clair |
+| `LastEditorDisplayName` | 184 | nom d'affichage en clair |
+
+La projection de `s5_conversion_parquet.spark.sql` n'extrait aucun de ces
+quatre attributs. **Sans elle, 819 noms d'affichage en clair entreraient dans
+le corpus**, en plus de 106 849 identifiants persistants.
+
+`OwnerUserId` est un entier, non un nom — il n'en reste pas moins une donnée à
+caractère personnel. Il identifie durablement une personne, et il suffit de
+l'accoler à l'URL du profil public Stack Exchange pour retrouver son nom
+d'affichage. Le considérant 26 vise exactement ce cas : la réidentification par
+des moyens raisonnablement susceptibles d'être utilisés. C'est le même
+raisonnement que celui appliqué plus bas à la pseudonymisation de S4.
+
+Comme pour S1, l'attribution exigée par CC BY-SA passe par l'URL du post, où
+Stack Exchange crédite lui-même son auteur. Voir `docs/decisions/009`.
 
 **S4 — pas d'identifiant direct.** Aucun `user_id`, aucune adresse IP, aucune
 adresse électronique n'entrera dans `eduai_data`. Un identifiant pseudonyme
@@ -122,7 +153,7 @@ erreur — et c'est précisément la question qu'un jury pose.
 | S2 — Documentation Python | 365 jours | Même motif |
 | S3 — Corpus local | Sans terme (`NULL`) | Droits détenus par l'autrice du projet |
 | S4 | **90 jours** | Durée courte imposée par la présence d'un pseudonyme |
-| S5 | 365 jours | Alignée sur les sources externes |
+| S5 — Dump Stack Exchange | 365 jours | Fraîcheur, comme S1 : le dump est une photographie datée, une réponse ancienne peut décrire une API disparue |
 
 Le motif des 365 jours n'est **pas juridique** : CC BY-SA 4.0 et la licence PSF
 sont irrévocables, le retrait d'une source ne retire pas le droit d'usage
