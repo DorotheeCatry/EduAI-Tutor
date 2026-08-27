@@ -61,6 +61,27 @@ TABLES_SIMPLES = {
 CATEGORIE_ETIQUETTE = "tag_source"
 CATEGORIE_MODULE = "module"
 
+#: Répertoire où les extracteurs déposent leur bilan d'exécution.
+REPERTOIRE_BILANS_PAR_DEFAUT = Path("data_pipeline/data/raw")
+
+#: Champ de métadonnée décrivant, pour chaque type de source, le chemin par
+#: lequel un document a été atteint.
+#:
+#: Compétence visée : C1 (épreuve E1) — traçabilité de la collecte
+#:
+#: Choix : un critère propre à chaque type plutôt qu'un libellé générique.
+#: Motivation : « par quel chemin ce document est-il arrivé ? » n'a pas la même
+#: réponse selon la source — un tag de recherche pour une API, une page pour du
+#: scraping, un fichier pour une lecture locale. Un libellé unique ne
+#: répondrait à la question pour aucune d'elles.
+CRITERE_PAR_TYPE = {
+    "api_rest": "tag_recherche",
+    "scraping": "page",
+    "fichier": "fichier",
+    "big_data": "site",
+    "base_donnees": "gisement",
+}
+
 
 class Chargeur:
     """
@@ -79,12 +100,14 @@ class Chargeur:
     def __init__(
         self,
         chemin_corpus: Path = CORPUS_PAR_DEFAUT,
+        repertoire_bilans: Path = REPERTOIRE_BILANS_PAR_DEFAUT,
         base: str | None = None,
         hote: str | None = None,
         port: str | None = None,
         utilisateur: str | None = None,
     ) -> None:
         self.chemin_corpus = Path(chemin_corpus)
+        self.repertoire_bilans = Path(repertoire_bilans)
         self.base = base
         self.hote = hote
         self.port = port
@@ -97,12 +120,21 @@ class Chargeur:
         self.attribution_par_licence: dict[str, bool] = {}
         self.source_par_type: dict[str, str] = {}
 
+        #: Bilans d'extraction lus sur disque, indexés par code de source.
+        self.bilans: dict[str, dict[str, Any]] = {}
+
+        #: Identifiant de campagne en base, par code de source.
+        self.extraction_par_source: dict[str, int] = {}
+
         self.rapport: dict[str, Any] = {
             "documents_lus": 0,
             "documents_charges": 0,
             "mots_cles_charges": 0,
             "rattachements_charges": 0,
             "par_type_source": {},
+            "campagnes_chargees": {},
+            "sources_sans_bilan": [],
+            "collectes_chargees": 0,
             "rejets": [],
         }
 
@@ -158,7 +190,50 @@ class Chargeur:
         logger.info("%d requêtes de chargement chargées.", len(self.requetes))
 
         self._lire_nomenclatures()
+        self._lire_bilans()
         logger.info("Connecté à %s sur %s:%s", base, hote, port)
+
+    def _lire_bilans(self) -> None:
+        """
+        Lit les bilans d'exécution déposés par les extracteurs.
+
+        Compétence visée : C4 (épreuve E1) — alimentation de `extraction`
+
+        Choix : une source sans bilan est signalée, pas suppléée. Motivation :
+        le chargeur pourrait compter les documents d'une source et en déduire
+        une campagne plausible. Il ignorerait la durée réelle, les erreurs
+        rencontrées et les enregistrements écartés. Une ligne d'`extraction`
+        ainsi fabriquée aurait toutes les apparences d'une mesure sans en être
+        une — c'est exactement le travers dont l'incident du 27/08 a montré le
+        coût. Mieux vaut une traçabilité incomplète et annoncée qu'une
+        traçabilité complète et fausse.
+        """
+        for chemin in sorted(self.repertoire_bilans.glob("*.bilan.json")):
+            try:
+                bilan = json.loads(chemin.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as exception:
+                logger.warning("Bilan illisible, ignoré — %s : %s", chemin.name, exception)
+                continue
+            code = (bilan.get("code_source") or "").strip()
+            if not code:
+                logger.warning(
+                    "Bilan sans code_source, ignoré — %s. L'extracteur doit "
+                    "déclarer son code de source.", chemin.name,
+                )
+                continue
+            self.bilans[code] = bilan
+
+        if self.bilans:
+            logger.info(
+                "Bilans d'extraction lus : %s",
+                ", ".join(f"{c} ({b['statut']}, {b['enregistrements']})"
+                          for c, b in sorted(self.bilans.items())),
+            )
+        else:
+            logger.warning(
+                "Aucun bilan d'extraction dans %s : les tables extraction et "
+                "collecte resteront vides.", self.repertoire_bilans,
+            )
 
     def _lire_nomenclatures(self) -> None:
         """
@@ -235,6 +310,7 @@ class Chargeur:
         logger.info("%d documents lus dans %s", len(documents), self.chemin_corpus)
 
         with self.connexion.transaction():
+            self._charger_campagnes()
             self._charger_mots_cles(documents)
             for document in documents:
                 self._charger_document(document)
@@ -255,6 +331,55 @@ class Chargeur:
             (datetime.now(timezone.utc) - debut).total_seconds(), 2
         )
         return self.rapport
+
+    def _charger_campagnes(self) -> None:
+        """
+        Verse les bilans d'extraction dans la table `extraction`.
+
+        Compétence visée : C4 (épreuve E1)
+
+        Choix : les campagnes sont chargées avant les documents. Motivation :
+        `collecte` référence `extraction` par clé étrangère, et chaque document
+        chargé rattache aussitôt sa ligne de collecte. Sans les campagnes en
+        place, ce rattachement échouerait document par document.
+        """
+        connues = set()
+        with self.connexion.cursor() as curseur:
+            for code, bilan in sorted(self.bilans.items()):
+                if code not in self.source_par_type.values():
+                    self._rejeter(
+                        f"bilan {code}",
+                        f"la source « {code} » n'est pas déclarée dans la table source",
+                    )
+                    continue
+                curseur.execute(self.requetes["inserer_extraction"], {
+                    "code_source": code,
+                    "horodatage_debut": _horodatage(bilan.get("horodatage")),
+                    "duree_secondes": bilan.get("duree_secondes") or 0,
+                    "statut": bilan.get("statut"),
+                    "nb_enregistrements": bilan.get("enregistrements") or 0,
+                    "nb_erreurs": bilan.get("erreurs") or 0,
+                    "fichier_sortie": str(bilan.get("fichier") or "")[:255],
+                })
+                self.extraction_par_source[code] = curseur.fetchone()[0]
+                connues.add(code)
+                self.rapport["campagnes_chargees"][code] = {
+                    "statut": bilan.get("statut"),
+                    "enregistrements": bilan.get("enregistrements"),
+                    "erreurs": bilan.get("erreurs"),
+                    "duree_secondes": bilan.get("duree_secondes"),
+                }
+
+        manquantes = sorted(set(self.source_par_type.values()) - connues)
+        self.rapport["sources_sans_bilan"] = manquantes
+        if manquantes:
+            logger.warning(
+                "Sources sans bilan d'exécution : %s. Leurs documents seront "
+                "chargés, mais sans ligne de collecte — la traçabilité de leur "
+                "campagne manquera jusqu'à leur prochaine extraction.",
+                ", ".join(manquantes),
+            )
+        logger.info("Campagnes d'extraction enregistrées : %d", len(connues))
 
     def _charger_mots_cles(self, documents: list[dict[str, Any]]) -> None:
         """
@@ -341,6 +466,7 @@ class Chargeur:
             id_document = curseur.fetchone()[0]
             self._charger_specialisation(curseur, id_document, document)
             self._rattacher_mots_cles(curseur, id_document, document)
+            self._rattacher_collecte(curseur, id_document, document, code_source)
 
         self.rapport["documents_charges"] += 1
         compte = self.rapport["par_type_source"]
@@ -422,6 +548,51 @@ class Chargeur:
                 "code_mot_cle": mot[:60],
             })
             self.rapport["rattachements_charges"] += 1
+
+    def _rattacher_collecte(self, curseur, id_document: int,
+                            document: dict[str, Any], code_source: str) -> None:
+        """
+        Rattache le document à la campagne qui l'a ramené, et par quel chemin.
+
+        Compétence visée : C4 (épreuve E1)
+        Compétence visée : C1 (épreuve E1) — traçabilité de la collecte
+
+        Choix : un document trouvé par plusieurs chemins produit plusieurs
+        lignes. Motivation : la question so_16476924 est arrivée par le tag
+        « python » puis par le tag « pandas ». La transformation a fusionné les
+        deux exemplaires en conservant les deux critères ; n'en enregistrer
+        qu'un perdrait au chargement ce qu'elle avait pris soin de sauver.
+
+        Une source sans campagne enregistrée ne produit aucune ligne : mieux
+        vaut une absence visible qu'un rattachement à une campagne inventée.
+        """
+        id_extraction = self.extraction_par_source.get(code_source)
+        if id_extraction is None:
+            return
+
+        metadonnees = document.get("metadonnees") or {}
+        champ = CRITERE_PAR_TYPE.get(document["code_type_source"])
+        brut = metadonnees.get(champ) if champ else None
+
+        if brut is None:
+            # Repli explicite : le nom de la source elle-même. Le critère est
+            # NOT NULL, et un document sans chemin de collecte identifiable
+            # reste rattaché à sa campagne plutôt que d'en être exclu.
+            criteres = [document.get("source_nom") or code_source]
+        elif isinstance(brut, (list, tuple, set)):
+            criteres = [str(valeur) for valeur in brut if str(valeur).strip()]
+        else:
+            criteres = [str(brut)]
+
+        vu_le = _horodatage(document.get("extrait_le"))
+        for critere in criteres:
+            curseur.execute(self.requetes["inserer_collecte"], {
+                "id_extraction": id_extraction,
+                "id_document": id_document,
+                "critere_collecte": critere[:200],
+                "vu_le": vu_le,
+            })
+            self.rapport["collectes_chargees"] += 1
 
     # --- 3. Gestion des erreurs et exceptions ---
 
@@ -540,10 +711,11 @@ def main(argv: list[str] | None = None) -> int:
 
     ecrire_rapport(rapport, arguments.corpus.parent)
     logger.info(
-        "Bilan — %d documents lus, %d chargés, %d mots-clés, "
-        "%d rattachements, %d rejets, %.2f s",
+        "Bilan — %d documents lus, %d chargés, %d campagnes, %d mots-clés, "
+        "%d rattachements, %d collectes, %d rejets, %.2f s",
         rapport["documents_lus"], rapport["documents_charges"],
-        rapport["mots_cles_charges"], rapport["rattachements_charges"],
+        len(rapport["campagnes_chargees"]), rapport["mots_cles_charges"],
+        rapport["rattachements_charges"], rapport["collectes_chargees"],
         len(rapport["rejets"]), rapport["duree_secondes"],
     )
     return 0
