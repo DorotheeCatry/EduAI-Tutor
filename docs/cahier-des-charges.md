@@ -41,8 +41,9 @@ refaire ce qui existe.**
 | Base de données (C4) | **En place** — deux bases PostgreSQL, 13 tables, index, contraintes, données de référence chargées, MCD, MLD, dictionnaire, document RGPD |
 | Application web (C17) | **Fonctionnelle**, bascule de SQLite vers `eduai_app` faite |
 | Transformation (C3) | **En place** — `data_pipeline/transform/`, trois modules distincts, rapport de qualité. 6 876 entrants, 40 doublons retirés, 6 836 sortants |
-| Chargement (C4) | **Absent** — le corpus transformé n'est pas encore versé dans `eduai_data` |
+| Chargement (C4) | **En place** — `data_pipeline/load/chargeur.py`, 6 836 documents en base, 1 211 mots-clés, 20 544 rattachements, 0 rejet |
 | Journal de décisions (C19) | **11 entrées** dans `docs/decisions/` |
+| Pipeline complet | **Bout en bout** — extraction (5 sources) → transformation → chargement, rejouable et idempotent à chaque étape |
 | Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL (schéma dans `data_pipeline/load/sql/`, collecte S4 dans `data_pipeline/extract/sql/`), Spark SQL pour S5 |
 | API données DRF (C5) | **Absente** — `rest_framework` est installé, aucun point de terminaison n'existe |
 | API service IA FastAPI (C9) | **Absente** — la dépendance n'est pas encore ajoutée |
