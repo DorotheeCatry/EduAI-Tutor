@@ -33,6 +33,11 @@ services:
       # Encodage et collation explicites : la base contient du texte français
       # et anglais, une collation par défaut mal choisie fausserait les tris.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      # Mot de passe du rôle de lecture seule utilisé par l'API du jeu de
+      # données (C5). Lu par 06_role_lecture.sh au premier démarrage. Le rôle
+      # ne dispose que du SELECT : c'est la garantie de lecture seule tenue par
+      # le moteur, celles du routeur Django et des vues vivant dans le code.
+      EDUAI_DATA_PASSWORD: ${EDUAI_DATA_PASSWORD:?EDUAI_DATA_PASSWORD doit être défini dans .env}
 
     ports:
       # Port hôte 5433 et non 5432 : évite le conflit avec une éventuelle

@@ -115,3 +115,38 @@ CREATE INDEX idx_document_langue_citable
 --   Non créés. Elles comptent respectivement 5, 4 et 5 lignes. Un parcours
 --   séquentiel y est plus rapide qu'un accès indexé, et le planificateur
 --   ignorerait l'index.
+
+
+-- ===========================================================================
+-- Index de recherche plein texte, ajouté pour l'API du jeu de données (C5)
+-- ===========================================================================
+--
+-- Compétence visée : C5 (épreuve E1) — recherche sur le corpus
+-- Compétence visée : C2 (épreuve E1) — optimisation d'une requête de collecte
+--
+-- Motivation : le point de terminaison /api/dataset/documents/ propose une
+-- recherche plein texte sur le titre et le contenu. Sans index, chaque requête
+-- calcule le vecteur lexical des 6 800 documents, contenu compris — plusieurs
+-- dizaines de mégaoctets de texte relus à chaque appel.
+--
+-- Choix : configuration « simple » plutôt que « french » ou « english ».
+-- Motivation : le corpus est bilingue — 6 500 documents en anglais, 380 en
+-- français. Une configuration à racinisation ne vaut que pour la langue qu'elle
+-- connaît : « simple » ne racinise pas, mais traite les deux langues de la même
+-- manière, ce qui est préférable à bien traiter l'une et mal l'autre.
+-- Un index par langue, avec un prédicat sur `langue`, serait la suite logique
+-- si la recherche devient un usage central.
+--
+-- Choix : index d'expression et non colonne matérialisée. Motivation : une
+-- colonne tsvector devrait être maintenue à jour par le chargeur ou par un
+-- déclencheur, donc pourrait diverger du contenu. L'expression est calculée par
+-- le moteur : elle ne peut pas se désynchroniser.
+--
+-- L'expression doit être identique à celle que produit Django, sans quoi le
+-- planificateur ne reconnaît pas l'index et retombe sur un balayage complet.
+CREATE INDEX IF NOT EXISTS idx_document_recherche
+    ON document
+    USING gin (to_tsvector('simple', COALESCE(titre, '') || ' ' || COALESCE(contenu, '')));
+
+COMMENT ON INDEX idx_document_recherche IS
+    'Recherche plein texte sur titre et contenu, configuration « simple » pour traiter identiquement les documents anglais et français.';

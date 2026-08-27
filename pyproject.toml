@@ -32,6 +32,8 @@ dependencies = [
     "beautifulsoup4>=4.15.0",
     "psycopg[binary]>=3.2,<4.0",
     "pyspark>=3.5,<4.0",
+    "django-filter>=25.1",
+    "drf-spectacular>=0.28",
 ]
 
 [build-system]

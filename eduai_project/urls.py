@@ -16,6 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 from django.views.i18n import set_language
 from django.shortcuts import redirect
 from django.conf import settings
@@ -45,6 +50,25 @@ urlpatterns = [
     path('chat/', include('apps.chat.urls')),
     path('tracker/', include('apps.tracker.urls')),
     path('exercises/', include('apps.exercises.urls')),
+
+    # --- API REST du jeu de données (C5, Bloc 1) ---
+    #
+    # Préfixe distinct de celui que prendra l'API du service IA (C9, Bloc 2),
+    # qui vivra dans un service FastAPI séparé. La séparation exigée par le
+    # référentiel se lit ainsi dans l'URL, avant d'ouvrir le code.
+    path('api/dataset/', include('apps.api_data.urls')),
+
+    # --- Documentation OpenAPI de l'API du jeu de données ---
+    #
+    # Le schéma est engendré depuis le code : sérialiseurs, filtres et
+    # permissions en sont la source. Une documentation écrite à la main
+    # diverge du code dès la première modification, et une documentation
+    # fausse est pire qu'absente — elle est crue.
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'),
+         name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'),
+         name='redoc'),
 ]
 
 # Serve static and media files in development

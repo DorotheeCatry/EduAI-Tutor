@@ -133,11 +133,15 @@ INSTALLED_APPS = [
     'apps.rag',
     'apps.tracker',
     'apps.exercises',
+    'apps.api_data',
     'theme',
 
     # Third-party apps
     'tailwind',
     'rest_framework',
+    'rest_framework.authtoken',
+    'django_filters',
+    'drf_spectacular',
     'django_browser_reload',
     'channels',
 ]
@@ -231,6 +235,39 @@ DATABASES = {
 }
 
 
+# Seconde base : le jeu de données collecté par le pipeline, exposé en lecture
+# seule par l'API du Bloc 1.
+#
+# Compétence visée : C5 (épreuve E1) — API REST exposant le jeu de données
+# Compétence visée : C4 (épreuve E1) — séparation des deux bases
+#
+# Choix : un rôle PostgreSQL distinct, ne disposant que du SELECT, plutôt que
+# le rôle propriétaire. Motivation : le routeur Django refuse déjà les
+# écritures et les vues n'exposent aucune route d'écriture, mais ces deux
+# garanties vivent dans le code. Le rôle, lui, tient même si le code se trompe.
+# Voir docs/decisions/012.
+EDUAI_DATA_PASSWORD = os.environ.get("EDUAI_DATA_PASSWORD")
+if not EDUAI_DATA_PASSWORD:
+    raise ImproperlyConfigured(
+        "EDUAI_DATA_PASSWORD est absente de l'environnement. C'est le mot de "
+        "passe du rôle PostgreSQL en lecture seule utilisé par l'API du jeu "
+        "de données. Le renseigner dans .env (voir .env.example)."
+    )
+
+DATABASES["eduai_data"] = {
+    "ENGINE": "django.db.backends.postgresql",
+    "NAME": os.environ.get("POSTGRES_DB", "eduai_data"),
+    "USER": os.environ.get("EDUAI_DATA_USER", "eduai_lecture"),
+    "PASSWORD": EDUAI_DATA_PASSWORD,
+    "HOST": os.environ.get("POSTGRES_HOST", "127.0.0.1"),
+    "PORT": os.environ.get("POSTGRES_PORT", "5433"),
+}
+
+# Sans routeur, Django interrogerait `default` pour les modèles de api_data et
+# n'y trouverait aucune des treize tables du jeu de données.
+DATABASE_ROUTERS = ["apps.api_data.routeurs.RouteurJeuDonnees"]
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -312,6 +349,104 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/dashboard/'    
 LOGOUT_REDIRECT_URL = '/auth/login/'
 LOGIN_URL = '/auth/login/'            # @login_required protection
+
+# --- API REST du jeu de données (C5, Bloc 1) ---
+#
+# Compétence visée : C5 (épreuve E1)
+# Compétence visée : C13 (épreuve E3) — sécurité de l'API
+#
+# Ces réglages s'appliquent à l'API du jeu de données. L'API du service IA
+# (C9, Bloc 2) vivra dans un service FastAPI distinct, avec ses propres
+# réglages : les deux périmètres ne partagent pas leur configuration.
+REST_FRAMEWORK = {
+    # --- Authentification ---
+    #
+    # Choix : jeton porteur, doublé de la session pour l'interface navigable.
+    # Motivation : un consommateur du jeu de données est le plus souvent un
+    # script, pour lequel la session par cookie n'a pas de sens. La session
+    # reste utile à la documentation interactive, consultée depuis un
+    # navigateur déjà authentifié.
+    #
+    # L'authentification par jeton répond à OWASP API2, « Broken
+    # Authentication » : chaque jeton est révocable individuellement, sans
+    # toucher au mot de passe du compte.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+
+    # --- Autorisation ---
+    #
+    # Choix : authentification exigée partout, sans exception. Motivation :
+    # le corpus agrège des sources dont les licences imposent des conditions de
+    # redistribution. L'exposer anonymement reviendrait à le republier sans
+    # savoir à qui, alors que les conditions de plusieurs sources engagent
+    # celui qui rediffuse. C'est aussi la réponse à OWASP API1, « Broken
+    # Object Level Authorization » : aucun objet n'est atteignable sans compte.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+
+    # --- Limitation de débit ---
+    #
+    # Réponse à OWASP API4, « Unrestricted Resource Consumption ». Les
+    # anonymes sont bridés bas : ils ne peuvent de toute façon qu'atteindre la
+    # documentation et se voir refuser les données.
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "20/hour",
+        "user": "1000/day",
+    },
+
+    # --- Pagination ---
+    #
+    # Aucun point de terminaison de collection ne renvoie tout. Voir
+    # apps/api_data/pagination.py pour le plafond et sa motivation.
+    "DEFAULT_PAGINATION_CLASS": "apps.api_data.pagination.PaginationJeuDonnees",
+    "PAGE_SIZE": 20,
+
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.OrderingFilter",
+    ],
+
+    # Le schéma OpenAPI est engendré depuis le code par drf-spectacular.
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# Documentation OpenAPI engendrée depuis le code.
+#
+# Compétence visée : C5 (épreuve E1) — documentation de l'API
+SPECTACULAR_SETTINGS = {
+    "TITLE": "EduAI Tutor — API du jeu de données",
+    "DESCRIPTION": (
+        "API REST exposant en lecture seule le corpus collecté par le "
+        "pipeline de données (Bloc 1, compétence C5).\n\n"
+        "Le corpus agrège cinq types de sources : service web, scraping, "
+        "fichiers, base de données et système big data.\n\n"
+        "**Lecture seule.** Le jeu de données est alimenté par le pipeline, "
+        "jamais par cette API. Aucune route d'écriture n'est exposée, et la "
+        "connexion utilise un rôle PostgreSQL ne disposant que du SELECT.\n\n"
+        "**Filtrage par licence.** Seuls les documents dont la licence "
+        "autorise la redistribution sont exposés. Les documents d'origine non "
+        "vérifiée et les productions d'apprenants en sont exclus par "
+        "construction, quel que soit le point de terminaison interrogé.\n\n"
+        "**Attribution.** Plusieurs licences du corpus exigent de créditer "
+        "l'auteur. Le champ `attribution_requise` le signale, et `url_source` "
+        "pointe vers la page où la source crédite elle-même son auteur."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Le schéma ne décrit que l'API du jeu de données : les vues de
+    # l'application web n'ont pas à y figurer.
+    "SCHEMA_PATH_PREFIX": "/api/dataset",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
+}
+
 
 # Channels configuration
 ASGI_APPLICATION = 'eduai_project.asgi.application'
