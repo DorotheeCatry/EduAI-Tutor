@@ -1,0 +1,312 @@
+{
+  "uid": "eduai-service-ia",
+  "title": "EduAI Tutor — Service IA",
+  "description": "Monitorage du service IA (C20). Provisionné depuis monitoring/grafana/tableaux/ : ce tableau de bord est versionné dans le dépôt, il n'est pas cliqué dans l'interface. Toute modification faite ici sera écrasée au rechargement.",
+  "tags": ["eduai", "c20", "service-ia"],
+  "timezone": "browser",
+  "editable": false,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "agent",
+        "label": "Agent",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(eduai_appels_llm_total, agent)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Indicateurs de service",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Taux d'erreur par agent",
+      "description": "Part des appels au fournisseur qui échouent, sur une fenêtre glissante de cinq minutes. Le seuil d'alerte applicatif est à 20 %.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "sum by (agent) (rate(eduai_erreurs_llm_total{agent=~\"$agent\"}[5m])) / clamp_min(sum by (agent) (rate(eduai_appels_llm_total{agent=~\"$agent\"}[5m])), 0.0000001)",
+          "legendFormat": "{{agent}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 0.1 },
+              { "color": "red", "value": 0.2 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Latence au 95e centile",
+      "description": "Calculée depuis l'histogramme des latences. Le 95e centile décrit ce que subissent les 5 % les moins bien servis — ceux qui se plaignent. La moyenne, tirée par les appels lents, ne décrit l'expérience de personne.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le, agent) (rate(eduai_latence_llm_secondes_bucket{agent=~\"$agent\"}[5m])))",
+          "legendFormat": "LLM — {{agent}}",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(eduai_latence_rag_secondes_bucket[5m])))",
+          "legendFormat": "Recherche RAG",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Volume d'appels par agent et modèle",
+      "description": "Appels au fournisseur par minute. Un effondrement sans erreur associée signale un service qui ne reçoit plus de trafic, pas un service en panne.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "sum by (agent, modele) (rate(eduai_appels_llm_total{agent=~\"$agent\"}[5m])) * 60",
+          "legendFormat": "{{agent}} — {{modele}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqpm",
+          "min": 0,
+          "custom": { "drawStyle": "bars", "lineWidth": 1, "fillOpacity": 60, "stacking": { "mode": "normal" } }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Coût cumulé estimé",
+      "description": "Somme des coûts estimés depuis le démarrage du service. L'étiquette tarif_verifie distingue un coût établi d'une estimation reposant sur un tarif non confronté à la grille du fournisseur — un chiffre plausible et non vérifié ne doit pas se présenter comme acquis.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "sum by (tarif_verifie) (eduai_cout_estime_total)",
+          "legendFormat": "tarif vérifié : {{tarif_verifie}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4,
+          "color": { "mode": "fixed", "fixedColor": "text" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "area",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "Santé du monitorage lui-même",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Écart entre lignes annoncées et lignes écrites",
+      "description": "Cœur de la démarche du projet. Les cinq incidents rencontrés partagent le même motif : un rapport de succès qui ne correspond à rien. Cette courbe compare ce que le journal a VOULU écrire à ce qu'il a RÉELLEMENT écrit. Toute valeur non nulle signale un disque plein, des droits manquants ou un chemin invalide — et invalide toutes les autres mesures de ce tableau de bord.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "eduai_journal_evenements_emis_total - eduai_journal_lignes_ecrites_total",
+          "legendFormat": "écart émis − écrits",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "editorMode": "code",
+          "expr": "sum(eduai_sonde_echecs_total)",
+          "legendFormat": "échecs de la sonde",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 20 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Recherches RAG : fragments rendus et recherches vides",
+      "description": "Le nombre de fragments RENDUS, jamais le k demandé. Une recherche qui aboutit en rendant zéro fragment est un succès vide : elle prive l'agent de tout contexte sans lever d'erreur.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "sum(rate(eduai_fragments_rendus_sum[5m])) / clamp_min(sum(rate(eduai_fragments_rendus_count[5m])), 0.0000001)",
+          "legendFormat": "fragments rendus (moyenne)",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "editorMode": "code",
+          "expr": "sum(rate(eduai_fragments_rendus_bucket{le=\"0.0\"}[5m])) * 60",
+          "legendFormat": "recherches sans résultat / min",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "editorMode": "code",
+          "expr": "sum(rate(eduai_recherches_rag_total{issue=\"erreur\"}[5m])) * 60",
+          "legendFormat": "recherches en erreur / min",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Disponibilité du service vue par le collecteur",
+      "description": "Série up du collecteur : elle vaut 1 si le service a répondu à la collecte, 0 sinon. C'est la seule mesure de ce tableau de bord qui ne dépende pas du service observé — elle continue de dire la vérité quand celui-ci est tombé.",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 26 },
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "avg_over_time(up{job=\"eduai_service_ia\"}[$__range])",
+          "legendFormat": "disponibilité sur la période",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.9 },
+              { "color": "green", "value": 0.99 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center"
+      }
+    }
+  ]
+}

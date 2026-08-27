@@ -67,6 +67,115 @@ services:
       retries: 10
       start_period: 10s
 
+  # --- Collecteur de métriques (C20, épreuve E5) ---
+  #
+  # Compétence visée : C20 (épreuve E5) — monitorage du service en production
+  #
+  # Choix : la configuration est montée depuis le dépôt en lecture seule, et
+  # jamais modifiée depuis l'interface. Motivation : une configuration qui ne
+  # vit que dans un volume Docker n'est pas dans le dépôt, ne se reproduit pas
+  # sur une autre machine, et disparaît au premier « down -v ». Le projet a
+  # déjà rencontré cet écart avec des migrations exclues du dépôt.
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: eduai_prometheus
+    restart: unless-stopped
+
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      # Trente jours : la soutenance est à trois semaines, et une rétention
+      # plus longue ferait grossir le volume sans servir.
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+      # Écoute sur la boucle locale seulement. Avec network_mode: host, le
+      # défaut serait 0.0.0.0 et les métriques d'exploitation deviendraient
+      # joignables depuis tout le réseau local.
+      - --web.listen-address=127.0.0.1:9090
+
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+    # Choix : réseau de l'hôte plutôt que réseau pont.
+    #
+    # Motivation : le service Django tourne sur la machine et n'écoute que sur
+    # 127.0.0.1 — délibérément, pour ne pas s'exposer au réseau local. Depuis un
+    # réseau pont, le conteneur voit l'hôte en 172.17.0.1 et se heurte à un
+    # « connection refused ». Les deux issues étaient d'exposer Django sur
+    # 0.0.0.0, ce qui défait la précaution, ou de partager le réseau de l'hôte.
+    # La seconde ne rend rien joignable de plus : les deux conteneurs se lient
+    # explicitement à la boucle locale.
+    #
+    # Limite : network_mode host est propre à Linux. Le projet y tourne, et le
+    # jour où le service Django sera lui-même conteneurisé, un réseau pont
+    # partagé sera la solution naturelle.
+    network_mode: host
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # --- Tableaux de bord (C20, épreuve E5) ---
+  #
+  # Choix : source de données ET tableau de bord provisionnés depuis des
+  # fichiers versionnés. Motivation : un tableau de bord cliqué dans l'interface
+  # vit dans la base interne de Grafana, donc dans un volume. Il n'est pas dans
+  # le dépôt, aucune relecture n'est possible, et il disparaît au premier
+  # « down -v ». Le fichier fait foi — allowUiUpdates est à false pour que les
+  # deux ne puissent pas diverger.
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: eduai_grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_UTILISATEUR:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_MOT_DE_PASSE:?GRAFANA_MOT_DE_PASSE doit être défini dans .env}
+      # Aucune inscription possible, aucun accès anonyme : le tableau de bord
+      # décrit l'exploitation du service et le coût des appels.
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      # Grafana appelle son propre dépôt pour proposer des extensions. Le
+      # couper évite un appel sortant à chaque démarrage, sans rien retirer.
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      # Boucle locale seulement, pour la même raison que le collecteur.
+      GF_SERVER_HTTP_ADDR: "127.0.0.1"
+      GF_SERVER_HTTP_PORT: "3000"
+
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/tableaux:/var/lib/grafana/tableaux:ro
+      - grafana_data:/var/lib/grafana
+
+    # Même réseau que le collecteur : Grafana l'atteint alors en 127.0.0.1:9090.
+    network_mode: host
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+
 volumes:
   postgres_data:
     name: eduai_postgres_data
+
+  # Séries temporelles du collecteur. Perdre ce volume perd l'historique des
+  # métriques, pas la configuration ni les tableaux de bord — ceux-là sont dans
+  # le dépôt. C'est exactement la répartition voulue.
+  prometheus_data:
+    name: eduai_prometheus_data
+
+  # Base interne de Grafana : comptes et préférences. Ni la source de données
+  # ni les tableaux de bord n'en dépendent, ils sont provisionnés au démarrage.
+  grafana_data:
+    name: eduai_grafana_data

@@ -40,6 +40,7 @@ from uuid import UUID
 
 from langchain_core.callbacks.base import BaseCallbackHandler
 
+from . import metriques
 from .alertes import surveillance
 from .couts import estimer
 from .journal import journal, tronquer_trace
@@ -181,6 +182,7 @@ class SondeServiceIA(BaseCallbackHandler):
                 ))
 
             journal.ecrire(evenement)
+            self._compter_appel(evenement, latence)
             surveillance.enregistrer(
                 en_erreur=False, latence=latence,
                 contexte={"agent": base.get("agent"), "modele": modele,
@@ -195,7 +197,7 @@ class SondeServiceIA(BaseCallbackHandler):
             base, latence = self._terminer(run_id)
             base = base or {"type": "appel_llm", "agent": agent_courant.get()}
 
-            journal.ecrire({
+            evenement = {
                 **base,
                 "issue": "erreur",
                 "latence_secondes": latence,
@@ -208,7 +210,9 @@ class SondeServiceIA(BaseCallbackHandler):
                 "trace": tronquer_trace("".join(traceback.format_exception(
                     type(error), error, error.__traceback__,
                 ))),
-            })
+            }
+            journal.ecrire(evenement)
+            self._compter_appel(evenement, latence)
             surveillance.enregistrer(
                 en_erreur=True, latence=latence,
                 contexte={"agent": base.get("agent"),
@@ -238,6 +242,8 @@ class SondeServiceIA(BaseCallbackHandler):
                 return
 
             fragments = list(documents or [])
+            self._compter_recherche(base.get("agent"), "succes", latence,
+                                    len(fragments))
             journal.ecrire({
                 **base,
                 "issue": "succes",
@@ -265,6 +271,7 @@ class SondeServiceIA(BaseCallbackHandler):
         try:
             base, latence = self._terminer(run_id)
             base = base or {"type": "recherche_rag", "agent": agent_courant.get()}
+            self._compter_recherche(base.get("agent"), "erreur", latence, None)
             journal.ecrire({
                 **base,
                 "issue": "erreur",
@@ -281,6 +288,86 @@ class SondeServiceIA(BaseCallbackHandler):
             )
         except Exception as exception:  # noqa: BLE001
             self._echec("on_retriever_error", exception)
+
+    # --- Alimentation des métriques Prometheus ---
+
+    @staticmethod
+    def _compter_appel(evenement: dict[str, Any], latence: float | None) -> None:
+        """
+        Reporte un appel de modèle dans les métriques agrégées.
+
+        Compétence visée : C20 (épreuve E5)
+
+        Choix : les étiquettes sont toutes de cardinalité bornée — agent,
+        modèle, fournisseur, issue, code de retour, classe d'exception.
+        Motivation : Prometheus crée une série temporelle par combinaison
+        d'étiquettes. Y mettre un identifiant de requête ou un message d'erreur
+        ferait exploser le nombre de séries et rendrait la base inutilisable en
+        quelques heures. Le détail variable appartient au JSON Lines, qui n'a
+        pas cette contrainte — c'est l'une des raisons d'avoir les deux.
+        """
+        try:
+            agent = evenement.get("agent") or "inconnu"
+            modele = evenement.get("modele") or "inconnu"
+            issue = evenement.get("issue") or "inconnue"
+
+            metriques.appels_llm.labels(
+                agent=agent, modele=modele,
+                fournisseur=evenement.get("fournisseur") or "inconnu",
+                issue=issue,
+            ).inc()
+
+            if latence is not None:
+                metriques.latence_llm.labels(agent=agent, modele=modele).observe(latence)
+
+            if issue == "erreur":
+                metriques.erreurs_llm.labels(
+                    agent=agent, modele=modele,
+                    code_retour=str(evenement.get("code_retour") or "aucun"),
+                    classe=evenement.get("erreur_classe") or "inconnue",
+                ).inc()
+                return
+
+            for sens, cle in (("entree", "jetons_entree"), ("sortie", "jetons_sortie")):
+                valeur = evenement.get(cle)
+                if isinstance(valeur, int) and valeur > 0:
+                    metriques.jetons.labels(
+                        agent=agent, modele=modele, sens=sens,
+                    ).inc(valeur)
+
+            cout = evenement.get("cout_estime")
+            if isinstance(cout, (int, float)) and cout > 0:
+                metriques.cout_estime.labels(
+                    modele=modele,
+                    devise=evenement.get("devise") or "inconnue",
+                    # Un coût reposant sur un tarif non confronté à la grille du
+                    # fournisseur ne doit pas se confondre avec un coût établi.
+                    tarif_verifie="non" if evenement.get("tarif_a_verifier") else "oui",
+                ).inc(float(cout))
+        except Exception as exception:  # noqa: BLE001
+            logger.debug("[monitorage] métrique d'appel non reportée : %s", exception)
+
+    @staticmethod
+    def _compter_recherche(agent: str | None, issue: str, latence: float | None,
+                           fragments: int | None) -> None:
+        """
+        Reporte une recherche RAG dans les métriques agrégées.
+
+        Compétence visée : C20 (épreuve E5)
+
+        `fragments` est le nombre RENDU. L'histogramme porte une borne à zéro
+        pour isoler les recherches qui aboutissent sans rien rendre : un succès
+        vide, que rien ne distingue d'un vrai succès dans un simple compteur.
+        """
+        try:
+            agent = agent or "inconnu"
+            metriques.recherches_rag.labels(agent=agent, issue=issue).inc()
+            if latence is not None:
+                metriques.latence_rag.labels(agent=agent).observe(latence)
+            if fragments is not None:
+                metriques.fragments_rendus.labels(agent=agent).observe(fragments)
+        except Exception as exception:  # noqa: BLE001
+            logger.debug("[monitorage] métrique de recherche non reportée : %s", exception)
 
     # --- Mécanique interne ---
 
@@ -390,6 +477,10 @@ class SondeServiceIA(BaseCallbackHandler):
 
     def _echec(self, methode: str, exception: BaseException) -> None:
         type(self).echecs_sonde += 1
+        try:
+            metriques.echecs_sonde.labels(methode=methode).inc()
+        except Exception:  # noqa: BLE001
+            pass
         logger.warning(
             "[monitorage] sonde %s en échec (%s : %s) — %d échec(s) cumulé(s). "
             "Le service n'est pas affecté, la trace de cet appel est perdue.",

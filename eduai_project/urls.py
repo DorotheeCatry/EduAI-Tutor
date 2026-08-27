@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from apps.monitoring.vues import metriques as vue_metriques
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -50,6 +51,14 @@ urlpatterns = [
     path('chat/', include('apps.chat.urls')),
     path('tracker/', include('apps.tracker.urls')),
     path('exercises/', include('apps.exercises.urls')),
+
+    # --- Métriques Prometheus du service IA (C20, épreuve E5) ---
+    #
+    # Le collecteur Prometheus interroge ce point de terminaison toutes les
+    # quinze secondes. Il agrège ; le détail nécessaire au diagnostic d'un
+    # incident précis vit dans les traces JSON Lines, qui ne dépendent d'aucun
+    # service tiers.
+    path('metrics', vue_metriques, name='metrics'),
 
     # --- API REST du jeu de données (C5, Bloc 1) ---
     #

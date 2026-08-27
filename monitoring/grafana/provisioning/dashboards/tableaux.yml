@@ -1,0 +1,25 @@
+# Provisionnement des tableaux de bord depuis le dépôt.
+#
+# Compétence visée : C20 (épreuve E5)
+#
+# Grafana lit les fichiers JSON du dossier déclaré ci-dessous au démarrage puis
+# périodiquement. Le tableau de bord est donc versionné avec le code, relu en
+# revue, et reconstruit à l'identique sur n'importe quelle machine.
+#
+# allowUiUpdates est à false : une modification faite dans l'interface serait
+# écrasée au rechargement. C'est voulu — le fichier fait foi, sans quoi les deux
+# divergent sans que personne ne sache lequel est à jour.
+
+apiVersion: 1
+
+providers:
+  - name: eduai
+    orgId: 1
+    folder: EduAI Tutor
+    type: file
+    disableDeletion: false
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/tableaux
+      foldersFromFilesStructure: false

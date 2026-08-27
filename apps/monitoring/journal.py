@@ -115,6 +115,7 @@ class JournalMonitorage:
             diagnostic.
         """
         self.evenements_emis += 1
+        _metrique("evenements_emis")
         moment = datetime.now(timezone.utc)
         evenement = {"horodatage": moment.isoformat(), **evenement}
 
@@ -135,10 +136,15 @@ class JournalMonitorage:
                     os.write(descripteur, (ligne + "\n").encode("utf-8"))
                 finally:
                     os.close(descripteur)
+            # Compté APRÈS l'écriture, jamais avant. C'est toute la différence
+            # entre une ligne annoncée et une ligne écrite, et l'écart entre ce
+            # compteur et evenements_emis est le signal de panne du journal.
+            _metrique("lignes_ecrites")
             return True
 
         except Exception as exception:  # noqa: BLE001 — la sonde ne casse rien
             self.echecs_ecriture += 1
+            _metrique("echecs_ecriture")
             # Dernier recours : la sortie d'erreur. Elle est reprise par les
             # journaux du serveur, et ne dépend d'aucun de nos composants.
             print(
@@ -193,6 +199,26 @@ class JournalMonitorage:
             # légitimement plus de lignes que ce processus n'en a émis.
             "ecart_emis_moins_ecrits": self.evenements_emis - lignes_valides,
         }
+
+
+def _metrique(nom: str) -> None:
+    """
+    Incrémente un compteur Prometheus, sans jamais faire échouer l'écriture.
+
+    Compétence visée : C20 (épreuve E5)
+
+    Choix : import différé et exception avalée. Motivation : le journal est le
+    composant le plus bas de la pile de monitorage. Le faire dépendre à
+    l'import de `prometheus_client` inverserait la relation — la trace détaillée
+    ne doit dépendre d'aucun service ni d'aucune bibliothèque tierce, c'est sa
+    raison d'être.
+    """
+    try:
+        from . import metriques
+
+        getattr(metriques, nom).inc()
+    except Exception:  # noqa: BLE001 — le journal prime sur sa propre métrique
+        pass
 
 
 def tronquer_trace(trace: str | None) -> str | None:

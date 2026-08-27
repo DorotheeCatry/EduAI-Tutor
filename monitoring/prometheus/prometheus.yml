@@ -1,0 +1,42 @@
+# Configuration du collecteur Prometheus.
+#
+# Compétence visée : C20 (épreuve E5) — monitorage du service en production
+#
+# Choix : ce fichier est versionné et monté en lecture seule dans le conteneur,
+# jamais modifié depuis l'interface. Motivation : c'est la même règle que pour
+# le tableau de bord Grafana — une configuration qui ne vit que dans un volume
+# Docker disparaît au premier « down -v » et n'est reproductible par personne.
+# Le projet a déjà rencontré cet écart avec des migrations non versionnées.
+
+global:
+  # Quinze secondes : assez fin pour voir une panne s'installer, assez large
+  # pour que la collecte ne pèse pas sur le temps de réponse du service.
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    projet: eduai-tutor
+
+scrape_configs:
+
+  # --- Service IA d'EduAI Tutor ---
+  #
+  # Le service Django tourne sur la machine hôte et n'écoute que sur la boucle
+  # locale. Le conteneur partage le réseau de l'hôte (network_mode: host dans
+  # docker-compose.yml), ce qui lui donne accès à 127.0.0.1 sans qu'il faille
+  # exposer Django au réseau local.
+  - job_name: eduai_service_ia
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["127.0.0.1:8000"]
+        labels:
+          service: service_ia
+
+  # --- Prometheus lui-même ---
+  #
+  # Un collecteur qui ne se surveille pas ne sait pas dire s'il a manqué des
+  # points. La série up{job="eduai_service_ia"} indique en outre si le service
+  # répondait à chaque collecte — c'est la mesure de disponibilité la moins
+  # coûteuse qui soit, et elle ne dépend pas du service observé.
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -1,0 +1,31 @@
+# Source de données Grafana, provisionnée depuis ce fichier.
+#
+# Compétence visée : C20 (épreuve E5)
+#
+# Choix : provisionnement par fichier et non configuration dans l'interface.
+# Motivation : une source de données créée à la main vit dans la base interne
+# de Grafana, donc dans un volume Docker. Elle n'est pas dans le dépôt, ne se
+# reproduit pas sur une autre machine, et disparaît au premier « down -v ».
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    # Identifiant FIXÉ et non engendré.
+    #
+    # Sans cette ligne, Grafana attribue un identifiant aléatoire — du type
+    # PBFA97CFB590B2093 — tandis que les panneaux du tableau de bord versionné
+    # référencent « prometheus ». Le tableau de bord apparaît alors correctement
+    # provisionné et n'affiche aucune donnée, avec pour seul indice un discret
+    # « datasource not found » dans chaque panneau. L'écart a été constaté ici
+    # même avant d'être corrigé.
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    # Les deux conteneurs partagent le réseau de l'hôte : le collecteur est
+    # donc joignable en 127.0.0.1, comme il le serait depuis la machine.
+    url: http://127.0.0.1:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: 15s

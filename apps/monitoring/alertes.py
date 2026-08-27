@@ -156,6 +156,12 @@ class SurveillanceSeuils:
             "mesures": mesures,
             **contexte,
         })
+        try:
+            from .metriques import alertes_levees
+
+            alertes_levees.labels(nature=nature).inc()
+        except Exception:  # noqa: BLE001 — l'alerte prime sur sa métrique
+            pass
 
 
 #: Surveillance partagée par les sondes du processus.
