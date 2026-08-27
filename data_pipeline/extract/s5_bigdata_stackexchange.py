@@ -106,7 +106,10 @@ class ExtracteurBigDataStackExchange(ExtracteurBase):
 
     def __init__(
         self,
-        chemin_dump: Path,
+        # Même défaut que l'option --dump de la ligne de commande. Sans lui,
+        # l'orchestrateur — qui instancie les cinq extracteurs de façon
+        # uniforme, sans argument — ne pouvait pas construire celui-ci.
+        chemin_dump: Path = DUMP_PAR_DEFAUT,
         chemin_parquet: Path | None = None,
         repertoire_sortie: Path | None = None,
         annee_min: int = 2015,
