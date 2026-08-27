@@ -5,6 +5,12 @@
 EduAI Tutor est une plateforme éducative web à architecture multi-agents
 (Researcher, Pedagogue, Coach, Watcher) avec RAG.
 
+**Cadre d'usage :** organisme de formation professionnelle au développement.
+Le public est constitué d'apprenants **adultes exclusivement** — le service est
+réservé aux majeurs (décisions 004 et 005). Ce cadre n'est pas décoratif : il
+détermine le périmètre RGPD retenu et l'absence de tout dispositif de
+protection des mineurs.
+
 Ce dépôt sert de support d'évaluation pour la certification RNCP 37827
 « Développeur en intelligence artificielle » (Simplon, titre 2023).
 
@@ -21,6 +27,26 @@ rattrapable avant l'année suivante. La priorité est donc la **couverture des 2
 compétences**, pas la profondeur sur quelques-unes. Une compétence couverte
 modestement vaut mieux qu'une compétence brillante à côté d'une compétence
 absente.
+
+---
+
+## État d'avancement
+
+Relevé du 27/08/2026. **À lire avant de commencer : ne pas refaire ce qui
+existe.**
+
+| Chantier | État |
+|---|---|
+| Extracteurs (C1) | **3 sur 5** — S1 API Stack Overflow, S2 scraping doc Python, S3 fichiers. Manquent S4 (base de données) et S5 (big data) |
+| Base de données (C4) | **En place** — deux bases PostgreSQL, 13 tables, index, contraintes, données de référence chargées, MCD, MLD, dictionnaire, document RGPD |
+| Application web (C17) | **Fonctionnelle**, bascule de SQLite vers `eduai_app` faite |
+| Journal de décisions (C19) | **8 entrées** dans `docs/decisions/` |
+| API données DRF (C5) | **Absente** — `rest_framework` est installé, aucun point de terminaison n'existe |
+| API service IA FastAPI (C9) | **Absente** — la dépendance n'est pas encore ajoutée |
+| Tests et CI (C18) | **Absents** — les `tests.py` sont des gabarits vides, aucun workflow GitHub Actions |
+| Matrice de traçabilité | **Absente** |
+
+Ce tableau vieillit. En cas de doute, vérifier l'état réel plutôt que le croire.
 
 ---
 
@@ -72,25 +98,39 @@ Organisation cible, **à ajuster à l'existant plutôt que l'inverse** :
 
 - Pipeline de données (Bloc 1, épreuve E1, C1 à C5) : extraction, transformation,
   chargement, avec un point de lancement unique.
-- API REST exposant le **jeu de données** (C5).
-- API REST exposant le **service IA** (C9).
+- API REST exposant le **jeu de données** (C5) : **DRF**, dans le projet Django.
+- API REST exposant le **service IA** (C9) : **FastAPI**, service séparé.
 - Application web Django (Bloc 3, C17).
 - Documentation : journal de décisions et matrice de traçabilité.
 
 **Deux séparations à préserver :**
 
 1. L'API données (C5, Bloc 1) et l'API du service IA (C9, Bloc 2) doivent
-   rester distinguables. Si elles sont actuellement mêlées, ne pas tout
-   redécouper : les isoler dans des modules et des routes clairement séparés
-   suffit à rendre l'évaluation possible.
+   rester distinguables. Deux frameworks, deux périmètres : DRF sert le jeu de
+   données depuis le projet Django, FastAPI sert le service IA dans un
+   processus séparé. La séparation devient lisible sans explication — un jury
+   doit voir deux API, pas deux dossiers.
 2. ChromaDB n'est pas la base de données évaluée en C4. La BDD de C4 est
    PostgreSQL, avec modèles conceptuel et physique. Le vector store est un
    artefact aval.
 
+**Base de données :** une seule instance PostgreSQL, en conteneur, port hôte
+**5433**, deux bases distinctes.
+
+- `eduai_app` — application Django (C17). Schéma géré par les migrations.
+- `eduai_data` — jeu de données du pipeline (C4). Schéma géré par les scripts
+  de `data_pipeline/load/sql/`.
+
+PostgreSQL n'autorise pas de requête inter-bases sans extension : l'isolation
+est structurelle, pas conventionnelle. Le pipeline peut donc purger et
+recharger son jeu de données sans qu'aucune erreur de ciblage n'atteigne les
+comptes des apprenants (décision 006).
+
 ## Stack
 
 - Data/ML : Python, LangChain, ChromaDB, Groq/Ollama, PostgreSQL, PySpark
-- App : Django 5.2+, DRF, Channels/Redis, Tailwind, Monaco Editor
+- App : Django 5.2+, DRF (API données), FastAPI (API service IA),
+  Channels/Redis, Tailwind, Monaco Editor
 - DevOps : Linux, uv, Docker, Git/GitHub Actions
 
 Gestionnaire de paquets : **uv**.
@@ -267,7 +307,7 @@ reconstituer une semaine de travail de mémoire.
   et documenté (C5, C9).
 - Données personnelles : minimisation, durée de conservation, pseudonymisation,
   effacement (C4). Le public visé est **exclusivement adulte** — plateforme de
-  formation professionnelle au développement (cf. `docs/decisions/005`). Ce
+  formation professionnelle au développement (décisions 004 et 005). Ce
   cadre écarte le consentement parental de l'article 8 du RGPD et l'information
   en termes compréhensibles par un enfant de l'article 12.1, et rien d'autre :
   c'est un rétrécissement de périmètre, pas un allègement du RGPD.
