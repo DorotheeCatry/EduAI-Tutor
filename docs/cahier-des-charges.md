@@ -37,11 +37,11 @@ refaire ce qui existe.**
 
 | Chantier | État |
 |---|---|
-| Extracteurs (C1) | **4 sur 5** — S1 API Stack Overflow, S2 scraping doc Python, S3 fichiers, S5 big data Spark sur dump Stack Exchange. Manque S4 (base de données) |
+| Extracteurs (C1) | **5 sur 5** — S1 API Stack Overflow, S2 scraping doc Python, S3 fichiers, S4 base de données `eduai_app`, S5 big data Spark sur dump Stack Exchange |
 | Base de données (C4) | **En place** — deux bases PostgreSQL, 13 tables, index, contraintes, données de référence chargées, MCD, MLD, dictionnaire, document RGPD |
 | Application web (C17) | **Fonctionnelle**, bascule de SQLite vers `eduai_app` faite |
-| Journal de décisions (C19) | **9 entrées** dans `docs/decisions/` |
-| Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL dans `data_pipeline/load/sql/`, Spark SQL dans `data_pipeline/extract/sql/` |
+| Journal de décisions (C19) | **10 entrées** dans `docs/decisions/` |
+| Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL (schéma dans `data_pipeline/load/sql/`, collecte S4 dans `data_pipeline/extract/sql/`), Spark SQL pour S5 |
 | API données DRF (C5) | **Absente** — `rest_framework` est installé, aucun point de terminaison n'existe |
 | API service IA FastAPI (C9) | **Absente** — la dépendance n'est pas encore ajoutée |
 | Tests et CI (C18) | **Absents** — les `tests.py` sont des gabarits vides, aucun workflow GitHub Actions |
