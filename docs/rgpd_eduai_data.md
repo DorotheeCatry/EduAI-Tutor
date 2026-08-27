@@ -72,7 +72,7 @@ traitement au lieu de le fonder.
 | S1 — Stack Overflow | Service web | **Aucune** | 1 313 documents |
 | S2 — Documentation Python | Scraping | **Aucune** | 235 documents |
 | S3 — Corpus local | Fichier | **Aucune** | 380 documents |
-| S4 — à écrire | Base de données | Identifiant pseudonyme, sous conditions du §5 | — |
+| S4 — `eduai_app` | Base de données | **Aucune** — voir §5 | variable selon l'activité |
 | S5 — Dump Stack Exchange | Big data | **Aucune** | 4 948 documents |
 
 Le schéma ne comporte **aucune entité « personne »**. Les treize tables de
@@ -128,20 +128,39 @@ raisonnement que celui appliqué plus bas à la pseudonymisation de S4.
 Comme pour S1, l'attribution exigée par CC BY-SA passe par l'URL du post, où
 Stack Exchange crédite lui-même son auteur. Voir `docs/decisions/009`.
 
-**S4 — pas d'identifiant direct.** Aucun `user_id`, aucune adresse IP, aucune
-adresse électronique n'entrera dans `eduai_data`. Un identifiant pseudonyme
-n'est retenu **que si** le lien entre plusieurs soumissions d'un même apprenant
-est nécessaire au traitement — et dans ce seul cas.
+**S4 — aucun identifiant, pas même pseudonyme.** La règle posée ici était
+qu'un identifiant pseudonyme ne serait retenu **que si** le lien entre
+plusieurs soumissions d'un même apprenant était nécessaire au traitement. La
+condition a été examinée à l'écriture de l'extracteur, et tranchée : **elle
+n'est pas remplie**.
 
-La contrainte pèse sur l'extracteur, qui devra écarter ces champs à la source
-plutôt que les charger puis les purger. Une donnée qu'on ne collecte pas n'a
-besoin ni de durée de conservation, ni de procédure d'effacement.
+Le document le plus utile que cette source produit est une paire « voici du
+code qui échoue, voici le code du même apprenant qui a fonctionné ensuite ».
+Le constituer exige bien de rapprocher deux soumissions d'une même personne —
+donc de disposer de `user_id`. Mais ce besoin porte sur la **collecte**, pas
+sur le **résultat** : une fois la paire formée, le document porte une erreur et
+sa correction, et rien de ce qui suit n'a besoin de savoir qui l'a écrite.
 
-**Précision sur la pseudonymisation.** Un identifiant pseudonyme **reste une
-donnée à caractère personnel** au sens du considérant 26, puisque la table de
-correspondance existe dans `eduai_app`. Il réduit l'exposition, il ne fait pas
-sortir du champ du règlement. Le présenter comme une anonymisation serait une
-erreur — et c'est précisément la question qu'un jury pose.
+`user_id` sert donc à la jointure latérale de
+`s4_soumissions_corrigees.sql` et n'apparaît dans aucune projection. Ni
+`user_id`, ni `ip_address`, ni adresse électronique, ni nom : la table
+`users_kodauser` n'est même pas jointe.
+
+**Deux garanties tenues par le moteur plutôt que par l'intention.** La
+connexion à `eduai_app` est ouverte en lecture seule — le pipeline ne peut pas
+écrire dans la base qui porte les comptes. Et un garde-fou inspecte les
+colonnes retournées avant de lire la moindre ligne : ajouter `user_id`, un
+courriel ou une adresse IP à un fichier `.sql` interrompt l'extraction au lieu
+de remplir discrètement le corpus. Vérifié sur cinq projections d'essai.
+
+**Précision sur la pseudonymisation.** Si un identifiant pseudonyme avait été
+retenu, il serait **resté une donnée à caractère personnel** au sens du
+considérant 26 : la table de correspondance existe dans `eduai_app`, et la
+réidentification y serait immédiate. Un pseudonyme réduit l'exposition, il ne
+fait pas sortir du champ du règlement. Le présenter comme une anonymisation
+serait une erreur — et c'est précisément la question qu'un jury pose. Ce
+raisonnement est repris tel quel en `docs/decisions/009` à propos de
+`OwnerUserId`, entier d'apparence anodine et pourtant identifiant persistant.
 
 ---
 
@@ -183,11 +202,25 @@ document, vers ses collectes et vers ses mots-clés associés. Les lignes
 d'`extraction` subsistent : elles ne contiennent aucune donnée personnelle et
 constituent la trace de ce qui a été fait.
 
-**Demande d'effacement d'une personne (art. 17).** Applicable à S4 seule.
-L'apprenant s'adresse à l'organisme, qui retrouve son identifiant pseudonyme
-dans `eduai_app` puis supprime les documents qui le portent. L'opération est
-possible **parce que** la correspondance existe — ce qui confirme le §5 : ces
-données restent personnelles.
+**Demande d'effacement d'une personne (art. 17).** Elle s'exerce sur
+`eduai_app`, et sur elle seule.
+
+`eduai_data` ne contient aucun identifiant de personne, pas même pseudonyme
+(§5). Une demande d'effacement y est donc **sans objet** : il n'y a rien à y
+retrouver, et rien qui puisse être rattaché à un demandeur. Ce n'est pas une
+échappatoire mais la conséquence directe de la minimisation — c'est
+précisément l'effet recherché, énoncé au §3 : la conformité la plus solide est
+celle qui n'a rien à protéger.
+
+La contrepartie est assumée : les documents déjà versés au corpus ne peuvent
+pas être retirés individuellement à la demande d'un apprenant, faute de
+pouvoir les identifier. Ils disparaissent par la purge d'ancienneté, la
+rétention de S4 étant fixée à 90 jours — le délai le plus court du corpus, et
+c'est la raison de ce choix.
+
+L'organisme reste tenu d'effacer, dans `eduai_app`, le compte de l'apprenant et
+toutes ses productions. C'est là que vivent les données personnelles, et la
+route de suppression de compte manquante y est un écart ouvert (§8).
 
 **Preuve de l'effacement.** La vue `controle_partition` et le dénombrement par
 source permettent de constater l'état avant et après. Un effacement qu'on ne
