@@ -174,19 +174,21 @@ peut pas prouver n'est pas un effacement.
 | Secrets en variables d'environnement seules | `.env` et toutes ses variantes exclues du dépôt |
 | Données personnelles d'exécution hors dépôt | `media/` exclu — avatars téléversés |
 | Mot de passe de base obligatoire | Le conteneur refuse de démarrer sans `POSTGRES_PASSWORD` |
-| Base non exposée au réseau | Port publié sur `127.0.0.1` seulement, commit `2d8ffdb` |
+| Base non exposée au réseau | Port publié sur `127.0.0.1` seulement, commit `2d8ffdb`, conteneur recréé le 27/08 pour que la machine applique le correctif |
 | Protections applicatives Django | Middlewares CSRF, clickjacking, sessions et authentification actifs |
 | Intégrité des données | 53 contraintes nommées, dont les règles de licence et d'attribution vérifiées par le moteur |
+| Débogage désactivé par défaut | `DEBUG` lu depuis l'environnement, `False` en l'absence de variable, commit `a91392b` |
+| Réglages de transport | Redirection HTTPS, HSTS d'un an, cookies de session et CSRF `Secure` et `SameSite`, actifs dès que `DEBUG` vaut `False` |
+| Hôtes d'exposition hors du code | `ALLOWED_HOSTS` lu depuis l'environnement, boucle locale par défaut ; le domaine de tunnel vit dans `.env` et se retire sans commit |
+| Contrôle de déploiement au vert | `DJANGO_DEBUG=False uv run python manage.py check --deploy` : aucun avertissement |
+| Données applicatives sur PostgreSQL | `eduai_app`, distincte de `eduai_data`, commit `c59eedb` — voir `docs/decisions/006` et `008` |
 
 ### Écarts identifiés, non encore corrigés
 
 | Écart | Portée | Traitement prévu |
 |---|---|---|
-| `DEBUG = True` codé en dur dans `settings.py` | Une erreur expose la trace complète, variables d'environnement comprises | Étape 4, lecture depuis l'environnement |
-| Aucun réglage `SECURE_*` — HSTS, cookies sécurisés, redirection HTTPS | Exposition en clair si le service sort du poste | Étape 4 |
-| `ALLOWED_HOSTS` autorise `.ngrok-free.app` | L'application a été exposée publiquement par tunnel | À retirer dès que la démonstration ne l'exige plus |
-| Aucune route de suppression de compte | Droit d'effacement non exerçable par l'apprenant | Étape 4 |
-| `ExerciseSubmission.ip_address` collectée | Donnée personnelle sans finalité établie | **Suppression du champ** à l'étape 4, et non conservation sous une durée |
+| Aucune route de suppression de compte | Droit d'effacement non exerçable par l'apprenant | Étape 5 |
+| `ExerciseSubmission.ip_address` collectée | Donnée personnelle sans finalité établie | **Suppression du champ** à l'étape 5, et non conservation sous une durée |
 
 Sur ce dernier point : une donnée sans finalité ne se conserve pas. Lui
 attribuer une durée reviendrait à légitimer une collecte qu'aucun besoin ne
