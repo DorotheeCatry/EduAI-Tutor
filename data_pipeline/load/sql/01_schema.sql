@@ -30,7 +30,13 @@
 -- référentiel mais elles portent un libellé et une description, ce qu'un ENUM
 -- ne sait pas transporter.
 
-CREATE TYPE statut_extraction AS ENUM ('succes', 'echec');
+-- Trois valeurs et non deux. « vide » a été ajoutée après coup : la source S4
+-- interroge la base applicative, qui peut légitimement ne contenir aucune
+-- production d'apprenant. Zéro enregistrement y est un état normal, alors que
+-- pour une source externe c'est le symptôme d'une panne. Confondre les deux
+-- obligerait soit à déclarer un échec qui n'en est pas un, soit à affaiblir la
+-- contrainte extraction_succes_non_vide qui protège du cas S1.
+CREATE TYPE statut_extraction AS ENUM ('succes', 'echec', 'vide');
 CREATE TYPE langue_document  AS ENUM ('fr', 'en');
 CREATE TYPE format_fichier   AS ENUM ('md', 'pdf', 'ipynb');
 CREATE TYPE categorie_mot_cle AS ENUM ('tag_source', 'module');
@@ -192,13 +198,21 @@ CREATE TABLE extraction (
     CONSTRAINT extraction_volume_positif  CHECK (nb_enregistrements >= 0),
     CONSTRAINT extraction_erreurs_positif CHECK (nb_erreurs >= 0),
 
-    -- Une extraction ne peut pas réussir en ne produisant rien.
+    -- Une extraction ne peut pas RÉUSSIR en ne produisant rien.
     -- Contrainte tirée d'un incident réel : avant correction, l'extracteur S1
     -- utilisait un filtre d'API qui ne renvoyait ni le corps des questions ni
     -- les réponses. Le bilan annonçait « succes, 0 enregistrement » — un échec
     -- silencieux que cette contrainte aurait transformé en erreur bruyante.
+    -- Voir docs/incidents/2026-08-27-chargement-non-valide.md, § parenté.
     CONSTRAINT extraction_succes_non_vide
-        CHECK (statut = 'echec' OR nb_enregistrements > 0)
+        CHECK (statut <> 'succes' OR nb_enregistrements > 0),
+
+    -- Réciproque : le statut « vide » ne s'emploie que pour un résultat
+    -- effectivement vide. Sans cette contrainte, il deviendrait un moyen
+    -- commode de contourner la précédente, et l'enregistrement d'un
+    -- « succès » redeviendrait invérifiable.
+    CONSTRAINT extraction_vide_sans_donnees
+        CHECK (statut <> 'vide' OR nb_enregistrements = 0)
 );
 
 COMMENT ON TABLE  extraction IS

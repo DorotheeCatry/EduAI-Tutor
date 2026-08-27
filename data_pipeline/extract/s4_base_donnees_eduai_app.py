@@ -106,6 +106,11 @@ class ExtracteurBaseDonneesEduaiApp(ExtracteurBase):
     nom = "s4_base_donnees_eduai_app"
     type_source = "base_donnees"
     licence = "Production des apprenants — usage interne à l'organisme de formation"
+    code_source = "s4"
+
+    #: Une base applicative sans production d'apprenant est un état
+    #: normal, pas une panne : voir docs/decisions/010 et le socle.
+    zero_est_valide = True
 
     def __init__(
         self,

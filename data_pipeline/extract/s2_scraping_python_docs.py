@@ -89,6 +89,7 @@ class ExtracteurPythonDocs(ExtracteurBase):
     nom = "s2_python_docs"
     type_source = "scraping"
     licence = "PSF License Agreement"
+    code_source = "s2"
 
     def __init__(self, pages: tuple[str, ...] = PAGES_DEPART, **kwargs: Any) -> None:
         super().__init__(**kwargs)

@@ -63,6 +63,7 @@ class ExtracteurCorpusLocal(ExtracteurBase):
     nom = "s3_corpus_local"
     type_source = "fichier"
     licence = "voir manifeste de provenance"
+    code_source = "s3"
 
     def __init__(
         self,

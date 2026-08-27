@@ -102,6 +102,7 @@ class ExtracteurBigDataStackExchange(ExtracteurBase):
     nom = "s5_bigdata_stackexchange"
     type_source = "big_data"
     licence = "CC BY-SA 3.0 / 4.0 (attribut ContentLicense par post)"
+    code_source = "s5"
 
     def __init__(
         self,

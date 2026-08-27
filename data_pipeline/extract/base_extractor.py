@@ -92,6 +92,27 @@ class ExtracteurBase(ABC):
     #: consultation des règles de confidentialité et des contraintes de source.
     licence: str = "non documentée"
 
+    #: Code de la source dans `eduai_data` : s1 à s5. Sert à rattacher le
+    #: bilan d'exécution à la table `extraction`.
+    #:
+    #: Choix : un attribut explicite plutôt qu'une déduction depuis `nom`.
+    #: Motivation : renommer un extracteur ne doit pas déplacer silencieusement
+    #: ses exécutions passées sous une autre source.
+    code_source: str = ""
+
+    #: Une extraction sans aucun enregistrement est-elle un état légitime ?
+    #:
+    #: Compétence visée : C21 (épreuve E5)
+    #:
+    #: Choix : la réponse dépend de la source, pas du socle. Motivation : une
+    #: API qui ne renvoie rien signale une panne, une clé expirée ou un filtre
+    #: inadapté — c'est exactement l'incident qu'a connu S1 le 26/08, dont le
+    #: bilan annonçait « succes, 0 enregistrement ». Une base applicative sans
+    #: production d'apprenant, elle, est simplement une base neuve. Par défaut
+    #: le vide est traité comme un échec : c'est le cas le plus fréquent et le
+    #: plus dangereux, et une source qui fait exception doit le déclarer.
+    zero_est_valide: bool = False
+
     def __init__(self, repertoire_sortie: Path | None = None) -> None:
         self.repertoire_sortie = repertoire_sortie or REPERTOIRE_BRUT
         self.fichier_sortie = self.repertoire_sortie / f"{self.nom}.jsonl"
@@ -178,6 +199,34 @@ class ExtracteurBase(ABC):
                 flux.write(self._neutraliser_separateurs(ligne) + "\n")
                 self.compteur_extraits += 1
 
+        # Une extraction stérile ne doit pas détruire la précédente.
+        #
+        # Compétence visée : C21 (épreuve E5)
+        #
+        # Le renommage atomique protège d'une écriture interrompue, pas d'une
+        # exécution qui se termine normalement en ne produisant rien. Or c'est
+        # l'état qu'a connu S1 le 26/08 : un filtre d'API inadapté, zéro
+        # enregistrement, et une sortie valide remplacée par un fichier vide.
+        # La perte serait passée inaperçue, le fichier existant toujours.
+        #
+        # La protection ne s'applique pas aux sources qui déclarent le vide
+        # légitime : pour S4, une base applicative dont toutes les productions
+        # ont dépassé la fenêtre de conservation doit bel et bien produire une
+        # sortie vide, et la figer serait un autre mensonge.
+        precedente_non_vide = (
+            self.fichier_sortie.is_file() and self.fichier_sortie.stat().st_size > 0
+        )
+        if self.compteur_extraits == 0 and precedente_non_vide and not self.zero_est_valide:
+            fichier_temporaire.unlink()
+            logger.error(
+                "[%s] Aucun enregistrement produit alors qu'une sortie "
+                "précédente existe : %s est CONSERVÉ et n'a pas été écrasé. "
+                "Traiter la cause avant de relancer — le corpus n'a pas été "
+                "modifié.",
+                self.nom, self.fichier_sortie,
+            )
+            return self.fichier_sortie
+
         fichier_temporaire.replace(self.fichier_sortie)
         logger.info(
             "[%s] %d enregistrements écrits dans %s",
@@ -251,9 +300,37 @@ class ExtracteurBase(ABC):
         finally:
             self.nettoyer()
 
+        # Une extraction qui ne produit rien n'est pas un succès par défaut.
+        #
+        # Compétence visée : C21 (épreuve E5)
+        #
+        # Le socle ne rendait jusqu'ici que « succes » ou « echec », et « aucune
+        # exception levée » valait succès. C'est ce raisonnement qui a produit
+        # le bilan « succes, 0 enregistrement » de S1 le 26/08 : un filtre d'API
+        # inadapté ne ramenait rien, aucune étape n'échouait, le programme
+        # concluait à la réussite. Il rendait compte de son intention, pas de
+        # son effet.
+        if statut == "succes" and self.compteur_extraits == 0:
+            if self.zero_est_valide:
+                statut = "vide"
+                logger.info(
+                    "[%s] Aucun enregistrement, et cette source déclare le vide "
+                    "comme état légitime : statut « vide ».", self.nom,
+                )
+            else:
+                statut = "echec"
+                logger.error(
+                    "[%s] Aucun enregistrement produit alors que cette source "
+                    "devrait en fournir. Statut « echec » : une extraction ne "
+                    "réussit pas en ne produisant rien. Pistes : filtre ou "
+                    "requête inadaptés, quota atteint, source indisponible.",
+                    self.nom,
+                )
+
         duree = (datetime.now(timezone.utc) - debut).total_seconds()
         bilan = {
             "source": self.nom,
+            "code_source": self.code_source,
             "type_source": self.type_source,
             "licence": self.licence,
             "statut": statut,
@@ -264,7 +341,38 @@ class ExtracteurBase(ABC):
             "horodatage": debut.isoformat(),
         }
         logger.info("[%s] Terminé en %.2f s — %s", self.nom, duree, bilan)
+        self.ecrire_bilan(bilan)
         return bilan
+
+    def ecrire_bilan(self, bilan: dict[str, Any]) -> Path:
+        """
+        Persiste le bilan d'exécution à côté du fichier de sortie.
+
+        Compétence visée : C1 (épreuve E1) — traçabilité de l'extraction
+        Compétence visée : C4 (épreuve E1) — alimentation de la table extraction
+
+        Choix : un fichier de bilan par extracteur, écrit systématiquement.
+        Motivation : la table `extraction` de `eduai_data` porte la traçabilité
+        des campagnes — durée, statut, volumétrie, nombre d'erreurs. Le chargeur
+        ne peut pas la reconstituer depuis le corpus : il verrait le nombre de
+        documents, mais ni la durée réelle, ni les erreurs rencontrées, ni les
+        enregistrements écartés en chemin. Les inventer serait fabriquer une
+        mesure. Le seul qui les connaisse est l'extracteur lui-même, au moment
+        où il termine.
+
+        Choix : un fichier distinct du JSONL plutôt qu'un en-tête dans celui-ci.
+        Motivation : le format JSON Lines repose sur l'équivalence « une ligne =
+        un enregistrement ». Y glisser une ligne de métadonnées la romprait, et
+        tout lecteur du corpus devrait connaître l'exception.
+        """
+        chemin = self.repertoire_sortie / f"{self.nom}.bilan.json"
+        chemin.parent.mkdir(parents=True, exist_ok=True)
+        chemin.write_text(
+            json.dumps(bilan, ensure_ascii=False, indent=2, default=str),
+            encoding="utf-8",
+        )
+        logger.info("[%s] Bilan écrit dans %s", self.nom, chemin)
+        return chemin
 
     def _extraire_avec_gestion_erreurs(self) -> Iterator[Enregistrement]:
         """

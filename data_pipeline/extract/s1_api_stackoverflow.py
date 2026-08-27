@@ -86,6 +86,7 @@ class ExtracteurStackOverflow(ExtracteurBase):
     nom = "s1_stackoverflow"
     type_source = "api_rest"
     licence = "CC BY-SA 4.0"
+    code_source = "s1"
 
     def __init__(self, tags: tuple[str, ...] = TAGS_CIBLES, **kwargs: Any) -> None:
         super().__init__(**kwargs)
