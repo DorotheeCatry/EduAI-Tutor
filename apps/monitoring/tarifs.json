@@ -1,0 +1,43 @@
+{
+  "_lisez_moi": [
+    "Tarifs au million de jetons, par modèle, utilisés pour estimer le coût",
+    "des appels au fournisseur.",
+    "",
+    "IMPORTANT : tant qu'une entrée porte \"a_verifier\": true, la valeur n'a",
+    "PAS été confrontée à la grille tarifaire du fournisseur. Chaque événement",
+    "de monitorage transporte alors ce drapeau, afin qu'un coût non vérifié ne",
+    "puisse pas être présenté comme un chiffre acquis.",
+    "",
+    "Pour vérifier : console Groq, page de tarification du projet. Reporter la",
+    "valeur, puis passer a_verifier à false et noter la date du relevé.",
+    "",
+    "Un modèle absent de cette table donne un coût NUL — et non zéro : un coût",
+    "de zéro se confond avec un appel gratuit, un coût nul se voit."
+  ],
+  "modeles": {
+    "openai/gpt-oss-120b": {
+      "entree_par_million": 0.15,
+      "sortie_par_million": 0.60,
+      "devise": "USD",
+      "a_verifier": true,
+      "releve_le": null
+    },
+    "openai/gpt-oss-20b": {
+      "entree_par_million": 0.10,
+      "sortie_par_million": 0.30,
+      "devise": "USD",
+      "a_verifier": true,
+      "releve_le": null
+    },
+    "qwen/qwen3.6-27b": {
+      "entree_par_million": 0.20,
+      "sortie_par_million": 0.60,
+      "devise": "USD",
+      "a_verifier": true,
+      "releve_le": null
+    },
+    "_modeles_locaux": {
+      "commentaire": "Les modèles servis par Ollama tournent sur la machine : aucun coût fournisseur. Ils sont reconnus par le champ fournisseur de l'événement, pas par cette table."
+    }
+  }
+}

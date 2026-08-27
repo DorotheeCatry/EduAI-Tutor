@@ -6,6 +6,11 @@ from .agent_coach import generate_quiz, generate_code_exercise
 from .agent_watcher import get_watcher_agent
 from django.contrib.auth import get_user_model
 
+# Déclare l'agent courant au monitorage (C20). Sans cette déclaration,
+# les traces portent l'agent « inconnu » et la répartition par agent —
+# celle qui permet d'arbitrer le routage des modèles — manque.
+from apps.monitoring.sondes import sous_agent
+
 User = get_user_model()
 
 class AIOrchestrator:
@@ -20,6 +25,7 @@ class AIOrchestrator:
         if user:
             self.watcher = get_watcher_agent(user)
     
+    @sous_agent("pedagogue")
     def generate_course(self, topic, difficulty="intermediate"):
         """
         Generates a complete course using Researcher + Pedagogue
@@ -93,6 +99,7 @@ class AIOrchestrator:
                 'topic': topic
             }
     
+    @sous_agent("researcher")
     def answer_question(self, question):
         """
         Answers a question using the RAG system
@@ -154,6 +161,7 @@ class AIOrchestrator:
                 'question': question
             }
     
+    @sous_agent("coach")
     def create_quiz(self, topic, num_questions):
         """
         Creates a quiz on a given topic and returns a directly usable dict.

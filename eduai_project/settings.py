@@ -128,7 +128,7 @@ INSTALLED_APPS = [
     'apps.courses',
     'apps.quiz',
     'apps.revision',
-    'apps.agents',
+    'apps.agents.apps.AgentsConfig',
     'apps.chat',
     'apps.rag',
     'apps.tracker',

@@ -259,3 +259,8 @@ data_pipeline/data/
 # Passerelle locale vers docs/cahier-des-charges.md, propre au poste.
 CLAUDE.md
 .claude/
+
+# Journaux de monitorage du service IA (C20). Ils grossissent en continu et
+# relèvent de l'exploitation, pas du code. La commande d'analyse les lit sur
+# la machine ; le dépôt n'en conserve que l'outillage.
+data_pipeline/data/monitorage/
