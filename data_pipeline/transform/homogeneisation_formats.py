@@ -34,9 +34,17 @@ logger = logging.getLogger(__name__)
 #: comptée, qu'une source rattachée par erreur à une licence permissive.
 CODES_LICENCE = {
     "CC BY-SA 4.0": "CC-BY-SA-4.0",
+    # CC BY-SA 3.0 et 4.0 sont deux licences distinctes. Le code a été ajouté
+    # à la nomenclature après que cette couche eut signalé 1 663 documents
+    # sans correspondance — la transformation a servi de contrôle de complétude
+    # de la nomenclature, ce qui n'était pas son objet mais reste utile.
+    "CC BY-SA 3.0": "CC-BY-SA-3.0",
     "PSF License Agreement": "PSF",
     "Propriétaire — autrice du projet": "PROPRIETAIRE",
     "A VERIFIER": "A_VERIFIER",
+    # Source S4. Redistribution interdite : voir 04_donnees_reference.sql.
+    "Production des apprenants — usage interne à l'organisme de formation":
+        "PRODUCTION-APPRENANT",
 }
 
 #: Champs de métadonnées qui décrivent une mesure et non une propriété.

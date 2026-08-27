@@ -50,10 +50,33 @@ INSERT INTO licence (code_licence, libelle, url_texte,
      'https://creativecommons.org/licenses/by-sa/4.0/',
      TRUE, TRUE, NULL),
 
+    -- Ajoutée après coup : la couche de transformation a révélé que 1 663
+    -- documents du corpus la portent, sans qu'aucun code ne leur corresponde.
+    -- CC BY-SA 3.0 et 4.0 sont deux licences distinctes ; les confondre
+    -- ferait redistribuer ces documents sous des conditions qui ne sont pas
+    -- les leurs. Les posts Stack Exchange antérieurs à mai 2018 relèvent de
+    -- la 3.0, ceux publiés ensuite de la 4.0 — l'attribut ContentLicense de
+    -- chaque post fait foi.
+    ('CC-BY-SA-3.0',
+     'Creative Commons Attribution - Partage dans les mêmes conditions 3.0 non transposé',
+     'https://creativecommons.org/licenses/by-sa/3.0/',
+     TRUE, TRUE, NULL),
+
     ('PSF',
      'Python Software Foundation License Agreement',
      'https://docs.python.org/3/license.html',
      TRUE, TRUE, 'Copyright (c) 2001-2026 Python Software Foundation'),
+
+    -- Productions des apprenants (source S4). Redistribution INTERDITE : ces
+    -- documents naissent du travail d'apprenants identifiés dans eduai_app.
+    -- Ils entrent dans le corpus dépouillés de tout identifiant (décision 010),
+    -- ce qui les rend exploitables par le tuteur en interne, mais ne confère
+    -- aucun droit de les publier. Attribution non requise, et de toute façon
+    -- impossible : le corpus ne sait plus qui les a écrits — c'est voulu.
+    ('PRODUCTION-APPRENANT',
+     'Production d''apprenant — usage interne à l''organisme de formation',
+     NULL,
+     FALSE, FALSE, NULL),
 
     ('PROPRIETAIRE',
      'Contenu produit par l''autrice du projet, droits détenus',
@@ -107,7 +130,28 @@ INSERT INTO source (code_source, nom, code_type_source, url_racine,
      'externe. La licence de chaque fichier provient du manifeste '
      'data/contents/provenance.json ; les fichiers non déclarés sont chargés '
      'sous la licence A_VERIFIER plutôt qu''une valeur implicite.',
-     NULL)
+     NULL),
+
+    ('s4', 'Productions des apprenants EduAI Tutor', 'base_donnees',
+     NULL,
+     'Base applicative eduai_app, interrogée en lecture seule. Aucun '
+     'identifiant de personne n''est projeté : user_id sert à la jointure et '
+     'jamais au résultat, et un garde-fou interrompt l''extraction si une '
+     'colonne à caractère personnel apparaît dans une projection. Users, '
+     'adresses IP et adresses électroniques ne sont jamais lus. '
+     'Voir docs/decisions/010.',
+     90),
+
+    ('s5', 'Dumps Stack Exchange', 'big_data',
+     'https://archive.org/details/stackexchange',
+     'Dumps publiés par Stack Exchange sur archive.org, téléchargés puis '
+     'traités hors ligne : aucun accès réseau à l''exécution. Seul Posts.xml '
+     'est lu ; Users.xml, qui ne contient que des données personnelles, est '
+     'refusé par le code. Les attributs OwnerUserId, LastEditorUserId, '
+     'OwnerDisplayName et LastEditorDisplayName ne sont pas projetés. '
+     'Contenu sous CC BY-SA 3.0 ou 4.0 selon la date du post, attribution '
+     'par l''URL. Voir docs/decisions/009.',
+     365)
 
 ON CONFLICT (code_source) DO NOTHING;
 
