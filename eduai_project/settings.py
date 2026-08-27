@@ -56,7 +56,18 @@ if not SECRET_KEY:
     )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#
+# Compétence visée : C13 (épreuve E3) — sécurité de l'application
+#
+# Choix : lecture depuis l'environnement, avec False par défaut. Motivation :
+# DEBUG était codé en dur à True. Une exception survenue hors du poste de
+# développement affichait alors la trace complète, y compris les variables
+# d'environnement — donc la clé secrète et le mot de passe de la base, aux
+# yeux de n'importe quel visiteur.
+#
+# Le défaut est False et non True : une variable oubliée doit dégrader le
+# confort de développement, jamais la sécurité de l'exposition.
+DEBUG = os.environ.get("DJANGO_DEBUG", "False").strip().lower() in ("1", "true", "oui")
 
 # Logging for debug
 LOGGING = {
@@ -80,9 +91,25 @@ LOGGING = {
     },
 }
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.ngrok-free.app']
+# Compétence visée : C13 (épreuve E3)
+#
+# Choix : liste lue depuis l'environnement, la boucle locale seule par défaut.
+# Motivation : le code autorisait « .ngrok-free.app » en dur, trace d'une
+# démonstration exposée par tunnel. Un domaine d'exposition publique inscrit
+# dans un fichier versionné survit à la démonstration qui l'a justifié et
+# personne ne pense plus à le retirer. Il vit désormais dans .env, avec le
+# reste de ce qui dépend de la machine.
+ALLOWED_HOSTS = [
+    hote.strip()
+    for hote in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if hote.strip()
+]
 
-CSRF_TRUSTED_ORIGINS = ['https://*.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = [
+    origine.strip()
+    for origine in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origine.strip()
+]
 
 
 # Application definition
@@ -297,3 +324,49 @@ CHANNEL_LAYERS = {
 }
 
 # Channel layers configuration for WebSockets
+
+# --- Réglages de sécurité du transport ---
+#
+# Compétence visée : C13 (épreuve E3) — sécurité de l'application
+#
+# Choix : ces réglages ne s'activent que lorsque DEBUG vaut False.
+# Motivation : SECURE_SSL_REDIRECT et les cookies sécurisés exigent HTTPS. Le
+# serveur de développement sert en clair sur http://127.0.0.1 ; les activer en
+# permanence rendrait l'application inutilisable en local — et ce qui gêne au
+# quotidien finit par être désactivé globalement plutôt que conditionnellement.
+if not DEBUG:
+    # Redirection systématique vers HTTPS. Sans elle, une première requête en
+    # clair transporte le cookie de session avant toute chance de le protéger.
+    SECURE_SSL_REDIRECT = True
+
+    # HSTS : le navigateur refuse le HTTP pour ce domaine pendant un an, même
+    # si l'utilisateur tape l'adresse à la main. Contre-mesure à l'interception
+    # de la toute première requête, que la seule redirection laisse passer.
+    #
+    # Un an, valeur exigée pour un éventuel préchargement. À n'activer qu'une
+    # fois le certificat en place : un domaine servi en clair devient
+    # inatteignable pour la durée annoncée.
+    SECURE_HSTS_SECONDS = 31_536_000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Les cookies d'authentification et de protection CSRF ne partent plus sur
+    # un canal en clair. Sans ces deux réglages, une seule requête HTTP
+    # résiduelle — une image, une redirection — suffit à divulguer la session.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # Le cookie de session n'est pas joint aux requêtes venues d'un autre site,
+    # sauf navigation de premier niveau : protection CSRF complémentaire.
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
+
+    # Derrière un terminateur TLS (tunnel, proxy inverse), Django voit du HTTP
+    # et SECURE_SSL_REDIRECT boucle indéfiniment. Cet en-tête lui indique de
+    # faire confiance au proxy.
+    #
+    # Activé uniquement sur déclaration explicite : croire cet en-tête sans
+    # proxy devant permettrait à n'importe quel client de l'envoyer lui-même
+    # et de contourner la redirection.
+    if os.environ.get("DJANGO_DERRIERE_PROXY", "False").strip().lower() in ("1", "true", "oui"):
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
