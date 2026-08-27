@@ -129,9 +129,21 @@ class ExtracteurBigDataStackExchange(ExtracteurBase):
         self.domaine = self._resoudre_domaine(self.chemin_dump)
 
         #: Mesures alimentant la justification chiffrée du recours au big data.
+        #:
+        #: `limite` y figure même lorsqu'elle vaut None : un rapport doit dire
+        #: si la sélection a été plafonnée, sans quoi rien ne distingue une
+        #: extraction complète d'un essai tronqué. Les paramètres de sélection
+        #: y figurent pour la même raison — comparer deux mesures suppose de
+        #: pouvoir vérifier qu'elles ont été prises avec les mêmes filtres.
         self.metriques: dict[str, Any] = {
             "dump": str(self.chemin_dump),
             "parquet": str(self.chemin_parquet),
+            "limite": limite,
+            "selection": {
+                "annee_min": annee_min,
+                "score_min": score_min,
+                "taille_min": taille_min,
+            },
         }
 
     # --- 1. Initialisation des dépendances et connexions externes ---
@@ -592,16 +604,43 @@ def ecrire_rapport(extracteur: ExtracteurBigDataStackExchange,
 
     Compétence visée : C20 (épreuve E5) — suivi et mesure d'un traitement
 
-    Choix : un fichier distinct du JSONL, nommé d'après le dump traité.
-    Motivation : c'est la comparaison de deux rapports — dump Data Science
-    contre dump Stack Overflow — qui constitue la justification chiffrée du
-    recours au big data. Écraser le rapport précédent à chaque exécution
-    détruirait précisément ce qu'on cherche à comparer.
+    Choix : un fichier de référence par dump, nommé d'après lui. Motivation :
+    c'est la comparaison de deux rapports — dump Data Science contre dump Stack
+    Overflow — qui constitue la justification chiffrée du recours au big data.
+    Un fichier unique écrasé à chaque exécution détruirait ce qu'on compare.
+
+    Choix : une exécution qui saute la conversion n'écrase PAS le rapport de
+    référence, elle écrit à côté. Motivation : le cas s'est produit deux fois.
+    Relancer l'extraction pour vérifier autre chose remplaçait une mesure
+    complète par une mesure où la conversion vaut 0,00 s — chiffre exact mais
+    trompeur, et en contradiction avec la mesure de référence citée dans
+    `docs/decisions/009`. Un artefact de preuve qui s'écrase à chaque
+    exécution n'est pas une preuve.
     """
     rapport = {**bilan, **extracteur.metriques}
     nom_dump = extracteur.chemin_dump.name
-    chemin = extracteur.repertoire_sortie / f"{extracteur.nom}.{nom_dump}.metriques.json"
-    chemin.parent.mkdir(parents=True, exist_ok=True)
+    # Concaténation et non `with_suffix` : le nom du dump est lui-même un
+    # segment séparé par un point, et `with_suffix` le remplacerait au lieu de
+    # s'y ajouter. Le nom du dump doit survivre — c'est lui qui distingue les
+    # rapports que la mesure comparative confronte.
+    repertoire = extracteur.repertoire_sortie
+    reference = repertoire / f"{extracteur.nom}.{nom_dump}.metriques.json"
+    reference.parent.mkdir(parents=True, exist_ok=True)
+
+    complete = not extracteur.metriques.get("conversion_sautee", False)
+
+    if complete or not reference.is_file():
+        chemin = reference
+    else:
+        # Exécution partielle alors qu'une référence complète existe déjà :
+        # on la préserve et on consigne celle-ci à part.
+        chemin = repertoire / f"{extracteur.nom}.{nom_dump}.derniere_execution.json"
+        logger.info(
+            "Conversion sautée : le rapport de référence %s est préservé.",
+            reference.name,
+        )
+
+    rapport["mesure_complete"] = complete
     chemin.write_text(
         json.dumps(rapport, ensure_ascii=False, indent=2, default=str),
         encoding="utf-8",

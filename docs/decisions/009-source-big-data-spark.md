@@ -100,23 +100,40 @@ Dump Data Science du 07/04/2024, machine à 8 cœurs, mémoire pilote 4 Go :
 
 | Étape | Durée |
 |---|---|
-| Conversion XML vers Parquet | 75,80 s |
-| Requête de volumétrie | 4,86 s |
-| Requête de sélection et écriture | 11,55 s |
-| **Total** | **103,36 s** |
+| Conversion XML vers Parquet | 90,48 s |
+| Requête de sélection et écriture | 13,24 s |
+| **Total** | **120,51 s** |
 
 122,8 Mio de XML, 78 926 posts, 11 partitions annuelles, 49 Mio en Parquet.
-4 948 documents retenus, 0 erreur. Chiffres repris du rapport
-`s5_bigdata_stackexchange.datascience.metriques.json`, régénérable par
-`--forcer-conversion`.
+4 948 documents retenus, 0 erreur, aucun plafond appliqué (`limite: null` au
+rapport). Chiffres repris de
+`s5_bigdata_stackexchange.datascience.metriques.json`.
 
-Deux exécutions successives ont donné 101,73 s et 103,36 s, soit moins de 2 %
-d'écart : la mesure est stable, et l'écart attendu avec le dump Stack Overflow
-se comptera en ordres de grandeur, pas en pourcents.
+**Dispersion des mesures, et sa cause.** Quatre exécutions complètes :
 
-Relance sans `--forcer-conversion` : 42,33 s, conversion sautée, mêmes 4 948
-documents. L'idempotence exigée par C1 est donc vérifiée, et le coût de la
-conversion se paie bien une seule fois.
+| Mesure | Total | Conditions |
+|---|---|---|
+| 1 | 101,73 s | machine au repos |
+| 2 | 103,36 s | machine au repos |
+| 3 | 120,51 s | téléchargement de 11 Gio en cours sur le même disque |
+
+Les deux premières tiennent dans 2 % d'écart. La troisième est 17 % au-dessus,
+et la cause est identifiée : la conversion est dominée par la lecture du XML,
+donc sensible à la contention disque. C'est une observation utile plutôt qu'une
+gêne — elle rappelle que la mesure comparative avec le dump Stack Overflow doit
+être prise machine au repos, sans quoi elle mesurerait l'état du disque autant
+que le volume des données.
+
+Relance sans `--forcer-conversion` : conversion sautée, mêmes 4 948 documents.
+L'idempotence exigée par C1 est vérifiée, et le coût de la conversion se paie
+bien une seule fois.
+
+**Le rapport de référence n'est plus écrasable par une exécution partielle.**
+Une relance qui saute la conversion écrit dans un fichier
+`.derniere_execution.json` distinct. Le cas s'était produit deux fois : une
+relance de contrôle remplaçait la mesure complète par une mesure à conversion
+nulle — chiffre exact mais trompeur, et contredisant ce document. Un artefact
+de preuve qui s'écrase à chaque exécution n'est pas une preuve.
 
 La mesure sur le dump Stack Overflow reste à faire, le téléchargement étant en
 cours. C'est la comparaison des deux qui justifie le recours à un moteur
