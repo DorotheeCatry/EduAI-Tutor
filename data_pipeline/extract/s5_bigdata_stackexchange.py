@@ -681,6 +681,15 @@ def analyser_arguments(argv: list[str] | None = None) -> argparse.Namespace:
         help=f"Destination de la table Parquet (défaut : {PARQUET_PAR_DEFAUT}/<nom du dump>).",
     )
     analyseur.add_argument(
+        "--sortie", type=Path, default=None,
+        help=(
+            "Répertoire du fichier JSONL et du bilan. Par défaut, celui du "
+            "socle d'extraction. À utiliser pour une mesure comparative : sans "
+            "lui, traiter un second dump écrase le corpus produit par le "
+            "premier, les deux fichiers portant le même nom."
+        ),
+    )
+    analyseur.add_argument(
         "--annee-min", type=int, default=2015,
         help="Année de création minimale des questions retenues (défaut : 2015).",
     )
@@ -728,6 +737,7 @@ def main(argv: list[str] | None = None) -> int:
     extracteur = ExtracteurBigDataStackExchange(
         chemin_dump=arguments.dump,
         chemin_parquet=arguments.parquet,
+        repertoire_sortie=arguments.sortie,
         annee_min=arguments.annee_min,
         score_min=arguments.score_min,
         taille_min=arguments.taille_min,
