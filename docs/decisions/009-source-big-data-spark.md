@@ -100,13 +100,23 @@ Dump Data Science du 07/04/2024, machine à 8 cœurs, mémoire pilote 4 Go :
 
 | Étape | Durée |
 |---|---|
-| Conversion XML vers Parquet | 73,94 s |
-| Requête de volumétrie | 4,99 s |
-| Requête de sélection et écriture | 11,43 s |
-| **Total** | **101,73 s** |
+| Conversion XML vers Parquet | 75,80 s |
+| Requête de volumétrie | 4,86 s |
+| Requête de sélection et écriture | 11,55 s |
+| **Total** | **103,36 s** |
 
 122,8 Mio de XML, 78 926 posts, 11 partitions annuelles, 49 Mio en Parquet.
-4 948 documents retenus, 0 erreur.
+4 948 documents retenus, 0 erreur. Chiffres repris du rapport
+`s5_bigdata_stackexchange.datascience.metriques.json`, régénérable par
+`--forcer-conversion`.
+
+Deux exécutions successives ont donné 101,73 s et 103,36 s, soit moins de 2 %
+d'écart : la mesure est stable, et l'écart attendu avec le dump Stack Overflow
+se comptera en ordres de grandeur, pas en pourcents.
+
+Relance sans `--forcer-conversion` : 42,33 s, conversion sautée, mêmes 4 948
+documents. L'idempotence exigée par C1 est donc vérifiée, et le coût de la
+conversion se paie bien une seule fois.
 
 La mesure sur le dump Stack Overflow reste à faire, le téléchargement étant en
 cours. C'est la comparaison des deux qui justifie le recours à un moteur
