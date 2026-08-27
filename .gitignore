@@ -255,3 +255,7 @@ data_pipeline/data/
 # variantes, en gardant le seul modèle sans valeurs.
 .env.*
 !.env.example
+
+# Passerelle locale vers docs/cahier-des-charges.md, propre au poste.
+CLAUDE.md
+.claude/

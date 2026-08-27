@@ -1,4 +1,4 @@
-# docs/cahier-des-charges.md — EduAI Tutor
+# Cahier des charges — EduAI Tutor
 
 ## Contexte et contrainte de temps
 
