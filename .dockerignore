@@ -1,0 +1,39 @@
+# Ce qui n'a pas à entrer dans une image de service.
+#
+# Compétence visée : C13 (épreuve E3) — conteneurisation
+#
+# Sans ce fichier, `COPY . .` embarque l'historique Git, le vector store, les
+# journaux et les données du pipeline : l'image du service IA pesait 10,1 Gio
+# pour 1,2 Gio de contenu utile.
+
+# Historique Git : plusieurs dizaines de mégaoctets, aucun usage à l'exécution.
+.git
+.gitignore
+
+# Environnement virtuel local : l'image reconstruit le sien, aux versions du
+# fichier de verrouillage.
+.venv
+**/__pycache__
+**/*.pyc
+
+# Vector store : monté en volume par docker-compose, en lecture seule. Le
+# copier dans l'image le figerait à la date de construction.
+apps/rag/chroma
+
+# Données du pipeline : dumps, sorties d'extraction, corpus, journaux de
+# monitorage. Le répertoire de monitorage est monté en volume.
+data_pipeline/data
+
+# Fichiers téléversés et statiques collectés : produits à l'exécution.
+media
+staticfiles
+
+# Secrets. Le service les reçoit par l'environnement, jamais par l'image.
+.env
+.env.*
+!.env.example
+
+# Bases locales et artefacts de développement.
+db.sqlite3
+node_modules
+theme/static_src/node_modules
