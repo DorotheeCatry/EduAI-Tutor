@@ -5,7 +5,7 @@
 **Compétence visée :** C21 (épreuve E5) — résolution d'incidents techniques
 **Compétences concernées :** C10 (E3), C20 (E5)
 **Sévérité :** majeure — fonctionnalité entière indisponible
-**État :** résolu partiellement, voir § 7
+**État :** **résolu et clos** — voir § 7
 
 ---
 
@@ -52,7 +52,11 @@ Error: mkdir /media/apprenant/Stockage: permission denied:
 ensure path elements are traversable
 ```
 
-## 4. Diagnostic
+## 4. Diagnostic — deux défauts, pas un
+
+Le diagnostic initial n'a vu qu'une moitié du problème. **Deux défauts distincts se masquaient l'un l'autre** : tant que le premier empêchait le service de démarrer, le second restait invisible.
+
+### Défaut 1 — le chemin n'était pas traversable
 
 Une surcharge systemd déplaçait le magasin de modèles sur la grande partition :
 
@@ -76,17 +80,58 @@ Le service tourne sous l'utilisateur système `ollama`, qui n'est ni `root` ni
 d'exécution, c'est-à-dire le droit de **traverser**. La destination était donc
 inatteignable alors qu'elle était elle-même parfaitement accessible.
 
-C'est le piège de ce diagnostic : vérifier les droits du répertoire cible ne
-révèle rien. Sous Unix, l'accès à un chemin exige le droit de traversée sur
-**chacun** de ses segments, et un point de montage en `drwx------` bloque tout
-utilisateur autre que son propriétaire, quels que soient les droits en dessous.
+C'est le piège de ce premier diagnostic : vérifier les droits du répertoire
+cible ne révèle rien. Sous Unix, l'accès à un chemin exige le droit de traversée
+sur **chacun** de ses segments, et un point de montage en `drwx------` bloque
+tout utilisateur autre que son propriétaire, quels que soient les droits en
+dessous.
+
+### Défaut 2 — la redirection avait déplacé le magasin sans déplacer les données
+
+Une fois le chemin rendu traversable et le service relancé, il démarrait — et ne
+servait rien :
+
+```
+$ curl -s http://127.0.0.1:11434/api/tags
+{"models":[]}
+```
+
+La redirection posée le **26 août** avait changé l'adresse du magasin de modèles
+sans y transporter son contenu. Le service pointait vers un dossier **créé le
+jour même et vide**, tandis que les 3,8 Gio de modèles installés — dont
+`mxbai-embed-large`, sur lequel repose tout le RAG — étaient restés à l'ancienne
+adresse `/usr/share/ollama/.ollama/models`.
+
+Ce second défaut était **indétectable tant que le premier durait** : un service
+qui ne démarre pas ne peut pas révéler que son magasin est vide. C'est ce qui
+donne à cet incident sa forme particulière — on croit avoir fini en corrigeant
+le défaut visible, et on découvre qu'il en cachait un autre, de nature
+différente, sur le même objet.
 
 ## 5. Résolution
+
+En deux temps, un par défaut.
+
+**Défaut 1 — rendre le chemin traversable, puis relancer :**
 
 ```bash
 sudo chmod o+x /media/apprenant /media/apprenant/Stockage
 sudo systemctl restart ollama
 ```
+
+**Défaut 2 — transporter les modèles vers la nouvelle adresse :**
+
+```bash
+sudo rsync -a /usr/share/ollama/.ollama/models/ \
+              /media/apprenant/Stockage/ollama_models/
+sudo rm -rf /usr/share/ollama/.ollama/models
+```
+
+Le déplacement plutôt qu'un retéléchargement : les modèles étaient présents et
+intacts, les rapatrier coûtait une copie locale au lieu de 3,8 Gio de transfert.
+La suppression de l'ancien magasin **a rendu 3,8 Gio à la partition racine**,
+qui était à 75 % d'occupation — un effet de bord bienvenu sur une machine où
+l'espace racine avait déjà bloqué la construction d'une image Docker.
 
 ### Le point qui a coûté du temps
 
@@ -115,33 +160,20 @@ active
 
 Le service démarre et répond sur le port 11434.
 
-## 7. Ce qui n'est pas résolu
-
-**Le magasin de modèles est vide.**
+## 7. Clôture
 
 ```
-$ curl -s http://127.0.0.1:11434/api/tags
-{"models":[]}
+$ ollama list
+qwen3:4b                  2.5 Go
+mxbai-embed-large:latest  0.7 Go
+qwen3.5:4b                3.4 Go
 ```
 
-La surcharge ayant été conservée, le service utilise désormais le répertoire de
-la grande partition — qui n'a jamais servi. Les modèles installés vivent à
-l'ancien emplacement, `/usr/share/ollama/.ollama/models`, où ils occupent
-3,8 Gio : `mxbai-embed-large`, nécessaire au RAG, et `qwen3.5`.
+Les trois modèles répondent à la nouvelle adresse. Le RAG dispose de son modèle
+d'embarquement, et `qwen3:4b` — le quatrième modèle du protocole de comparaison
+C7, resté « non mesuré » faute de service — devient mesurable.
 
-Le service démarre donc, et ne sert rien. **Le RAG reste indisponible tant que
-`mxbai-embed-large` n'est pas présent au nouvel emplacement.**
-
-Deux voies, l'une et l'autre acceptables :
-
-1. Retélécharger les modèles à la nouvelle adresse — `ollama pull
-   mxbai-embed-large`, puis `ollama pull qwen3:4b` pour le benchmark. Simple, et
-   coûte environ 3 Gio de transfert.
-2. Recopier l'ancien magasin vers le nouveau. Plus rapide, mais demande des
-   privilèges : le répertoire de destination appartient à `ollama`.
-
-Un téléchargement était en cours au moment de la rédaction — 907 Mio déjà
-présents à la nouvelle adresse.
+**Incident clos.**
 
 ## 8. Ce que cet incident change
 
@@ -159,6 +191,17 @@ disponibilité des dépendances externes. Un service qui ne démarre pas ne prod
 aucun appel, donc aucune trace, donc aucun taux d'erreur — et le silence se
 confond avec le calme. C'est le pendant exact de l'incident de la sonde muette :
 là, une sonde branchée ne traçait rien ; ici, l'absence de trace ne signale rien.
+
+**Un défaut visible peut en cacher un autre sur le même objet.** C'est
+l'enseignement propre à cet incident, et il ne se confond pas avec les
+précédents. La permission de traversée et le magasin vide portaient tous deux
+sur le magasin de modèles, mais relevaient de causes indépendantes — l'une de
+droits Unix, l'autre d'une migration incomplète datant de deux jours plus tôt.
+La première empêchait d'observer la seconde. Un incident n'est donc pas clos
+quand sa cause identifiée est corrigée : il est clos quand la **fonction** est
+vérifiée de bout en bout. Ici, `systemctl is-active` disait `active` alors que
+le service ne servait rien ; c'est `ollama list`, qui interroge l'effet et non
+l'état, qui l'a montré.
 
 **Piste, non implémentée :** une sonde de disponibilité qui interroge
 périodiquement les dépendances externes — Ollama, Groq, PostgreSQL — et consigne
