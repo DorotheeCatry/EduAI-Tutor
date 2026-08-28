@@ -117,8 +117,9 @@ perdent pas :
 
 | Réserve | Où elle est consignée |
 |---|---|
-| Route d'effacement de compte non implémentée | `rgpd_eduai_data.md`, `analyse_besoin.md` US-8 |
-| Champ `ip_address` d'`ExerciseSubmission` à supprimer | idem |
+| ~~Route d'effacement de compte non implémentée~~ — **levée le 28/08** : route `users:supprimer_compte`, effacement vérifié par relecture de la base et du disque, 9 tests | `rgpd_eduai_data.md` § 8 |
+| ~~Champ `ip_address` à supprimer~~ — **levée le 28/08** : champ supprimé, colonne absente de la base | idem |
+| Cascade sur `GameRoom.host` : effacer un compte emporte les réponses d'autres participants | `rgpd_eduai_data.md`, « écart restant » |
 | Accessibilité définie dans les critères mais non auditée — 7 gabarits sur 28 portent des attributs, 4 déclarent la langue | `analyse_besoin.md` § 6 |
 | Aucune trace d'usage réel : 4 appels au modèle, tous de vérification | `poc_multi_agents.md` § 3.6 |
 | Tarifs du fournisseur non confrontés à la source | `benchmark_modeles.md` § 6 |
