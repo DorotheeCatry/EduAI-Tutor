@@ -161,7 +161,7 @@ def save_course(request):
             )
             
             # Add XP for saving a course
-            xp_result = request.user.add_xp(10, 'course_save')
+            request.user.add_xp(10, 'course_save')
             request.user.total_courses_completed += 1
             request.user.save()
             

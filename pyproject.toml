@@ -39,9 +39,73 @@ dependencies = [
     "slowapi>=0.1.9",
 ]
 
+[tool.pytest.ini_options]
+# Compétence visée : C18 (épreuve E4) — tests automatisés
+#
+# Choix : DJANGO_SETTINGS_MODULE déclaré ici plutôt que dans chaque test. Les
+# agents, les modèles de l'API données et la sonde de monitorage vivent tous
+# dans des applications Django ; les éprouver suppose des réglages chargés.
+DJANGO_SETTINGS_MODULE = "eduai_project.settings"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"
+
+# Choix : des marqueurs déclarés et « --strict-markers ». Motivation : un
+# marqueur mal orthographié devient sinon un test silencieusement non filtré.
+# Les tests d'intégration touchent PostgreSQL, le corpus ou le vector store ;
+# ils se sautent proprement quand la dépendance manque, plutôt que d'échouer
+# en donnant l'impression d'une régression.
+markers = [
+    "integration: exige PostgreSQL et le schéma de eduai_data",
+    "corpus: exige le corpus chargé, non reconstituable en intégration continue",
+    "lent: dépasse quelques secondes",
+]
+
+[tool.ruff]
+# Compétence visée : C18 (épreuve E4) — qualité du code
+line-length = 100
+target-version = "py313"
+extend-exclude = [
+    ".venv", "**/migrations", "theme/static_src", "staticfiles",
+    "data_pipeline/data",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Django et Channels imposent d'appeler get_asgi_application() AVANT d'importer
+# ce qui touche à l'ORM : le registre des applications doit être peuplé. L'ordre
+# des imports y est contraint par le cadre, non par négligence.
+"eduai_project/asgi.py" = ["E402"]
+
+# Trois espaces en fin de ligne y sont situés À L'INTÉRIEUR de prompts
+# multilignes envoyés au modèle. Les retirer modifierait le texte transmis au
+# fournisseur, pas la mise en forme du code : un linter ne distingue pas du
+# code d'un texte d'invite. Ruff les classe d'ailleurs en correction « non
+# sûre », et c'est le bon jugement.
+"apps/exercises/views.py" = ["W291"]
+
+[tool.ruff.lint]
+# Choix : un jeu de règles volontairement restreint. Motivation : le dépôt
+# compte plusieurs milliers de lignes écrites avant l'introduction du linter.
+# Activer tout le catalogue produirait des milliers de signalements, que
+# personne ne lirait — un contrôle qu'on ignore ne contrôle rien. Ces règles-là
+# attrapent ce qui casse : import inutilisé, variable non définie, comparaison
+# douteuse.
+select = ["E4", "E7", "E9", "F", "W291", "W292", "W605"]
+ignore = [
+    # Les modules d'agents importent pour l'effet de bord de l'amorçage Django.
+    "F401",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["apps", "eduai_project"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-django>=4.14.0",
+    "ruff>=0.16.5",
+]

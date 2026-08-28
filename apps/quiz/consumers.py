@@ -119,8 +119,8 @@ class QuizConsumer(AsyncWebsocketConsumer):
     def can_start_game(self):
         try:
             room = GameRoom.objects.get(code=self.room_code)
-            return (room.host == self.user and 
-                    room.status == 'waiting' and 
+            return (room.host == self.user and
+                    room.status == 'waiting' and
                     room.player_count >= 1)  # Allow single player
         except GameRoom.DoesNotExist:
             return False

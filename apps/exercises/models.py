@@ -114,9 +114,9 @@ class UserExerciseProgress(models.Model):
     # Progress
     is_completed = models.BooleanField(default=False)
     best_submission = models.ForeignKey(
-        ExerciseSubmission, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        ExerciseSubmission,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         related_name='best_for_progress'
     )

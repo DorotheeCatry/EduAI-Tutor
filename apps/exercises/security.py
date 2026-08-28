@@ -63,7 +63,6 @@ class SecurePythonExecutor:
         }
         
         # Add functools.wraps directly
-        import functools
         functools_functions = {
             'wraps': functools.wraps,
         }
@@ -252,9 +251,9 @@ if result is not None:
                            ('Exception' in expected_output and actual_exception_type in ['TypeError', 'ValueError', 'Exception']):
                             test_result['passed'] = True
                             test_result['actual'] = expected_output
-                            print(f"   Expected: Error")
-                            print(f"   Got: Error raised correctly")
-                            print(f"   Result: ✅")
+                            print("   Expected: Error")
+                            print("   Got: Error raised correctly")
+                            print("   Result: ✅")
                         else:
                             test_result['error'] = f"Expected error ({expected_output}) but got: {actual_exception_type or 'unknown error'}"
                             print(f"   Error: Expected error but got: {error_msg}")

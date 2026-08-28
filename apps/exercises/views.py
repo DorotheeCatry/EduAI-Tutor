@@ -135,7 +135,7 @@ def submit_code(request, exercise_id):
         test_results = secure_executor.run_tests(submitted_code, exercise.tests)
         
         # Debug: display results
-        print(f"📊 Résultats des tests:")
+        print("📊 Résultats des tests:")
         for result in test_results:
             print(f"  Test {result['test_number']}: {'✅' if result['passed'] else '❌'} - {result.get('error', 'OK')}")
         
@@ -180,7 +180,7 @@ def submit_code(request, exercise_id):
             xp_gained = 20 + (exercise.difficulty == 'advanced' and 10 or 0)
             xp_result = request.user.add_xp(xp_gained, 'exercise_completion')
             
-        elif all_passed and (not progress.best_submission or 
+        elif all_passed and (not progress.best_submission or
                            submission.execution_time < progress.best_submission.execution_time):
             progress.best_submission = submission
         
@@ -413,8 +413,11 @@ def generate_exercise(request):
                             try:
                                 tests_str = '[' + tests_match.group(1) + ']'
                                 tests = json.loads(tests_str)
-                            except:
-                                pass  # Keep default tests
+                            except (json.JSONDecodeError, ValueError) as erreur:
+                                # Exception nommée et journalisée : un « except »
+                                # nu masquait aussi les interruptions clavier et
+                                # les erreurs de programmation.
+                                print(f"⚠️ Tests non analysables, valeurs par défaut conservées : {erreur}")
                         
                         print(f"✅ Manual parsing successful: {title}")
                         
@@ -477,7 +480,7 @@ def generate_exercise(request):
                 
                 messages.warning(request, f'AI generation error. Basic exercise created on "{topic}".')
                 return redirect('exercises:detail', exercise_id=fallback_exercise.id)
-            except Exception as fallback_error:
+            except Exception:
                 messages.error(request, f'Generation error: {str(e)}')
     
     return redirect('exercises:list')
@@ -663,8 +666,9 @@ def generate_exercise_from_course(request):
                         try:
                             tests_str = '[' + tests_match.group(1) + ']'
                             tests = json.loads(tests_str)
-                        except:
-                            pass  # Keep default tests
+                        except (json.JSONDecodeError, ValueError) as erreur:
+                            # Même correction qu'au bloc précédent.
+                            print(f"⚠️ Tests non analysables, valeurs par défaut conservées : {erreur}")
                     
                     print(f"✅ Manual parsing successful: {title}")
                     
@@ -727,7 +731,7 @@ def generate_exercise_from_course(request):
             
             messages.warning(request, f'AI generation error. Basic exercise created on "{topic}".')
             return redirect('exercises:detail', exercise_id=fallback_exercise.id)
-        except Exception as fallback_error:
+        except Exception:
             messages.error(request, f'Generation error: {str(e)}')
     
     return redirect('exercises:list')

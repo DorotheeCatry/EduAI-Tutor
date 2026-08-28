@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -155,7 +155,9 @@ def room_detail(request, room_code):
     
     # Check if user is in room
     try:
-        participant = GameParticipant.objects.get(room=room, user=request.user)
+        # Garde d'accès : la levée de DoesNotExist est l'effet recherché,
+        # l'objet lui-même n'est jamais utilisé.
+        GameParticipant.objects.get(room=room, user=request.user)
     except GameParticipant.DoesNotExist:
         messages.error(request, 'You must join this room to access it.')
         return redirect('quiz:join_room')
@@ -178,7 +180,8 @@ def room_status_api(request, room_code):
         room = get_object_or_404(GameRoom, code=room_code)
         
         # Vérifier que l'utilisateur est dans la room
-        participant = GameParticipant.objects.get(room=room, user=request.user, is_active=True)
+        # Garde d'accès, comme ci-dessus.
+        GameParticipant.objects.get(room=room, user=request.user, is_active=True)
         
         participants = room.participants.filter(is_active=True).order_by('-score', 'joined_at')
         
@@ -230,7 +233,7 @@ def multiplayer_quiz_api(request, room_code):
             print(f"📝 Getting question {room.current_question} for room {room_code}")
             
             current_question = GameQuestion.objects.get(
-                room=room, 
+                room=room,
                 question_number=room.current_question
             )
             
@@ -270,7 +273,7 @@ def multiplayer_quiz_api(request, room_code):
         
         try:
             current_question = GameQuestion.objects.get(
-                room=room, 
+                room=room,
                 question_number=room.current_question
             )
             
@@ -283,7 +286,7 @@ def multiplayer_quiz_api(request, room_code):
             if existing_answer:
                 return JsonResponse({'error': 'Already answered'}, status=400)
             
-            print(f"💾 Creating answer record...")
+            print("💾 Creating answer record...")
             
             # Créer la réponse
             game_answer = GameAnswer.objects.create(
@@ -324,7 +327,7 @@ def multiplayer_quiz_api(request, room_code):
             elif all_answered and room.current_question >= room.num_questions:
                 room.status = 'finished'
                 room.save()
-                print(f"🏁 Game finished!")
+                print("🏁 Game finished!")
             
             return JsonResponse({
                 'success': True,
@@ -338,7 +341,7 @@ def multiplayer_quiz_api(request, room_code):
             })
             
         except GameQuestion.DoesNotExist:
-            print(f"❌ Question not found when submitting answer")
+            print("❌ Question not found when submitting answer")
             return JsonResponse({'error': 'Question not found'}, status=404)
         except Exception as e:
             print(f"❌ Error submitting answer: {e}")

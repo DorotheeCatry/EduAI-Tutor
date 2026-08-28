@@ -1,3 +1,4 @@
+import re
 from importlib.resources import files
 from pathlib import Path
 
@@ -15,9 +16,6 @@ def load_prompt(name: str) -> str:
     except Exception as e:
         raise RuntimeError(f"Error loading prompt '{name}': {e}")
 
-import re
-
-import re
 
 def parse_text_quiz(text):
     """
