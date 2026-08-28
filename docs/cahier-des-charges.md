@@ -44,7 +44,7 @@ refaire ce qui existe.**
 | Chargement (C4) | **En place** — `data_pipeline/load/chargeur.py`, 6 836 documents en base, 1 211 mots-clés, 20 544 rattachements, 0 rejet |
 | Monitorage du service IA (C20) | **En place et en service** — `apps/monitoring/`, JSON Lines hors base, seuils d'alerte, rapport d'analyse |
 | Journal de décisions (C19) | **15 entrées** dans `docs/decisions/` |
-| Dossiers d'incident (C21) | **1 entrée** dans `docs/incidents/` |
+| Dossiers d'incident (C21) | **3 entrées** dans `docs/incidents/` |
 | Pipeline complet | **Bout en bout** — extraction (5 sources) → transformation → chargement, rejouable et idempotent à chaque étape |
 | Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL (schéma dans `data_pipeline/load/sql/`, collecte S4 dans `data_pipeline/extract/sql/`), Spark SQL pour S5 |
 | API données DRF (C5) | **En place** — `apps/api_data`, 7 points de terminaison en lecture seule sur `eduai_data`, 6 753 documents exposés, OpenAPI à `/api/docs/` |
