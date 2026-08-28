@@ -56,7 +56,7 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 |---|---|---|---|---|
 | C6 | Veille technique et réglementaire | **présent** | 2 notes de veille, chacune avec qualification des sources, confrontation au projet et impact concret : l'AI Act appliqué à un tuteur pédagogique, et les approches de récupération postérieures au RAG vectoriel plat | `docs/veille/` |
 | C7 | Comparaison de services d'IA | **vérifié** | Protocole à 6 critères écrit et commité **avant** toute mesure (commit `8cb868f`), puis campagne de 90 appels — 3 modèles × 10 prompts × 3 répétitions, 90 succès. Mesures brutes recalculables, grille de notation en aveugle, décision argumentée | `docs/benchmark_modeles.md`, `docs/benchmark/`, `benchmark/`, décision 016 |
-| C8 | Preuve de concept | **absent** | — | **À produire : `docs/poc_multi_agents.md`.** La matière existe (architecture mesurée, benchmark, traces de monitorage) ; le document qui la présente comme un POC — hypothèse, expérimentation, résultat, décision — n'existe pas |
+| C8 | Preuve de concept | **présent** | Hypothèse formulée telle qu'elle l'était avant la mise en œuvre, périmètre construit et périmètre écarté, résultats repris des mesures existantes, limites constatées, décision. Deux limites énoncées franchement : le journal de production ne contient que 4 appels et 2 recherches, aucun d'usage réel ; et aucune mesure ne compare l'architecture multi-agents à un appel unique — manque chiffré à une heure de machine, proposé comme suite | `docs/poc_multi_agents.md` |
 
 ### Épreuve E3 — service IA, application prototype, monitorage du modèle
 
@@ -64,8 +64,8 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 |---|---|---|---|---|
 | C9 | API REST exposant le service IA | **vérifié** | FastAPI dans un processus séparé de l'API données, 6 points de terminaison (5 POST, 1 GET), authentification par clé en comparaison à temps constant, throttling, validation Pydantic, OpenAPI, conteneur dédié | `service_ia/`, `docs/securite_api_service_ia.md`, décision 015 |
 | C10 | Intégration du modèle dans l'application | **présent** | 4 agents — Researcher, Pedagogue, Coach, Watcher — et un orchestrateur. Routage par agent, identifiants de modèle externalisés en variables d'environnement après la panne du modèle codé en dur. RAG sur ChromaDB | `apps/agents/`, `apps/agents/tools/model_config.py`, décision 001 |
-| C11 | Monitorer un modèle d'IA à partir des métriques courantes et spécifiques au projet, en intégrant les outils de collecte, d'alerte et de restitution | **partiel** | Les **trois volets sont outillés** : collecte (journal JSON Lines, sondes sur les rappels LangChain), alerte (seuils de latence et de taux d'erreur, plancher d'appels, délai de silence), restitution (exposition Prometheus, tableau de bord Grafana provisionné par fichier). Manque le document qui **explique** chaque métrique — c'est le premier critère, et il porte sur l'explication, non sur l'outil | Outils : `apps/monitoring/`, `docker-compose.yml`, décision 014. **À produire : `docs/monitorage_metriques.md`** |
-| C12 | Programmer les tests automatisés d'un modèle d'IA en définissant les règles de validation des jeux de données, des étapes de préparation, d'entraînement, d'évaluation et de validation | **partiel** | 76 tests couvrant la **validation des jeux de données** (intégrité en base, partition totale, comptes par source, filtrage par licence sur trois vecteurs) et la **préparation** (normalisation, homogénéisation, déduplication). Manque le premier critère : une stratégie de test documentée — cas à tester, partie visée, périmètre, couverture visée | Tests : `tests/`. **À produire : `docs/strategie_tests.md`** |
+| C11 | Monitorer un modèle d'IA à partir des métriques courantes et spécifiques au projet, en intégrant les outils de collecte, d'alerte et de restitution | **présent** | Les trois volets sont outillés — collecte, alerte, restitution — **et chaque métrique est expliquée** : ce qu'elle mesure, ce qu'elle ne mesure pas, comment la lire. 14 métriques, dont 5 qui observent l'appareil d'observation lui-même. Les seuils sont justifiés par les valeurs mesurées. Les déclencheurs de réentraînement de l'activité A5 sont déclarés sans objet **avec leur raison**, et ce qui en tient lieu est nommé | `docs/monitorage_metriques.md`, `apps/monitoring/`, décision 014 |
+| C12 | Programmer les tests automatisés d'un modèle d'IA en définissant les règles de validation des jeux de données, des étapes de préparation, d'entraînement, d'évaluation et de validation | **présent** | Stratégie documentée : 76 cas listés par partie visée et par périmètre, avec la règle que chacun défend. Principe directeur — un test éprouve un effet, jamais une intention. Couverture exprimée par obligation plutôt qu'en pourcentage de lignes, avec la raison. Volets entraînement, évaluation et validation de modèle déclarés sans objet **avec leur raison**, et ce qui en tient lieu — la comparaison de modèles C7 — exposé avec sa limite | `docs/strategie_tests.md`, `tests/`, `.github/workflows/` |
 | C13 | Conteneurisation | **vérifié** | Image du service IA construite et vérifiée en intégration continue — contrôle que ni l'historique Git ni le vector store n'y entrent, et que `/app` n'appartient pas à root. `docker-compose.yml` à 4 services, tous en fonctionnement au moment du relevé | `service_ia/Dockerfile`, `.dockerignore`, `docker-compose.yml`, travail `image` de la chaîne |
 
 ---
@@ -97,23 +97,19 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 | État | Compétences | Nombre |
 |---|---|---|
 | **vérifié** | C1, C2, C3, C4, C5, C7, C9, C13, C18, C19, C20, C21 | 12 |
-| **présent** | C6, C10, C17 | 3 |
-| **partiel** | C11, C12, C14, C15 | 4 |
-| **absent** | C8, C16 | 2 |
+| **présent** | C6, C8, C10, C11, C12, C17 | 6 |
+| **partiel** | C14, C15 | 2 |
+| **absent** | C16 | 1 |
 
-**19 compétences sur 21 disposent d'une preuve localisable.** Aucune n'est
-dépourvue de matière : les six lignes qui ne sont pas « vérifié » appellent
-toutes un travail de rédaction, jamais de code nouveau.
+**20 compétences sur 21 disposent d'une preuve localisable.** Il reste trois
+documents à écrire, tous du même chantier — l'épreuve E4.
 
-### Ce qui reste : six documents
+### Ce qui reste : trois documents, tous en E4
 
-La matière existe pour les six ; il manque le document qui la présente.
+C8, C11 et C12 sont écrits. Restent les trois documents de cadrage.
 
 | Compétence | Document à produire | Ce qui manque exactement |
 |---|---|---|
-| C8 | `docs/poc_multi_agents.md` | Le récit du POC : hypothèse, expérimentation, résultat, décision |
-| C11 | `docs/monitorage_metriques.md` | L'**explication** de chaque métrique — le critère porte sur l'interprétation, pas sur l'outil, qui est en place |
-| C12 | `docs/strategie_tests.md` | La stratégie : cas à tester, partie visée, périmètre, couverture visée |
 | C14 | `docs/analyse_besoin.md` | User stories et critères d'acceptation, **accessibilité comprise dans ces critères** |
 | C15 | `docs/cadre_technique.md` | La consolidation : architecture, environnements, outillage, contraintes matérielles |
 | C16 | `docs/demarche_projet.md` | La démarche réellement suivie, et ce qui manque par rapport à une démarche agile complète |

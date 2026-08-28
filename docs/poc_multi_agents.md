@@ -223,7 +223,41 @@ les fragments rendus au lieu du `k` demandé, interroger `ollama list` au lieu d
 | **Corpus RAG partiel** | Arbitrage | 3 index construits sur 11 modules présents ; corpus documentaire non indexé |
 | **Aucune trace d'usage réel** | Factuelle | Voir § 3.6. Rien ne peut être conclu sur le comportement en situation |
 | **Souveraineté non mesurée** | Conséquence d'un incident | Les trois modèles mesurés envoient tous leurs prompts chez un tiers, alors que ceux de l'agent Coach contiennent du code d'apprenant. Le seul modèle qui aurait répondu autrement était en panne pendant la campagne. Le service est réparé depuis ; la mesure reste à faire |
-| **Pas de comparaison à l'alternative** | Méthodologique | Aucune mesure ne compare l'architecture multi-agents à un appel unique. C'est la limite la plus sérieuse au regard de l'hypothèse posée au § 1 |
+| **Pas de comparaison à l'alternative** | Méthodologique | Aucune mesure ne compare l'architecture multi-agents à un appel unique. C'est la limite la plus sérieuse au regard de l'hypothèse posée au § 1 — mais elle est **finançable**, voir § 5 bis |
+
+### 5 bis. La limite principale est finançable
+
+L'absence de comparaison entre l'architecture multi-agents et un appel unique
+est un manque réel. Elle n'est pas pour autant définitive, et il serait
+malhonnête de la présenter comme telle : **elle coûte environ une heure de
+machine libre.**
+
+Le protocole existe déjà. Les dix prompts du benchmark C7 sont figés et
+versionnés ; l'exécuteur sait passer un jeu de prompts sur un modèle donné en
+relevant latence, jetons et coût ; l'analyseur sait en tirer médiane, dispersion
+et coût pour mille requêtes. Ce qui manque est un seul terme de comparaison :
+
+| Bras | Ce qu'on mesure |
+|---|---|
+| **Chaîne complète** | Les dix prompts routés vers leur agent, chacun sur son modèle, avec accès au corpus |
+| **Agent unique** | Les dix mêmes prompts, un seul modèle généraliste, un seul prompt système, sans routage |
+
+Trois répétitions par bras, mêmes paramètres, appels séquentiels : 60 appels, la
+moitié de la campagne déjà réalisée. Les critères mesurés — latence cumulée par
+requête, jetons totaux, coût pour mille requêtes — se lisent directement. Le
+critère de qualité passe par la même grille de notation en aveugle, appliquée
+aux vingt réponses.
+
+**Ce qu'il faut écrire avant de mesurer**, et non après : ce qui compterait
+comme un avantage. Une chaîne à quatre agents fait plus d'appels qu'un agent
+unique ; elle sera donc plus coûteuse en volume brut. L'hypothèse porte sur le
+rapport entre ce surcoût et le gain de qualité et de latence par tâche — c'est
+ce rapport qu'il faut fixer comme critère avant la campagne, exactement comme
+les six critères de C7 ont été fixés avant leur mesure.
+
+Cette mesure est donc **proposée comme suite**, non consignée comme limite
+définitive. Elle est la seule qui puisse répondre à l'hypothèse du § 1, et elle
+tient dans une soirée.
 
 ---
 
@@ -258,14 +292,17 @@ couvrent, et qu'aucune ne la contredit.
    seule réponse au critère de souveraineté.
 4. **Obtenir des traces d'usage réel** avant toute conclusion sur le
    comportement du système en situation.
+5. **Mener la comparaison du § 5 bis** — dix prompts sur un agent unique contre
+   la chaîne complète, une heure de machine libre — pour répondre enfin à
+   l'hypothèse posée au § 1.
 
 ### Ce que cette décision ne prétend pas
 
 Elle ne prétend pas que quatre agents valent mieux qu'un. Cette question, qui
-est celle de l'hypothèse de départ, demanderait une mesure comparative qui n'a
-pas été faite et qui n'entre pas dans le délai restant. **Elle est identifiée,
-non traitée** — et c'est préférable à une conclusion qui aurait l'air d'y
-répondre.
+est celle de l'hypothèse de départ, demanderait la mesure comparative décrite au
+§ 5 bis. **Elle est identifiée et chiffrée, non traitée** — ce qui est préférable
+à une conclusion qui aurait l'air d'y répondre, et honnête quant au fait qu'il
+s'agit d'un report, non d'une impossibilité.
 
 ---
 
