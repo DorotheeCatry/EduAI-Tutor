@@ -69,6 +69,32 @@ REPERTOIRE_REQUETES = Path(__file__).resolve().parent / "sql"
 #: plutôt que de les charger puis de les purger.
 FICHIERS_INTERDITS = {"Users.xml"}
 
+#: Thèmes retenus lors de la conversion, sous forme d'expression régulière.
+#:
+#: Compétence visée : C1 (épreuve E1) — périmètre de collecte
+#:
+#: Choix : filtrer les thèmes AVANT toute extraction, et non après. Motivation :
+#: sur le dump Stack Overflow, l'écrasante majorité des questions ne relève pas
+#: du programme de la formation. Les analyser pour les écarter ensuite revient
+#: à payer le coût d'extraction de tout ce qu'on ne garde pas.
+#:
+#: Les thèmes reprennent le périmètre acté en décision 004 : Python, analyse de
+#: données, SQL, apprentissage automatique, API web et outils de développement.
+#:
+#: Les deux délimiteurs sont acceptés — « |python| » dans les dumps récents,
+#: « <python> » dans les plus anciens — parce que le même code doit produire le
+#: même résultat sur les deux, faute de quoi la comparaison annoncée à l'oral
+#: porterait sur deux traitements différents.
+THEMES_PAR_DEFAUT = (
+    "[<|]("
+    "python|python-3\\.x|pandas|numpy|scipy|matplotlib|"
+    "machine-learning|scikit-learn|tensorflow|keras|pytorch|nlp|"
+    "sql|postgresql|sqlalchemy|"
+    "django|fastapi|flask|rest|api|"
+    "docker|git|pytest|unit-testing"
+    ")[>|]"
+)
+
 #: Correspondance dossier de dump -> domaine, pour reconstruire les URL
 #: d'attribution. Une entrée par site traité ; le repli couvre les autres.
 DOMAINES_STACK_EXCHANGE = {
@@ -118,6 +144,7 @@ class ExtracteurBigDataStackExchange(ExtracteurBase):
         limite: int | None = None,
         forcer_conversion: bool = False,
         memoire_pilote: str = "4g",
+        motif_themes: str = THEMES_PAR_DEFAUT,
     ) -> None:
         super().__init__(repertoire_sortie)
         self.chemin_dump = Path(chemin_dump)
@@ -128,6 +155,7 @@ class ExtracteurBigDataStackExchange(ExtracteurBase):
         self.limite = limite
         self.forcer_conversion = forcer_conversion
         self.memoire_pilote = memoire_pilote
+        self.motif_themes = motif_themes
 
         self.spark = None
         self.domaine = self._resoudre_domaine(self.chemin_dump)
@@ -148,6 +176,9 @@ class ExtracteurBigDataStackExchange(ExtracteurBase):
                 "score_min": score_min,
                 "taille_min": taille_min,
             },
+            # Le périmètre de conversion figure au rapport : deux mesures ne se
+            # comparent que si elles ont retenu les mêmes thèmes.
+            "motif_themes": motif_themes,
         }
 
     # --- 1. Initialisation des dépendances et connexions externes ---
@@ -320,7 +351,10 @@ class ExtracteurBigDataStackExchange(ExtracteurBase):
         lignes.createOrReplaceTempView("posts_brut")
 
         requete = self._lire_requete("s5_conversion_parquet.spark.sql")
-        posts = self.spark.sql(requete)
+        # Paramètre passé à Spark, jamais interpolé dans la chaîne : la requête
+        # reste un fichier exécutable tel quel, et le motif ne peut pas modifier
+        # la structure de la requête.
+        posts = self.spark.sql(requete, args={"motif_themes": self.motif_themes})
 
         (
             posts.write
@@ -713,6 +747,14 @@ def analyser_arguments(argv: list[str] | None = None) -> argparse.Namespace:
         "--memoire-pilote", default="4g",
         help="Mémoire allouée au pilote Spark (défaut : 4g).",
     )
+    analyseur.add_argument(
+        "--themes", default=THEMES_PAR_DEFAUT,
+        help=(
+            "Expression régulière des thèmes retenus, appliquée aux étiquettes "
+            "AVANT toute extraction. Élargir ce motif augmente le volume "
+            "converti ; le restreindre le réduit d'autant."
+        ),
+    )
     return analyseur.parse_args(argv)
 
 
@@ -744,6 +786,7 @@ def main(argv: list[str] | None = None) -> int:
         limite=arguments.limite,
         forcer_conversion=arguments.forcer_conversion,
         memoire_pilote=arguments.memoire_pilote,
+        motif_themes=arguments.themes,
     )
 
     try:
