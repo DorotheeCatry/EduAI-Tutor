@@ -80,7 +80,13 @@ class ExerciseSubmission(models.Model):
     
     # Metadata
     submitted_at = models.DateTimeField(auto_now_add=True)
-    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    # Le champ `ip_address` a été SUPPRIMÉ le 28/08/2026, non conservé avec une
+    # durée de rétention. Une adresse IP est une donnée personnelle au sens du
+    # considérant 26 du RGPD ; sa collecte exigeait une finalité, et aucune
+    # n'était établie — elle n'était lue par aucun code du projet. Une donnée
+    # sans finalité ne se conserve pas, fût-ce brièvement : le principe de
+    # minimisation de l'article 5.1.c porte sur la collecte, pas seulement sur
+    # la durée. Voir docs/rgpd_eduai_data.md.
     
     class Meta:
         ordering = ['-submitted_at']

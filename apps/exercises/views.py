@@ -117,7 +117,6 @@ def submit_code(request, exercise_id):
             exercise=exercise,
             user=request.user,
             submitted_code=submitted_code,
-            ip_address=request.META.get('REMOTE_ADDR')
         )
         
         # Execute tests
