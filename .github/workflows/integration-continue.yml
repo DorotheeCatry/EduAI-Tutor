@@ -1,0 +1,179 @@
+# Intégration continue du projet EduAI Tutor.
+#
+# Compétence visée : C18 (épreuve E4) — tests automatisés en intégration continue
+# Compétence visée : C13 (épreuve E3) — conteneurisation
+#
+# Trois travaux, du plus rapide au plus lent : la qualité du code, les tests, la
+# construction de l'image. Aucun ne porte `continue-on-error` — un contrôle qui
+# ne peut pas faire échouer la chaîne ne contrôle rien.
+#
+# Choix : les trois travaux sont indépendants et s'exécutent en parallèle.
+# Motivation : les enchaîner ferait attendre le résultat du linter pour savoir
+# si les tests passent, alors que les deux réponses sont utiles séparément. Un
+# développeur qui pousse veut voir TOUT ce qui ne va pas, pas la première chose.
+
+name: Intégration continue
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  # Lancement manuel, pour rejouer la chaîne sans avoir à pousser un commit.
+  workflow_dispatch:
+
+env:
+  # Version alignée sur celle du projet (requires-python).
+  PYTHON_VERSION: "3.13"
+
+jobs:
+
+  qualite:
+    name: Qualité du code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Installer les dépendances
+        run: uv sync --frozen --all-extras --dev
+
+      - name: Analyse statique
+        # Le jeu de règles est volontairement restreint et défini dans
+        # pyproject.toml : un contrôle qui signale des milliers de lignes n'est
+        # pas lu, donc ne contrôle rien.
+        run: uv run ruff check .
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Même version majeure que le conteneur du projet : éprouver sur une
+        # autre version ferait passer des tests que la production refuserait.
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: eduai_data
+          POSTGRES_USER: eduai
+          POSTGRES_PASSWORD: motdepasse_integration_continue
+          POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U eduai -d eduai_data"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Secrets d'intégration continue, sans valeur hors de ce contexte : la
+      # base est créée puis détruite avec le travail. Aucun secret réel n'est
+      # nécessaire pour éprouver ce que cette suite éprouve.
+      POSTGRES_DB: eduai_data
+      POSTGRES_USER: eduai
+      POSTGRES_PASSWORD: motdepasse_integration_continue
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5433"
+      DJANGO_DB_NAME: eduai_app
+      DJANGO_SECRET_KEY: cle_django_sans_valeur_hors_integration_continue
+      DJANGO_DEBUG: "False"
+      EDUAI_DATA_PASSWORD: motdepasse_lecture_integration_continue
+      EDUAI_DATA_USER: eduai
+      SERVICE_IA_CLES: cle_service_ia_integration_continue
+      MONITORAGE_ACTIF: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Installer les dépendances
+        run: uv sync --frozen --all-extras --dev
+
+      - name: Installer le client PostgreSQL
+        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+
+      - name: Créer le schéma du jeu de données
+        # Les mêmes scripts que ceux montés dans le conteneur du projet, dans le
+        # même ordre. Les rejouer ici garantit qu'ils restent exécutables : un
+        # schéma qui ne se crée plus depuis zéro n'est pas reproductible, et le
+        # jury doit pouvoir monter le projet à partir du seul dépôt.
+        env:
+          PGPASSWORD: motdepasse_integration_continue
+        run: |
+          set -euo pipefail
+          for script in data_pipeline/load/sql/0[0-4]*.sql; do
+            echo "── $script"
+            psql -h 127.0.0.1 -p 5433 -U eduai -d eduai_data \
+                 -v ON_ERROR_STOP=1 -f "$script"
+          done
+
+      - name: Vérifier que le schéma est complet
+        # Un contrôle qui échoue bruyamment plutôt qu'une suite de tests qui se
+        # sauterait en silence si le schéma n'avait pas été créé.
+        env:
+          PGPASSWORD: motdepasse_integration_continue
+        run: |
+          set -euo pipefail
+          tables=$(psql -h 127.0.0.1 -p 5433 -U eduai -d eduai_data -tAc \
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")
+          echo "tables créées : $tables"
+          test "$tables" -ge 13
+
+      - name: Exécuter la suite de tests
+        # Les tests exigeant le corpus chargé se sautent : reconstituer 6 836
+        # documents ici demanderait les dumps et plusieurs heures. Le saut est
+        # motivé dans le rapport, il ne passe pas inaperçu.
+        run: uv run pytest -v
+
+      - name: Récapitulatif
+        if: always()
+        run: uv run pytest --collect-only -q 2>/dev/null | tail -3
+
+  image:
+    name: Construction de l'image du service IA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Préparer Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construire l'image
+        # Construction seule, sans publication : ce travail vérifie que le
+        # Dockerfile reste valide et que les dépendances s'installent. Publier
+        # supposerait un registre et des identifiants, hors du périmètre.
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: service_ia/Dockerfile
+          push: false
+          tags: eduai/service-ia:integration-continue
+          # Cache porté par le travail : la couche d'installation des
+          # dépendances prend 332 secondes mesurées, et n'a pas à être rejouée
+          # tant que uv.lock ne change pas.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Vérifier ce que l'image embarque
+        # Le .dockerignore a ramené l'image de 10,1 Go à 5,22 Go. Ce contrôle
+        # garde le gain : si l'historique Git ou le vector store réapparaissent
+        # dans l'image, la chaîne échoue au lieu de laisser la taille dériver.
+        run: |
+          set -euo pipefail
+          docker buildx build --load -f service_ia/Dockerfile \
+                 -t eduai/service-ia:controle .
+          docker run --rm --entrypoint sh eduai/service-ia:controle -c '
+            test ! -d /app/.git || { echo "l historique Git est dans l image"; exit 1; }
+            test ! -f /app/apps/rag/chroma/chroma.sqlite3 || { echo "le vector store est dans l image"; exit 1; }
+            test "$(stat -c %U /app)" = "eduai" || { echo "/app n appartient pas au compte sans privilege"; exit 1; }
+            echo "image conforme"
+          '
