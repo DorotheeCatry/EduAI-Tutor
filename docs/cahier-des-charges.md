@@ -49,7 +49,7 @@ refaire ce qui existe.**
 | Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL (schéma dans `data_pipeline/load/sql/`, collecte S4 dans `data_pipeline/extract/sql/`), Spark SQL pour S5 |
 | API données DRF (C5) | **En place** — `apps/api_data`, 7 points de terminaison en lecture seule sur `eduai_data`, 6 753 documents exposés, OpenAPI à `/api/docs/` |
 | API service IA FastAPI (C9) | **En place** — `service_ia/`, 6 points de terminaison, OpenAPI à `/ai/docs`, conteneur déclaré (image non construite) |
-| Tests et CI (C18) | **Absents** — les `tests.py` sont des gabarits vides, aucun workflow GitHub Actions |
+| Tests et CI (C18) | **En place** — 67 tests `pytest`, ruff, et une chaîne GitHub Actions à trois travaux qui échoue visiblement |
 | Matrice de traçabilité | **Absente** |
 
 Ce tableau vieillit. En cas de doute, vérifier l'état réel plutôt que le croire.
