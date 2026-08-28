@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from data_pipeline.extract.base_extractor import Enregistrement, ExtracteurBase
 
 
@@ -191,4 +193,60 @@ def test_les_separateurs_unicode_sont_neutralises(repertoire_temporaire):
     )
     assert json.loads(brut)["contenu"] == contenu, (
         "le contenu doit être restitué à l'identique après relecture"
+    )
+
+
+# --- Garde-fou du corpus S5 -----------------------------------------------
+
+def test_un_dump_non_nominal_refuse_d_ecrire_dans_le_corpus():
+    """
+    Traiter un autre dump sans `--sortie` est refusé, et non toléré.
+
+    Compétence visée : C1 (épreuve E1) — sauvegarde des résultats
+    Compétence visée : C21 (épreuve E5) — non-régression
+
+    Le fichier de sortie et le bilan sont nommés d'après l'EXTRACTEUR, non
+    d'après le dump. Traiter un second dump sans répertoire dédié écrase donc
+    silencieusement le corpus produit par le premier — ce qui s'est produit deux
+    fois avant que le garde-fou n'existe.
+
+    Le corpus S5 du projet est celui de Data Science, 4 948 documents. La mesure
+    sur le dump Stack Overflow complet en a produit 355 113 : la charger
+    multiplierait le corpus par cinquante-trois et changerait le produit sans
+    décision (décision 017).
+
+    Le test appelle le point de lancement avec un dump non nominal et exige le
+    code de retour 2. Aucun fichier n'est touché : le contrôle est fait avant
+    toute lecture du dump, ce qui permet de l'éprouver sur un chemin inexistant.
+    """
+    pytest.importorskip("pyspark", reason="l'extracteur big data importe PySpark")
+    from data_pipeline.extract.s5_bigdata_stackexchange import main
+
+    assert main(["--dump", "/chemin/qui/nexiste/pas"]) == 2, (
+        "un dump non nominal sans --sortie doit être refusé, "
+        "sous peine d'écraser le corpus du projet"
+    )
+
+
+def test_le_dump_nominal_reste_autorise_sans_sortie():
+    """
+    Le garde-fou ne gêne pas l'usage courant.
+
+    Compétence visée : C1 (épreuve E1)
+
+    Un contrôle qui bloquerait aussi le cas nominal serait remplacé par un
+    contournement dès la première gêne. On vérifie donc qu'il laisse passer ce
+    qu'il doit laisser passer, en s'arrêtant à l'analyse des arguments.
+    """
+    pytest.importorskip("pyspark", reason="l'extracteur big data importe PySpark")
+    from data_pipeline.extract.s5_bigdata_stackexchange import (
+        DUMP_PAR_DEFAUT,
+        analyser_arguments,
+    )
+
+    arguments = analyser_arguments([])
+    assert arguments.dump.resolve() == DUMP_PAR_DEFAUT.resolve()
+    assert arguments.sortie is None, (
+        "le cas nominal ne demande pas --sortie : le garde-fou ne doit donc "
+        "pas se déclencher dessus"
     )

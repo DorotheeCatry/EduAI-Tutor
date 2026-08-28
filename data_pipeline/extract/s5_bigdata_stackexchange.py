@@ -776,6 +776,32 @@ def main(argv: list[str] | None = None) -> int:
     )
     arguments = analyser_arguments(argv)
 
+    # --- Garde-fou : un dump non nominal n'écrit pas dans le corpus ---
+    #
+    # Compétence visée : C1 (épreuve E1), C4 (épreuve E1)
+    #
+    # Le fichier de sortie et le bilan sont nommés d'après l'EXTRACTEUR, non
+    # d'après le dump. Traiter un second dump sans `--sortie` écrase donc
+    # silencieusement le corpus produit par le premier. C'est arrivé deux fois.
+    #
+    # Le corpus S5 du projet est celui de Data Science, 4 948 documents. La
+    # mesure sur le dump Stack Overflow complet est une preuve de passage à
+    # l'échelle pour C2 — 355 113 documents — et non une extension du corpus :
+    # la charger multiplierait celui-ci par cinquante-trois et changerait le
+    # produit sans décision. Voir la décision 017.
+    #
+    # Le garde-fou rend l'écrasement impossible plutôt que déconseillé : une
+    # consigne dans une aide en ligne se relit, une erreur de commande à minuit
+    # ne se relit pas.
+    if arguments.dump.resolve() != DUMP_PAR_DEFAUT.resolve() and arguments.sortie is None:
+        logging.getLogger(__name__).error(
+            "Dump non nominal (%s) sans --sortie : refus d'écrire dans le "
+            "corpus du projet, qui serait écrasé. Le corpus S5 est celui de "
+            "%s. Relancer avec --sortie <répertoire dédié>.",
+            arguments.dump, DUMP_PAR_DEFAUT,
+        )
+        return 2
+
     extracteur = ExtracteurBigDataStackExchange(
         chemin_dump=arguments.dump,
         chemin_parquet=arguments.parquet,
