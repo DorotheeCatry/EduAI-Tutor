@@ -76,9 +76,9 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 
 | # | Compétence | État | Preuve | Emplacement |
 |---|---|---|---|---|
-| C14 | Analyse du besoin et spécifications fonctionnelles | **partiel** | La matière existe dans les décisions 004 et 005 — cadre d'usage, public adulte exclusif, parties prenantes, options écartées. Manquent les user stories et leurs critères d'acceptation, **accessibilité comprise dans ces critères** | Matière : décisions 004, 005. **À produire : `docs/analyse_besoin.md`** |
-| C15 | Cadre technique | **partiel** | La matière existe, dispersée dans 16 entrées de décisions et le cahier des charges. Manque le document qui consolide : schéma d'architecture, environnements, outillage, et l'effet des contraintes matérielles réelles sur les choix | Matière : `docs/decisions/`, `docs/cahier-des-charges.md`. **À produire : `docs/cadre_technique.md`** |
-| C16 | Démarche agile | **absent** | Aucune preuve marquée `C16` | **À produire : `docs/demarche_projet.md`.** La démarche réelle est traçable — chantiers, une branche par chantier, marquage des compétences dans les commits, journal de décisions, notes de session — mais elle n'est écrite nulle part comme démarche. Ne pas fabriquer un historique de sprints qui n'a pas eu lieu |
+| C14 | Analyse du besoin et spécifications fonctionnelles | **présent** | Contexte, trois parties prenantes, besoin exprimé et **origine de l'analyse assumée comme de première main** plutôt que déguisée en étude d'usage. Huit user stories avec critères d'acceptation, **l'accessibilité figurant dans ces critères** et non en section séparée. Périmètre livré et périmètre écarté, avec le motif de chaque exclusion | `docs/analyse_besoin.md`, décisions 004, 005, 017 |
+| C15 | Cadre technique | **présent** | Architecture en cinq ensembles, **décrite textuellement avant d'être schématisée** — l'équivalent textuel est la description, non une légende appauvrie. Pile et versions, environnements conteneurisés, intégration continue, secrets, contrôle de version. Contraintes matérielles réelles suivies chacune de la décision qu'elle a produite | `docs/cadre_technique.md`, `docs/decisions/` |
+| C16 | Démarche de gestion de projet | **présent** | Démarche **réellement suivie**, mesurée dans l'historique : 474 commits en deux phases séparées de treize mois, découpage par chantier plutôt que par sprint, 20 branches, 118 des 120 commits récents portant leur compétence, 17 décisions, 4 notes de session. Ce qui manque est énoncé — ni rétrospective formalisée, ni estimation, ni revue par un pair — avec le coût réel de chaque manque | `docs/demarche_projet.md` |
 | C17 | Application intégrant des services d'IA | **présent** | Application Django 5.2 fonctionnelle, 13 pages authentifiées répondant en 200, 16 migrations, bascule de SQLite vers `eduai_app` faite. Générateur de cours, quiz, exercices, flashcards, progression | `apps/`, `eduai_project/`, `templates/` |
 | C18 | Tests automatisés et intégration continue | **vérifié** | 76 tests `pytest` collectés et au vert, dont des contrôles de non-régression rattachés à des incidents précis. Chaîne GitHub Actions à 3 travaux parallèles — qualité, tests sur PostgreSQL réel avec rejeu du schéma, construction et inspection de l'image | `tests/`, `.github/workflows/integration-continue.yml` |
 | C19 | Traçabilité et documentation technique | **vérifié** | 16 entrées de journal de décisions, 4 notes de session, garde-fou Git refusant les commits directs sur `main`, ce document | `docs/decisions/`, `docs/journal/`, `.githooks/pre-commit`, `docs/traceabilite.md` |
@@ -97,16 +97,34 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 | État | Compétences | Nombre |
 |---|---|---|
 | **vérifié** | C1, C2, C3, C4, C5, C7, C9, C13, C18, C19, C20, C21 | 12 |
-| **présent** | C6, C8, C10, C11, C12, C17 | 6 |
-| **partiel** | C14, C15 | 2 |
-| **absent** | C16 | 1 |
+| **vérifié** | 12 compétences | 12 |
+| **présent** | C6, C8, C10, C11, C12, C14, C15, C16, C17 | 9 |
 
-**20 compétences sur 21 disposent d'une preuve localisable.** Il reste trois
-documents à écrire, tous du même chantier — l'épreuve E4.
+**Les 21 compétences disposent d'une preuve localisable.** Aucune ligne n'est en
+« partiel » ni en « absent ».
 
-### Ce qui reste : trois documents, tous en E4
+Cela ne veut pas dire que tout est excellent : « présent » signifie que la preuve
+existe et est localisable, non qu'elle a été rejouée aujourd'hui. Les réserves
+propres à chaque preuve sont dans son document — et plusieurs sont sérieuses,
+notamment l'absence de traces d'usage réel, l'accessibilité définie mais non
+auditée, et les deux écarts RGPD ouverts.
 
-C8, C11 et C12 sont écrits. Restent les trois documents de cadrage.
+### Ce qui reste — non plus des preuves, mais des réserves
+
+Les six documents manquants sont écrits. Ce qui subsiste n'est plus une absence
+de preuve mais une série de réserves à traiter, listées ici pour qu'elles ne se
+perdent pas :
+
+| Réserve | Où elle est consignée |
+|---|---|
+| Route d'effacement de compte non implémentée | `rgpd_eduai_data.md`, `analyse_besoin.md` US-8 |
+| Champ `ip_address` d'`ExerciseSubmission` à supprimer | idem |
+| Accessibilité définie dans les critères mais non auditée — 7 gabarits sur 28 portent des attributs, 4 déclarent la langue | `analyse_besoin.md` § 6 |
+| Aucune trace d'usage réel : 4 appels au modèle, tous de vérification | `poc_multi_agents.md` § 3.6 |
+| Tarifs du fournisseur non confrontés à la source | `benchmark_modeles.md` § 6 |
+| Notation en aveugle de la qualité non faite | `benchmark/notation-aveugle.md` |
+| Corpus documentaire non indexé dans le vector store | `poc_multi_agents.md` § 2.2 |
+| Comparaison multi-agents / agent unique non menée — chiffrée à une heure | `poc_multi_agents.md` § 5 bis |
 
 | Compétence | Document à produire | Ce qui manque exactement |
 |---|---|---|
