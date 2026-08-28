@@ -35,6 +35,8 @@ dependencies = [
     "django-filter>=25.1",
     "drf-spectacular>=0.28",
     "prometheus-client>=0.26.0",
+    "fastapi>=0.115",
+    "slowapi>=0.1.9",
 ]
 
 [build-system]

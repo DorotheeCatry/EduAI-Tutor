@@ -67,6 +67,60 @@ services:
       retries: 10
       start_period: 10s
 
+  # --- API REST du service IA (C9, Bloc 2) ---
+  #
+  # Compétence visée : C9 (épreuve E2) — API REST exposant le service d'IA
+  #
+  # Choix : un conteneur distinct de l'application Django. Motivation : le
+  # référentiel évalue séparément l'API du jeu de données (C5, servie par
+  # Django REST Framework) et celle du service IA (C9, ici en FastAPI). Deux
+  # conteneurs rendent la séparation lisible et évitent qu'une panne de l'un
+  # emporte l'autre. Voir docs/decisions/015.
+  service_ia:
+    build:
+      context: .
+      dockerfile: service_ia/Dockerfile
+    image: eduai/service-ia:1.0.0
+    container_name: eduai_service_ia
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    environment:
+      # Clés de service acceptées. Aucune valeur de repli : le service refuse
+      # tout appel plutôt que d'ouvrir l'accès si la variable manque.
+      SERVICE_IA_CLES: ${SERVICE_IA_CLES:?SERVICE_IA_CLES doit être défini dans .env}
+      SERVICE_IA_QUOTA_GENERATION: ${SERVICE_IA_QUOTA_GENERATION:-30/minute}
+      SERVICE_IA_QUOTA_RECHERCHE: ${SERVICE_IA_QUOTA_RECHERCHE:-120/minute}
+      SERVICE_IA_CONCURRENCE_MAX: ${SERVICE_IA_CONCURRENCE_MAX:-4}
+      # Le service amorce Django pour réutiliser les agents : il lui faut donc
+      # les réglages de l'application.
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY doit être défini dans .env}
+      DJANGO_DEBUG: "False"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD doit être défini dans .env}
+      POSTGRES_USER: ${POSTGRES_USER:-eduai}
+      POSTGRES_DB: ${POSTGRES_DB:-eduai_data}
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: ${POSTGRES_PORT:-5433}
+      DJANGO_DB_NAME: ${DJANGO_DB_NAME:-eduai_app}
+      EDUAI_DATA_PASSWORD: ${EDUAI_DATA_PASSWORD:?EDUAI_DATA_PASSWORD doit être défini dans .env}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://127.0.0.1:11434}
+      # Le journal de monitorage est partagé avec le reste du projet : les
+      # traces du service IA et celles du pipeline se lisent au même endroit.
+      MONITORAGE_REPERTOIRE: /app/data_pipeline/data/monitorage
+
+    volumes:
+      # Le corpus vectoriel et les journaux vivent hors de l'image : ils
+      # changent sans qu'on reconstruise, et survivent au conteneur.
+      - ./apps/rag/chroma:/app/apps/rag/chroma:ro
+      - ./data_pipeline/data/monitorage:/app/data_pipeline/data/monitorage
+
+    # Même réseau que le collecteur et PostgreSQL, qui n'écoutent que sur la
+    # boucle locale. Le service y est joignable en 127.0.0.1:8100.
+    network_mode: host
+
   # --- Collecteur de métriques (C20, épreuve E5) ---
   #
   # Compétence visée : C20 (épreuve E5) — monitorage du service en production

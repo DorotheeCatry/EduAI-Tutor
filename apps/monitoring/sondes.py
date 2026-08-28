@@ -507,8 +507,26 @@ def _horloge() -> float:
 sonde = SondeServiceIA()
 
 #: Variable de contexte lue par le point d'accroche global de LangChain.
+#:
+#: Choix : la sonde est la VALEUR PAR DÉFAUT de la variable, et non une valeur
+#: posée par `set()` au démarrage.
+#:
+#: Motivation : une variable de contexte posée par `set()` n'est visible que
+#: dans le contexte qui l'a posée et dans ceux qui en dérivent. Or chaque
+#: requête HTTP s'exécute dans sa propre tâche asyncio — sous FastAPI — ou dans
+#: son propre fil — sous WSGI. Aucune n'hérite du contexte du démarrage. La
+#: sonde paraissait donc branchée, l'annonçait dans les journaux, et ne traçait
+#: aucun appel de requête.
+#:
+#: Le défaut a été constaté sur le service IA : un appel de recherche aboutit
+#: en erreur, la réponse HTTP est correcte, et rien n'apparaît au journal de
+#: monitorage. C'est exactement le motif que ce paquet existe pour détecter —
+#: un composant qui se déclare opérationnel sans produire d'effet.
+#:
+#: Une valeur par défaut, elle, est lue par tout contexte, quel que soit le fil
+#: ou la tâche qui l'interroge.
 _sonde_active: ContextVar[SondeServiceIA | None] = ContextVar(
-    "sonde_monitorage", default=None,
+    "sonde_monitorage", default=sonde,
 )
 
 _installee = False
@@ -553,7 +571,10 @@ def installer() -> bool:
 
     try:
         register_configure_hook(_sonde_active, inheritable=True)
-        _sonde_active.set(sonde)
+        # Aucun `set()` : la sonde est déjà la valeur par défaut de la variable,
+        # donc visible depuis tout fil et toute tâche. Un `set()` ici ne
+        # porterait que sur le contexte du démarrage — voir le commentaire de
+        # `_sonde_active`.
         _installee = True
         journal.ecrire({
             "type": "demarrage_monitorage",
