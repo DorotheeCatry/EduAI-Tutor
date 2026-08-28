@@ -17,8 +17,12 @@ unique surpaie les tâches simples et bride les tâches complexes.
 
 Choix : bascule Ollama en repli. Motivation double — continuité de service en
 cas d'indisponibilité du fournisseur (Groq a connu des interruptions), et
-possibilité de traiter en local des données d'apprenants potentiellement
-mineurs sans transfert à un tiers (cf. RGPD, C4).
+souveraineté des données, les prompts de l'agent Coach contenant du code
+d'apprenant — une production personnelle rattachable à une personne identifiée
+(cf. docs/rgpd_eduai_data.md, C4). Le public visé est exclusivement adulte
+(décisions 004 et 005) : le repli local ne se justifie donc pas par la
+protection des mineurs, mais par le fait que ces prompts n'ont pas à sortir de
+la machine.
 """
 
 import logging
