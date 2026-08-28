@@ -436,7 +436,7 @@ def main() -> int:
 
     # Le contrôle final confronte l'effet au but. Sans lui, ce module
     # rapporterait un succès sans savoir ce qu'il a produit — le motif que ce
-    # projet documente depuis huit incidents.
+    # projet documente dans ses dossiers d'incident.
     if not options.limite and presents != len(attendus):
         logger.error(
             "la collection contient %d fragments pour %d attendus : "

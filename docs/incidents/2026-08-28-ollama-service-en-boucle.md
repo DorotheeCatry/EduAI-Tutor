@@ -144,7 +144,7 @@ Il ne relit pas l'état du système entre deux essais : il reprend là où il en
 explicitement, la correction est appliquée au système mais pas au processus qui
 la subit.
 
-C'est une variante du motif que ce projet documente depuis huit incidents. Les
+C'est une variante du motif que ce projet documente dans ses dossiers d'incident. Les
 précédents portaient sur un rapport de succès qui ne correspondait à rien ; ici,
 c'est l'inverse et c'est le même mécanisme — **une correction réelle qui ne
 produit aucun effet observable**, parce que rien n'a relu l'état corrigé. Dans

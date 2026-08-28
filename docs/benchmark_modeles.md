@@ -131,7 +131,7 @@ faite, le critère 3 est établi **en jetons**, qui sont mesurés, et non en
 monnaie, qui est déduite.
 
 Un coût plausible et faux serait pire qu'un coût absent : c'est le motif que ce
-projet documente depuis sept incidents.
+projet documente dans ses dossiers d'incident.
 
 ## 7. Mesures
 

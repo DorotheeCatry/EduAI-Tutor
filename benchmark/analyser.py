@@ -190,7 +190,7 @@ def latences_par_agent(mesures: list[dict]) -> dict[tuple[str, str], dict]:
 # illisible — sont traités dans `charger` : le premier lève avec le remède, le
 # second compte les lignes perdues plutôt que de les ignorer. Un tableau
 # construit sur un fichier tronqué sans le dire reproduirait le motif que ce
-# projet documente depuis huit incidents.
+# projet documente dans ses dossiers d'incident.
 
 
 # --- 4. Sauvegarde des résultats ------------------------------------------
