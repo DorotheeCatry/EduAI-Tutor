@@ -282,6 +282,9 @@ def main() -> int:
                            help="vide la collection avant d'indexer")
     analyseur.add_argument("--a-blanc", action="store_true",
                            help="ne rien écrire ; annoncer ce qui serait fait")
+    analyseur.add_argument("--reembarquer", action="store_true",
+                           help="réembarquer les fragments déjà présents "
+                                "(par défaut ils sont sautés)")
     options = analyseur.parse_args()
 
     debut = time.perf_counter()
@@ -321,6 +324,7 @@ def main() -> int:
     ecrits = 0
     documents_vus = 0
     echecs = 0
+    sautes = 0
 
     def verser() -> int:
         """
@@ -377,6 +381,20 @@ def main() -> int:
 
         for identifiant, texte, metadonnees in fragments:
             attendus.add(identifiant)
+
+            # Reprise après interruption. Le fragment déjà présent porte le
+            # même identifiant déterministe et le même contenu : le réembarquer
+            # coûterait un appel au modèle pour un résultat identique.
+            #
+            # Ce n'est pas une optimisation de confort. L'embarquement local
+            # mesuré sur cette machine traite environ vingt fragments par
+            # minute ; le corpus en compte près de vingt-trois mille, soit plus
+            # de seize heures. Un traitement de cette durée SERA interrompu — et
+            # sans reprise, chaque interruption ramènerait à zéro.
+            if identifiant in connus and not options.reembarquer:
+                sautes += 1
+                continue
+
             lot_ids.append(identifiant)
             lot_textes.append(texte)
             lot_metadonnees.append(metadonnees)
@@ -394,8 +412,8 @@ def main() -> int:
                                  type(exception).__name__, str(exception)[:200])
 
         if documents_vus % 250 == 0:
-            logger.info("  %d documents parcourus, %d fragments versés",
-                        documents_vus, ecrits)
+            logger.info("  %d documents parcourus, %d fragments versés, %d sautés",
+                        documents_vus, ecrits, sautes)
 
     try:
         ecrits += verser()
@@ -424,6 +442,7 @@ def main() -> int:
     logger.info("documents diffusables parcourus : %d", documents_vus)
     logger.info("fragments attendus              : %d", len(attendus))
     logger.info("fragments versés                : %d", ecrits)
+    logger.info("fragments sautés (déjà présents): %d", sautes)
     logger.info("fragments retirés               : %d", retires)
     logger.info("échecs                          : %d", echecs)
     logger.info("fragments dans la collection    : %d", presents)
