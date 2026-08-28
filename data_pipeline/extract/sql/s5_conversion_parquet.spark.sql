@@ -91,12 +91,48 @@
  * - Les entités XML sont décodées ici, sur les seules lignes retenues, et non
  *   en Python sur la totalité.
  *
- * CE QUI RESTE À MESURER
- * Ces trois changements sont raisonnés, non mesurés : la machine traite encore
- * l'ancienne version. Le gain doit être constaté sur le dump Data Science —
- * dont la mesure de référence est connue, 76 s de conversion — avant tout
- * lancement sur les 97 Gio. Annoncer un gain non mesuré serait exactement le
- * travers que ce projet documente depuis cinq incidents.
+ * GAIN MESURÉ
+ * À données identiques et périmètre identique — dump Data Science, 123 Mio :
+ *
+ *     ancienne version (xpath_string ×13) ....... 75,80 s
+ *     nouvelle version (filtre puis regex) ...... 35,03 s   soit x2,2
+ *
+ * Le facteur est modeste à ce volume : l'amorçage de Spark, une quinzaine de
+ * secondes, y pèse davantage que le traitement lui-même.
+ *
+ * À l'échelle, trois points de mesure sur des sous-ensembles du dump Stack
+ * Overflow, machine libre :
+ *
+ *     volume     conversion   débit        sélection   documents
+ *     123 Mio      35,03 s     3,5 Mio/s     10,75 s       4 948
+ *     1,9 Gio      76,96 s      25 Mio/s     25,69 s      20 707
+ *     9,4 Gio     226,24 s      42 Mio/s     77,34 s      88 799
+ *
+ * Le débit CROÎT avec le volume : le coût fixe d'amorçage s'amortit.
+ *
+ * Comparaison à grande échelle : l'ancienne version a traité 6,0 Gio en
+ * 14 h 19, soit 0,12 Mio/s, avant d'être arrêtée — projection de trois semaines
+ * sur les 97 Gio. La nouvelle tient 42 Mio/s, soit environ 40 min de conversion
+ * projetées. Rapport de l'ordre de 350.
+ *
+ * Ce dernier chiffre est une PROJECTION à partir d'un débit constaté, non la
+ * comparaison de deux exécutions achevées : l'ancienne version n'a jamais
+ * terminé. Le seul rapport mesuré de bout en bout sur les mêmes données est
+ * celui de 2,2 ci-dessus.
+ *
+ * FIDÉLITÉ VÉRIFIÉE
+ * Rejeu sur le dump Data Science à périmètre constant : 4 948 documents des
+ * deux côtés, aucun identifiant manquant ni en trop, aucun écart sur le titre,
+ * l'URL, la licence, la langue, les mots-clés ni les métadonnées.
+ *
+ * Un seul écart de contenu, sur 4 948 : trois tabulations là où l'ancienne
+ * version rendait trois espaces. La norme XML impose à un analyseur conforme de
+ * remplacer les tabulations d'une valeur d'attribut par des espaces ;
+ * `xpath_string` l'appliquait, l'extraction par expression régulière rend les
+ * octets d'origine. L'écart est CONSERVÉ à dessein : le corpus est un corpus de
+ * code, où l'indentation porte du sens.
+ *
+ * Voir docs/incidents/2026-08-28-conversion-spark-non-scalable.md.
  *
  * PARAMÈTRES
  * :motif_themes  expression régulière des thèmes retenus, appliquée aux
