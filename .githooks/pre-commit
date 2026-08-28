@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#
+# Refuse tout commit direct sur la branche d'intégration.
+#
+# Compétence visée : C19 (épreuve E4) — traçabilité du travail
+#
+# Le cahier des charges interdit les commits directs sur `main`. La règle a
+# pourtant été enfreinte le 28/08/2026 : treize commits y sont allés d'affilée.
+# Le manquement n'était pas un oubli de la règle mais du MOMENT de
+# l'appliquer — une fusion demandée laisse `main` comme branche courante, et le
+# chantier suivant démarre dessus sans qu'on y pense.
+#
+# Ce projet applique partout le même principe : une règle qui ne vit que dans la
+# documentation ne survit pas à une modification distraite. Celle-ci vit
+# désormais dans un contrôle qui s'exécute.
+#
+# Ce que ce contrôle NE bloque PAS :
+#   - les commits de fusion, qui passent par le crochet pre-merge-commit et sont
+#     le moyen normal de porter un chantier dans `main` ;
+#   - un correctif urgent explicitement voulu, via la variable d'échappement
+#     documentée plus bas.
+#
+# Activation, une fois par copie du dépôt :
+#     git config core.hooksPath .githooks
+
+set -euo pipefail
+
+BRANCHE_COURANTE="$(git rev-parse --abbrev-ref HEAD)"
+BRANCHES_PROTEGEES="main master"
+
+for protegee in $BRANCHES_PROTEGEES; do
+    if [ "$BRANCHE_COURANTE" = "$protegee" ]; then
+
+        # Échappement explicite, pour le correctif urgent que le cahier des
+        # charges autorise. Il doit être TAPÉ, donc voulu : c'est toute la
+        # différence avec une règle qu'on enfreint sans s'en apercevoir.
+        if [ "${AUTORISER_COMMIT_MAIN:-}" = "1" ]; then
+            echo "⚠️  Commit direct sur « $protegee », autorisé explicitement." >&2
+            exit 0
+        fi
+
+        cat >&2 <<MESSAGE
+
+❌  Commit refusé : vous êtes sur « $protegee ».
+
+    Le cahier des charges du projet interdit les commits directs sur la
+    branche d'intégration. Un chantier vit sur sa propre branche, et n'entre
+    dans « $protegee » que par une fusion, une fois testé et fonctionnel.
+
+    Créer la branche du chantier en cours :
+
+        git checkout -b <type>/<bloc>-<sujet>
+
+    Types : feat, fix, docs, test, refactor, chore, perf
+    Exemples : feat/bloc2-api-service-ia, perf/bloc1-mesure-comparative-c2
+
+    Le travail déjà indexé suivra sur la nouvelle branche : rien n'est perdu.
+
+    Correctif urgent réellement voulu :
+
+        AUTORISER_COMMIT_MAIN=1 git commit ...
+
+MESSAGE
+        exit 1
+    fi
+done
+
+exit 0
