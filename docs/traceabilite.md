@@ -64,8 +64,8 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 |---|---|---|---|---|
 | C9 | API REST exposant le service IA | **vérifié** | FastAPI dans un processus séparé de l'API données, 6 points de terminaison (5 POST, 1 GET), authentification par clé en comparaison à temps constant, throttling, validation Pydantic, OpenAPI, conteneur dédié | `service_ia/`, `docs/securite_api_service_ia.md`, décision 015 |
 | C10 | Intégration du modèle dans l'application | **présent** | 4 agents — Researcher, Pedagogue, Coach, Watcher — et un orchestrateur. Routage par agent, identifiants de modèle externalisés en variables d'environnement après la panne du modèle codé en dur. RAG sur ChromaDB | `apps/agents/`, `apps/agents/tools/model_config.py`, décision 001 |
-| C11 | *Groupe « monitorage du modèle IA / CI-CD » du schéma* | **absent** | Aucune preuve marquée `C11` dans le dépôt | **Libellé exact à récupérer dans le référentiel complet.** `apps/monitoring/` trace déjà les appels au modèle — agent, latence, jetons, coût, issue — et pourrait couvrir la part « monitorage ». Le revendiquer sans connaître le libellé serait une surinterprétation |
-| C12 | *Groupe « monitorage du modèle IA / CI-CD » du schéma* | **absent** | Aucune preuve marquée `C12` dans le dépôt | **Libellé exact à récupérer.** Même remarque que C11 |
+| C11 | Monitorer un modèle d'IA à partir des métriques courantes et spécifiques au projet, en intégrant les outils de collecte, d'alerte et de restitution | **partiel** | Les **trois volets sont outillés** : collecte (journal JSON Lines, sondes sur les rappels LangChain), alerte (seuils de latence et de taux d'erreur, plancher d'appels, délai de silence), restitution (exposition Prometheus, tableau de bord Grafana provisionné par fichier). Manque le document qui **explique** chaque métrique — c'est le premier critère, et il porte sur l'explication, non sur l'outil | Outils : `apps/monitoring/`, `docker-compose.yml`, décision 014. **À produire : `docs/monitorage_metriques.md`** |
+| C12 | Programmer les tests automatisés d'un modèle d'IA en définissant les règles de validation des jeux de données, des étapes de préparation, d'entraînement, d'évaluation et de validation | **partiel** | 76 tests couvrant la **validation des jeux de données** (intégrité en base, partition totale, comptes par source, filtrage par licence sur trois vecteurs) et la **préparation** (normalisation, homogénéisation, déduplication). Manque le premier critère : une stratégie de test documentée — cas à tester, partie visée, périmètre, couverture visée | Tests : `tests/`. **À produire : `docs/strategie_tests.md`** |
 | C13 | Conteneurisation | **vérifié** | Image du service IA construite et vérifiée en intégration continue — contrôle que ni l'historique Git ni le vector store n'y entrent, et que `/app` n'appartient pas à root. `docker-compose.yml` à 4 services, tous en fonctionnement au moment du relevé | `service_ia/Dockerfile`, `.dockerignore`, `docker-compose.yml`, travail `image` de la chaîne |
 
 ---
@@ -98,41 +98,59 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 |---|---|---|
 | **vérifié** | C1, C2, C3, C4, C5, C7, C9, C13, C18, C19, C20, C21 | 12 |
 | **présent** | C6, C10, C17 | 3 |
-| **partiel** | C14, C15 | 2 |
-| **absent** | C8, C11, C12, C16 | 4 |
+| **partiel** | C11, C12, C14, C15 | 4 |
+| **absent** | C8, C16 | 2 |
 
-**17 compétences sur 21 disposent d'une preuve localisable.** Quatre n'en ont
-pas, et elles se répartissent en deux natures très différentes.
+**19 compétences sur 21 disposent d'une preuve localisable.** Aucune n'est
+dépourvue de matière : les six lignes qui ne sont pas « vérifié » appellent
+toutes un travail de rédaction, jamais de code nouveau.
 
-### Ce qui est un travail de rédaction
+### Ce qui reste : six documents
 
-**C8, C14, C15, C16.** La matière existe pour les quatre ; il manque le document
-qui la présente. Ce sont des chantiers de documentation, pas de code, et ils
-sont planifiables :
+La matière existe pour les six ; il manque le document qui la présente.
 
-- C8 — `docs/poc_multi_agents.md`
-- C14 — `docs/analyse_besoin.md`
-- C15 — `docs/cadre_technique.md`
-- C16 — `docs/demarche_projet.md`
+| Compétence | Document à produire | Ce qui manque exactement |
+|---|---|---|
+| C8 | `docs/poc_multi_agents.md` | Le récit du POC : hypothèse, expérimentation, résultat, décision |
+| C11 | `docs/monitorage_metriques.md` | L'**explication** de chaque métrique — le critère porte sur l'interprétation, pas sur l'outil, qui est en place |
+| C12 | `docs/strategie_tests.md` | La stratégie : cas à tester, partie visée, périmètre, couverture visée |
+| C14 | `docs/analyse_besoin.md` | User stories et critères d'acceptation, **accessibilité comprise dans ces critères** |
+| C15 | `docs/cadre_technique.md` | La consolidation : architecture, environnements, outillage, contraintes matérielles |
+| C16 | `docs/demarche_projet.md` | La démarche réellement suivie, et ce qui manque par rapport à une démarche agile complète |
 
-### Ce qui demande une information que je n'ai pas
+Deux précisions que les libellés imposent et qu'il serait facile de manquer.
 
-**C11 et C12.** Le référentiel versionné dans `reference/` ne contient que le
-schéma des épreuves : il place C11, C12 et C13 dans un même groupe intitulé
-« Monitoring modèle IA / CI-CD », sans donner le libellé de chacune. C13 est
-couverte, identifiée comme la conteneurisation. Pour C11 et C12, je ne peux pas
-dire ce qui compte comme preuve sans le libellé.
+**C11 est un critère d'explication.** « Les métriques sont expliquées sans erreur
+d'interprétation » ne se démontre pas en montrant un tableau de bord : il se
+démontre en disant ce que chaque métrique mesure, ce qu'elle ne mesure pas, et
+ce qu'on en conclut. L'activité A5 mentionne aussi « les éventuels déclencheurs
+pour le réentraînement » — à traiter, y compris pour dire qu'ils sont sans objet
+ici et pourquoi.
 
-C'est une case vide **de nature différente** des quatre précédentes : elle ne se
-comble pas en écrivant, elle se comble en lisant le référentiel complet. Tant
-qu'elle n'est pas levée, il est possible que `apps/monitoring/` couvre déjà la
-part « monitorage du modèle » — le module trace agent, modèle, latence, jetons,
-coût et issue de chaque appel — et que seule la part « CI-CD du service IA »
-manque. Mais l'affirmer serait exactement la surinterprétation que ce projet
-s'interdit.
+**C12 comporte des volets sans objet dans ce projet.** Le libellé couvre
+l'entraînement, l'évaluation et la validation d'un modèle. **EduAI Tutor
+n'entraîne aucun modèle** : il intègre des modèles servis par un tiers ou en
+local. Ces volets doivent être déclarés sans objet **explicitement**, avec la
+raison — une section vide se lit comme un oubli, une section qui dit « sans
+objet, car le projet n'entraîne pas de modèle » se lit comme une analyse.
 
-**Action : récupérer les libellés de C11 et C12, puis reprendre ces deux
-lignes.** C'est la seule tâche de cette liste qui ne dépend pas de moi.
+### Ce que la première version de ce document ne pouvait pas dire
+
+Au premier relevé, C11 et C12 étaient portées « absentes ». Le référentiel
+versionné dans `reference/` ne contient que le schéma des épreuves : il place
+C11, C12 et C13 dans un groupe intitulé « Monitoring modèle IA / CI-CD » sans
+donner le libellé de chacune, et il était impossible de dire ce qui comptait
+comme preuve.
+
+Les libellés relevés dans le référentiel complet — pages 12 et 14 — ont fait
+passer les deux lignes d'« absent » à « partiel » **sans qu'une ligne de code
+ait été écrite**. La preuve était là ; c'est le critère qui manquait pour la
+reconnaître.
+
+Cela vaut d'être noté, parce que l'erreur inverse est plus courante : conclure
+qu'une compétence est couverte parce qu'on a construit quelque chose qui lui
+ressemble. Ici, la vérification a joué dans les deux sens — elle a révélé des
+trous au premier passage, et refermé deux fausses alertes au second.
 
 ---
 
