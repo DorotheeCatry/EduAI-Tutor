@@ -247,16 +247,88 @@ peut pas prouver n'est pas un effacement.
 | Contrôle de déploiement au vert | `DJANGO_DEBUG=False uv run python manage.py check --deploy` : aucun avertissement |
 | Données applicatives sur PostgreSQL | `eduai_app`, distincte de `eduai_data`, commit `c59eedb` — voir `docs/decisions/006` et `008` |
 
-### Écarts identifiés, non encore corrigés
+### Écarts corrigés le 28 août 2026
 
-| Écart | Portée | Traitement prévu |
+Les deux écarts qui figuraient ici sont traités. Ils sont conservés dans le
+tableau, avec leur correctif et sa preuve, plutôt que retirés : un document de
+conformité qui efface la trace de ses manquements passés est moins crédible
+qu'un document qui montre comment ils ont été levés.
+
+| Écart | Portée | Correctif | Preuve |
+|---|---|---|---|
+| `ExerciseSubmission.ip_address` collectée | Donnée personnelle sans finalité établie | **Champ supprimé**, migration `exercises/0003_supprime_ip_address` | Colonne absente de `information_schema.columns` ; test `test_les_soumissions_ne_portent_plus_d_adresse_ip` |
+| Aucune route de suppression de compte | Droit d'effacement non exerçable par l'apprenant | Route `users:supprimer_compte`, module `apps/users/effacement.py` | 9 tests dans `tests/test_effacement_compte.py` |
+
+#### Sur la suppression du champ `ip_address`
+
+**Une donnée sans finalité ne se conserve pas** — et lui attribuer une durée
+reviendrait à régulariser une collecte qui n'aurait pas dû avoir lieu. Le
+principe de minimisation de l'article 5.1.c porte d'abord sur la collecte, non
+sur la seule durée.
+
+Le champ était renseigné à chaque soumission d'exercice, à partir de
+`REMOTE_ADDR`, et **n'était lu par aucun code du projet** : ni sécurité, ni
+lutte contre la fraude, ni statistique. Une adresse IP est pourtant une donnée
+personnelle au sens du considérant 26, une personne étant identifiable dès lors
+que des moyens raisonnablement susceptibles d'être utilisés le permettent — ce
+qui est le cas d'une IP rapprochée des journaux d'un fournisseur d'accès.
+
+La colonne a été supprimée, avec les valeurs qu'elle contenait. L'effet est
+irréversible et c'est celui qui était recherché.
+
+#### Sur la route de suppression de compte
+
+L'exigence tenue ici est qu'elle soit **effective, et non déclarative**. Un
+effacement partiel est pire qu'un effacement absent : il donne l'illusion d'être
+conforme.
+
+Une vue qui se contenterait d'appeler `user.delete()` laisserait derrière elle
+deux catégories de reliquats, qu'aucune cascade de Django n'atteint :
+
+| Reliquat | Pourquoi la cascade ne l'atteint pas |
+|---|---|
+| **Le fichier d'avatar** | La suppression retire la ligne qui désigne le fichier, jamais le fichier lui-même |
+| **Les sessions ouvertes** | La table des sessions ne porte aucune clé étrangère vers l'utilisateur ; l'identifiant est enfoui dans une charge sérialisée |
+
+Le module d'effacement traite les deux, et **relit la base et le disque après
+coup** pour établir ce qui subsiste. Le rapport qu'il rend porte un champ
+`conforme` qui ne vaut vrai que si rien ne reste — ni ligne, ni fichier. La vue
+n'affiche un message de confirmation que dans ce cas ; sinon elle avertit
+l'utilisateur que l'effacement est incomplet et journalise l'incident, plutôt
+que de lui annoncer une conformité qu'elle n'a pas constatée.
+
+Ce qui est effacé, vérifié par test : le compte et le profil, la progression,
+les cours et exercices créés, les soumissions de code, la progression par
+exercice, les participations aux quiz, le fichier d'avatar propre à
+l'utilisateur, et les sessions ouvertes.
+
+Ce qui n'est **pas** effacé, et pourquoi : l'avatar livré par défaut avec
+l'application. Il appartient à l'application, non à la personne ; le supprimer
+casserait l'affichage de tous les autres comptes. Un effacement trop large est
+une régression, pas un excès de zèle — un contre-test le garde.
+
+#### Un effet de bord mesuré, non corrigé
+
+La suppression d'un utilisateur qui a **hébergé une salle de quiz** emporte la
+salle, donc les réponses des autres participants à cette partie. C'est une
+conséquence de la cascade déclarée sur `GameRoom.host`.
+
+L'article 17 donne un droit à l'effacement de **ses** données ; il ne donne pas
+le droit d'emporter celles d'autrui. La correction — rendre l'hôte nullable —
+modifierait le comportement du quiz et n'a pas été engagée à dix jours du rendu.
+
+L'effet est donc **mesuré avant d'être produit** : le rapport d'effacement
+compte les salles supprimées, les participations et les réponses d'autrui
+perdues, et l'écran de confirmation en avertit l'utilisateur lorsque le cas se
+présente. Une conséquence connue et annoncée n'est pas du même ordre qu'une
+conséquence subie — mais elle reste un écart, et elle est inscrite ici comme
+tel.
+
+### Écart restant
+
+| Écart | Portée | Traitement |
 |---|---|---|
-| Aucune route de suppression de compte | Droit d'effacement non exerçable par l'apprenant | Étape 5 |
-| `ExerciseSubmission.ip_address` collectée | Donnée personnelle sans finalité établie | **Suppression du champ** à l'étape 5, et non conservation sous une durée |
-
-Sur ce dernier point : une donnée sans finalité ne se conserve pas. Lui
-attribuer une durée reviendrait à légitimer une collecte qu'aucun besoin ne
-justifie. Voir `docs/decisions/005`.
+| Cascade sur `GameRoom.host` | L'effacement d'un compte emporte les réponses d'autres participants | Identifié, mesuré, annoncé à l'utilisateur ; correction reportée après le 4 septembre |
 
 ---
 

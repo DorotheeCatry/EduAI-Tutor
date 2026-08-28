@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% comment %}
+Écran de confirmation de la suppression de compte.
+
+Compétence visée : C4 (épreuve E1) — droit à l'effacement, article 17 du RGPD
+Compétence visée : C17 (épreuve E4) — accessibilité
+
+Choix : annoncer le décompte réel de ce qui sera supprimé, et non une formule
+générale. Motivation : l'article 12.1 impose une information claire. « Votre
+compte sera supprimé » n'est pas clair quand les cours, les soumissions et la
+progression le sont aussi.
+
+Choix : confirmation par recopie de l'adresse électronique, non par case à
+cocher. Une case se coche par inadvertance ; recopier suppose de lire.
+
+Accessibilité : titres hiérarchisés sans saut de niveau, étiquette liée au
+champ, avertissement porté par un texte et un rôle ARIA et non par la seule
+couleur, action destructrice distincte du lien d'annulation dans l'ordre de
+tabulation.
+{% endcomment %}
+
+{% block title %}{% translate "Supprimer mon compte" %} — EduAI Tutor{% endblock %}
+
+{% block content %}
+<div class="p-6 max-w-2xl mx-auto space-y-6">
+
+  <h1 class="text-2xl font-bold">{% translate "Supprimer mon compte" %}</h1>
+
+  <div role="alert"
+       class="border-2 border-red-700 bg-red-50 text-red-900 rounded p-4 space-y-2">
+    <h2 class="font-bold text-lg">
+      {% translate "Attention : cette action est irréversible" %}
+    </h2>
+    <p>
+      {% blocktranslate %}Une fois supprimées, ces données ne peuvent pas être
+      restaurées. Aucune sauvegarde n'en conserve de copie exploitable.{% endblocktranslate %}
+    </p>
+  </div>
+
+  <section aria-labelledby="titre-effets">
+    <h2 id="titre-effets" class="text-xl font-semibold mb-2">
+      {% translate "Ce qui sera supprimé" %}
+    </h2>
+
+    <table class="w-full border-collapse">
+      <caption class="sr-only">
+        {% translate "Décompte des données rattachées à votre compte" %}
+      </caption>
+      <thead>
+        <tr class="border-b-2 border-gray-400">
+          <th scope="col" class="text-left py-2">{% translate "Donnée" %}</th>
+          <th scope="col" class="text-right py-2">{% translate "Nombre" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Compte et profil" %}</th><td class="text-right">{{ effets.compte }}</td></tr>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Progression" %}</th><td class="text-right">{{ effets.progression }}</td></tr>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Cours créés" %}</th><td class="text-right">{{ effets.cours_crees }}</td></tr>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Exercices créés" %}</th><td class="text-right">{{ effets.exercices_crees }}</td></tr>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Soumissions de code" %}</th><td class="text-right">{{ effets.soumissions }}</td></tr>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Salles de quiz hébergées" %}</th><td class="text-right">{{ effets.salles_hebergees }}</td></tr>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Participations à des quiz" %}</th><td class="text-right">{{ effets.participations_quiz }}</td></tr>
+        <tr class="border-b"><th scope="row" class="text-left py-1">{% translate "Sessions ouvertes" %}</th><td class="text-right">{{ effets.sessions }}</td></tr>
+      </tbody>
+    </table>
+
+    {% if effets.salles_hebergees %}
+      <p class="mt-3 text-sm">
+        <strong>{% translate "À savoir :" %}</strong>
+        {% blocktranslate %}la suppression des salles de quiz que vous avez
+        hébergées retire aussi les réponses des autres participants à ces
+        parties.{% endblocktranslate %}
+      </p>
+    {% endif %}
+  </section>
+
+  <section aria-labelledby="titre-confirmation">
+    <h2 id="titre-confirmation" class="text-xl font-semibold mb-2">
+      {% translate "Confirmation" %}
+    </h2>
+
+    <form method="post" novalidate class="space-y-4">
+      {% csrf_token %}
+
+      <div>
+        <label for="confirmation" class="block mb-1">
+          {% blocktranslate with adresse=user.email %}Pour confirmer, saisissez
+          votre adresse électronique : {{ adresse }}{% endblocktranslate %}
+        </label>
+        <input type="text"
+               id="confirmation"
+               name="confirmation"
+               autocomplete="off"
+               spellcheck="false"
+               required
+               aria-describedby="aide-confirmation"
+               class="w-full border-2 border-gray-500 rounded px-3 py-2">
+        <p id="aide-confirmation" class="text-sm mt-1">
+          {% translate "La saisie doit correspondre exactement, à la casse près." %}
+        </p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <a href="{% url 'users:profile' %}"
+           class="px-4 py-2 border-2 border-gray-600 rounded">
+          {% translate "Annuler et revenir au profil" %}
+        </a>
+        <button type="submit"
+                class="px-4 py-2 bg-red-700 text-white rounded border-2 border-red-900">
+          {% translate "Supprimer définitivement mon compte" %}
+        </button>
+      </div>
+    </form>
+  </section>
+
+</div>
+{% endblock %}
