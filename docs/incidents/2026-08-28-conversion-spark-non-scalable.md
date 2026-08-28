@@ -209,6 +209,65 @@ abouti. Le rapport de 350 est donc une projection à partir d'un débit constat�
 non la comparaison de deux exécutions complètes. Le seul rapport mesuré de bout
 en bout sur les mêmes données est celui de 2,2 sur le dump Data Science.
 
+### 5.4 La confirmation sur le dump complet
+
+**28/08, 17 h 44 — 18 h 27.** La conversion a été lancée sur les 99 118,6 Mio de
+`Posts.xml`, avec 12 Gio de mémoire pilote et un parallélisme de 8.
+
+| Étape | Durée | Débit |
+|---|---|---|
+| Conversion XML → Parquet | **2 166,48 s** — 36 min 6 s | **45,75 Mio/s** |
+| Volumétrie | 39,59 s | |
+| Sélection Spark SQL | 391,42 s — 6 min 31 s | |
+| **Total** | **2 612,01 s — 43 min 32 s** | |
+
+**3 968 096 posts** convertis, répartis sur 17 partitions annuelles.
+**355 113 documents** retenus par la sélection, contre 4 948 sur le dump Data
+Science.
+
+**Confrontation à la projection.** Le palier de 9,4 Gio donnait 36,68 Mio/s, d'où
+une projection de 2 702 s pour la conversion. Le réel est de 2 166 s, à
+45,75 Mio/s : **le débit a continué de croître avec le volume**, l'amortissement
+du coût fixe se poursuivant au-delà de 10 Gio. La projection était donc
+conservatrice de 20 %, dans le bon sens.
+
+**Le rapport entre les deux versions, recalculé sur des données complètes :**
+
+| | Ancienne | Nouvelle |
+|---|---|---|
+| Conversion des 97 Gio | ≈ 13 869 min — **9,6 jours** (projeté) | **36,1 min** (mesuré) |
+| Rapport | | **≈ 384×** |
+
+La réserve du § 5.3 reste valable et il faut la répéter : le terme « ancienne »
+est une **projection** tirée d'une exécution arrêtée à 48 tâches sur 775. Seule
+la colonne « nouvelle » est mesurée de bout en bout. Le rapport de 384 dit un
+ordre de grandeur, pas un chiffre.
+
+### 5.5 L'état de la machine pendant la mesure
+
+Une durée relevée sans l'état de la machine qui l'a produite décrit un instant,
+pas un comportement. La conversion complète a donc été accompagnée d'un relevé à
+la minute — charge, mémoire disponible, attente d'entrées-sorties.
+
+| Moment | Charge à 1 min | Mémoire libre | Attente E/S |
+|---|---|---|---|
+| Début (17 h 46) | 15,4 | 21 Gio | 0 % |
+| Milieu (18 h 11) | ≈ 14 | 19 Gio | 0 % |
+| Fin de conversion (18 h 27) | 2,4 | 16 Gio | 0 % |
+
+**Un traitement concurrent tournait** : le téléchargement des modèles Ollama,
+consécutif à l'incident du même jour, qui a progressé de 1,2 à 6,2 Gio pendant
+la conversion. L'attente d'entrées-sorties est restée à 0 % — le disque NVMe a
+absorbé les deux charges sans se saturer, ce qui explique que la mesure n'ait pas
+souffert de la concurrence.
+
+C'est précisément le contrôle qui manquait le 27/08, lorsque deux exécutions de
+la même conversion s'étaient écartées de 17 % : l'écart venait d'une contention
+disque, non du traitement, et il aurait été attribué au code sans ce relevé. La
+seconde campagne de paliers, menée aujourd'hui **pendant** le téléchargement,
+donne d'ailleurs des durées supérieures de 10 à 15 % à celles du § 5.3 pour les
+paliers de 2 et 10 Gio — même code, même données, machine différemment occupée.
+
 ---
 
 ## 6. Ce que cet incident ajoute aux précédents
@@ -236,8 +295,8 @@ a fonctionné dans un cas qu'elle n'avait pas été écrite pour couvrir.
 
 ## 7. Reste à faire
 
-- **Lancer la conversion complète** sur les 97 Gio, machine libre, le soir.
-  Projection : 40 min de conversion, environ 13 min de sélection.
+- ~~Lancer la conversion complète sur les 97 Gio~~ — **fait le 28/08**, voir
+  § 5.4. 43 min 32 s au total, 355 113 documents retenus.
 - **Mesurer le résultat réel** et le confronter à la projection ci-dessus. Une
   projection n'est pas une mesure, et ce document le dit à chaque fois qu'il en
   donne une.
