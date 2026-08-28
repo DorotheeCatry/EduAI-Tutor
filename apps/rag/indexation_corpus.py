@@ -97,7 +97,32 @@ DIMENSION_ATTENDUE = 1024
 #: dizaines de milliers de fragments embarqués en une transaction tiendraient
 #: tout en mémoire et perdraient tout sur une interruption. Les lots rendent le
 #: traitement reprenable.
-TAILLE_LOT = 64
+#:
+#: Choix : 32 et non 64. Motivation : une première exécution, lancée pendant que
+#: la conversion Spark saturait les huit cœurs, a vu chaque lot de 64 expirer au
+#: délai de 60 secondes du client — zéro fragment versé en quinze minutes. La
+#: taille du lot borne le temps d'embarquement d'une écriture ; la réduire rend
+#: le traitement viable sur une machine chargée.
+TAILLE_LOT = 32
+
+#: Délai d'attente de l'embarquement, en secondes.
+#:
+#: Choix : 300 au lieu des 60 par défaut. Motivation : le modèle
+#: `mxbai-embed-large` tourne en local. Son premier appel charge le modèle en
+#: mémoire — 6,7 secondes mesurées à froid contre 0,1 à chaud — et sur une
+#: machine occupée par un autre traitement, un lot entier peut dépasser la
+#: minute sans que rien ne soit en panne. Un délai trop court transforme une
+#: lenteur en échec.
+DELAI_EMBARQUEMENT = int(os.environ.get("OLLAMA_TIMEOUT", "300"))
+
+#: Tentatives sur un lot avant de le compter perdu.
+#:
+#: Choix : réessayer plutôt qu'abandonner. Motivation : la première version
+#: comptait le lot perdu dès le premier échec. Elle avait le mérite de le DIRE —
+#: le compte d'échecs figurait au bilan — mais un traitement qui renonce à 32
+#: fragments sur une lenteur passagère laisse un index incomplet là où une
+#: seconde tentative aurait suffi.
+TENTATIVES_LOT = 3
 
 
 def construire_collection(client):
@@ -108,7 +133,8 @@ def construire_collection(client):
     """
     fonction_embarquement = embedding_functions.OllamaEmbeddingFunction(
         model_name=MODELE_EMBARQUEMENT,
-        url=os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434") + "/api/embeddings",
+        url=os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
+        timeout=DELAI_EMBARQUEMENT,
     )
     return client.get_or_create_collection(
         name=COLLECTION,
@@ -297,14 +323,42 @@ def main() -> int:
     echecs = 0
 
     def verser() -> int:
-        """Écrit un lot et rend le nombre de fragments versés."""
+        """
+        Écrit un lot, en réessayant, et rend le nombre de fragments versés.
+
+        Compétence visée : C10 (épreuve E3)
+
+        Lève si les trois tentatives échouent : c'est l'appelant qui décide de
+        compter la perte. Réessayer ici et taire l'échec reviendrait à rendre un
+        compte de fragments versés supérieur à ce qui est sur le disque.
+        """
         nonlocal lot_ids, lot_textes, lot_metadonnees
         if not lot_ids:
             return 0
         nombre = len(lot_ids)
+
         if not options.a_blanc:
-            collection.upsert(ids=lot_ids, documents=lot_textes,
-                              metadatas=lot_metadonnees)
+            derniere: Exception | None = None
+            for tentative in range(1, TENTATIVES_LOT + 1):
+                try:
+                    collection.upsert(ids=lot_ids, documents=lot_textes,
+                                      metadatas=lot_metadonnees)
+                    derniere = None
+                    break
+                except Exception as exception:  # noqa: BLE001
+                    derniere = exception
+                    if tentative < TENTATIVES_LOT:
+                        attente = 5 * tentative
+                        logger.warning(
+                            "lot de %d fragments : %s (tentative %d/%d), "
+                            "nouvelle tentative dans %d s",
+                            nombre, type(exception).__name__, tentative,
+                            TENTATIVES_LOT, attente,
+                        )
+                        time.sleep(attente)
+            if derniere is not None:
+                raise derniere
+
         lot_ids, lot_textes, lot_metadonnees = [], [], []
         return nombre
 
