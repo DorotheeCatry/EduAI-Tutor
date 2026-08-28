@@ -20,8 +20,19 @@
 #   - un correctif urgent explicitement voulu, via la variable d'échappement
 #     documentée plus bas.
 #
-# Activation, une fois par copie du dépôt :
-#     git config core.hooksPath .githooks
+# ACTIVATION, une fois par copie du dépôt :
+#
+#     cp .githooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+# Et NON `git config core.hooksPath .githooks`, qui semble plus propre et ne
+# protège pas. Motivation : core.hooksPath désigne un chemin DANS L'ARBRE DE
+# TRAVAIL. Le crochet n'existe donc que sur les branches où il est commité —
+# c'est-à-dire partout sauf sur celle qu'il doit protéger, tant qu'il n'y a pas
+# été fusionné. Le premier essai de ce garde-fou a échoué exactement ainsi : un
+# commit d'essai est passé sur `main` sans rencontrer le moindre contrôle.
+#
+# `.git/hooks/` est hors de l'arbre de travail : le crochet y vaut pour toutes
+# les branches, y compris celles qui ne le contiennent pas.
 
 set -euo pipefail
 
