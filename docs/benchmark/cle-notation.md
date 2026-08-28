@@ -6,16 +6,16 @@
 
 | Prompt | A | B | C | D |
 |---|---|---|---|---|
-| p1 | `qwen/qwen3.6-27b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | — |
-| p2 | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | — |
-| p3 | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `openai/gpt-oss-120b` | — |
-| p4 | `qwen/qwen3.6-27b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | — |
-| p5 | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | — |
-| p6 | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `openai/gpt-oss-120b` | — |
-| p7 | `qwen/qwen3.6-27b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | — |
-| p8 | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | — |
-| p9 | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `openai/gpt-oss-120b` | — |
-| p10 | `qwen/qwen3.6-27b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | — |
+| p1 | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `qwen3:4b` | `openai/gpt-oss-120b` |
+| p2 | `qwen/qwen3.6-27b` | `qwen3:4b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` |
+| p3 | `qwen3:4b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` |
+| p4 | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `qwen3:4b` |
+| p5 | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `qwen3:4b` | `openai/gpt-oss-120b` |
+| p6 | `qwen/qwen3.6-27b` | `qwen3:4b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` |
+| p7 | `qwen3:4b` | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` |
+| p8 | `openai/gpt-oss-120b` | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `qwen3:4b` |
+| p9 | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `qwen3:4b` | `openai/gpt-oss-120b` |
+| p10 | `openai/gpt-oss-20b` | `qwen/qwen3.6-27b` | `qwen3:4b` | `openai/gpt-oss-120b` |
 
 Le décalage des étiquettes est déterministe, tiré de l'identifiant du prompt : deux exécutions de l'analyse produisent le même document, ce qu'un tirage aléatoire ne permettrait pas.
 

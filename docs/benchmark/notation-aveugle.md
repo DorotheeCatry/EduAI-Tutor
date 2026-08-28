@@ -26,6 +26,83 @@ Format attendu : un titre, trois sections avec sous-titres, un exemple de code e
 
 ### Réponse A
 
+# Les décorateurs Python : un outil puissant pour la réutilisation de code
+
+## 1. Comprendre le principe des décorateurs  
+Un décorateur est une fonction qui prend une autre fonction en argument, la transforme ou l’enrichit, puis renvoie une nouvelle fonction.  
+```python
+def trace(func):
+    """Ajoute un message avant et après l’appel de la fonction."""
+    def wrapper(*args, **kwargs):
+        print(f"[TRACE] Appel de {func.__name__}")
+        result = func(*args, **kwargs)
+        print(f"[TRACE] Fin de {func.__name__}")
+        return result
+    return wrapper
+
+@trace
+def saluer(nom):
+    return f"Bonjour, {nom}!"
+
+print(saluer("Alice"))
+```
+*Résultat :*  
+```
+[TRACE] Appel de saluer
+[TRACE] Fin de saluer
+Bonjour, Alice!
+```
+
+## 2. Décorateurs sans arguments  
+Les décorateurs simples peuvent mesurer le temps d’exécution d’une fonction.  
+```python
+import time
+
+def chronomètre(func):
+    def wrapper(*args, **kwargs):
+        debut = time.perf_counter()
+        res = func(*args, **kwargs)
+        fin = time.perf_counter()
+        print(f"{func.__name__} a pris {fin - debut:.4f}s")
+        return res
+    return wrapper
+
+@chronomètre
+def somme(n):
+    return sum(range(n))
+
+print(somme(10**6))
+```
+*Résultat :*  
+```
+somme a pris 0.0453s
+499999500000
+```
+
+## 3. Décorateurs avec arguments et gestion d’état  
+Un décorateur‑factory permet de créer des décorateurs paramétrés. Ici, un cache simple.  
+```python
+def memoize(cache_size=128):
+    def decorator(func):
+        cache = {}
+        def wrapper(*args):
+            if args in cache:
+                print(f"[CACHE] {func.__name__}({args}) -> {cache[args]}")
+                return cache[args]
+            result = func(*args)
+            if len(cache) >= cache_size:
+                cache.pop(next(iter(cache)))
+            cache[args] = result
+            print(f"[CACHE] {func.__name__}({args}) -> {result}")
+            return result
+        return wrapper
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse B
+
 <think>
 Here's a thinking process:
 
@@ -117,7 +194,15 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse B
+### Réponse C
+
+
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse D
 
 **Les décorateurs en Python : concepts et bonnes pratiques**
 
@@ -203,83 +288,6 @@ print(salut("Alice"))
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse C
-
-# Les décorateurs Python : un outil puissant pour la réutilisation de code
-
-## 1. Comprendre le principe des décorateurs  
-Un décorateur est une fonction qui prend une autre fonction en argument, la transforme ou l’enrichit, puis renvoie une nouvelle fonction.  
-```python
-def trace(func):
-    """Ajoute un message avant et après l’appel de la fonction."""
-    def wrapper(*args, **kwargs):
-        print(f"[TRACE] Appel de {func.__name__}")
-        result = func(*args, **kwargs)
-        print(f"[TRACE] Fin de {func.__name__}")
-        return result
-    return wrapper
-
-@trace
-def saluer(nom):
-    return f"Bonjour, {nom}!"
-
-print(saluer("Alice"))
-```
-*Résultat :*  
-```
-[TRACE] Appel de saluer
-[TRACE] Fin de saluer
-Bonjour, Alice!
-```
-
-## 2. Décorateurs sans arguments  
-Les décorateurs simples peuvent mesurer le temps d’exécution d’une fonction.  
-```python
-import time
-
-def chronomètre(func):
-    def wrapper(*args, **kwargs):
-        debut = time.perf_counter()
-        res = func(*args, **kwargs)
-        fin = time.perf_counter()
-        print(f"{func.__name__} a pris {fin - debut:.4f}s")
-        return res
-    return wrapper
-
-@chronomètre
-def somme(n):
-    return sum(range(n))
-
-print(somme(10**6))
-```
-*Résultat :*  
-```
-somme a pris 0.0453s
-499999500000
-```
-
-## 3. Décorateurs avec arguments et gestion d’état  
-Un décorateur‑factory permet de créer des décorateurs paramétrés. Ici, un cache simple.  
-```python
-def memoize(cache_size=128):
-    def decorator(func):
-        cache = {}
-        def wrapper(*args):
-            if args in cache:
-                print(f"[CACHE] {func.__name__}({args}) -> {cache[args]}")
-                return cache[args]
-            result = func(*args)
-            if len(cache) >= cache_size:
-                cache.pop(next(iter(cache)))
-            cache[args] = result
-            print(f"[CACHE] {func.__name__}({args}) -> {result}")
-            return result
-        return wrapper
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
 ---
 
 ## p2 — Réexplication adaptée (pedagogue)
@@ -295,30 +303,6 @@ Réexplique-la autrement : pars d'une situation concrète avant d'énoncer la r�
 </details>
 
 ### Réponse A
-
-Imagine que tu organises une soirée : tu notes d’abord les invités que tu peux inviter ou désinviter à la dernière minute ; c’est une feuille où tu ajoutes, supprimes ou réordonne les noms selon les changements de programme. En Python, cette feuille correspond à une **liste** : elle est mutable, on peut modifier son contenu à tout moment.
-
-Ensuite, tu rédiges le menu définitif du repas, gravé sur une plaque en métal. Une fois imprimé, aucun plat ne peut être ajouté, retiré ou déplacé sans refaire la plaque. Cette plaque représente un **tuple** : une séquence immuable, dont les éléments sont figés dès sa création.
-
-Le choix devient crucial lorsqu’on veut garantir l’intégrité des données. Par exemple, dans une fonction qui calcule les coordonnées d’un point (x, y) et les renvoie, on utilise un tuple ; ainsi, le code qui reçoit le résultat ne pourra pas altérer accidentellement les coordonnées, évitant des bugs difficiles à tracer. En revanche, si l’on doit accumuler les points au fil du temps, une liste sera la structure adaptée.
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
-### Réponse B
-
-Imaginez que vous préparez un buffet pour un dîner. Vous avez une boîte de biscuits que vous pouvez ouvrir à tout moment, ajouter ou retirer des biscuits sans problème. C’est comme une liste en Python : un conteneur mutable, où les éléments peuvent changer, se réorganiser ou être supprimés. En revanche, pensez à un album photo que vous avez déjà imprimé et encadré. Une fois placé, vous ne pouvez plus y ajouter de nouvelles photos sans le défaire. Cet album représente un tuple, un conteneur immuable dont le contenu est fixé dès sa création.
-
-En pratique, la différence se résume à la mutabilité. Une liste (`list`) accepte les opérations `append`, `remove`, `sort`, etc., tandis qu’un tuple (`tuple`) ne permet que l’accès aux éléments. Cette immutabilité rend les tuples plus rapides et plus sûrs lorsqu’on veut garantir que les données ne seront pas modifiées accidentellement.
-
-Le choix devient crucial lorsqu’on passe des données à une fonction qui doit les garder intactes, comme un dictionnaire dont les clés doivent être hashables. Les tuples, étant immuables, peuvent servir de clés, alors que les listes ne le peuvent pas. Ainsi, choisir tuple plutôt que liste évite des erreurs inattendues et optimise les performances.
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
-### Réponse C
 
 <think>
 Here's a thinking process:
@@ -365,6 +349,38 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
+### Réponse B
+
+
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse C
+
+Imagine que tu organises une soirée : tu notes d’abord les invités que tu peux inviter ou désinviter à la dernière minute ; c’est une feuille où tu ajoutes, supprimes ou réordonne les noms selon les changements de programme. En Python, cette feuille correspond à une **liste** : elle est mutable, on peut modifier son contenu à tout moment.
+
+Ensuite, tu rédiges le menu définitif du repas, gravé sur une plaque en métal. Une fois imprimé, aucun plat ne peut être ajouté, retiré ou déplacé sans refaire la plaque. Cette plaque représente un **tuple** : une séquence immuable, dont les éléments sont figés dès sa création.
+
+Le choix devient crucial lorsqu’on veut garantir l’intégrité des données. Par exemple, dans une fonction qui calcule les coordonnées d’un point (x, y) et les renvoie, on utilise un tuple ; ainsi, le code qui reçoit le résultat ne pourra pas altérer accidentellement les coordonnées, évitant des bugs difficiles à tracer. En revanche, si l’on doit accumuler les points au fil du temps, une liste sera la structure adaptée.
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse D
+
+Imaginez que vous préparez un buffet pour un dîner. Vous avez une boîte de biscuits que vous pouvez ouvrir à tout moment, ajouter ou retirer des biscuits sans problème. C’est comme une liste en Python : un conteneur mutable, où les éléments peuvent changer, se réorganiser ou être supprimés. En revanche, pensez à un album photo que vous avez déjà imprimé et encadré. Une fois placé, vous ne pouvez plus y ajouter de nouvelles photos sans le défaire. Cet album représente un tuple, un conteneur immuable dont le contenu est fixé dès sa création.
+
+En pratique, la différence se résume à la mutabilité. Une liste (`list`) accepte les opérations `append`, `remove`, `sort`, etc., tandis qu’un tuple (`tuple`) ne permet que l’accès aux éléments. Cette immutabilité rend les tuples plus rapides et plus sûrs lorsqu’on veut garantir que les données ne seront pas modifiées accidentellement.
+
+Le choix devient crucial lorsqu’on passe des données à une fonction qui doit les garder intactes, comme un dictionnaire dont les clés doivent être hashables. Les tuples, étant immuables, peuvent servir de clés, alors que les listes ne le peuvent pas. Ainsi, choisir tuple plutôt que liste évite des erreurs inattendues et optimise les performances.
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
 ---
 
 ## p3 — Reformulation pour débutant (pedagogue)
@@ -383,6 +399,29 @@ Format attendu : deux phrases, puis un exemple de trois lignes.
 
 ### Réponse A
 
+
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse B
+
+Une compréhension de liste est une syntaxe courte qui crée une nouvelle liste en parcourant un objet itérable (comme une chaîne, une liste ou un `range`).  
+On indique d’abord comment transformer chaque élément, puis on peut ajouter une condition : seuls les éléments qui la remplissent seront conservés.
+
+```python
+# carrés des nombres pairs de 0 à 9
+squares = [x * x for x in range(10) if x % 2 == 0]
+print(squares)          # [0, 4, 16, 36, 64]
+```
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse C
+
 Une compréhension de liste est une façon rapide de créer une nouvelle liste à partir d’un itérable existant.  
 Elle applique d’abord une transformation à chaque élément, puis peut garder ou ignorer certains éléments grâce à un test de filtrage.
 
@@ -396,7 +435,7 @@ print(carrés_pairs)
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse B
+### Réponse D
 
 <think>
 Here's a thinking process:
@@ -453,21 +492,6 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse C
-
-Une compréhension de liste est une syntaxe courte qui crée une nouvelle liste en parcourant un objet itérable (comme une chaîne, une liste ou un `range`).  
-On indique d’abord comment transformer chaque élément, puis on peut ajouter une condition : seuls les éléments qui la remplissent seront conservés.
-
-```python
-# carrés des nombres pairs de 0 à 9
-squares = [x * x for x in range(10) if x % 2 == 0]
-print(squares)          # [0, 4, 16, 36, 64]
-```
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
 ---
 
 ## p4 — Synthèse à partir de fragments (researcher)
@@ -487,6 +511,22 @@ Synthétise ce que ces trois extraits, pris ensemble, permettent de faire sur un
 </details>
 
 ### Réponse A
+
+En combinant ces outils, on peut parcourir un fichier de plusieurs gigaoctets sans jamais le charger entièrement en mémoire : `itertools.chain(*iterables)` ( [1] ) permet d’enchaîner les morceaux du fichier (par exemple les lignes lues par blocs) en un seul flux continu ; `itertools.islice(iterable, stop)` ( [2] ) extrait les premières portions de ce flux sans le matérialiser ; et, grâce aux générateurs qui évaluent les éléments à la demande ( [3] ), chaque portion est produite uniquement lorsqu’elle est consommée, garantissant une empreinte mémoire constante quel que soit le volume traité.
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse B
+
+En combinant les trois principes, on peut traiter un fichier de plusieurs gigaoctets sans jamais le charger entièrement en mémoire. En lisant le fichier ligne par ligne avec un générateur, on obtient un flux d’objets évalués à la demande [3]. On peut ensuite enchaîner plusieurs parties ou fichiers grâce à `itertools.chain(*iterables)` [1], créant un itérable unique qui parcourt toutes les lignes successivement. Enfin, `itertools.islice(iterable, stop)` [2] permet de récupérer les premiers éléments (ou un sous‑ensemble) de ce flux sans matérialiser l’ensemble, assurant ainsi une utilisation mémoire minimale tout en conservant la flexibilité de traitement.
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse C
 
 <think>
 Here's a thinking process:
@@ -523,17 +563,9 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse B
+### Réponse D
 
-En combinant ces outils, on peut parcourir un fichier de plusieurs gigaoctets sans jamais le charger entièrement en mémoire : `itertools.chain(*iterables)` ( [1] ) permet d’enchaîner les morceaux du fichier (par exemple les lignes lues par blocs) en un seul flux continu ; `itertools.islice(iterable, stop)` ( [2] ) extrait les premières portions de ce flux sans le matérialiser ; et, grâce aux générateurs qui évaluent les éléments à la demande ( [3] ), chaque portion est produite uniquement lorsqu’elle est consommée, garantissant une empreinte mémoire constante quel que soit le volume traité.
 
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
-### Réponse C
-
-En combinant les trois principes, on peut traiter un fichier de plusieurs gigaoctets sans jamais le charger entièrement en mémoire. En lisant le fichier ligne par ligne avec un générateur, on obtient un flux d’objets évalués à la demande [3]. On peut ensuite enchaîner plusieurs parties ou fichiers grâce à `itertools.chain(*iterables)` [1], créant un itérable unique qui parcourt toutes les lignes successivement. Enfin, `itertools.islice(iterable, stop)` [2] permet de récupérer les premiers éléments (ou un sous‑ensemble) de ce flux sans matérialiser l’ensemble, assurant ainsi une utilisation mémoire minimale tout en conservant la flexibilité de traitement.
 
 | Exactitude | Adaptation | Exemple | Concision | Format | Total |
 |---|---|---|---|---|---|
@@ -555,14 +587,6 @@ Réponds sur le mécanisme, pas sur l'ordre de grandeur. Format attendu : trois 
 
 ### Réponse A
 
-Chaque appel à `xpath_string` oblige le moteur XPath à analyser la structure du document, à créer ou à naviguer dans un arbre de nœuds et à évaluer le contexte de chaque expression, ce qui implique de multiples allocations et traversées de l’arbre même si la ligne est identique. En revanche, une expression régulière ancrée ne parcourt que la chaîne de caractères linéairement, sans construire de représentation hiérarchique ni maintenir de contexte d’arbre. Ainsi, répéter treize fois l’évaluation XPath entraîne treize reconstructions ou recherches coûteuses dans l’arbre XML, alors que les treize regex se contentent de treize scans séquentiels très légers.
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
-### Réponse B
-
 Chaque appel à `xpath_string` force l’analyseur XML à reconstituer la structure du document (ou à parcourir un arbre déjà construit) avant d’évaluer la requête, ce qui implique la création d’objets de nœuds, la résolution de noms d’espaces et la mise en place d’un contexte d’exécution.  
 Ensuite, l’XPath doit parcourir cet arbre, appliquer les filtres, les fonctions et les opérateurs de chaque expression, ce qui nécessite de nombreuses opérations de navigation et de comparaison de nœuds.  
 À l’opposé, une expression régulière ancrée ne fait qu’un simple balayage séquentiel de la chaîne, sans construire d’arbre ni effectuer de résolution de contexte, ce qui explique son coût bien moindre.
@@ -571,7 +595,7 @@ Ensuite, l’XPath doit parcourir cet arbre, appliquer les filtres, les fonction
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse C
+### Réponse B
 
 <think>
 Here's a thinking process:
@@ -619,6 +643,22 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
+### Réponse C
+
+
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse D
+
+Chaque appel à `xpath_string` oblige le moteur XPath à analyser la structure du document, à créer ou à naviguer dans un arbre de nœuds et à évaluer le contexte de chaque expression, ce qui implique de multiples allocations et traversées de l’arbre même si la ligne est identique. En revanche, une expression régulière ancrée ne parcourt que la chaîne de caractères linéairement, sans construire de représentation hiérarchique ni maintenir de contexte d’arbre. Ainsi, répéter treize fois l’évaluation XPath entraîne treize reconstructions ou recherches coûteuses dans l’arbre XML, alors que les treize regex se contentent de treize scans séquentiels très légers.
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
 ---
 
 ## p6 — Retour sur du code fautif (coach)
@@ -644,16 +684,6 @@ Donne un retour bref et actionnable : ce qui va, ce qui ne va pas, la piste de c
 </details>
 
 ### Réponse A
-
-- **Ce qui fonctionne** : la boucle additionne correctement les éléments et calcule la moyenne pour toute liste non vide.  
-- **Ce qui ne va pas** : lorsqu’on passe une liste vide, `len(nombres)` vaut 0, ce qui provoque un `ZeroDivisionError` à la division.  
-- **Piste de correction** : ajoutez une vérification avant la division (par ex. `if not nombres: return None` ou `raise ValueError("Liste vide")`) pour éviter la division par zéro.
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
-### Réponse B
 
 <think>
 Here's a thinking process:
@@ -699,11 +729,29 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
+### Réponse B
+
+
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
 ### Réponse C
 
 - ✅ La fonction calcule correctement la moyenne quand la liste contient au moins un élément.  
 - ❌ Elle lève une `ZeroDivisionError` pour une liste vide, car `len(nombres)` vaut 0.  
 - 🔧 Ajoute une gestion du cas vide : retourne `0` (ou `None` selon le besoin) ou utilise une condition `if not nombres:` avant la division.
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse D
+
+- **Ce qui fonctionne** : la boucle additionne correctement les éléments et calcule la moyenne pour toute liste non vide.  
+- **Ce qui ne va pas** : lorsqu’on passe une liste vide, `len(nombres)` vaut 0, ce qui provoque un `ZeroDivisionError` à la division.  
+- **Piste de correction** : ajoutez une vérification avant la division (par ex. `if not nombres: return None` ou `raise ValueError("Liste vide")`) pour éviter la division par zéro.
 
 | Exactitude | Adaptation | Exemple | Concision | Format | Total |
 |---|---|---|---|---|---|
@@ -724,6 +772,56 @@ Format attendu, strictement : un énoncé de deux phrases, un squelette de code 
 </details>
 
 ### Réponse A
+
+
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse B
+
+Écrivez une fonction qui, à partir d'un dictionnaire de notes d'étudiants, renvoie le nom de l'étudiant avec la moyenne la plus élevée. La fonction doit gérer les cas où plusieurs étudiants ont la même moyenne maximale en retournant le nom qui vient en premier alphabétiquement.
+
+```python
+def top_student(grades):
+    """
+    grades: dict mapping student name (str) to list of numeric grades.
+    Returns the name (str) of the student with the highest average grade.
+    If there is a tie, return the name that comes first alphabetically.
+    """
+    # TODO: implement the function
+    pass
+```
+
+```python
+assert top_student({'Alice': [90, 80], 'Bob': [85, 95]}) == 'Alice'
+assert top_student({'Charlie': [100], 'Dave': [99, 101]}) == 'Charlie'
+assert top_student({'Eve': [70, 80, 90], 'Frank': [85, 85]}) == 'Frank'
+```
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse C
+
+**Énoncé**  
+Écrivez une fonction qui, à partir d’un dictionnaire où les clés sont des mots et les valeurs des fréquences, renvoie un nouveau dictionnaire où chaque fréquence est clé et la valeur est la liste des mots ayant cette fréquence.  
+La fonction doit préserver l’ordre d’apparition des mots dans la liste.
+
+```python
+def invert_dict_by_value(d):
+    """
+    Inverse un dictionnaire de mots → fréquences en fréquences → liste de mots.
+    """
+    #
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse D
 
 <think>
 Here's a thinking process:
@@ -769,48 +867,6 @@ Here's a thinking process:
      - Énoncé: 2 sentences? Yes.
      - Code skeleton with `# TODO`? Yes.
      - 3 test cases as assertions? Yes.
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
-### Réponse B
-
-Écrivez une fonction qui, à partir d'un dictionnaire de notes d'étudiants, renvoie le nom de l'étudiant avec la moyenne la plus élevée. La fonction doit gérer les cas où plusieurs étudiants ont la même moyenne maximale en retournant le nom qui vient en premier alphabétiquement.
-
-```python
-def top_student(grades):
-    """
-    grades: dict mapping student name (str) to list of numeric grades.
-    Returns the name (str) of the student with the highest average grade.
-    If there is a tie, return the name that comes first alphabetically.
-    """
-    # TODO: implement the function
-    pass
-```
-
-```python
-assert top_student({'Alice': [90, 80], 'Bob': [85, 95]}) == 'Alice'
-assert top_student({'Charlie': [100], 'Dave': [99, 101]}) == 'Charlie'
-assert top_student({'Eve': [70, 80, 90], 'Frank': [85, 85]}) == 'Frank'
-```
-
-| Exactitude | Adaptation | Exemple | Concision | Format | Total |
-|---|---|---|---|---|---|
-|  |  |  |  |  | /15 |
-
-### Réponse C
-
-**Énoncé**  
-Écrivez une fonction qui, à partir d’un dictionnaire où les clés sont des mots et les valeurs des fréquences, renvoie un nouveau dictionnaire où chaque fréquence est clé et la valeur est la liste des mots ayant cette fréquence.  
-La fonction doit préserver l’ordre d’apparition des mots dans la liste.
-
-```python
-def invert_dict_by_value(d):
-    """
-    Inverse un dictionnaire de mots → fréquences en fréquences → liste de mots.
-    """
-    #
 
 | Exactitude | Adaptation | Exemple | Concision | Format | Total |
 |---|---|---|---|---|---|
@@ -909,6 +965,15 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
+### Réponse D
+
+La cause est que les listes ne sont pas hashables et ne peuvent donc pas servir de clés dans un dictionnaire.  
+d[(1, 2)] = 'valeur'
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
 ---
 
 ## p9 — Classification d'une méprise (watcher)
@@ -980,6 +1045,14 @@ meconnaissance_idiome
 
 ### Réponse C
 
+
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse D
+
 meconnaissance_idiome
 
 | Exactitude | Adaptation | Exemple | Concision | Format | Total |
@@ -1005,6 +1078,14 @@ Format attendu, strictement : le mot seul.
 </details>
 
 ### Réponse A
+
+variable_non_initialisee
+
+| Exactitude | Adaptation | Exemple | Concision | Format | Total |
+|---|---|---|---|---|---|
+|  |  |  |  |  | /15 |
+
+### Réponse B
 
 <think>
 Here's a thinking process:
@@ -1037,17 +1118,17 @@ Here's a thinking process:
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse B
+### Réponse C
 
-retour_de_fonction_ignore
+variable_non_initialisee
 
 | Exactitude | Adaptation | Exemple | Concision | Format | Total |
 |---|---|---|---|---|---|
 |  |  |  |  |  | /15 |
 
-### Réponse C
+### Réponse D
 
-variable_non_initialisee
+retour_de_fonction_ignore
 
 | Exactitude | Adaptation | Exemple | Concision | Format | Total |
 |---|---|---|---|---|---|

@@ -135,9 +135,19 @@ projet documente dans ses dossiers d'incident.
 
 ## 7. Mesures
 
-Campagne du 28 août 2026, 16 h 09 à 16 h 21 (UTC+2). **90 appels sur les 120
-prévus** : les trois modèles Groq ont été mesurés, le quatrième ne l'a pas été
-— voir l'annexe. 90 succès, 0 erreur, 0 tentative écartée pour quota.
+Campagne du 28 août 2026, en deux temps. **Les 120 appels du protocole ont été
+passés, 120 succès, 0 erreur.**
+
+Les trois modèles Groq ont été mesurés de 16 h 09 à 16 h 21. Le quatrième,
+servi en local, ne l'a été qu'à 18 h 34 : le service Ollama était en panne au
+moment de la première campagne, et sa réparation a occupé la journée — voir
+l'annexe et l'incident correspondant.
+
+**Il a été mesuré séparément, et machine libre.** La conversion Spark du dump
+complet occupait les huit cœurs jusqu'à 18 h 28 ; lancer la mesure pendant ce
+temps aurait produit une latence incomparable à celle des trois modèles
+distants, relevée sur une machine au repos. La mesure a donc été différée, non
+dégradée.
 
 Les mesures brutes sont dans `benchmark/mesures.jsonl`, les réponses dans
 `benchmark/reponses.jsonl` : les tableaux ci-dessous se recalculent avec
@@ -152,7 +162,7 @@ Mesures relevées par la sonde de monitorage du projet, sur les appels aboutis. 
 | `openai/gpt-oss-120b` | 30 | **0,98** | 1,92 | 0,50 | 2,19 | 0,47 |
 | `openai/gpt-oss-20b` | 30 | **0,75** | 1,20 | 0,42 | 3,83 | 0,59 |
 | `qwen/qwen3.6-27b` | 30 | **1,89** | 2,04 | 1,47 | 2,62 | 0,22 |
-| `qwen3:4b` | 0 | **non mesuré** | — | — | — | — |
+| `qwen3:4b` | 30 | **92,76** | 134,34 | 66,97 | 175,58 | 20,73 |
 
 ### 7.2 Latence médiane par agent
 
@@ -161,7 +171,7 @@ Mesures relevées par la sonde de monitorage du projet, sur les appels aboutis. 
 | `openai/gpt-oss-120b` | 1,16 | 0,95 | 1,00 | 0,95 |
 | `openai/gpt-oss-20b` | 0,78 | 0,75 | 1,13 | 0,68 |
 | `qwen/qwen3.6-27b` | 1,92 | 1,94 | 1,86 | 1,86 |
-| `qwen3:4b` | non mesuré | non mesuré | non mesuré | non mesuré |
+| `qwen3:4b` | 92,77 | 98,79 | 92,63 | 123,50 |
 
 ### 7.3 Jetons et coût
 
@@ -172,7 +182,7 @@ Jetons **rapportés par le fournisseur**, jamais estimés depuis une longueur de
 | `openai/gpt-oss-120b` | 153 | 356 | 0,236 $ ⚠ |
 | `openai/gpt-oss-20b` | 153 | 416 | 0,140 $ ⚠ |
 | `qwen/qwen3.6-27b` | 96 | 768 | 0,480 $ ⚠ |
-| `qwen3:4b` | non mesuré | non mesuré | non mesuré |
+| `qwen3:4b` | — | — | 0,000 $ |
 
 ⚠ **Le tarif n'a pas été confronté à la grille du fournisseur.** Ces montants sont un ordre de grandeur, pas une facture. Voir § 6.
 
@@ -183,7 +193,7 @@ Jetons **rapportés par le fournisseur**, jamais estimés depuis une longueur de
 | `openai/gpt-oss-120b` | 30 | 30 | 0 | 0 | 0 |
 | `openai/gpt-oss-20b` | 30 | 30 | 0 | 0 | 0 |
 | `qwen/qwen3.6-27b` | 30 | 30 | 0 | 0 | 0 |
-| `qwen3:4b` | 0 | 0 | 0 | 0 | — |
+| `qwen3:4b` | 30 | 30 | 0 | 0 | 0 |
 
 La colonne « appels sans trace » est le contrôle hérité de l'incident 003 : elle compte les appels pour lesquels la sonde n'a rien écrit sur le disque. Elle est à zéro — chaque appel mesuré a laissé une trace vérifiée.
 
@@ -198,6 +208,7 @@ Cette section n'était pas au protocole. Elle a été ajoutée parce que la camp
 | `openai/gpt-oss-120b` | 1/30 | 0/30 | 0/30 |
 | `openai/gpt-oss-20b` | 3/30 | 0/30 | 0/30 |
 | `qwen/qwen3.6-27b` | 25/30 | 30/30 | 5/30 |
+| `qwen3:4b` | 0/30 | 0/30 | 0/30 |
 
 ### 7.6 Mesure complémentaire — hors protocole
 
@@ -236,9 +247,8 @@ croyant décrire les modèles.
 
 ### 7.8 Critère 5 — souveraineté des données
 
-Ce critère ne se mesure pas, il se constate, et le constat est le même pour les
-trois modèles mesurés : **le prompt sort de la machine.** Il part chez Groq, aux
-conditions de service de Groq.
+Pour les trois modèles distants, le constat est le même : **le prompt sort de la
+machine.** Il part chez Groq, aux conditions de service de Groq.
 
 Ce n'est pas neutre pour ce projet. Les prompts de l'agent Coach contiennent du
 code d'apprenant, c'est-à-dire une production personnelle rattachable à une
@@ -246,9 +256,32 @@ personne identifiée — le point traité au § 5 de `rgpd_eduai_data.md`. La so
 de monitorage ne conserve d'ailleurs que la LONGUEUR des prompts, jamais leur
 contenu, précisément pour cette raison.
 
-Le seul modèle qui aurait répondu autrement à ce critère est celui qui n'a pas
-pu être mesuré. **La souveraineté est donc, aujourd'hui, la case vide du
-tableau** — et c'est la seule des six qu'aucune mesure ne vient remplir.
+Le quatrième modèle répond autrement : `qwen3:4b` s'exécute sur la machine,
+aucun prompt ne la quitte, et son coût fournisseur est nul. La case n'est plus
+vide — mais ce qu'elle contient n'est pas confortable.
+
+**Le repli souverain est de deux ordres de grandeur plus lent.**
+
+| Modèle | Latence médiane | Rapport au plus rapide |
+|---|---|---|
+| `openai/gpt-oss-20b` | 0,75 s | référence |
+| `openai/gpt-oss-120b` | 0,98 s | ×1,3 |
+| `qwen3:4b` — **local** | **92,76 s** | **×124** |
+
+Sur les prompts de l'agent Watcher — ceux qui demandent un mot — la médiane
+locale monte à 123,50 secondes. Une classification qui prend deux minutes n'est
+pas une classification dégradée : c'est une fonction indisponible.
+
+Ce résultat est énoncé tel quel, et non arrondi vers le haut. **Un repli
+présenté comme équivalent serait moins crédible qu'un repli assumé comme
+dégradé** — et surtout, il conduirait à s'y fier dans un cas où il ne tiendrait
+pas. Ce que le repli garantit est la *continuité* du service et la souveraineté
+des données, pas la préservation de l'expérience.
+
+Une limite de la mesure, à dire : **Ollama ne rapporte aucun compte de jetons**
+à travers le client utilisé. Le critère 2 est donc vide pour ce modèle, et son
+coût est établi non par calcul mais par nature — un modèle exécuté localement ne
+facture rien.
 
 ## 8. Décision
 
@@ -289,11 +322,19 @@ fautif est la tâche la plus délicate du jeu — l'écart de coût, 0,10 $ pour
 requêtes, ne justifierait pas de conserver le modèle rapide. Coach passerait
 alors sur `gpt-oss-120b`, et Watcher resterait sur le modèle rapide.
 
-**Le critère 5, la souveraineté, n'est pas tranché non plus**, faute d'un modèle
-local en état de marche. Tant que le service Ollama ne démarre pas, le projet n'a
-aucun repli si Groq devient indisponible ou si une contrainte interdit la sortie
-du code des apprenants. Ce n'est pas un manque de confort : c'est le seul risque
-de cette comparaison qui puisse arrêter le service.
+**Le critère 5, la souveraineté, est tranché — et sa réponse contraint
+l'usage.** Le repli local existe, il fonctionne, et aucun prompt ne quitte la
+machine. Mais à 92,76 secondes de médiane contre 0,75, il ne peut pas se
+substituer au service distant en usage interactif.
+
+Sa place est donc définie par ce que la mesure dit, non par ce qu'on aurait
+souhaité :
+
+| Usage | Le repli local convient-il ? |
+|---|---|
+| Continuité en cas d'indisponibilité de Groq | **Oui**, en mode dégradé annoncé à l'utilisateur |
+| Traitement de données qui ne doivent pas sortir de la machine | **Oui** — c'est le seul chemin possible |
+| Remplacement du service distant en usage courant | **Non.** Deux minutes pour classer une erreur en un mot n'est pas une fonction dégradée, c'est une fonction indisponible |
 
 ### Réserve sur les coûts
 
@@ -313,7 +354,7 @@ relevés changeaient les rapports, la décision serait à revoir.
 | `openai/gpt-oss-120b` | disponible | vérifié sur `/v1/models` |
 | `openai/gpt-oss-20b` | disponible | vérifié sur `/v1/models` |
 | `qwen/qwen3.6-27b` | disponible | vérifié sur `/v1/models` |
-| `qwen3:4b` | **indisponible** | service Ollama en échec de démarrage, voir ci-dessous |
+| `qwen3:4b` | **disponible depuis le 28/08, 18 h** | après réparation du service Ollama, voir ci-dessous |
 
 **Le service Ollama est en boucle de redémarrage — 12 517 tentatives.** Sa
 surcharge systemd le pointe vers `/media/apprenant/Stockage/ollama_models`,
@@ -337,12 +378,21 @@ sudo systemctl restart ollama
 ollama pull qwen3:4b        # seul qwen3.5 est présent aujourd'hui
 ```
 
-Le correctif n'ayant pas pu être appliqué avant la campagne, le quatrième modèle
-est resté **non mesuré**. Les tableaux du § 7 portent la mention plutôt qu'une
-case vide : une case vide se lit comme un oubli, une mention se lit comme un
-fait. Une fois le service rétabli, la colonne se complète sans rejouer le reste :
+**Le service a été réparé le 28 août, et le quatrième modèle mesuré le soir
+même** — 30 appels, 30 succès. Le diagnostic a demandé deux corrections
+successives : le chemin du magasin de modèles n'était pas traversable par
+l'utilisateur système, puis, une fois ce point levé, il est apparu que la
+redirection posée deux jours plus tôt avait déplacé l'adresse du magasin sans y
+transporter les modèles. Le détail est dans
+`incidents/2026-08-28-ollama-service-en-boucle.md`.
+
+La colonne s'est complétée sans rejouer le reste de la campagne :
 
 ```bash
-uv run python -m benchmark.executer --modeles qwen3:4b
+uv run python -m benchmark.executer --modeles qwen3:4b --pause 1
 uv run python -m benchmark.analyser
 ```
+
+Les mesures des trois modèles distants n'ont pas été retouchées : elles datent
+de 16 h, celles du modèle local de 18 h 34, et les deux campagnes ont eu lieu
+machine au repos.

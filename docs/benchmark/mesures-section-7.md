@@ -7,7 +7,7 @@ Mesures relevées par la sonde de monitorage du projet, sur les appels aboutis. 
 | `openai/gpt-oss-120b` | 30 | **0,98** | 1,92 | 0,50 | 2,19 | 0,47 |
 | `openai/gpt-oss-20b` | 30 | **0,75** | 1,20 | 0,42 | 3,83 | 0,59 |
 | `qwen/qwen3.6-27b` | 30 | **1,89** | 2,04 | 1,47 | 2,62 | 0,22 |
-| `qwen3:4b` | 0 | **non mesuré** | — | — | — | — |
+| `qwen3:4b` | 30 | **92,76** | 134,34 | 66,97 | 175,58 | 20,73 |
 
 ### 7.2 Latence médiane par agent
 
@@ -16,7 +16,7 @@ Mesures relevées par la sonde de monitorage du projet, sur les appels aboutis. 
 | `openai/gpt-oss-120b` | 1,16 | 0,95 | 1,00 | 0,95 |
 | `openai/gpt-oss-20b` | 0,78 | 0,75 | 1,13 | 0,68 |
 | `qwen/qwen3.6-27b` | 1,92 | 1,94 | 1,86 | 1,86 |
-| `qwen3:4b` | non mesuré | non mesuré | non mesuré | non mesuré |
+| `qwen3:4b` | 92,77 | 98,79 | 92,63 | 123,50 |
 
 ### 7.3 Jetons et coût
 
@@ -27,7 +27,7 @@ Jetons **rapportés par le fournisseur**, jamais estimés depuis une longueur de
 | `openai/gpt-oss-120b` | 153 | 356 | 0,236 $ ⚠ |
 | `openai/gpt-oss-20b` | 153 | 416 | 0,140 $ ⚠ |
 | `qwen/qwen3.6-27b` | 96 | 768 | 0,480 $ ⚠ |
-| `qwen3:4b` | non mesuré | non mesuré | non mesuré |
+| `qwen3:4b` | — | — | 0,000 $ |
 
 ⚠ **Le tarif n'a pas été confronté à la grille du fournisseur.** Ces montants sont un ordre de grandeur, pas une facture. Voir § 6.
 
@@ -38,7 +38,7 @@ Jetons **rapportés par le fournisseur**, jamais estimés depuis une longueur de
 | `openai/gpt-oss-120b` | 30 | 30 | 0 | 0 | 0 |
 | `openai/gpt-oss-20b` | 30 | 30 | 0 | 0 | 0 |
 | `qwen/qwen3.6-27b` | 30 | 30 | 0 | 0 | 0 |
-| `qwen3:4b` | 0 | 0 | 0 | 0 | — |
+| `qwen3:4b` | 30 | 30 | 0 | 0 | 0 |
 
 La colonne « appels sans trace » est le contrôle hérité de l'incident 003 : elle compte les appels pour lesquels la sonde n'a rien écrit sur le disque. Elle est à zéro — chaque appel mesuré a laissé une trace vérifiée.
 
@@ -53,6 +53,7 @@ Cette section n'était pas au protocole. Elle a été ajoutée parce que la camp
 | `openai/gpt-oss-120b` | 1/30 | 0/30 | 0/30 |
 | `openai/gpt-oss-20b` | 3/30 | 0/30 | 0/30 |
 | `qwen/qwen3.6-27b` | 25/30 | 30/30 | 5/30 |
+| `qwen3:4b` | 0/30 | 0/30 | 0/30 |
 
 ### 7.6 Mesure complémentaire — hors protocole
 
