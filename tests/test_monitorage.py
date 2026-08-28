@@ -203,7 +203,7 @@ def _alertes(journal: JournalMonitorage) -> list[dict]:
         return []
     return [
         evenement
-        for evenement in (json.loads(l) for l in chemin.open(encoding="utf-8") if l.strip())
+        for evenement in (json.loads(ligne) for ligne in chemin.open(encoding="utf-8") if ligne.strip())
         if evenement.get("type") == "alerte"
     ]
 
