@@ -153,6 +153,21 @@ TAILWIND_APP_NAME = 'theme'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Service des fichiers statiques par l'application elle-même (C13).
+    #
+    # Choix : WhiteNoise plutôt qu'un serveur web devant l'application.
+    # Motivation : en production, Django refuse de servir les statiques —
+    # `runserver --insecure` mis à part — et l'hébergeur retenu envoie le
+    # trafic directement au processus applicatif, sans nginx à configurer.
+    # Sans ce composant, l'application se déploie et répond, mais sans aucune
+    # feuille de style : une panne d'apparence totale que rien ne signale
+    # côté serveur.
+    #
+    # Choix : placé juste après SecurityMiddleware, comme sa documentation
+    # l'exige. Plus haut, il court-circuiterait la redirection HTTPS ; plus
+    # bas, chaque fichier statique traverserait sessions, authentification et
+    # messages pour rien.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -331,11 +346,34 @@ LOCALE_PATHS = [
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Toujours défini pour collectstatic
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # Always defined for collectstatic
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',  # Folder for global static files
 ]
+
+# Stockage des statiques collectés.
+#
+# Compétence visée : C13 (épreuve E3)
+#
+# Choix : le stockage compressé et empreinté de WhiteNoise, et seulement quand
+# DEBUG vaut False. Motivation : l'empreinte dans le nom de fichier
+# (`app.4f2a1c.css`) permet un cache navigateur d'un an sans risquer de servir
+# une version périmée après un déploiement. Activé en développement, il
+# obligerait à relancer `collectstatic` après chaque retouche de feuille de
+# style — et une gêne quotidienne finit par être désactivée partout.
+#
+# La classe de stockage est définie dans `eduai_project/statiques.py`, qui
+# porte le détail : elle tolère les références à des fichiers absents du
+# manifeste plutôt que d'en faire une erreur 500 en pleine démonstration.
+if not DEBUG:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "eduai_project.statiques.StockageStatiquesTolerant",
+        },
+    }
 
 # Static file finders
 STATICFILES_FINDERS = [
