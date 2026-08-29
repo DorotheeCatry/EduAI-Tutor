@@ -11,6 +11,13 @@ from django.contrib.auth import get_user_model
 # celle qui permet d'arbitrer le routage des modèles — manque.
 from apps.monitoring.sondes import sous_agent
 
+# Quota de génération (C13). Chaque méthode ci-dessous déclenche un appel
+# facturé : le décompte a lieu ici, au goulot par lequel passent toutes les
+# entrées — vues Django comme service FastAPI, qui amorce Django et réutilise
+# ces mêmes agents. Un contrôle posé sur les vues laisserait le second sans
+# protection. Voir docs/decisions/019.
+from apps.quotas.service import consommer, consommer_pour_le_service_ia
+
 User = get_user_model()
 
 class AIOrchestrator:
@@ -18,18 +25,47 @@ class AIOrchestrator:
     Main orchestrator that coordinates all AI agents
     """
     
-    def __init__(self, user=None):
+    def __init__(self, user=None, pour_service_ia=False):
         self.user = user
+        # Déclare qui décompte la génération (C13). L'API du service IA n'a pas
+        # d'apprenant à qui l'imputer : ses consommateurs sont des programmes
+        # porteurs d'une clé de service. Le drapeau est explicite et non déduit
+        # de `user is None` — une absence d'utilisateur peut aussi signifier
+        # qu'une vue a oublié de le transmettre, et les deux cas n'appellent
+        # pas la même règle.
+        self.pour_service_ia = pour_service_ia
         self.researcher = get_researcher_chain()
         self.pedagogue = get_pedagogue_chain()
         if user:
             self.watcher = get_watcher_agent(user)
+
+    def _decompter(self):
+        """
+        Décompte la génération sur le bon compteur, ou lève `QuotaDepasse`.
+
+        Compétence visée : C13 (épreuve E3)
+
+        Appelé en tête des trois méthodes génératrices, hors de leur `try` :
+        ces blocs interceptent `Exception` et transformeraient le refus en
+        panne technique affichée à l'apprenant.
+        """
+        if self.pour_service_ia:
+            return consommer_pour_le_service_ia()
+        return consommer(self.user)
     
     @sous_agent("pedagogue")
     def generate_course(self, topic, difficulty="intermediate"):
         """
         Generates a complete course using Researcher + Pedagogue
+
+        Compétence visée : C13 (épreuve E3) — le quota est décompté ici.
         """
+        # Hors du `try` ci-dessous, délibérément : ce bloc intercepte
+        # `Exception` et renverrait le refus sous la forme d'une panne
+        # technique. `QuotaDepasse` doit remonter jusqu'à l'appelant, qui seul
+        # sait comment l'annoncer à l'apprenant.
+        self._decompter()
+
         try:
             print(f"🎓 Generating course on: {topic}")
             
@@ -103,7 +139,14 @@ class AIOrchestrator:
     def answer_question(self, question):
         """
         Answers a question using the RAG system
+
+        Compétence visée : C13 (épreuve E3) — le quota est décompté ici.
         """
+        # Voir generate_course : le décompte précède le `try` pour la même
+        # raison. Cette méthode sert aussi bien le chat que la génération
+        # d'exercices, qui la sollicitent avec des invites différentes.
+        self._decompter()
+
         try:
             print(f"🔍 Searching for: {question}")
             
@@ -165,7 +208,13 @@ class AIOrchestrator:
     def create_quiz(self, topic, num_questions):
         """
         Creates a quiz on a given topic and returns a directly usable dict.
+
+        Compétence visée : C13 (épreuve E3) — le quota est décompté ici.
         """
+        # Voir generate_course. Un quiz de dix questions est une seule
+        # génération : c'est un seul appel au modèle.
+        self._decompter()
+
         try:
             # Get user language preference
             user_language = "fr"  # Default
@@ -291,6 +340,13 @@ class AIOrchestrator:
                 'error': str(e)
             }
 
-def get_orchestrator(user=None):
-    """Factory function to create an orchestrator"""
-    return AIOrchestrator(user)
+def get_orchestrator(user=None, pour_service_ia=False):
+    """
+    Factory function to create an orchestrator
+
+    Compétence visée : C13 (épreuve E3)
+
+    `pour_service_ia` doit valoir True pour les appels venus de l'API FastAPI :
+    ils sont décomptés du plafond global du jour et non du quota d'un apprenant.
+    """
+    return AIOrchestrator(user, pour_service_ia=pour_service_ia)

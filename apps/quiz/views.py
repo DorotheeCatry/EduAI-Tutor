@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.quotas.service import QuotaDepasse
 from .models import GameRoom, GameParticipant, GameQuestion, GameAnswer
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -111,6 +112,12 @@ def start_multiplayer_game(request, room_code):
         else:
             messages.error(request, 'Failed to generate questions. Please try again.')
             
+    # Quota de génération (C13), intercepté avant le cas général : le message
+    # « réessayez » du bloc suivant serait faux ici, la partie ne pouvant pas
+    # être lancée avant demain.
+    except QuotaDepasse as depassement:
+        messages.warning(request, depassement.message)
+
     except Exception as e:
         print(f"Error generating questions: {e}")
         messages.error(request, f'Error generating questions: {str(e)}')
@@ -380,7 +387,17 @@ def quiz_start(request):
     except (TypeError, ValueError):
         num_questions = 10
         
-    result = orchestrator.create_quiz(topic, num_questions)
+    # Quota de génération (C13). La page prévoit déjà un champ `error` : le
+    # message du refus y prend la place du message d'échec technique.
+    try:
+        result = orchestrator.create_quiz(topic, num_questions)
+    except QuotaDepasse as depassement:
+        return render(request, 'quiz/quiz_start.html', {
+            'mode': mode,
+            'topic': topic,
+            'quiz_data': None,
+            'error': depassement.message,
+        })
 
     # Check that questions were actually returned
     quiz_data = result if result and "questions" in result and result["questions"] else None

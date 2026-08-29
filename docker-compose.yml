@@ -94,6 +94,11 @@ services:
       SERVICE_IA_QUOTA_GENERATION: ${SERVICE_IA_QUOTA_GENERATION:-30/minute}
       SERVICE_IA_QUOTA_RECHERCHE: ${SERVICE_IA_QUOTA_RECHERCHE:-120/minute}
       SERVICE_IA_CONCURRENCE_MAX: ${SERVICE_IA_CONCURRENCE_MAX:-4}
+      # Plafond journalier de générations, partagé avec l'application web : le
+      # budget borné est celui du projet, pas celui de chaque façade prise à
+      # part. Le service IA n'applique pas de quota individuel — ses
+      # consommateurs sont des programmes, bornés en cadence par clé ci-dessus.
+      EDUAI_PLAFOND_GENERATIONS_PAR_JOUR: ${EDUAI_PLAFOND_GENERATIONS_PAR_JOUR:-200}
       # Le service amorce Django pour réutiliser les agents : il lui faut donc
       # les réglages de l'application.
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY doit être défini dans .env}

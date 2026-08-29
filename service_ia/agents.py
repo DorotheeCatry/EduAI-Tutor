@@ -150,7 +150,11 @@ async def generer_cours(sujet: str, difficulte: str) -> dict[str, Any]:
     from apps.agents.agent_orchestrator import get_orchestrator
 
     debut = time.perf_counter()
-    orchestrateur = await asyncio.to_thread(get_orchestrator, None)
+    orchestrateur = await asyncio.to_thread(
+        # Décompté du plafond global du jour, pas d'un quota d'apprenant :
+        # cette API est consommée par des programmes (C13).
+        get_orchestrator, None, pour_service_ia=True,
+    )
     resultat = await _appeler(orchestrateur.generate_course, sujet, difficulte)
     return _emballer("pedagogue", resultat, debut)
 
@@ -169,7 +173,11 @@ async def expliquer(notion: str, niveau: str) -> dict[str, Any]:
     from apps.agents.agent_orchestrator import get_orchestrator
 
     debut = time.perf_counter()
-    orchestrateur = await asyncio.to_thread(get_orchestrator, None)
+    orchestrateur = await asyncio.to_thread(
+        # Décompté du plafond global du jour, pas d'un quota d'apprenant :
+        # cette API est consommée par des programmes (C13).
+        get_orchestrator, None, pour_service_ia=True,
+    )
     question = (
         f"Réexplique la notion suivante à un apprenant de niveau {niveau}, "
         f"autrement qu'un cours classique, avec un exemple concret : {notion}"
@@ -187,7 +195,11 @@ async def generer_exercice(sujet: str, nombre: int) -> dict[str, Any]:
     from apps.agents.agent_orchestrator import get_orchestrator
 
     debut = time.perf_counter()
-    orchestrateur = await asyncio.to_thread(get_orchestrator, None)
+    orchestrateur = await asyncio.to_thread(
+        # Décompté du plafond global du jour, pas d'un quota d'apprenant :
+        # cette API est consommée par des programmes (C13).
+        get_orchestrator, None, pour_service_ia=True,
+    )
     resultat = await _appeler(orchestrateur.create_quiz, sujet, nombre)
     return _emballer("coach", resultat, debut)
 

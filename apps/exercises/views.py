@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Avg
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.quotas.service import QuotaDepasse
 from django.views.decorators.http import require_POST
 from .models import Exercise, ExerciseSubmission, UserExerciseProgress
 from .security import secure_executor
@@ -459,6 +460,14 @@ def generate_exercise(request):
                 print(f"❌ Orchestrator error: {result.get('error', 'Unknown error')}")
                 messages.error(request, f'Generation error: {result.get("error", "Unknown error")}')
                 
+        # Quota de génération (C13) : intercepté AVANT le `except Exception`
+        # qui suit. Celui-ci fabrique un exercice de repli — comportement juste
+        # pour une panne du modèle, absurde pour un refus : il créerait du
+        # contenu tout en masquant à l'apprenant la raison du refus.
+        except QuotaDepasse as depassement:
+            messages.warning(request, depassement.message)
+            return redirect('exercises:list')
+
         except Exception as e:
             print(f"❌ Exception during generation: {str(e)}")
             
@@ -710,6 +719,13 @@ def generate_exercise_from_course(request):
             print(f"❌ Orchestrator error: {result.get('error', 'Unknown error')}")
             messages.error(request, f'Generation error: {result.get("error", "Unknown error")}')
             
+    # Voir la vue précédente : le refus de quota ne doit pas emprunter le
+    # chemin de repli, qui créerait un exercice sans que rien n'explique
+    # pourquoi la génération n'a pas eu lieu.
+    except QuotaDepasse as depassement:
+        messages.warning(request, depassement.message)
+        return redirect('exercises:list')
+
     except Exception as e:
         print(f"❌ Exception during generation: {str(e)}")
         

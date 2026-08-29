@@ -6,6 +6,7 @@ from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
 from .models import GameRoom, GameParticipant, GameQuestion, GameAnswer
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.quotas.service import QuotaDepasse
 
 User = get_user_model()
 
@@ -131,7 +132,20 @@ class QuizConsumer(AsyncWebsocketConsumer):
         
         # Générer les questions
         # Generate questions
-        await self.generate_questions()
+        #
+        # Le résultat est désormais examiné, alors qu'il était ignoré. Sans cet
+        # examen, un refus de quota ou une panne du modèle laissait la partie
+        # démarrer sans aucune question (C13).
+        refus = await self.generate_questions()
+        if refus:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'game_error',
+                    'message': refus,
+                }
+            )
+            return
         
         # Change room status
         await self.update_room_status('starting')
@@ -151,11 +165,26 @@ class QuizConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def generate_questions(self):
+        """
+        Génère les questions de la partie.
+
+        Compétence visée : C13 (épreuve E3) — quota de génération
+
+        Renvoie `None` si la génération a eu lieu, sinon le message à afficher
+        dans le salon. Choix : un message plutôt qu'un booléen. Motivation : le
+        booléen obligeait l'appelant à inventer lui-même une explication, et
+        celle d'un refus de quota n'est pas celle d'une panne.
+        """
         try:
             room = GameRoom.objects.get(code=self.room_code)
             
             # Use AI orchestrator to generate quiz
-            orchestrator = get_orchestrator()
+            #
+            # L'hôte du salon, et non plus personne : cet appel se faisait sans
+            # utilisateur, ce qui en faisait le seul chemin de dépense non
+            # imputable. C'est bien l'hôte qui déclenche la génération, c'est
+            # donc son quota qui la porte (C13).
+            orchestrator = get_orchestrator(room.host)
             quiz_data = orchestrator.create_quiz(room.topic, room.num_questions)
             
             # Save questions
@@ -169,10 +198,15 @@ class QuizConsumer(AsyncWebsocketConsumer):
                     explanation=question_data.get('explanation', '')
                 )
             
-            return True
+            return None
+
+        except QuotaDepasse as depassement:
+            print(f"Génération refusée (quota) : {depassement.message}")
+            return depassement.message
+
         except Exception as e:
             print(f"Question generation error: {e}")
-            return False
+            return "La génération des questions a échoué. Réessayez dans un instant."
 
     @database_sync_to_async
     def update_room_status(self, status):
@@ -392,6 +426,17 @@ class QuizConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'room_update',
             'data': event['data']
+        }))
+
+    async def game_error(self, event):
+        """
+        Transmet au salon un refus ou un échec de génération.
+
+        Compétence visée : C13 (épreuve E3)
+        """
+        await self.send(text_data=json.dumps({
+            'type': 'game_error',
+            'message': event['message'],
         }))
 
     async def game_starting(self, event):

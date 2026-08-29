@@ -37,6 +37,11 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+# Importé après `amorce`, qui charge Django : le module de quotas déclare un
+# modèle et ne peut pas être importé avant que le registre des applications
+# soit prêt.
+from apps.quotas.service import QuotaDepasse
+
 from . import agents
 from .schemas import (
     DemandeCours,
@@ -152,6 +157,34 @@ async def quota_depasse(request: Request, exception: RateLimitExceeded):
                 "budget de l'organisme."
             ),
             code="quota_depasse",
+        ).model_dump(),
+    )
+
+
+@application.exception_handler(QuotaDepasse)
+async def plafond_journalier_atteint(request: Request, exception: QuotaDepasse):
+    """
+    Répond quand le plafond global de générations du jour est atteint.
+
+    Compétence visée : C9 (épreuve E2) — OWASP API4
+    Compétence visée : C13 (épreuve E3) — maîtrise du coût
+
+    Choix : 429 comme pour le débit, et non 503. Motivation : 503 annoncerait
+    une panne, et inviterait le client à réessayer aussitôt. Le service n'est
+    pas en panne : il a atteint une limite volontaire, et rien ne changera
+    avant demain.
+
+    Choix : ce plafond est distinct du débit par clé traité au-dessus. Le débit
+    borne la cadence d'un consommateur, ce plafond borne le volume du jour tous
+    consommateurs confondus — application web comprise. Les deux peuvent se
+    déclencher séparément, et le message dit lequel.
+    """
+    logger.warning("Plafond journalier de générations atteint : %s", exception.message)
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content=ErreurAPI(
+            detail=exception.message,
+            code="plafond_journalier_atteint",
         ).model_dump(),
     )
 

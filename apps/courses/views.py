@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.quotas.service import QuotaDepasse
 from apps.rag.module_loader import module_loader
 from .models import Course
 import re
@@ -91,7 +92,14 @@ def course_generator(request):
             if module_info:
                 orchestrator.current_module = module_info['name']
         
-        result = orchestrator.generate_course(topic)
+        # Quota de génération (C13) : le refus n'est pas une panne, il a son
+        # propre message et laisse l'apprenant sur le formulaire.
+        try:
+            result = orchestrator.generate_course(topic)
+        except QuotaDepasse as depassement:
+            messages.warning(request, depassement.message)
+            context = {'modules': module_loader.get_available_modules()}
+            return render(request, 'courses/generate.html', context)
         
         if result['success']:
             # Add XP for course generation
