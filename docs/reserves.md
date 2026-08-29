@@ -93,3 +93,50 @@ Le choix est délibéré : ces messages sont ceux que le jury lira pendant la
 démonstration, et l'homogénéisation linguistique de toute l'interface n'est pas
 un chantier ouvrable avant le 4 septembre. L'incohérence est visible ; elle est
 signalée ici plutôt que découverte.
+
+
+---
+
+## 5. L'interface dépend de deux CDN externes
+
+**Composant :** `templates/base.html` et gabarits d'authentification
+**Nature :** dépendance externe non maîtrisée à l'exécution
+
+Les pages chargent Tailwind depuis `cdn.tailwindcss.com` et les icônes depuis
+`unpkg.com`. Le projet compile pourtant sa propre feuille Tailwind
+(`theme/static/css/dist`), servie par WhiteNoise — les deux mécanismes
+coexistent, et c'est le CDN qui l'emporte sur ces pages.
+
+Trois conséquences :
+
+- une panne ou un blocage de l'un des deux CDN suffit à rendre l'interface
+  illisible, sans que le serveur signale quoi que ce soit ;
+- la version chargée est `@latest` pour les icônes, donc non figée : une
+  publication amont peut modifier l'apparence sans qu'aucun commit n'ait eu
+  lieu ici ;
+- l'adresse IP de chaque visiteur est communiquée à deux tiers, ce qui est à
+  signaler dans la documentation RGPD si l'application est ouverte au-delà de
+  la démonstration.
+
+Rien de tout cela n'empêche la démonstration. C'est une dépendance réelle,
+qu'il vaut mieux avoir écrite que découvrir pendant une soutenance.
+
+---
+
+## 6. L'image de l'application pèse 5,7 Gio
+
+**Composant :** `Dockerfile`
+**Nature :** coût de déploiement, non bloquant
+
+L'image construite pèse 5,7 Gio décompressés. Le corpus vectoriel n'en
+représente que 219 Mio (décision 021) : l'essentiel vient des dépendances
+Python, PySpark en tête.
+
+PySpark n'est utilisé que par la source big data du pipeline de données (C1,
+S5), jamais par l'application web à l'exécution. Le séparer en groupe de
+dépendances optionnel allégerait considérablement l'image — mais toucher au
+découpage des dépendances à six jours du rendu risque plus que cela ne
+rapporte, et le cahier des charges l'interdit explicitement.
+
+À reprendre après le 14 septembre, en même temps que la séparation de ChromaDB
+en service distinct (décision 018).
