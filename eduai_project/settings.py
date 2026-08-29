@@ -134,6 +134,9 @@ INSTALLED_APPS = [
     'apps.tracker',
     'apps.exercises',
     'apps.api_data',
+    # Quotas de génération : borne la dépense auprès du fournisseur de modèles
+    # avant toute mise en ligne. Voir apps/quotas/service.py.
+    'apps.quotas',
     'theme',
 
     # Third-party apps
