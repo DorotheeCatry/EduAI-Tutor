@@ -53,6 +53,12 @@
 
         <!-- Input Area -->
         <div class="p-4 bg-gray-800 border-t border-gray-700 rounded-b-lg flex-shrink-0">
+            <!-- Quota de génération (C13) : chaque question posée ici déclenche
+                 un appel facturé, le compteur se lit donc au-dessus du champ. -->
+            <div class="mb-3">
+                {% include "quotas/_compteur_generations.html" %}
+            </div>
+
             <form id="chat-form" class="flex items-end space-x-3">
                 {% csrf_token %}
                 <div class="flex-1">

@@ -416,3 +416,127 @@ def test_le_service_ia_tient_sur_une_seule_ligne_par_jour(plafonds):
     )
     assert lignes.count() == 1
     assert lignes.first().generations == 3
+
+
+# --- L'affichage du compteur ----------------------------------------------
+
+def test_le_compteur_est_expose_aux_gabarits(apprenant, plafonds, rf):
+    """
+    Le processeur de contexte publie l'état du quota.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Un apprenant ne doit pas découvrir le plafond au moment du refus : le
+    compteur s'affiche sur les pages qui déclenchent une génération.
+    """
+    from apps.quotas.context import quota_generation
+
+    plafonds(individuel=5, global_=100)
+    consommer(apprenant)
+
+    requete = rf.get("/")
+    requete.user = apprenant
+
+    etat_affiche = quota_generation(requete)["quota_generation"]
+    assert etat_affiche["restantes"] == 4
+    assert etat_affiche["quota"] == 5
+
+
+def test_le_compteur_ne_coute_aucune_requete_tant_qu_il_n_est_pas_lu(
+    apprenant, plafonds, rf, django_assert_num_queries,
+):
+    """
+    Le calcul est différé jusqu'au premier accès depuis un gabarit.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Sans ce report, chaque page du site paierait une agrégation pour un
+    compteur que la plupart n'affichent pas — un coût prélevé sur toutes les
+    pages au profit de quatre.
+    """
+    from apps.quotas.context import quota_generation
+
+    plafonds(individuel=5, global_=100)
+    requete = rf.get("/")
+    requete.user = apprenant
+
+    with django_assert_num_queries(0):
+        contexte = quota_generation(requete)
+
+    # La lecture, elle, interroge bien la base.
+    assert contexte["quota_generation"]["restantes"] == 5
+
+
+def test_aucun_compteur_pour_une_visite_anonyme(rf):
+    """
+    Sans compte, il n'y a pas de compteur à afficher.
+
+    Compétence visée : C17 (épreuve E4)
+    """
+    from django.contrib.auth.models import AnonymousUser
+
+    from apps.quotas.context import quota_generation
+
+    requete = rf.get("/")
+    requete.user = AnonymousUser()
+
+    # Le contrôle porte sur la valeur de vérité et non sur `is None` : le
+    # processeur renvoie un objet différé, qui n'est pas `None` lui-même mais
+    # s'évalue à faux — et c'est bien cette évaluation que fait le `{% if %}`
+    # du gabarit.
+    assert not quota_generation(requete)["quota_generation"]
+
+
+def test_le_gabarit_annonce_le_quota_epuise(apprenant, plafonds, rf):
+    """
+    Le fragment d'affichage dit ce qui se passe, en toutes lettres.
+
+    Compétence visée : C17 (épreuve E4) — accessibilité
+
+    L'information n'est pas portée par la seule couleur : un compteur épuisé se
+    lit. Le contrôle porte donc sur le texte rendu, pas sur les classes CSS.
+    """
+    from django.template.loader import render_to_string
+
+    from apps.quotas.context import quota_generation
+
+    plafonds(individuel=2, global_=100)
+    consommer(apprenant)
+    consommer(apprenant)
+
+    requete = rf.get("/")
+    requete.user = apprenant
+
+    rendu = render_to_string(
+        "quotas/_compteur_generations.html", quota_generation(requete),
+    )
+
+    assert "vos 2 générations du jour" in rendu
+    assert "minuit" in rendu
+    assert 'role="status"' in rendu
+
+
+def test_la_page_de_generation_affiche_le_compteur(apprenant, plafonds, client):
+    """
+    Le compteur est bien inclus dans la page, pas seulement disponible.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence visée : C18 (épreuve E4)
+
+    Un processeur de contexte qui publie une valeur qu'aucun gabarit n'inclut
+    ne se voit pas : la valeur existe, l'apprenant ne la lit jamais. Ce
+    contrôle passe par la page réelle pour éviter cet écart — c'est le même
+    motif que la sonde de monitorage branchée sans effet (incident 003).
+    """
+    from django.urls import reverse
+
+    plafonds(individuel=5, global_=100)
+    consommer(apprenant)
+    client.force_login(apprenant)
+
+    reponse = client.get(reverse("courses:generator"))
+
+    assert reponse.status_code == 200
+    contenu = reponse.content.decode("utf-8")
+    assert "Il vous reste" in contenu
+    assert "génération" in contenu

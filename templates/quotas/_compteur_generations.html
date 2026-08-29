@@ -1,0 +1,56 @@
+{% comment %}
+Compteur de générations restantes pour la journée.
+
+Compétence visée : C13 (épreuve E3) — le coût est visible avant d'être subi
+Compétence visée : C17 (épreuve E4) — accessibilité
+
+À inclure sur toute page qui déclenche une génération :
+
+    {% include "quotas/_compteur_generations.html" %}
+
+Le contexte vient du processeur `apps.quotas.context.quota_generation`, calculé
+paresseusement : inclure ce fragment est ce qui déclenche la requête.
+
+Accessibilité :
+  - l'information est portée par le texte, jamais par la seule couleur — un
+    compteur épuisé se lit, il ne se devine pas à une nuance de rouge ;
+  - `role="status"` annonce le compteur aux lecteurs d'écran sans voler le
+    focus, ce que ferait `role="alert"` ;
+  - les icônes décoratives portent `aria-hidden` et ne sont jamais le seul
+    porteur d'un sens.
+{% endcomment %}
+
+{% if quota_generation %}
+<div role="status"
+     class="rounded-lg border px-4 py-3 text-sm
+            {% if quota_generation.restantes == 0 %}
+                border-amber-500/40 bg-amber-500/10 text-amber-200
+            {% else %}
+                border-gray-700 bg-gray-800 text-gray-300
+            {% endif %}">
+
+    {% if quota_generation.total_global >= quota_generation.plafond_global %}
+        <p>
+            <strong>Génération suspendue pour aujourd'hui.</strong>
+            Le service a atteint son plafond quotidien
+            ({{ quota_generation.plafond_global }} générations).
+            La consultation reste ouverte : vos cours, exercices et quiz déjà
+            enregistrés restent accessibles. La génération reprendra demain.
+        </p>
+    {% elif quota_generation.restantes == 0 %}
+        <p>
+            <strong>Vous avez utilisé vos {{ quota_generation.quota }} générations du jour.</strong>
+            Le compteur repart à zéro à minuit. Vos cours, exercices et quiz
+            déjà enregistrés restent accessibles.
+        </p>
+    {% else %}
+        <p>
+            Il vous reste
+            <strong>{{ quota_generation.restantes }}</strong>
+            génération{{ quota_generation.restantes|pluralize }} sur
+            {{ quota_generation.quota }} aujourd'hui.
+            Le compteur repart à zéro à minuit.
+        </p>
+    {% endif %}
+</div>
+{% endif %}

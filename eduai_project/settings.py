@@ -180,6 +180,10 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.static',
                 'django.template.context_processors.media',
+                # Compteur de générations restantes (C13, C17). Calculé
+                # paresseusement : les pages qui ne l'affichent pas ne paient
+                # aucune requête.
+                'apps.quotas.context.quota_generation',
             ],
             'debug': DEBUG,
         },

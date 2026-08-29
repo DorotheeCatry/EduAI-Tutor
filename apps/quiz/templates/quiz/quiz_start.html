@@ -13,6 +13,27 @@
 
 {% block content %}
 <div class="p-6 space-y-6 h-full overflow-y-auto">
+
+    {% comment %}
+    La vue passait déjà un champ `error` que ce gabarit n'affichait nulle part :
+    un quiz non généré donnait une page vide, sans explication. Le refus de
+    quota (C13) emprunte ce même champ, il fallait donc le rendre visible.
+    {% endcomment %}
+    {% if error %}
+        <div role="alert"
+             class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+            <p>{{ error }}</p>
+            <p class="mt-2">
+                <a href="{% url 'quiz:lobby' %}" class="underline hover:no-underline">
+                    Revenir au salon
+                </a>
+            </p>
+        </div>
+    {% endif %}
+
+    <!-- Quota de génération (C13) -->
+    {% include "quotas/_compteur_generations.html" %}
+
     <!-- Top header: title + timer -->
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">

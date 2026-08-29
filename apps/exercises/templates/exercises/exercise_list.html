@@ -166,6 +166,11 @@
             </button>
         </div>
         
+        <!-- Quota de génération (C13) : lisible avant de lancer la demande. -->
+        <div class="mb-4">
+            {% include "quotas/_compteur_generations.html" %}
+        </div>
+
         <form method="post" action="{% url 'exercises:generate' %}">
             {% csrf_token %}
             <div class="space-y-4">

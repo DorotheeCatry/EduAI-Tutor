@@ -112,6 +112,16 @@ la même règle.
   questions.
 - 18 contrôles automatisés, dont le placement du décompte hors du bloc
   d'interception et le partage du plafond entre les deux façades.
-- Reste ouvert : aucune interface n'affiche « il vous reste N générations »
-  avant le refus. La fonction `etat()` existe pour cela ; l'affichage n'est pas
-  fait.
+- Le compteur est affiché **avant** la génération, sur les quatre pages qui en
+  déclenchent une : génération de cours, chat, fenêtre de génération
+  d'exercice, quiz. Un apprenant ne découvre donc pas le plafond au moment du
+  refus, et le jury voit que le coût a été pensé. Le calcul est différé
+  (`SimpleLazyObject`) : les pages qui n'affichent pas le compteur ne paient
+  aucune requête.
+- Au passage, `quiz_start.html` ne rendait nulle part le champ `error` que sa
+  vue lui transmet : un quiz non généré donnait une page vide, sans
+  explication. Le gabarit l'affiche désormais.
+- **Réserve** : le quiz multijoueur par WebSocket a été protégé par le quota,
+  mais aucun gabarit du projet n'ouvre de connexion WebSocket — c'est du code
+  serveur sans client. Consigné dans `docs/reserves.md`, avec les autres écarts
+  entre ce que le dépôt paraît faire et ce qu'il fait.
