@@ -111,15 +111,20 @@ Trois conséquences :
 
 - une panne ou un blocage de l'un des deux CDN suffit à rendre l'interface
   illisible, sans que le serveur signale quoi que ce soit ;
-- la version chargée est `@latest` pour les icônes, donc non figée : une
-  publication amont peut modifier l'apparence sans qu'aucun commit n'ait eu
-  lieu ici ;
+- ~~la version chargée est `@latest` pour les icônes, donc non figée~~ —
+  **corrigé le 29/08/2026.** Les deux références flottantes ont été figées sur
+  ce que les URL servaient ce jour-là, vérifié par comparaison d'empreintes :
+  Tailwind `3.4.17` et Lucide `1.37.0`. Le rendu du jour est donc inchangé,
+  et une publication amont ne peut plus le modifier pendant la période de
+  soutenance ;
 - l'adresse IP de chaque visiteur est communiquée à deux tiers, ce qui est à
   signaler dans la documentation RGPD si l'application est ouverte au-delà de
   la démonstration.
 
-Rien de tout cela n'empêche la démonstration. C'est une dépendance réelle,
-qu'il vaut mieux avoir écrite que découvrir pendant une soutenance.
+Ce qui subsiste après correction : la disponibilité des deux CDN et la fuite
+d'adresse IP vers deux tiers. Rien de tout cela n'empêche la démonstration.
+C'est une dépendance réelle, qu'il vaut mieux avoir écrite que découvrir
+pendant une soutenance.
 
 ---
 
