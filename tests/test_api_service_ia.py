@@ -83,14 +83,56 @@ def test_une_cle_invalide_est_refusee_comme_une_cle_absente(client):
     sans = client.post("/ai/cours", json={"sujet": "python"})
     fausse = client.post(
         "/ai/cours", json={"sujet": "python"},
-        # Valeur en ASCII pur : les en-têtes HTTP ne transportent pas
-        # d'accents, et un client qui en enverrait échouerait avant même
-        # d'atteindre le service.
         headers={"X-Cle-Service": "cle-inventee"},
     )
 
     assert sans.status_code == fausse.status_code == 401
     assert sans.json()["detail"] == fausse.json()["detail"]
+
+
+def test_une_cle_non_ascii_est_refusee_et_non_une_erreur_serveur(client):
+    """
+    Une clé accentuée donne 401, pas 500.
+
+    Compétence visée : C13 (épreuve E3) — OWASP API2
+    Compétence visée : C18 (épreuve E4)
+
+    Ce test est né d'un défaut réel : `hmac.compare_digest` lève `TypeError`
+    dès qu'une des deux chaînes comparées porte un caractère hors ASCII, et le
+    service répondait alors 500. Les contrôles existants ne le voyaient pas —
+    ils n'essayaient que des clés fausses en ASCII pur, sur l'hypothèse écrite
+    qu'un en-tête accentué n'atteindrait jamais le service. L'hypothèse était
+    fausse : les en-têtes HTTP sont décodés en latin-1, un caractère accentué
+    y arrive donc sous forme de deux caractères hors ASCII, et la comparaison
+    reçoit bien une chaîne qu'elle refuse de traiter.
+
+    Trois raisons de tenir ce cas, au-delà du code de retour :
+    un 500 annonce une panne du service là où l'appel est simplement refusé ;
+    ces 500 de routine noieraient les vraies erreurs internes dans les
+    journaux ; et l'écart entre 401 et 500 dirait à un attaquant si sa clé est
+    en ASCII ou non, alors que le reste de l'authentification s'applique à ne
+    rien révéler.
+    """
+    # En-tête passé en octets, et non en `str`. Motivation : le client d'essai
+    # encode lui-même les en-têtes en ASCII et refuserait la chaîne avant tout
+    # envoi — c'est d'ailleurs cette protection du client qui a fait croire que
+    # le cas était impossible. Un client réel (curl, requests) n'a pas ce
+    # scrupule : il pose les octets sur le fil, et le serveur les décode en
+    # latin-1. Envoyer les octets reproduit donc ce que reçoit vraiment le
+    # service, là où une chaîne testerait le client.
+    accentuee = client.post(
+        "/ai/cours", json={"sujet": "python"},
+        headers={b"X-Cle-Service": "clé-inventée-avec-accents".encode("utf-8")},
+    )
+    ascii_pur = client.post(
+        "/ai/cours", json={"sujet": "python"},
+        headers={"X-Cle-Service": "cle-inventee"},
+    )
+
+    assert accentuee.status_code == 401
+    # Indiscernable d'une clé fausse en ASCII : même code, même message.
+    assert accentuee.status_code == ascii_pur.status_code
+    assert accentuee.json()["detail"] == ascii_pur.json()["detail"]
 
 
 def test_la_sonde_de_sante_reste_ouverte(client):

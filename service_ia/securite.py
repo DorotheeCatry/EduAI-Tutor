@@ -92,8 +92,30 @@ async def verifier_cle(
         )
 
     fournie = request.headers.get(NOM_ENTETE_CLE) or ""
+
+    # Choix : comparer des octets, jamais des chaînes. Motivation :
+    # `hmac.compare_digest` refuse deux `str` dès que l'une porte un caractère
+    # hors ASCII, et lève `TypeError` — « comparing strings with non-ASCII
+    # characters is not supported ». Une clé mal formée (un copier-coller qui
+    # embarque une lettre accentuée) sortait donc de cette fonction par une
+    # exception, que FastAPI traduisait en 500. Trois conséquences, toutes
+    # indésirables : l'appelant recevait une erreur serveur là où son appel
+    # était simplement refusé ; le bruit de ces 500 aurait noyé les vraies
+    # pannes internes ; et l'écart de code entre une clé fausse en ASCII (401)
+    # et une clé fausse accentuée (500) renseignait un attaquant sur la nature
+    # de sa saisie, ce que le reste de cette fonction s'applique justement à ne
+    # pas faire. L'encodage préalable ramène tous les cas au même chemin : un
+    # refus. Voir docs/incidents/2026-08-29-cle-non-ascii-erreur-serveur.md
+    #
+    # Choix : `surrogateescape` plutôt qu'un encodage strict. Motivation : les
+    # octets non décodables d'une variable d'environnement arrivent en Python
+    # sous forme de substituts, qu'un encodage strict rejetterait à son tour
+    # par une `UnicodeEncodeError` — le même défaut déplacé d'un cran. Une clé
+    # illisible doit aboutir à un refus, jamais à une exception.
+    fournie_octets = fournie.encode("utf-8", "surrogateescape")
+
     for attendue in cles:
-        if hmac.compare_digest(fournie, attendue):
+        if hmac.compare_digest(fournie_octets, attendue.encode("utf-8", "surrogateescape")):
             return attendue
 
     logger.warning(
