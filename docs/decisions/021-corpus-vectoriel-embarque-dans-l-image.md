@@ -93,3 +93,9 @@ Deux conséquences pratiques à connaître avant de s'en étonner :
   disque. Le comportement local est inchangé.
 - À consigner dans la documentation de la chaîne de livraison : la réindexation
   est une opération hors ligne, suivie d'une reconstruction d'image.
+- **Complément du 29/08, même journée.** Au moment d'écrire cette décision, la
+  majeure partie des 219 Mio embarqués n'était lue par aucun chemin de code :
+  les cinq points d'accès RAG interrogeaient une collection de 387 fragments,
+  pas les 21 189 du pipeline. L'argument du coût tenait donc sur un corpus
+  inutilisé. La décision 022 branche la recherche documentaire sur le corpus du
+  pipeline ; les 219 Mio servent désormais ce pour quoi ils sont transportés.

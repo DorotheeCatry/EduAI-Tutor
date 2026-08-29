@@ -31,6 +31,33 @@ URL_OLLAMA = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 # réindexer l'intégralité du corpus.
 MODELE_EMBARQUEMENT = os.environ.get("OLLAMA_EMBED_MODEL", "mxbai-embed-large")
 
+#: Collection servant la recherche documentaire de l'API du service IA (C9).
+#
+# Compétence visée : C9 (épreuve E2), C10 (épreuve E3)
+#
+# Le corpus vectoriel porte deux collections, et elles n'ont pas le même objet :
+#
+#   - `eduai_knowledge_base` — 387 fragments issus des supports de formation.
+#     C'est le contexte pédagogique des agents : ce que le Pédagogue doit avoir
+#     sous les yeux pour composer un cours conforme au programme.
+#   - `eduai_corpus_documentaire` — 21 189 fragments issus des cinq sources du
+#     pipeline (C1 à C4). C'est de la documentation technique publique, filtrée
+#     par licence.
+#
+# Choix : la recherche documentaire du service IA interroge la seconde, les
+# agents Django restent sur la première. Motivation : ce sont deux questions
+# différentes. « Que dit la documentation sur les listes ? » appelle le corpus
+# collecté ; « quel contexte donner au Pédagogue ? » appelle les supports de
+# formation. Jusqu'au 29/08/2026, les deux interrogeaient la première, et les
+# 21 189 fragments produits par le pipeline n'étaient lus par personne.
+#
+# Les deux collections sont indexées avec le même modèle d'embarquement, ce qui
+# est la condition pour que les vecteurs soient comparables.
+COLLECTION_DOCUMENTAIRE = "eduai_corpus_documentaire"
+
+#: Collection de contexte pédagogique des agents.
+COLLECTION_PEDAGOGIQUE = "eduai_knowledge_base"
+
 # === For LangChain (used in agent_researcher.py) ===
 def load_embedding_function():
     return OllamaEmbeddings(model=MODELE_EMBARQUEMENT, base_url=URL_OLLAMA)

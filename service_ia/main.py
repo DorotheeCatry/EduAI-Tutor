@@ -41,6 +41,7 @@ from slowapi.middleware import SlowAPIMiddleware
 # modèle et ne peut pas être importé avant que le registre des applications
 # soit prêt.
 from apps.quotas.service import QuotaDepasse
+from apps.rag.utils import COLLECTION_DOCUMENTAIRE
 
 from . import agents
 from .schemas import (
@@ -448,7 +449,11 @@ async def sante(request: Request) -> ReponseSante:
     corpus = {
         "present": chemin_corpus.is_dir(),
         "chemin": str(chemin_corpus),
-        "collection": "eduai_knowledge_base",
+        # Le nom était écrit en dur et désignait l'autre collection : la sonde
+        # annonçait donc un corpus que la recherche n'interroge pas. Une sonde
+        # qui décrit autre chose que le service rendu est pire qu'une absence
+        # de sonde — le projet en a documenté le cas (incident 003).
+        "collection": COLLECTION_DOCUMENTAIRE,
     }
 
     verification = journal.verifier()

@@ -272,7 +272,7 @@ async def rechercher(requete: str, nombre: int) -> dict[str, Any]:
     from langchain_community.vectorstores import Chroma
 
     from apps.monitoring.sondes import contexte_agent
-    from apps.rag.utils import load_embedding_function
+    from apps.rag.utils import COLLECTION_DOCUMENTAIRE, load_embedding_function
 
     debut = time.perf_counter()
     try:
@@ -281,7 +281,11 @@ async def rechercher(requete: str, nombre: int) -> dict[str, Any]:
                 Chroma,
                 persist_directory="apps/rag/chroma",
                 embedding_function=load_embedding_function(),
-                collection_name="eduai_knowledge_base",
+                # Le corpus collecté par le pipeline (21 189 fragments), et non
+                # les supports de formation (387). C'est la question posée à ce
+                # point de terminaison : ce que dit la documentation, pas ce que
+                # le programme prévoit. Voir apps/rag/utils.py.
+                collection_name=COLLECTION_DOCUMENTAIRE,
             )
             recuperateur = magasin.as_retriever(search_kwargs={"k": nombre})
             fragments = await recuperateur.ainvoke(requete)
