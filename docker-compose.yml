@@ -114,7 +114,28 @@ services:
     volumes:
       # Le corpus vectoriel et les journaux vivent hors de l'image : ils
       # changent sans qu'on reconstruise, et survivent au conteneur.
-      - ./apps/rag/chroma:/app/apps/rag/chroma:ro
+      #
+      # Choix : le corpus vectoriel est monté en écriture, alors qu'il n'est
+      # que consulté. Ce n'est pas un relâchement par commodité, c'est un
+      # compromis subi. Le montage portait `:ro` — une protection délibérée :
+      # le service IA lit le corpus, il n'a aucune raison légitime de le
+      # modifier, et un montage en lecture seule empêche par construction
+      # qu'une régression ou une injection l'altère. Mais ChromaDB s'appuie
+      # sur SQLite, et SQLite écrit sur son fichier même pour une simple
+      # lecture : journal WAL, fichier de verrous, index temporaires. Le
+      # moteur ne peut donc pas ouvrir la base du tout, et `/ai/recherche`
+      # répondait 503 « attempt to write a readonly database ». La protection
+      # ne dégradait pas la fonction, elle la rendait impossible.
+      #
+      # Ce qui est perdu : le conteneur du service IA peut désormais écrire
+      # dans `apps/rag/chroma`. Ce qui reste : le corpus est reconstructible
+      # par réindexation, il ne contient aucune donnée personnelle, et le
+      # service n'expose aucune route d'écriture vers lui. Une alternative
+      # existe — faire tourner ChromaDB en serveur séparé, seul détenteur du
+      # volume en écriture — mais elle ajoute un service à déployer et sort du
+      # périmètre d'ici la soutenance. Voir docs/decisions/018 et
+      # docs/incidents/2026-08-29-corpus-vectoriel-monte-en-lecture-seule.md
+      - ./apps/rag/chroma:/app/apps/rag/chroma
       - ./data_pipeline/data/monitorage:/app/data_pipeline/data/monitorage
 
     # Même réseau que le collecteur et PostgreSQL, qui n'écoutent que sur la
