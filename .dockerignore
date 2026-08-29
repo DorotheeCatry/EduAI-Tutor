@@ -16,9 +16,20 @@
 **/__pycache__
 **/*.pyc
 
-# Vector store : monté en volume par docker-compose, en lecture seule. Le
-# copier dans l'image le figerait à la date de construction.
-apps/rag/chroma
+# Vector store : DÉLIBÉRÉMENT NON EXCLU depuis le 29/08/2026.
+#
+# Il l'était, au motif que le copier dans l'image le figerait à la date de
+# construction. C'est exact, et c'est désormais ce qu'on veut : en production,
+# le corpus est embarqué dans l'image plutôt qu'indexé au démarrage — 21 189
+# fragments à une vingtaine par minute demanderaient plus de dix-sept heures,
+# ce qu'aucun démarrage de conteneur ne peut porter. Le figer à la construction
+# rend la réindexation nécessairement hors ligne, ce qui est assumé et
+# documenté (docs/decisions/021).
+#
+# En développement, docker-compose monte le dossier de l'hôte par-dessus :
+# la copie embarquée est masquée, et le corpus reste celui du disque.
+#
+# Coût : environ 219 Mio ajoutés à chaque image qui copie le dépôt.
 
 # Données du pipeline : dumps, sorties d'extraction, corpus, journaux de
 # monitorage. Le répertoire de monitorage est monté en volume.
