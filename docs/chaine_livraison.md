@@ -1,6 +1,6 @@
 # Chaîne d'installation, de configuration, de test et de livraison
 
-**Date :** 28 août 2026
+**Date :** 28 août 2026, complété le 30 août 2026 (déploiement)
 **Compétence visée :** C13 (épreuve E3) — conteneurisation et déploiement
 **Compétence visée :** C19 (épreuve E4) — documentation technique de la chaîne
 **Compétences concernées :** C18 (E4) — tests en intégration continue
@@ -28,19 +28,46 @@ Fichier : `.github/workflows/integration-continue.yml`.
 
 | Déclencheur | Portée | Ce qu'il lance |
 |---|---|---|
-| `push` | **toutes les branches** (`"**"`) | Les trois travaux |
-| `pull_request` | **toutes les branches** (`"**"`) | Les trois travaux |
-| `workflow_dispatch` | manuel, depuis l'interface GitHub | Les trois travaux |
+| `push` | **toutes les branches** (`"**"`) | Les trois travaux de validation, **et la livraison si la branche est `main`** |
+| `pull_request` | **toutes les branches** (`"**"`) | Les trois travaux de validation seulement |
+| `workflow_dispatch` | manuel, depuis l'interface GitHub | Les trois travaux de validation, **et la livraison si lancé sur `main`** |
 
-**Trois déclencheurs, aucun autre.** Il n'y a ni déclencheur planifié (`schedule`),
-ni déclencheur sur étiquette (`tags`), ni déclencheur sur publication
-(`release`), et c'est délibéré :
+**Trois déclencheurs, aucun autre.** Il n'y a ni déclencheur planifié
+(`schedule`), ni déclencheur sur étiquette (`tags`), ni déclencheur sur
+publication (`release`), et c'est délibéré :
 
 - **Pas de `schedule`** : la chaîne n'éprouve rien qui varie avec le temps. Une
   exécution nocturne rejouerait à l'identique un résultat déjà connu.
-- **Pas de `tags` ni de `release`** : rien n'est publié. Le travail « image »
-  construit sans pousser vers un registre — publier supposerait un registre et
-  des identifiants, hors du périmètre du projet.
+- **Pas de `tags` ni de `release`** : la livraison suit `main`, pas un rituel
+  d'étiquetage. Un projet individuel à échéance courte n'a pas de cycle de
+  version à représenter ; ajouter des étiquettes ajouterait une cérémonie sans
+  ajouter d'information.
+
+#### Le déclencheur de la livraison, isolément
+
+Le critère C19 demande que l'étape de livraison soit **intégrée à la chaîne et
+exécutée une fois le packaging validé**. Voici son déclencheur, en entier :
+
+| Question | Réponse |
+|---|---|
+| Quel travail ? | `publication`, dans le même fichier de chaîne |
+| Sur quel événement ? | `push` ou `workflow_dispatch` — jamais `pull_request` |
+| Sur quelle branche ? | `main` **uniquement** (`github.ref == 'refs/heads/main'`) |
+| Sous quelle condition ? | `needs: [qualite, tests, image]` — les trois au vert |
+| Effet 1 | Trois images publiées sur GitHub Container Registry |
+| Effet 2 | Redéploiement demandé à l'hébergeur, si un crochet est configuré |
+| Si un travail échoue | La publication **n'a pas lieu du tout** : `needs` ne se contourne pas |
+
+**Pourquoi `main` seulement.** Une branche de chantier publie plusieurs fois par
+jour un état non fusionné : l'hébergeur servirait un code qui n'est dans aucune
+version de référence, et l'étiquette `:main` ne voudrait plus rien dire. La
+validation, elle, reste sur toutes les branches — c'est le partage exact entre
+« éprouver tôt » et « livrer ce qui est retenu ».
+
+**Pourquoi jamais sur `pull_request`.** Une proposition de fusion venue d'un
+dépôt tiers exécuterait alors du code capable d'écrire dans le registre. Le
+projet est individuel et n'en reçoit pas, mais un droit qu'on ne s'accorde pas
+ne peut pas être détourné.
 
 **Le choix de `"**"` plutôt que d'une liste de branches** est le point important
 de cette section. Une chaîne qui ne s'exécute que sur `main` ne protège pas
@@ -171,6 +198,19 @@ L'indexation est **reprenable** : les fragments déjà présents sont sautés, c
 importe car l'embarquement local traite environ vingt fragments par minute — un
 traitement de plusieurs heures sera interrompu.
 
+Une fois l'indexation terminée, relever l'empreinte du corpus :
+
+```bash
+uv run python -m apps.rag.empreinte_corpus          # écrit apps/rag/chroma/EMPREINTE.json
+```
+
+Ce fichier — date, somme SHA-256 de `chroma.sqlite3`, modèle d'embarquement,
+décompte de fragments par collection — voyage avec le corpus jusqu'à
+l'hébergeur, et `/ai/sante` le restitue. C'est ce qui permet de constater que le
+corpus déployé est bien celui du poste (§ 7.5 et décision 023). Relevé du
+30/08/2026 : 21 189 fragments documentaires, 387 pédagogiques, 134 Mio de base
+SQLite.
+
 ---
 
 ## 3. Configuration
@@ -253,10 +293,11 @@ test.
 | `corpus` | Exige le corpus chargé, non reconstituable en intégration continue |
 | `lent` | Dépasse quelques secondes |
 
-### 4.2 Les trois travaux de la chaîne
+### 4.2 Les quatre travaux de la chaîne
 
-Les trois s'exécutent **en parallèle**, et aucun ne porte `continue-on-error` :
-un contrôle qui ne peut pas faire échouer la chaîne ne contrôle rien.
+Trois valident, **en parallèle** ; le quatrième livre et attend les autres.
+Aucun ne porte `continue-on-error` : un contrôle qui ne peut pas faire échouer
+la chaîne ne contrôle rien.
 
 #### Travail 1 — « Qualité du code »
 
@@ -294,7 +335,12 @@ Variables d'environnement de ce travail : `POSTGRES_DB`, `POSTGRES_USER`,
 travail. `MONITORAGE_ACTIF=false` évite d'écrire des traces de test dans le
 journal.
 
-#### Travail 3 — « Construction de l'image du service IA »
+#### Travail 3 — « Construction et contrôle des images »
+
+Ce travail est le **packaging** au sens du critère C19 : c'est sa validation
+que la livraison attend. Il s'exécute deux fois, en matrice — une par image
+applicative — parce que publier une image que rien n'a inspectée supprimerait
+le contrôle au moment précis où il commence à servir.
 
 | Étape | Commande | Rôle |
 |---|---|---|
@@ -302,21 +348,39 @@ journal.
 | 2 | `docker/setup-buildx-action@v3` | Constructeur |
 | 3 | `docker/build-push-action@v6`, `push: false` | Construction **sans publication** |
 | 4 | `docker buildx build --load` puis inspection | Contrôle du contenu |
+| 5 | `docker image inspect --format '{{.Size}}'` | Relevé de la taille dans le récapitulatif |
 
 Le cache est porté par le travail (`cache-from`/`cache-to: type=gha, mode=max`) :
 la couche d'installation des dépendances prend **332 secondes mesurées** et n'a
 pas à être rejouée tant que `uv.lock` ne change pas.
 
-**Trois contrôles sur le contenu de l'image**, exécutés dans le conteneur :
+**Cinq contrôles sur le contenu de l'image**, exécutés dans le conteneur :
 
 ```
-test ! -d /app/.git                          # l'historique Git n'y est pas
+test ! -d /app/.git                            # l'historique Git n'y est pas
 test ! -f /app/apps/rag/chroma/chroma.sqlite3  # le vector store n'y est pas
-test "$(stat -c %U /app)" = "eduai"          # /app n'appartient pas à root
+test -d /app/apps/rag/chroma                   # mais son point de montage existe
+test "$(stat -c %U /app/apps/rag/chroma)" = "eduai"   # et appartient au compte sans privilège
+test "$(stat -c %U /app)" = "eduai"            # /app n'appartient pas à root
 ```
 
-Ils gardent un gain mesuré : le `.dockerignore` a ramené l'image de **10,1 Go à
-5,22 Go**. Sans contrôle, la taille dériverait sans que rien ne le signale.
+Ils gardent un gain mesuré : de **10,1 Go** à l'origine, les images sont passées
+à **5,22 Go** par `.dockerignore`, puis à **1,3 Go** le 30/08 par le retrait du
+cache `uv`, de PySpark et du corpus. Sans contrôle, la taille dériverait sans
+que rien ne le signale.
+
+**Une limite à connaître, plutôt qu'à croire** : le contrôle du vector store
+**ne peut pas échouer ici**. `apps/rag/chroma` étant dans `.gitignore`, il
+n'est dans aucun clone, donc jamais dans une image construite par la chaîne. Ce
+contrôle garde son sens pour une construction lancée depuis un poste, où le
+corpus existe. Un contrôle qui ne peut pas échouer ne contrôle rien : celui-ci
+en fait partie tant qu'il s'exécute en intégration continue, et il vaut mieux
+l'écrire que le compter comme une garantie.
+
+#### Travail 4 — « Publication des images et déclenchement du déploiement »
+
+C'est l'étape de livraison. Elle est décrite en entier à la § 6, et son
+déclencheur à la § 1.1.
 
 ### 4.3 Ce qui se saute, et pourquoi cela se voit
 
@@ -327,9 +391,43 @@ serait un test absent.
 
 ---
 
-## 5. Construction de l'image — étapes du `Dockerfile`
+## 5. Construction des images — étapes des `Dockerfile`
 
-Fichier : `service_ia/Dockerfile`. Base `python:3.13-slim`.
+**Trois images, et non plus une.** L'application web et le service IA sont
+séparés parce que le référentiel évalue séparément l'API du jeu de données (C5,
+en DRF) et l'API du service IA (C9, en FastAPI) : deux images rendent la
+séparation lisible, et la panne de l'une ne fait pas tomber l'autre. La
+troisième sert les embarquements.
+
+| Image | Fichier | Rôle | Taille |
+|---|---|---|---|
+| Application web | `Dockerfile` | Django, DRF, interface, agents | 1,3 Go |
+| Service IA | `service_ia/Dockerfile` | FastAPI, six points de terminaison | 1,26 Go |
+| Serveur d'embarquement | `docker/ollama/Dockerfile` | Ollama + `mxbai-embed-large`, réseau privé | ~1,5 Go |
+
+Les deux premières partagent leur structure ; les tailles ci-dessus datent du
+30/08/2026, après trois retraits successifs :
+
+| Retrait | Gain | Motif |
+|---|---|---|
+| `.dockerignore` (28/08) | 10,1 Go → 5,22 Go | Historique Git, données du pipeline, fichiers produits à l'exécution |
+| Cache `uv` (`UV_NO_CACHE=1`, 30/08) | −1 816 Mio | Le cache reste dans la couche qui l'a créé, pour un contenu qui ne sert qu'à la construction |
+| PySpark hors du socle (30/08) | −344 Mio | Importé par le seul extracteur big data, exécuté hors ligne (groupe `pipeline` de `pyproject.toml`) |
+| Corpus vectoriel (30/08) | −219 Mio | Monté depuis un volume persistant (décision 023) |
+
+**Le serveur d'embarquement mérite son propre paragraphe.** Le RAG embarque
+chaque requête avant de chercher dans le corpus. Sur le poste, Ollama tourne sur
+la machine ; chez l'hébergeur, rien n'écoute sur la boucle locale et **toute
+recherche documentaire échouerait**. Le modèle est téléchargé à la construction
+et non au premier démarrage, faute de quoi la première recherche de chaque
+déploiement échouerait le temps que 670 Mio arrivent. Le modèle n'est pas un
+réglage : le corpus a été indexé avec `mxbai-embed-large`, et l'interroger avec
+un autre modèle ne donne pas de moins bons résultats — il en donne de dénués de
+sens, les deux espaces vectoriels n'ayant aucun rapport.
+
+### 5.1 Étapes du `Dockerfile` du service IA
+
+Base `python:3.13-slim`.
 
 | Étape | Contenu | Motif |
 |---|---|---|
@@ -338,31 +436,97 @@ Fichier : `service_ia/Dockerfile`. Base `python:3.13-slim`.
 | 3 | Création de l'utilisateur `eduai`, UID 1000 | **Rien ne tourne en `root`** |
 | 4 | `WORKDIR /app`, `chown` **du seul répertoire** | Un `chown -R` après installation dupliquerait l'arborescence dans une couche — c'est ce qui avait porté l'image à 10,1 Go |
 | 5 | `USER eduai` | Bascule avant toute installation |
-| 6 | `COPY pyproject.toml uv.lock` puis `uv sync --frozen --no-install-project` | **Avant** la copie du code : la couche est réutilisée tant que le verrou ne change pas |
-| 7 | `COPY . .` puis `uv sync --frozen` | Le code, filtré par `.dockerignore` |
-| 8 | `EXPOSE 8100` | — |
-| 9 | `HEALTHCHECK` — 30 s d'intervalle, 5 s de délai, 40 s de démarrage, 3 tentatives | C'est lui que `depends_on: condition: service_healthy` attend |
-| 10 | `CMD uvicorn service_ia.main:application` | — |
+| 6 | `COPY pyproject.toml uv.lock` puis `uv sync --frozen --no-install-project --no-default-groups` | **Avant** la copie du code : la couche est réutilisée tant que le verrou ne change pas. `--no-default-groups` écarte PySpark et les outils de test, sans usage à l'exécution |
+| 7 | `mkdir -p /app/apps/rag/chroma` | Point de montage du volume de corpus, créé vide et appartenant à `eduai`. Sans lui, le volume appartiendrait à `root` et SQLite ne pourrait pas y écrire son journal WAL (décision 018) |
+| 8 | `COPY . .` puis `uv sync --frozen --no-default-groups` | Le code, filtré par `.dockerignore` |
+| 9 | `EXPOSE 8100` | — |
+| 10 | `HEALTHCHECK` — 30 s d'intervalle, 5 s de délai, 40 s de démarrage, 3 tentatives | C'est lui que `depends_on: condition: service_healthy` attend |
+| 11 | `CMD /app/.venv/bin/uvicorn service_ia.main:application` | L'exécutable du venv, **pas** `uv run` : celui-ci resynchroniserait l'environnement au démarrage, donc accéderait au réseau et réinstallerait les groupes exclus. Un service qui a besoin d'internet pour démarrer n'est pas un service déployé |
 
-L'ordre des étapes 6 et 7 est le point de conception de ce fichier : inverser
+L'ordre des étapes 6 et 8 est le point de conception de ce fichier : inverser
 les deux ferait réinstaller toutes les dépendances à chaque modification du
 code — 332 secondes à chaque construction.
+
+### 5.2 Ce que le `Dockerfile` de l'application web ajoute
+
+Mêmes étapes, avec deux différences :
+
+| Étape | Contenu | Motif |
+|---|---|---|
+| `collectstatic` à la **construction** | Les fichiers statiques sont collectés une fois, dans l'image | Au démarrage, la collecte rallongerait chaque redémarrage et écrirait dans un système de fichiers éphémère. Ses erreurs arrêtent la construction, au lieu d'apparaître en production sous la forme d'une page sans feuille de style |
+| `CMD ["./docker/entree-web.sh"]` | Migrations, puis `uvicorn` sur `$PORT` | Le port est **imposé par l'hébergeur** via `$PORT`, avec une valeur de repli pour le lancement local. Un seul travailleur : la couche de canaux et le compteur Prometheus sont en mémoire de processus, plusieurs travailleurs les fragmenteraient sans qu'aucune erreur n'apparaisse |
+
+Les trois variables `DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD` et
+`EDUAI_DATA_PASSWORD` sont définies **pour la seule durée** de l'instruction
+`collectstatic`, avec des valeurs sans usage : les réglages refusent de se
+charger sans elles, et la collecte n'ouvre aucune connexion. Aucune ne subsiste
+dans l'image — ce ne sont pas des valeurs de repli.
 
 ---
 
 ## 6. Livraison
 
-**Il n'y a pas de déploiement automatisé, et ce n'est pas un oubli.**
+L'étape de livraison est le travail `publication` de la chaîne. Elle s'exécute
+**après** les trois travaux de validation, et seulement s'ils passent — c'est
+ce que le critère C19 demande de démontrer.
 
-Le projet tourne sur un poste unique. Publier vers un registre supposerait un
-registre, des identifiants et une cible de déploiement, dont aucun n'existe. La
-chaîne s'arrête donc à la construction et à la vérification de l'image.
+### 6.1 Ce que fait la livraison, dans l'ordre
 
-Ce qui tient lieu de livraison :
+| # | Tâche | Détail |
+|---|---|---|
+| 1 | Ouvrir une session au registre | `ghcr.io`, avec le jeton de la chaîne. **Aucun secret à créer ni à renouveler** — un secret qu'on n'a pas à gérer est un secret qui ne fuit pas |
+| 2 | Établir les noms d'images | Le registre exige des minuscules, le propriétaire du dépôt porte des majuscules. Sans conversion, la publication échoue sur un message qui n'en dit pas la cause |
+| 3 | Publier l'application web | `ghcr.io/<dépôt>/web:main` et `:<empreinte du commit>` |
+| 4 | Publier le service IA | `ghcr.io/<dépôt>/service-ia:main` et `:<empreinte du commit>` |
+| 5 | Publier le serveur d'embarquement | `ghcr.io/<dépôt>/embarquement:main` et `:<empreinte du commit>` |
+| 6 | Demander le redéploiement | POST sur le crochet `RAILWAY_CROCHET_DEPLOIEMENT`, s'il est configuré |
+| 7 | Écrire le récapitulatif | Déclencheur, commit livré, images, état du déploiement — lisible sans dérouler les journaux |
+
+**Deux étiquettes par image, deux usages.** `:main` est ce que l'hébergeur
+déploie ; l'empreinte de commit est ce qui permet de dire quelle version tourne
+et d'y revenir. Une étiquette mobile seule rendrait tout retour arrière
+impossible.
+
+### 6.2 Les droits accordés à la chaîne
+
+```yaml
+permissions:
+  contents: read
+  packages: write
+```
+
+Rien d'autre — et notamment pas le droit d'écrire dans le dépôt. Le jeton de la
+chaîne peut publier une image ; il ne peut pas modifier une ligne de code.
+
+### 6.3 Le déclenchement du déploiement
+
+**Choix : un crochet, et non les identifiants du compte d'hébergement.**
+Motivation : un crochet ne peut faire qu'une chose, redéployer ce service. Des
+identifiants pourraient tout faire, y compris supprimer le projet.
+
+**Choix : son absence ne fait pas échouer la chaîne.** Motivation : les images
+sont alors publiées et vérifiées — la livraison a bien eu lieu. Ce qui manque
+est le déclenchement automatique, et le récapitulatif l'écrit en clair
+(`Déploiement : manuel`) plutôt que de laisser croire à un déploiement qui n'a
+pas été demandé.
+
+Le `curl` porte `--fail`. Sans lui, `curl` rend 0 sur une réponse 4xx ou 5xx, et
+la chaîne annoncerait un déploiement demandé alors que l'hébergeur l'a refusé —
+le motif exact des incidents déjà documentés par ce projet.
+
+**Variante possible**, si l'hébergeur n'expose pas de crochet entrant :
+brancher son intégration GitHub, qui redéploie sur poussée dans `main`. Elle
+reconstruit alors l'image chez l'hébergeur, en doublon de celle que la chaîne
+vient de publier ; les images du registre restent la référence pour dire ce qui
+tourne.
+
+### 6.4 Livraison locale, sans registre
+
+Toujours valable, et utile pour éprouver une image avant de la pousser :
 
 | Étape | Commande |
 |---|---|
-| Construire l'image | `docker compose build service_ia` |
+| Construire | `docker compose build service_ia` |
 | Démarrer ou redémarrer | `docker compose up -d service_ia` |
 | Forcer la recréation après un changement de configuration | `docker compose up -d --force-recreate service_ia` |
 | Vérifier la santé | `docker compose ps` — colonne `Status` |
@@ -375,15 +539,268 @@ alors que le fichier était corrigé.
 
 ---
 
-## 7. Ce que la chaîne ne fait pas
+## 7. Déploiement sur Railway
+
+**Hébergeur retenu : Railway** (décision 020), plan payant, environ 5 $/mois. Ce
+qui est déployé, et ce qui ne l'est pas :
+
+| Composant | Déployé | Raison |
+|---|---|---|
+| Application web Django (C17, C5) | oui | C'est l'objet de la démonstration |
+| Service IA FastAPI (C9) | oui | Seconde API, évaluée séparément |
+| Serveur d'embarquement Ollama | oui | Sans lui, aucune recherche RAG n'aboutit |
+| PostgreSQL | oui | Les deux bases, `eduai_app` et `eduai_data` |
+| Redis | non | `InMemoryChannelLayer` en usage, et le seul consommateur WebSocket n'a aucun client (réserve 1) |
+| Prometheus, Grafana | non | Le jury doit voir l'application vivre, pas la pile d'observabilité. Le monitorage JSON Lines, lui, continue de fonctionner sur le serveur : c'est lui la preuve de C20 |
+
+### 7.1 Provisionner les services
+
+Dans l'ordre, chaque étape dépendant de la précédente :
+
+1. **Créer le projet**, puis y ajouter un service **PostgreSQL**. Relever l'URL
+   de connexion interne qu'il expose.
+2. **Ajouter le serveur d'embarquement**, depuis l'image
+   `ghcr.io/<dépôt>/embarquement:main`. **Ne lui donner aucun domaine public** :
+   il n'a ni authentification ni limitation de débit, et n'en a pas besoin tant
+   qu'il reste sur le réseau privé du projet. Relever son adresse interne, de la
+   forme `http://<nom-du-service>:11434`.
+3. **Ajouter le service IA**, depuis `ghcr.io/<dépôt>/service-ia:main`, avec un
+   domaine public.
+4. **Ajouter l'application web**, depuis `ghcr.io/<dépôt>/web:main`, avec un
+   domaine public.
+
+**Deux services exposés sur trois, et c'est délibéré.** Le service IA porte un
+domaine parce que le référentiel l'évalue comme une API à part entière (C9) :
+son contrat OpenAPI à `/ai/docs` est une pièce que le jury doit pouvoir ouvrir.
+Il est protégé par clé de service, quotas et plafond de concurrence. Le serveur
+d'embarquement, lui, n'a **aucune** de ces protections et n'en a pas besoin tant
+qu'il reste sur le réseau privé : lui donner un domaine offrirait à tout venant
+un service d'inférence gratuit.
+
+Le registre étant celui d'un dépôt public, les images sont lisibles sans
+identifiants. Si le dépôt passait en privé, il faudrait fournir à l'hébergeur un
+jeton de lecture de paquets.
+
+### 7.2 Les variables d'environnement
+
+Toutes les valeurs viennent de l'environnement, aucune n'est dans une image.
+Les valeurs par défaut sont **asymétriques** : un secret absent interrompt le
+démarrage, il ne bascule pas sur une valeur permissive.
+
+**Application web :**
+
+| Variable | Valeur | Effet si absente |
+|---|---|---|
+| `DJANGO_SECRET_KEY` | secret, généré une fois | Démarrage refusé |
+| `DJANGO_DEBUG` | `False` | Vaut `False` par défaut — la valeur sûre |
+| `DJANGO_ALLOWED_HOSTS` | `<sous-domaine>.up.railway.app` | Toute requête refusée en 400 |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://<sous-domaine>.up.railway.app` | Tout formulaire refusé en 403 |
+| `DJANGO_DERRIERE_PROXY` | `True` | **Boucle de redirection infinie** — voir ci-dessous |
+| `DJANGO_DB_NAME` | `eduai_app` | — |
+| `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | ceux du service PostgreSQL | Démarrage refusé |
+| `EDUAI_DATA_USER`, `EDUAI_DATA_PASSWORD` | `eduai_lecture` et son mot de passe | L'API du jeu de données ne répond plus |
+| `GROQ_API_KEY` | clé du fournisseur | Bascule sur le repli local, indisponible ici |
+| `OLLAMA_BASE_URL` | adresse interne du serveur d'embarquement | Aucune recherche RAG n'aboutit |
+| `EDUAI_QUOTA_GENERATIONS_PAR_JOUR` | `5` | Valeur par défaut prudente |
+| `EDUAI_PLAFOND_GENERATIONS_PAR_JOUR` | `200` | Valeur par défaut prudente |
+| `MONITORAGE_REPERTOIRE` | chemin sur volume persistant | Les traces disparaîtraient à chaque redéploiement |
+
+**`DJANGO_DERRIERE_PROXY=True` n'est pas un réglage de confort.** L'hébergeur
+place un proxy inverse devant l'application et lui transmet les requêtes en
+clair. Sans cette variable, Django voit du HTTP, applique `SECURE_SSL_REDIRECT`,
+renvoie vers HTTPS, et la requête revient par le même chemin : la boucle est
+infinie et le service paraît en panne. C'est le cas prévu par la décision 008,
+et c'est ici qu'il se présente pour la première fois.
+
+**Service IA :** les mêmes variables de base et de fournisseur, plus
+`SERVICE_IA_CLES` — une clé par consommateur, aucune valeur de repli dans le
+code, puisqu'une clé par défaut est une clé publique.
+
+### 7.3 Créer et peupler les deux bases
+
+Une seule instance PostgreSQL, **deux bases distinctes** (décision 006) :
+`eduai_app` pour l'application, `eduai_data` pour le jeu de données. PostgreSQL
+n'autorisant pas de requête inter-bases sans extension, l'isolation est
+structurelle et non conventionnelle : le pipeline peut recharger son jeu de
+données sans qu'aucune erreur de ciblage n'atteigne les comptes des apprenants.
+
+**`eduai_app`** se crée par les migrations, appliquées au démarrage par
+`docker/entree-web.sh`. Rien à faire à la main.
+
+**`eduai_data`** se charge depuis l'export produit sur le poste :
+
+```bash
+# Sur le poste — produit l'archive, la vérifie, relève sa volumétrie
+./data_pipeline/load/exporter_jeu_donnees.sh
+
+# Vers le serveur — création de la base, puis chargement
+createdb  -h <hôte> -p <port> -U <rôle> eduai_data
+gunzip -c data_pipeline/data/exports/eduai_data-<horodatage>.sql.gz \
+  | psql -h <hôte> -p <port> -U <rôle> -d eduai_data
+```
+
+Le fichier `sauvegarde_eduai_data.sql` (18 Mo, décompressé) est la même chose
+sous forme non comprimée ; il se charge par `psql -f`.
+
+**Pourquoi un export et non un rejeu du pipeline sur le serveur** : le pipeline
+part des sources brutes, dont un dump Stack Exchange de plusieurs gigaoctets,
+ni versionnées ni transférables raisonnablement. Le résultat, lui, tient en
+quelques dizaines de mégaoctets. **Pourquoi le schéma et les données dans le
+même fichier** : les rejouer séparément fait deux opérations là où une suffit,
+et ouvre la possibilité qu'elles divergent.
+
+**Ce que l'export ne porte pas : les rôles.** `pg_dump` exporte une base, pas
+les comptes du serveur. Le rôle de lecture seule dont dépend l'API du jeu de
+données (C5) est à créer sur le serveur cible :
+
+```sql
+CREATE ROLE eduai_lecture LOGIN PASSWORD '<secret>';
+GRANT CONNECT ON DATABASE eduai_data TO eduai_lecture;
+GRANT USAGE ON SCHEMA public TO eduai_lecture;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO eduai_lecture;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO eduai_lecture;
+```
+
+**Vérifier après chargement, et non supposer.** L'export écrit à côté de
+l'archive un fichier `.volumetrie` relevé **avant** l'export ; les mêmes
+décomptes se relisent sur le serveur :
+
+```sql
+SELECT 'documents=' || count(*) FROM document
+UNION ALL SELECT 'mots_cles=' || count(*) FROM mot_cle
+UNION ALL SELECT 'sources='   || count(*) FROM source;
+```
+
+C'est le contrôle qui manquait le 27/08, quand un chargement s'est annoncé
+réussi sur une base restée vide (incident 001).
+
+### 7.4 Transférer le corpus vectoriel
+
+Le corpus **n'est pas dans les images** (décision 023) : il est dans
+`.gitignore`, donc absent de tout clone, et la chaîne ne peut pas embarquer ce
+qu'elle ne voit pas.
+
+1. **Créer un volume persistant** et le monter sur `/app/apps/rag/chroma`, pour
+   l'application web **et** pour le service IA. Le chemin est écrit en dur dans
+   quatre modules ; ce n'est pas un réglage.
+2. **Relever l'empreinte** sur le poste : `uv run python -m
+   apps.rag.empreinte_corpus`.
+3. **Téléverser les 219 Mio** — `chroma.sqlite3`, les répertoires d'index des
+   deux collections, et `EMPREINTE.json`.
+4. **Vérifier** que `/ai/sante` renvoie l'empreinte attendue (§ 7.5).
+
+Le volume est **partagé par les deux services** s'ils tournent dans le même
+projet ; à défaut, le corpus est téléversé deux fois.
+
+**Le montage doit être en écriture.** SQLite écrit son journal WAL et ses
+verrous même pour une lecture : un corpus monté en lecture seule fait échouer
+la moindre recherche (décision 018, incident du 29/08).
+
+### 7.5 Mettre à jour le corpus — étape manuelle, et assumée
+
+Cette étape n'est pas automatisable, et la documenter fait partie du critère :
+**toutes** les étapes de la chaîne, y compris celles qui restent manuelles.
+
+| # | Action | Où |
+|---|---|---|
+| 1 | Réindexer : `uv run python -m apps.rag.indexation_corpus` | Poste, hors ligne |
+| 2 | Relever l'empreinte : `uv run python -m apps.rag.empreinte_corpus` | Poste |
+| 3 | Téléverser le corpus **et** son empreinte sur le volume | Poste → hébergeur |
+| 4 | Redémarrer les deux services qui montent le volume | Hébergeur |
+| 5 | Comparer l'empreinte servie par `/ai/sante` à celle du poste | Depuis n'importe où |
+
+**Pourquoi la réindexation reste hors ligne.** L'embarquement traite une
+vingtaine de fragments par minute : 21 189 fragments demandent plus de dix-sept
+heures. Aucun démarrage de conteneur ne peut porter cela — l'hébergeur
+déclarerait le service défaillant et le redémarrerait bien avant la fin,
+indéfiniment. Ce n'est pas une option lente, c'est une option qui n'aboutit
+jamais.
+
+**Ce que l'étape 5 protège.** Depuis que le corpus voyage séparément du code,
+les deux peuvent diverger : un corpus réindexé mais non téléversé laisse
+tourner l'application sur l'ancien, sans qu'aucune erreur ne se produise.
+L'empreinte ne l'empêche pas — elle le rend constatable en une requête :
+
+```bash
+curl -s https://<service-ia>.up.railway.app/ai/sante | python3 -m json.tool | grep -A 8 empreinte
+```
+
+Une date ou un décompte qui ne sont pas ceux du poste signalent que le
+téléversement n'a pas eu lieu, ou qu'il est incomplet.
+
+### 7.6 Vérifier le déploiement
+
+Ne pas considérer le déploiement fait parce qu'il ne renvoie pas d'erreur. Le
+script `docker/verifier-deploiement.sh` passe les sept contrôles de la § 8 sur
+une URL publique et rend un compte-rendu :
+
+```bash
+./docker/verifier-deploiement.sh https://<web>.up.railway.app https://<service-ia>.up.railway.app
+```
+
+---
+
+## 8. Vérifier le déploiement — les sept contrôles
+
+**Ne pas considérer le déploiement fait parce qu'il ne renvoie pas d'erreur.**
+Ce projet a documenté sept incidents dont le motif commun est qu'une action et
+son effet ne coïncident pas sans qu'on aille le constater : un extracteur
+annonçant un succès à zéro enregistrement, un chargeur annonçant 6 836
+documents sur une base vide, une sonde se déclarant branchée sans recevoir
+aucun rappel.
+
+Chaque contrôle porte donc sur un **effet**, jamais sur une déclaration.
+
+| # | Contrôle | Ce qui est constaté | Comment |
+|---|---|---|---|
+| 1 | HTTPS effectif | Certificat valide, **et** trafic en clair redirigé — un site qui répond en HTTPS mais sert aussi en clair laisse passer le cookie de session avant toute chance de le protéger | Deux requêtes, `https://` puis `http://` |
+| 2 | Cookies `Secure` | L'attribut `Secure` sur le cookie CSRF et sur le cookie de session. Il ne se voit pas dans une page : il se lit dans l'en-tête `Set-Cookie` | En-têtes de `/auth/login/`, puis fichier de cookies après connexion |
+| 3 | Pages authentifiées | L'anonyme est **renvoyé** vers la connexion, et la personne connectée obtient 200. La première moitié compte autant que la seconde | `/courses/generator/` sans session, puis avec |
+| 4 | Corpus et empreinte | Le corpus est monté, et son empreinte est **celle du poste** — date, SHA-256, décompte par collection | `/ai/sante`, comparé à `apps/rag/chroma/EMPREINTE.json` |
+| 5 | Recherche RAG | Des fragments reviennent, **et chacun porte une attribution**. Une réponse sans source n'est pas attribuable, et c'est l'attribution qui distingue une recherche documentaire d'une génération plausible | `POST /ai/recherche` |
+| 6 | Génération de cours | Un cours est réellement produit, avec sa durée et sa taille | `POST /ai/cours` — **appel facturé**, explicite |
+| 7 | Quota et monitorage | Le décompte de générations s'affiche sur la page, et le journal JSON Lines **s'écrit sur le serveur** | Page de génération connectée, puis `monitorage.lignes_ecrites_sur_disque` |
+
+### 8.1 Exécution
+
+```bash
+SERVICE_IA_CLE=<clé> \
+EDUAI_UTILISATEUR=<adresse> EDUAI_MOT_DE_PASSE=<mot de passe> \
+./docker/verifier-deploiement.sh https://<web>.up.railway.app https://<service-ia>.up.railway.app
+```
+
+Le script rend trois compteurs : **réussis**, **en échec**, **non vérifiés**. Il
+sort en code 1 dès qu'un contrôle échoue.
+
+**Les « non vérifiés » ne sont pas des réussites**, et le script le dit à chaque
+exécution en rappelant les variables qui les débloqueraient. C'est délibéré :
+un contrôle sauté en silence est un contrôle absent.
+
+**Le contrôle 6 ne s'exécute pas par défaut** — il appelle le fournisseur, donc
+il coûte. Il se déclenche par `VERIFIER_GENERATION=1`. Motivation : une
+vérification qu'on hésite à relancer n'est pas relancée ; mieux vaut un contrôle
+explicitement optionnel qu'un contrôle complet qu'on n'ose plus lancer.
+
+### 8.2 Ce que ces contrôles ne couvrent pas
+
+| Non couvert | Pourquoi |
+|---|---|
+| Le quota individuel atteignant réellement 0 | Épuiser le plafond consommerait cinq générations facturées à chaque vérification. Le déclenchement au seuil est éprouvé par les tests automatisés (`tests/test_quotas.py`) ; sur le serveur, on constate que le décompte existe et s'affiche |
+| Le rendu visuel des pages | Aucun test de bout en bout d'interface, arbitrage documenté dans `strategie_tests.md` |
+| La charge | Aucun tir de montée en charge ; le plafond de concurrence borne le risque, il ne le mesure pas |
+
+---
+
+## 9. Ce que la chaîne ne fait pas
 
 Énoncé pour qu'on ne le suppose pas.
 
 | Absent | Raison |
 |---|---|
-| Publication de l'image vers un registre | Aucun registre, aucun identifiant |
-| Déploiement automatisé | Aucune cible ; poste unique |
 | Exécution planifiée | La chaîne n'éprouve rien qui varie avec le temps |
+| Téléversement automatique du corpus | Le corpus est produit hors ligne, en dix-sept heures d'embarquement : aucune chaîne ne peut le porter. L'étape reste manuelle et documentée (§ 7.5) |
+| Chargement automatique de `eduai_data` | Un rechargement déclenché par une poussée écraserait le jeu de données servi. Il reste une opération décidée, jamais un effet de bord |
+| Retour arrière automatique | Chaque image porte l'empreinte de son commit : le retour se fait en redéployant l'étiquette voulue, à la main |
 | Contrôle de couverture chiffré | Choix documenté dans `strategie_tests.md` : un taux mesure les lignes exécutées, pas les comportements éprouvés |
 | Tests de bout en bout de l'interface | Coût élevé au regard de l'échéance |
 | Analyse de sécurité des dépendances | **Manque réel**, non couvert par un choix ; ni `pip-audit` ni équivalent n'est branché |
@@ -397,8 +814,12 @@ lacune : il serait peu coûteux à combler et ne l'a pas été.
 
 | Document | Contenu |
 |---|---|
-| `.github/workflows/integration-continue.yml` | La chaîne |
-| `service_ia/Dockerfile`, `.dockerignore` | La construction de l'image |
+| `.github/workflows/integration-continue.yml` | La chaîne, livraison comprise |
+| `Dockerfile`, `service_ia/Dockerfile`, `docker/ollama/Dockerfile`, `.dockerignore` | La construction des trois images |
+| `docker/verifier-deploiement.sh` | Les sept contrôles sur l'URL publique |
+| `data_pipeline/load/exporter_jeu_donnees.sh` | L'export du jeu de données vers l'hébergeur |
+| `apps/rag/empreinte_corpus.py` | L'empreinte qui rend le corpus vérifiable |
+| `decisions/020`, `decisions/021`, `decisions/023` | L'hébergeur, le périmètre déployé, le transport du corpus |
 | `docker-compose.yml` | Les quatre services |
 | `strategie_tests.md` | Ce que les tests éprouvent et pourquoi |
 | `cadre_technique.md` | La pile et les environnements |

@@ -128,20 +128,32 @@ pendant une soutenance.
 
 ---
 
-## 6. L'image de l'application pèse 5,7 Gio
+## 6. ~~L'image de l'application pèse 5,7 Gio~~ — levée le 30/08/2026
 
 **Composant :** `Dockerfile`
 **Nature :** coût de déploiement, non bloquant
+**Statut :** **levée**, mesures à l'appui
 
-L'image construite pèse 5,7 Gio décompressés. Le corpus vectoriel n'en
-représente que 219 Mio (décision 021) : l'essentiel vient des dépendances
-Python, PySpark en tête.
+L'image construite pesait 5,7 Gio décompressés. Trois retraits l'ont ramenée à
+**1,3 Go**, et celle du service IA de 5,3 Go à **1,26 Go** :
 
-PySpark n'est utilisé que par la source big data du pipeline de données (C1,
-S5), jamais par l'application web à l'exécution. Le séparer en groupe de
-dépendances optionnel allégerait considérablement l'image — mais toucher au
-découpage des dépendances à six jours du rendu risque plus que cela ne
-rapporte, et le cahier des charges l'interdit explicitement.
+| Retrait | Gain | Ce qui rendait le poids inutile |
+|---|---|---|
+| Cache `uv` (`UV_NO_CACHE=1`) | −1 816 Mio | Le cache reste dans la couche qui l'a créé, pour un contenu qui ne sert qu'à la construction |
+| PySpark hors du socle | −344 Mio | Importé par le seul extracteur big data, exécuté hors ligne sur le poste |
+| Corpus vectoriel | −219 Mio | Monté depuis un volume persistant (décision 023) |
 
-À reprendre après le 14 septembre, en même temps que la séparation de ChromaDB
-en service distinct (décision 018).
+La réserve annonçait que « toucher au découpage des dépendances à six jours du
+rendu risque plus que cela ne rapporte ». L'arbitrage a changé pour une raison
+précise : la chaîne publie désormais ces images à chaque livraison, et
+l'hébergeur les télécharge à chaque déploiement. Un poids qui ne coûtait qu'un
+disque local coûte maintenant du temps à chaque étape.
+
+Le déplacement de PySpark est resté circonscrit : un groupe de dépendances
+`pipeline`, installé par défaut sur le poste et en intégration continue
+(`default-groups`), écarté des seules images (`--no-default-groups`). La source
+big data reste installable, testée, et exigée par C1 — c'est son lieu
+d'installation qui a changé, pas son existence.
+
+Ce qui subsiste : la séparation de ChromaDB en service distinct (décision 018)
+reste à reprendre après le 14 septembre.

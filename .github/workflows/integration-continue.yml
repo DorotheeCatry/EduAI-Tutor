@@ -281,6 +281,7 @@ jobs:
           DEPOT=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           echo "web=ghcr.io/${DEPOT}/web" >> "$GITHUB_OUTPUT"
           echo "service_ia=ghcr.io/${DEPOT}/service-ia" >> "$GITHUB_OUTPUT"
+          echo "embarquement=ghcr.io/${DEPOT}/embarquement" >> "$GITHUB_OUTPUT"
 
       - name: Publier l'image de l'application web
         uses: docker/build-push-action@v6
@@ -310,6 +311,31 @@ jobs:
           tags: |
             ${{ steps.noms.outputs.service_ia }}:main
             ${{ steps.noms.outputs.service_ia }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Publier l'image du serveur d'embarquement
+        # Troisième image, et la plus stable : Ollama figé en 0.32.15 avec
+        # `mxbai-embed-large` téléchargé à la construction. Elle ne change que
+        # si son Dockerfile change, et le cache de la chaîne la reconstruit
+        # alors sans retélécharger les 670 Mio du modèle.
+        #
+        # Elle est publiée quand même à chaque livraison, plutôt qu'une fois à
+        # la main : une image du déploiement qui ne passerait pas par la chaîne
+        # serait une pièce dont personne ne saurait dire de quelle source elle
+        # provient. C'est le service qui embarque chaque requête du RAG — sans
+        # lui, aucune recherche documentaire n'aboutit chez l'hébergeur.
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/ollama
+          file: docker/ollama/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.noms.outputs.embarquement }}:main
+            ${{ steps.noms.outputs.embarquement }}:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
@@ -364,6 +390,7 @@ jobs:
             echo "| Commit livré | \`${{ github.sha }}\` |"
             echo "| Image application web | \`${{ steps.noms.outputs.web }}:main\` |"
             echo "| Image service IA | \`${{ steps.noms.outputs.service_ia }}:main\` |"
+            echo "| Image serveur d'embarquement | \`${{ steps.noms.outputs.embarquement }}:main\` |"
             echo "| Déploiement | ${DEPLOIEMENT:-non atteint} |"
             echo
             echo "Le corpus vectoriel n'est PAS dans ces images : il est monté"
