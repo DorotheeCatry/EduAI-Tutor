@@ -534,7 +534,11 @@ def test_la_page_de_generation_affiche_le_compteur(apprenant, plafonds, client):
     consommer(apprenant)
     client.force_login(apprenant)
 
-    reponse = client.get(reverse("courses:generator"))
+    # `secure=True` : voir tests/test_effacement_compte.py — hors DEBUG, la
+    # redirection HTTPS répond 301 avant la vue, et l'intégration continue ne
+    # définit pas DJANGO_DEBUG. La requête est simulée en HTTPS, comme en
+    # production, plutôt que la redirection désactivée.
+    reponse = client.get(reverse("courses:generator"), secure=True)
 
     assert reponse.status_code == 200
     contenu = reponse.content.decode("utf-8")

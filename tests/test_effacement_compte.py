@@ -171,8 +171,17 @@ def test_une_confirmation_incorrecte_ne_supprime_rien(client, apprenant,
     une soumission approximative.
     """
     client.force_login(apprenant)
+    # `secure=True` : hors DEBUG, SECURE_SSL_REDIRECT renvoie 301 vers HTTPS
+    # avant que la vue ne s'exécute (settings.py, réglages de transport). Le
+    # poste de développement a DEBUG=True et ne voyait pas cette redirection ;
+    # l'intégration continue, qui ne définit pas DJANGO_DEBUG, la déclenche.
+    # Choix : simuler une requête HTTPS plutôt que désactiver la redirection
+    # pendant les tests — la production est en HTTPS, c'est ce chemin-là qu'il
+    # faut éprouver. Neutraliser la protection ferait passer le test en
+    # supprimant ce qu'il traverse.
     reponse = client.post("/auth/profile/supprimer/",
-                          {"confirmation": "pas la bonne adresse"})
+                          {"confirmation": "pas la bonne adresse"},
+                          secure=True)
 
     assert reponse.status_code == 200
     assert django_user_model.objects.filter(pk=apprenant.pk).exists(), (
@@ -192,7 +201,8 @@ def test_la_confirmation_exacte_supprime_le_compte(client, apprenant,
     client.force_login(apprenant)
 
     reponse = client.post("/auth/profile/supprimer/",
-                          {"confirmation": apprenant.email}, follow=False)
+                          {"confirmation": apprenant.email}, follow=False,
+                          secure=True)
 
     assert reponse.status_code == 302
     assert not django_user_model.objects.filter(pk=identifiant).exists()
@@ -206,7 +216,7 @@ def test_l_ecran_annonce_ce_qui_sera_supprime(client, apprenant):
     Compétence visée : C4 (épreuve E1) — article 12.1, information claire
     """
     client.force_login(apprenant)
-    reponse = client.get("/auth/profile/supprimer/")
+    reponse = client.get("/auth/profile/supprimer/", secure=True)
 
     assert reponse.status_code == 200
     assert "effets" in reponse.context

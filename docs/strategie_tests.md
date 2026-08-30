@@ -212,14 +212,44 @@ continue : reconstituer 6 836 documents demanderait les dumps et plusieurs
 heures. Ce saut est explicite — il apparaît dans le récapitulatif de la chaîne,
 et il est motivé ici. Un test sauté en silence serait un test absent.
 
+### Rejouer localement les conditions de la chaîne
+
+La chaîne ne définit pas `DJANGO_DEBUG`. Le défaut de ce réglage est `False`
+(décision 008), donc les protections de transport — redirection HTTPS, HSTS,
+cookies `Secure` — y sont **actives**, comme chez l'hébergeur, alors qu'elles
+sont inactives sur un poste de développement où `.env` porte `DJANGO_DEBUG=True`.
+
+Quatre tests passant par le client HTTP de Django ont échoué pour cette seule
+raison à leur première exécution en intégration continue, sur un `301` vers
+`https://testserver/` (incident 007). Ils sont désormais écrits avec
+`secure=True` — ils simulent une requête HTTPS, comme en production, plutôt que
+de désactiver la redirection.
+
+Avant d'annoncer qu'une suite passe, la rejouer donc dans les conditions de la
+chaîne :
+
+```bash
+DJANGO_DEBUG=False uv run pytest
+```
+
+C'est la même commande, avec le contexte de l'environnement cible. Un test
+vérifié uniquement là où il est commode de le lancer n'a été vérifié qu'à
+moitié.
+
 ### État à la date de ce document
 
 ```
-76 passed, 1 warning in 4.74s
+111 passed, 1 warning in 56.05s
 ```
 
-Suite complète au vert, en local, sur PostgreSQL réel. Le quatrième critère —
-« les tests s'exécutent sans problème technique » — est satisfait.
+Suite complète au vert sur PostgreSQL réel, **en local et avec
+`DJANGO_DEBUG=False`**, c'est-à-dire dans les deux contextes où elle s'exécute.
+Le quatrième critère — « les tests s'exécutent sans problème technique » — est
+satisfait.
+
+Relevé du 30/08/2026. Les 35 cas ajoutés depuis la première rédaction de ce
+document couvrent l'effacement de compte (C4), les deux plafonds de génération
+et le placement du décompte à l'écran (C13, C17).
 
 ---
 
