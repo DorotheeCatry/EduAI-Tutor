@@ -83,24 +83,31 @@ RUN mkdir -p /app/apps/rag/chroma
 COPY --chown=eduai:eduai . .
 RUN uv sync --frozen --no-default-groups
 
+# Port de repli, et documentation de l'image. L'hébergeur impose le sien par la
+# variable PORT, que le script de démarrage lit — `EXPOSE` ne le contraint pas,
+# il l'annonce.
 EXPOSE 8100
 
 # Sonde de vivacité interne à l'image : elle interroge /ai/sante, qui ne
 # requiert pas de clé — précisément pour qu'un orchestrateur puisse la lire
 # sans qu'on lui confie de secret.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8100/ai/sante', timeout=4).status==200 else 1)"
-
-# Un seul travailleur : les compteurs Prometheus vivent en mémoire du
-# processus, et plusieurs travailleurs feraient collecter une fraction du
-# trafic par le collecteur. Le passage à plusieurs travailleurs suppose
-# d'activer l'agrégation multi-processus de prometheus_client.
 #
-# L'exécutable de l'environnement est appelé directement, et non par
-# `uv run`. Motivation : `uv run` resynchronise l'environnement avant
-# d'exécuter la commande — au démarrage d'un conteneur, cela veut dire un
-# accès réseau au registre de paquets, et la réinstallation des groupes exclus
-# à la construction. Un service qui a besoin d'internet pour démarrer n'est
-# pas un service déployé.
-CMD ["/app/.venv/bin/uvicorn", "service_ia.main:application", \
-     "--host", "0.0.0.0", "--port", "8100", "--workers", "1"]
+# Le port vient de l'environnement, avec le même repli que le script de
+# démarrage. Une sonde qui interrogerait 8100 en dur déclarerait le conteneur
+# malade dès que l'hébergeur impose un autre port — soit exactement quand le
+# service va bien mais écoute ailleurs.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD python -c "import urllib.request,os,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:' + os.environ.get('PORT','8100') + '/ai/sante', timeout=4).status==200 else 1)"
+
+# Le démarrage passe par un script, comme celui de l'application web.
+#
+# Le `CMD` portait auparavant `--port 8100` en dur. La forme exec d'un `CMD`
+# n'étend pas les variables d'environnement : `${PORT}` y serait transmis
+# littéralement, et il n'y avait donc aucun moyen d'y lire le port imposé par
+# l'hébergeur. Le service démarrait, servait sur 8100, et la plateforme
+# répondait « Application failed to respond » — un conteneur sain, un service
+# injoignable (incident 008).
+#
+# Le script porte aussi le motif du travailleur unique et celui des en-têtes de
+# proxy, qui ne tiendraient pas en commentaire sur une ligne de commande.
+CMD ["./docker/entree-service-ia.sh"]

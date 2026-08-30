@@ -441,11 +441,36 @@ Base `python:3.13-slim`.
 | 8 | `COPY . .` puis `uv sync --frozen --no-default-groups` | Le code, filtré par `.dockerignore` |
 | 9 | `EXPOSE 8100` | — |
 | 10 | `HEALTHCHECK` — 30 s d'intervalle, 5 s de délai, 40 s de démarrage, 3 tentatives | C'est lui que `depends_on: condition: service_healthy` attend |
-| 11 | `CMD /app/.venv/bin/uvicorn service_ia.main:application` | L'exécutable du venv, **pas** `uv run` : celui-ci resynchroniserait l'environnement au démarrage, donc accéderait au réseau et réinstallerait les groupes exclus. Un service qui a besoin d'internet pour démarrer n'est pas un service déployé |
+| 11 | `CMD ["./docker/entree-service-ia.sh"]` | Un script, non une ligne de commande. Il lit `${PORT:-8100}`, appelle l'exécutable du venv — **pas** `uv run`, qui resynchroniserait l'environnement au démarrage — et passe les en-têtes de proxy |
 
 L'ordre des étapes 6 et 8 est le point de conception de ce fichier : inverser
 les deux ferait réinstaller toutes les dépendances à chaque modification du
 code — 332 secondes à chaque construction.
+
+#### Le port d'écoute : une contrainte qui ne se voit pas en local
+
+**En développement, le port est libre.** On choisit le sien, `docker-compose`
+publie 8100, et tout concorde. **Chez l'hébergeur, il est imposé** : Railway
+attribue un port par la variable `PORT` et n'interroge que celui-là.
+
+Les deux images lisent donc `PORT` dans leur script de démarrage, avec une
+valeur de repli — 8000 pour l'application web, 8100 pour le service IA — qui
+sert au lancement local et au fichier de composition.
+
+Trois points à connaître, chacun payé une fois :
+
+- **La forme exec d'un `CMD` n'étend pas les variables d'environnement.**
+  Écrire `--port ${PORT}` dans `CMD ["...", "--port", "${PORT}"]` transmet la
+  chaîne littérale. C'est pourquoi le port se lit dans un script, et non dans
+  la ligne de commande.
+- **La sonde de vivacité doit lire le même port.** Une sonde interrogeant 8100
+  en dur déclare le conteneur malade dès qu'un autre port est imposé — soit
+  exactement quand le service va bien mais écoute ailleurs.
+- **Un conteneur qui écoute sur le mauvais port ne journalise rien
+  d'anormal.** Il sert, correctement, à une adresse que personne n'interroge.
+  La plateforme répond « Application failed to respond » et le composant en
+  cause n'a rien à signaler de son point de vue. Diagnostic complet :
+  `docs/incidents/2026-08-30-service-injoignable-port-en-dur.md`.
 
 ### 5.2 Ce que le `Dockerfile` de l'application web ajoute
 
@@ -604,6 +629,7 @@ démarrage, il ne bascule pas sur une valeur permissive.
 | `EDUAI_QUOTA_GENERATIONS_PAR_JOUR` | `5` | Valeur par défaut prudente |
 | `EDUAI_PLAFOND_GENERATIONS_PAR_JOUR` | `200` | Valeur par défaut prudente |
 | `MONITORAGE_REPERTOIRE` | chemin sur volume persistant | Les traces disparaîtraient à chaque redéploiement |
+| `PORT` | **fournie par l'hébergeur**, à ne pas définir soi-même | Repli sur 8000 (web) ou 8100 (service IA) — le service écoute alors un port que la plateforme n'interroge pas, et répond « Application failed to respond » (incident 008) |
 
 **`DJANGO_DERRIERE_PROXY=True` n'est pas un réglage de confort.** L'hébergeur
 place un proxy inverse devant l'application et lui transmet les requêtes en
