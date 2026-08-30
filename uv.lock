@@ -516,7 +516,6 @@ dependencies = [
     { name = "prometheus-client" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pypdf" },
-    { name = "pyspark" },
     { name = "pytesseract" },
     { name = "python-dotenv" },
     { name = "requests" },
@@ -531,6 +530,9 @@ dev = [
     { name = "pytest" },
     { name = "pytest-django" },
     { name = "ruff" },
+]
+pipeline = [
+    { name = "pyspark" },
 ]
 
 [package.metadata]
@@ -556,7 +558,6 @@ requires-dist = [
     { name = "prometheus-client", specifier = ">=0.26.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4.0" },
     { name = "pypdf", specifier = ">=5.7.0,<6.0.0" },
-    { name = "pyspark", specifier = ">=3.5,<4.0" },
     { name = "pytesseract", specifier = ">=0.3.13,<0.4.0" },
     { name = "python-dotenv", specifier = ">=1.1.1,<2.0.0" },
     { name = "requests", specifier = ">=2.32.5" },
@@ -572,6 +573,7 @@ dev = [
     { name = "pytest-django", specifier = ">=4.14.0" },
     { name = "ruff", specifier = ">=0.16.5" },
 ]
+pipeline = [{ name = "pyspark", specifier = ">=3.5,<4.0" }]
 
 [[package]]
 name = "fastapi"

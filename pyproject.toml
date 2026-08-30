@@ -31,7 +31,6 @@ dependencies = [
     "requests>=2.32.5",
     "beautifulsoup4>=4.15.0",
     "psycopg[binary]>=3.2,<4.0",
-    "pyspark>=3.5,<4.0",
     "django-filter>=25.1",
     "drf-spectacular>=0.28",
     "prometheus-client>=0.26.0",
@@ -39,6 +38,23 @@ dependencies = [
     "slowapi>=0.1.9",
     "whitenoise>=6.8,<7.0",
 ]
+
+# Dépendances du pipeline de données, hors du socle applicatif.
+#
+# Compétence visée : C13 (épreuve E3) — poids des images de déploiement
+# Compétence visée : C1 (épreuve E1) — la source big data reste installable
+#
+# Choix : PySpark dans un groupe séparé plutôt que dans les dépendances du
+# projet. Motivation : il pèse 344 Mio dans l'environnement, et il n'est
+# importé que par `data_pipeline/extract/s5_bigdata_stackexchange.py`, exécuté
+# hors ligne sur le poste de développement. Aucune requête servie par
+# l'application ni par le service IA ne l'atteint. Le transporter dans trois
+# images de déploiement revient à payer trois fois un poids qui ne sert nulle
+# part en production.
+#
+# Ce que ce déplacement ne fait pas : il ne retire pas la source big data du
+# projet. Elle reste installable, testée, et exigée par C1 — c'est son lieu
+# d'installation qui change, pas son existence.
 
 [tool.pytest.ini_options]
 # Compétence visée : C18 (épreuve E4) — tests automatisés
@@ -110,3 +126,16 @@ dev = [
     "pytest-django>=4.14.0",
     "ruff>=0.16.5",
 ]
+
+pipeline = [
+    "pyspark>=3.5,<4.0",
+]
+
+[tool.uv]
+# `pipeline` et `dev` sont installés par défaut : `uv sync` sans option
+# continue de produire l'environnement complet sur le poste de développement
+# et en intégration continue. Ce sont les images de déploiement qui s'en
+# privent explicitement, par `--no-default-groups` — le retrait est une
+# décision écrite dans les Dockerfile, pas l'effet de bord d'une option
+# oubliée quelque part.
+default-groups = ["dev", "pipeline"]

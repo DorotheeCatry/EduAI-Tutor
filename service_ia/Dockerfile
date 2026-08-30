@@ -21,10 +21,20 @@ FROM python:3.13-slim
 # officielle évite un téléchargement par curl et une vérification de somme.
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+# UV_NO_CACHE : le cache de uv reste dans la couche qui l'a créé — mesuré à
+# 1 816 Mio dans l'image, pour un contenu qui ne sert qu'à la construction. Le
+# désactiver ne ralentit pas la reconstruction, les couches Docker jouant déjà
+# ce rôle, et retire près de deux gigaoctets à ce qu'on déploie.
+#
+# Le commentaire est ici et non dans l'instruction : un commentaire inséré au
+# milieu d'une continuation de ligne est un piège d'analyse selon les versions
+# de Docker, et ce fichier doit être construit par la plateforme autant que par
+# la machine de développement.
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
+    UV_LINK_MODE=copy \
+    UV_NO_CACHE=1
 
 # Compte sans privilèges créé AVANT toute copie, et non après.
 #
@@ -50,13 +60,16 @@ USER eduai
 # `--chown` à la copie plutôt qu'un `chown` après : le propriétaire est fixé au
 # moment où le fichier entre dans la couche, sans la dupliquer.
 COPY --chown=eduai:eduai pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project
+# `--no-default-groups` : ni PySpark (groupe `pipeline`, 344 Mio, importé
+# par le seul extracteur big data, exécuté hors ligne) ni les outils de
+# test (groupe `dev`) n'ont d'usage à l'exécution. Voir pyproject.toml.
+RUN uv sync --frozen --no-install-project --no-default-groups
 
 # Ce que cette copie EMBARQUE est décidé par .dockerignore : ni l'historique
 # Git, ni le vector store, ni les données du pipeline, ni les journaux — tous
 # montés en volume ou sans usage à l'exécution.
 COPY --chown=eduai:eduai . .
-RUN uv sync --frozen
+RUN uv sync --frozen --no-default-groups
 
 EXPOSE 8100
 
@@ -70,5 +83,12 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
 # processus, et plusieurs travailleurs feraient collecter une fraction du
 # trafic par le collecteur. Le passage à plusieurs travailleurs suppose
 # d'activer l'agrégation multi-processus de prometheus_client.
-CMD ["uv", "run", "uvicorn", "service_ia.main:application", \
+#
+# L'exécutable de l'environnement est appelé directement, et non par
+# `uv run`. Motivation : `uv run` resynchronise l'environnement avant
+# d'exécuter la commande — au démarrage d'un conteneur, cela veut dire un
+# accès réseau au registre de paquets, et la réinstallation des groupes exclus
+# à la construction. Un service qui a besoin d'internet pour démarrer n'est
+# pas un service déployé.
+CMD ["/app/.venv/bin/uvicorn", "service_ia.main:application", \
      "--host", "0.0.0.0", "--port", "8100", "--workers", "1"]

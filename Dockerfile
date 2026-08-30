@@ -19,10 +19,20 @@ FROM python:3.13-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+# UV_NO_CACHE : le cache de uv reste dans la couche qui l'a créé — mesuré à
+# 1 816 Mio dans l'image, pour un contenu qui ne sert qu'à la construction. Le
+# désactiver ne ralentit pas la reconstruction, les couches Docker jouant déjà
+# ce rôle, et retire près de deux gigaoctets à ce qu'on déploie.
+#
+# Le commentaire est ici et non dans l'instruction : un commentaire inséré au
+# milieu d'une continuation de ligne est un piège d'analyse selon les versions
+# de Docker, et ce fichier doit être construit par la plateforme autant que par
+# la machine de développement.
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
+    UV_LINK_MODE=copy \
+    UV_NO_CACHE=1
 
 # Compte sans privilèges créé AVANT toute copie.
 #
@@ -41,21 +51,26 @@ USER eduai
 # Dépendances avant le code : cette couche n'est rejouée que si pyproject.toml
 # ou uv.lock changent, pas à chaque modification d'un gabarit.
 COPY --chown=eduai:eduai pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project
+# `--no-default-groups` : ni PySpark (groupe `pipeline`, 344 Mio, importé
+# par le seul extracteur big data, exécuté hors ligne) ni les outils de
+# test (groupe `dev`) n'ont d'usage à l'exécution. Voir pyproject.toml.
+RUN uv sync --frozen --no-install-project --no-default-groups
 
-# Le corpus vectoriel dans sa propre couche, AVANT la copie du reste.
+# Le corpus vectoriel entre ici, avec le reste du dépôt.
 #
 # Compétence visée : C13 (épreuve E3)
 #
-# Environ 219 Mio. Isolé ici, il n'est recopié que lorsqu'il change réellement ;
-# noyé dans la copie du dépôt, il serait retransféré à chaque retouche de code.
+# Il a d'abord eu sa propre couche, avant celle du code, pour n'être recopié
+# que lorsqu'il change. C'était un doublon coûteux : `.dockerignore` ne
+# l'excluant plus, la copie du dépôt le reprenait intégralement, et Docker ne
+# déduplique pas deux couches d'une même image — 219 Mio étaient transportés
+# deux fois. Une seule copie, donc.
+#
 # Le choix d'embarquer le corpus plutôt que de l'indexer au démarrage est
 # documenté dans docs/decisions/021 : réindexer les 21 189 fragments demande
 # plus de dix-sept heures, qu'aucun démarrage de conteneur ne peut porter.
-COPY --chown=eduai:eduai apps/rag/chroma ./apps/rag/chroma
-
 COPY --chown=eduai:eduai . .
-RUN uv sync --frozen
+RUN uv sync --frozen --no-default-groups
 
 # Collecte des fichiers statiques à la construction, et non au démarrage.
 #
@@ -70,11 +85,17 @@ RUN uv sync --frozen
 # Elles ne sont pas des valeurs de repli : les réglages refusent de se charger
 # sans elles, et `collectstatic` n'ouvre aucune connexion à la base. Aucune ne
 # subsiste dans l'image — la commande les définit pour sa seule durée.
+#
+# L'interpréteur de l'environnement est appelé directement, et non par
+# `uv run`. Motivation : `uv run` resynchronise l'environnement avant
+# d'exécuter la commande — il réinstalle donc les groupes par défaut, PySpark
+# compris, que la ligne précédente venait d'exclure. Mesuré : 57 secondes de
+# construction et 344 Mio pour un paquet qu'aucune requête n'atteint.
 RUN DJANGO_DEBUG=False \
     DJANGO_SECRET_KEY="valeur-de-construction-sans-usage-a-l-execution" \
     POSTGRES_PASSWORD="valeur-de-construction-sans-usage-a-l-execution" \
     EDUAI_DATA_PASSWORD="valeur-de-construction-sans-usage-a-l-execution" \
-    uv run python manage.py collectstatic --noinput --clear
+    /app/.venv/bin/python manage.py collectstatic --noinput --clear
 
 # Port de repli. L'hébergeur impose le sien par la variable PORT, que le script
 # de démarrage lit.
