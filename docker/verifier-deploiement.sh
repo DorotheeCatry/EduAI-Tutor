@@ -59,6 +59,11 @@ NON_VERIFIES=0
 vert()  { printf '  \033[32mOK\033[0m      %s\n' "$1"; REUSSIS=$((REUSSIS + 1)); }
 rouge() { printf '  \033[31mECHEC\033[0m   %s\n' "$1"; ECHOUES=$((ECHOUES + 1)); }
 gris()  { printf '  \033[33mNON VU\033[0m  %s\n' "$1"; NON_VERIFIES=$((NON_VERIFIES + 1)); }
+# Une mesure n'est ni une réussite ni un échec : elle ne compte dans aucun des
+# trois compteurs. Un seuil de démonstrabilité n'est pas un seuil de
+# fonctionnement, et confondre les deux ferait échouer une vérification sur un
+# service qui marche.
+mesure() { printf '  \033[36mMESURE\033[0m  %s\n' "$1"; }
 titre() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 
 # `--fail` n'est PAS utilisé : ces contrôles s'intéressent aux codes de retour,
@@ -254,13 +259,28 @@ titre "5. Recherche documentaire et attribution"
 if [ -z "${SERVICE_IA_CLE:-}" ]; then
     gris "contrôles de l'API sautés : SERVICE_IA_CLE absente"
 else
+    # Chronométré de bout en bout, et pas seulement côté serveur.
+    #
+    # Motivation : la recherche embarque la requête avant de chercher, et
+    # l'embarquement chez l'hébergeur se fait sans GPU. Mesuré sur
+    # /api/embeddings le 30/08 : 13,6 s pour 9 jetons, 52,2 s pour 343 jetons —
+    # environ trois fois plus lent qu'en local. Une recherche qui aboutit mais
+    # demande quarante secondes n'est pas démontrable devant un jury, et c'est
+    # une information qu'aucun code de retour ne porte.
+    DEBUT_RECHERCHE=$(date +%s)
     CODE=$(code_http -X POST -H "X-Cle-Service: ${SERVICE_IA_CLE}" \
                  -H "Content-Type: application/json" \
                  -d '{"requete": "les listes en python", "nombre_fragments": 3}' \
+                 --max-time 120 \
                  "${URL_IA}/ai/recherche")
+    DUREE_RECHERCHE=$(( $(date +%s) - DEBUT_RECHERCHE ))
     if [ "${CODE}" != "200" ]; then
         rouge "/ai/recherche répond ${CODE}"
     else
+        mesure "recherche de bout en bout : ${DUREE_RECHERCHE} s"
+        if [ "${DUREE_RECHERCHE}" -ge 15 ]; then
+            mesure "au-delà de 15 s — à arbitrer avant la démonstration (réserve 7)"
+        fi
         python3 - "${CORPS}" <<'PYTHON'
 import json
 import sys
@@ -274,6 +294,13 @@ if not fragments:
     sys.exit(0)
 
 print(f"  \033[32mOK\033[0m      {len(fragments)} fragments retournés")
+
+# La latence que le service s'attribue, à côté de celle qu'on a chronométrée.
+# L'écart entre les deux est le temps de transport et de mise en file : le
+# distinguer évite d'imputer au modèle ce qui vient du réseau.
+if "latence_secondes" in corps:
+    print(f"  \033[36mMESURE\033[0m  dont {corps['latence_secondes']:.1f} s "
+          f"comptés par le service lui-même")
 
 # `source` est le champ du contrat (FragmentRAG), `metadonnees` le complète.
 # Un fragment sans l'un ni l'autre n'est pas attribuable, et plusieurs licences

@@ -157,3 +157,57 @@ d'installation qui a changé, pas son existence.
 
 Ce qui subsiste : la séparation de ChromaDB en service distinct (décision 018)
 reste à reprendre après le 14 septembre.
+
+---
+
+## 7. La latence d'embarquement en production, non arbitrée
+
+**Composant :** serveur d'embarquement déployé (`docker/ollama/Dockerfile`)
+**Nature :** performance en conditions réelles ; peut rendre le RAG non
+démontrable devant un jury
+**Statut :** **ouverte** — mesure partielle, arbitrage en attente
+
+Le RAG embarque chaque requête avant de chercher dans le corpus. Sur le poste,
+Ollama dispose de la machine ; chez l'hébergeur, **il n'y a pas de GPU**.
+
+### Ce qui est mesuré
+
+| Mesure | Poste | Railway |
+|---|---|---|
+| `/api/embeddings`, 9 jetons | — | **13,6 s** |
+| `/api/embeddings`, 343 jetons | — | **52,2 s** |
+| `POST /ai/recherche`, bout en bout | **3 s** | *non mesuré* |
+| Latence comptée par le service | **3,7 s** | *non mesuré* |
+| Mémoire du serveur d'embarquement | — | **800 Mo** (estimation initiale : 2 Go) |
+
+Relevés du 30/08/2026. Le modèle est environ **trois fois plus lent** qu'en
+local.
+
+### Ce qui n'est pas mesuré, et pourquoi
+
+Le temps de bout en bout d'un `POST /ai/recherche` en production. Il exige le
+corpus sur le volume, qui n'est pas encore transféré. **Il sera mesuré, pas
+supposé** : `docker/verifier-deploiement.sh` chronomètre désormais cette
+requête et affiche, à côté, la latence que le service s'attribue — l'écart
+entre les deux distingue le modèle du transport.
+
+La mémoire, elle, n'est plus un sujet : 800 Mo mesurés contre 2 Go estimés.
+C'est la latence qui coûte, pas l'empreinte.
+
+### L'arbitrage, si la mesure est de l'ordre de quarante secondes
+
+Trois options, aucune tranchée à ce jour :
+
+| Option | Ce qu'elle donne | Ce qu'elle coûte |
+|---|---|---|
+| **Préchauffage** | Un modèle déjà chargé évite le coût du premier appel | Ne réduit pas le coût d'inférence lui-même ; ne sauve que si l'essentiel des 13,6 s est du chargement |
+| **Modèle d'embarquement plus léger** | Inférence plus rapide sans GPU | **Impose de réindexer les 21 189 fragments** : les vecteurs d'un autre modèle n'ont aucun rapport avec ceux du corpus. Plus de dix-sept heures, et le corpus déployé devient inutilisable entre-temps |
+| **Démonstration du RAG en local**, le reste déployé | Une recherche à 3 s devant le jury | Affaiblit la démonstration : ce qui est montré n'est plus ce qui est déployé, et il faut le dire |
+
+Le choix dépend d'une mesure qui n'existe pas encore. Le faire maintenant
+serait supposer.
+
+**Ce qui ne change pas quelle que soit l'issue** : le déploiement lui-même, les
+deux API, l'application et le monitorage ne dépendent pas de cette latence. Ce
+qui est en jeu est la démonstrabilité d'une fonction, pas la validité du
+déploiement.

@@ -91,3 +91,26 @@ et reste lisible ; personne ne les regardera en temps réel.
   14 septembre, comme décision distincte.
 - Le plafond global de générations (décision 019) prend ici tout son sens : sur
   une adresse publique, chaque visiteur déclencherait des appels facturés.
+
+---
+
+## Complément du 30 août 2026 — ce que le déploiement réel a appris
+
+**Le coût.** Railway offre un mois gratuit, qui couvre la période de
+certification jusqu'à la soutenance du 14 septembre. L'arbitrage à 5 $/mois
+reste celui qui a été fait, mais il ne se paie pas sur cette période.
+
+**La mémoire du serveur d'embarquement.** Estimée à 2 Go avant déploiement,
+**mesurée à 800 Mo** en fonctionnement continu. L'estimation était pessimiste
+d'un facteur 2,5.
+
+**Le coût réel n'est pas celui qu'on attendait.** Ce n'est pas la mémoire qui
+pèse, c'est la latence : Railway n'a pas de GPU, et l'embarquement y est
+environ trois fois plus lent qu'en local — 13,6 s pour 9 jetons, 52,2 s pour
+343. La conséquence porte sur la démonstrabilité du RAG devant le jury, pas sur
+le budget. Elle est ouverte en réserve 7, et sera tranchée sur une mesure de
+bout en bout, pas sur une estimation.
+
+C'est la deuxième fois dans ce projet qu'une estimation de coût se révèle
+fausse dans un sens et juste dans l'autre : on avait provisionné pour la
+ressource visible, et c'est le temps qui manque.
