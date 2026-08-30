@@ -15,8 +15,14 @@
 
 set -e
 
+# Les binaires de l'environnement sont appelés directement, jamais par
+# `uv run`. Motivation : `uv run` resynchronise l'environnement avant
+# d'exécuter la commande. Au démarrage d'un conteneur, cela signifie une
+# tentative d'installation de paquets — donc un accès réseau, une latence, et
+# un échec possible si le registre est injoignable. Un service qui a besoin
+# d'internet pour démarrer n'est pas un service déployé.
 echo "[demarrage] application des migrations"
-uv run python manage.py migrate --noinput
+/app/.venv/bin/python manage.py migrate --noinput
 
 # Le port est imposé par l'hébergeur via $PORT. La valeur de repli sert au
 # lancement local de l'image, hors de la plateforme.
@@ -32,7 +38,7 @@ echo "[demarrage] uvicorn sur 0.0.0.0:${PORT_ECOUTE}"
 # Choix : un seul travailleur. Motivation : la couche de canaux est en mémoire
 # de processus (InMemoryChannelLayer), et le compteur Prometheus aussi.
 # Plusieurs travailleurs les fragmenteraient sans qu'aucune erreur n'apparaisse.
-exec uv run uvicorn eduai_project.asgi:application \
+exec /app/.venv/bin/uvicorn eduai_project.asgi:application \
     --host 0.0.0.0 \
     --port "${PORT_ECOUTE}" \
     --workers 1 \
