@@ -68,6 +68,18 @@ RUN uv sync --frozen --no-install-project --no-default-groups
 # Ce que cette copie EMBARQUE est décidé par .dockerignore : ni l'historique
 # Git, ni le vector store, ni les données du pipeline, ni les journaux — tous
 # montés en volume ou sans usage à l'exécution.
+# Point de montage du corpus vectoriel, créé vide et appartenant au compte
+# sans privilège.
+#
+# Compétence visée : C13 (épreuve E3)
+#
+# Le corpus lui-même est exclu par .dockerignore et arrive par un volume
+# persistant (docs/decisions/023). Sans ce répertoire préexistant, le volume
+# monté par l'hébergeur appartiendrait à root : SQLite ne pourrait pas y écrire
+# son journal WAL, et la moindre lecture du corpus échouerait — le cas est déjà
+# documenté par l'incident du 29/08 et la décision 018.
+RUN mkdir -p /app/apps/rag/chroma
+
 COPY --chown=eduai:eduai . .
 RUN uv sync --frozen --no-default-groups
 

@@ -424,6 +424,7 @@ async def sante(request: Request) -> ReponseSante:
     from apps.agents.tools.model_config import AGENTS_CONNUS, get_model_for
     from apps.monitoring.journal import journal
     from apps.monitoring.sondes import sonde
+    from apps.rag.empreinte_corpus import lire as lire_empreinte
 
     routage = {agent: get_model_for(agent) for agent in AGENTS_CONNUS}
 
@@ -454,6 +455,17 @@ async def sante(request: Request) -> ReponseSante:
         # qui décrit autre chose que le service rendu est pire qu'une absence
         # de sonde — le projet en a documenté le cas (incident 003).
         "collection": COLLECTION_DOCUMENTAIRE,
+        # Empreinte du corpus monté, telle qu'elle a été relevée sur le poste
+        # avant téléversement (décision 023). Depuis que le corpus voyage sur
+        # un volume et non dans l'image, il peut être plus ancien que le code
+        # qui l'interroge sans qu'aucune erreur ne le signale. Ce champ est ce
+        # qui rend l'écart constatable : sa date et ses décomptes se comparent
+        # à ceux du poste.
+        #
+        # `None` quand le corpus ne porte pas d'empreinte — un corpus indexé
+        # avant l'existence de ce dispositif, ou un volume mal monté. La sonde
+        # ne s'en trouve pas en défaut : elle rapporte ce qu'elle constate.
+        "empreinte": lire_empreinte(),
     }
 
     verification = journal.verifier()

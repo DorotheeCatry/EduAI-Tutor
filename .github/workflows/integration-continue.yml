@@ -3,14 +3,22 @@
 # Compétence visée : C18 (épreuve E4) — tests automatisés en intégration continue
 # Compétence visée : C13 (épreuve E3) — conteneurisation
 #
-# Trois travaux, du plus rapide au plus lent : la qualité du code, les tests, la
-# construction de l'image. Aucun ne porte `continue-on-error` — un contrôle qui
-# ne peut pas faire échouer la chaîne ne contrôle rien.
+# Quatre travaux. Trois valident, en parallèle et du plus rapide au plus lent :
+# la qualité du code, les tests, la construction des deux images. Le quatrième
+# livre, et lui seul attend les autres.
 #
-# Choix : les trois travaux sont indépendants et s'exécutent en parallèle.
-# Motivation : les enchaîner ferait attendre le résultat du linter pour savoir
-# si les tests passent, alors que les deux réponses sont utiles séparément. Un
-# développeur qui pousse veut voir TOUT ce qui ne va pas, pas la première chose.
+# Aucun ne porte `continue-on-error` — un contrôle qui ne peut pas faire
+# échouer la chaîne ne contrôle rien.
+#
+# Choix : les trois travaux de validation sont indépendants et s'exécutent en
+# parallèle. Motivation : les enchaîner ferait attendre le résultat du linter
+# pour savoir si les tests passent, alors que les deux réponses sont utiles
+# séparément. Un développeur qui pousse veut voir TOUT ce qui ne va pas, pas la
+# première chose.
+#
+# Choix : la publication, elle, dépend des trois. Motivation : c'est ce que le
+# critère C19 demande — l'étape de livraison s'exécute « une fois la ou les
+# étapes de packaging validées », donc après, et seulement si elles passent.
 
 name: Intégration continue
 
@@ -139,41 +147,226 @@ jobs:
         run: uv run pytest --collect-only -q 2>/dev/null | tail -3
 
   image:
-    name: Construction de l'image du service IA
+    name: Construction et contrôle des images
     runs-on: ubuntu-latest
+    # Deux images à valider, et non plus une seule : l'application web est
+    # publiée elle aussi depuis le 30/08. Publier une image que rien n'a
+    # inspectée reviendrait à supprimer le contrôle au moment où il commence à
+    # servir.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nom: service IA
+            fichier: service_ia/Dockerfile
+            etiquette: eduai/service-ia:controle
+          - nom: application web
+            fichier: Dockerfile
+            etiquette: eduai/web:controle
     steps:
       - uses: actions/checkout@v4
 
       - name: Préparer Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Construire l'image
-        # Construction seule, sans publication : ce travail vérifie que le
-        # Dockerfile reste valide et que les dépendances s'installent. Publier
-        # supposerait un registre et des identifiants, hors du périmètre.
+      - name: Construire l'image — ${{ matrix.nom }}
+        # Construction seule, sans publication. C'est l'étape de PACKAGING au
+        # sens du critère C19 : elle valide que le Dockerfile reste correct et
+        # que les dépendances s'installent. La publication, elle, est un
+        # travail distinct qui attend celui-ci — voir `publication`.
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: service_ia/Dockerfile
+          file: ${{ matrix.fichier }}
           push: false
-          tags: eduai/service-ia:integration-continue
+          tags: ${{ matrix.etiquette }}-integration-continue
           # Cache porté par le travail : la couche d'installation des
           # dépendances prend 332 secondes mesurées, et n'a pas à être rejouée
           # tant que uv.lock ne change pas.
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Vérifier ce que l'image embarque
-        # Le .dockerignore a ramené l'image de 10,1 Go à 5,22 Go. Ce contrôle
-        # garde le gain : si l'historique Git ou le vector store réapparaissent
-        # dans l'image, la chaîne échoue au lieu de laisser la taille dériver.
+      - name: Vérifier ce que l'image embarque — ${{ matrix.nom }}
+        # Le .dockerignore avait ramené l'image de 10,1 Go à 5,22 Go, puis le
+        # retrait de PySpark, du cache uv et du corpus l'a portée à 1,3 Go. Ce
+        # contrôle garde le gain : si l'historique Git ou le vector store
+        # réapparaissent, la chaîne échoue au lieu de laisser la taille dériver.
+        #
+        # Limite connue, et il vaut mieux l'écrire que la laisser croire : le
+        # contrôle du vector store ne peut pas échouer ICI, `apps/rag/chroma`
+        # étant dans .gitignore donc absent de tout clone. Il garde son sens
+        # pour une construction lancée depuis un poste, où le corpus existe.
         run: |
           set -euo pipefail
-          docker buildx build --load -f service_ia/Dockerfile \
-                 -t eduai/service-ia:controle .
-          docker run --rm --entrypoint sh eduai/service-ia:controle -c '
+          docker buildx build --load -f ${{ matrix.fichier }} \
+                 -t ${{ matrix.etiquette }} .
+          docker run --rm --entrypoint sh ${{ matrix.etiquette }} -c '
             test ! -d /app/.git || { echo "l historique Git est dans l image"; exit 1; }
             test ! -f /app/apps/rag/chroma/chroma.sqlite3 || { echo "le vector store est dans l image"; exit 1; }
+            test -d /app/apps/rag/chroma || { echo "le point de montage du corpus est absent"; exit 1; }
+            test "$(stat -c %U /app/apps/rag/chroma)" = "eduai" || { echo "le point de montage n appartient pas au compte sans privilege"; exit 1; }
             test "$(stat -c %U /app)" = "eduai" || { echo "/app n appartient pas au compte sans privilege"; exit 1; }
             echo "image conforme"
           '
+
+      - name: Relever la taille de l'image — ${{ matrix.nom }}
+        # La taille est une donnée d'exploitation : elle décide du temps de
+        # publication et du temps de démarrage chez l'hébergeur. Relevée à
+        # chaque exécution, elle rend une dérive visible le jour où elle
+        # commence, et non le jour où elle gêne.
+        run: |
+          TAILLE=$(docker image inspect ${{ matrix.etiquette }} --format '{{.Size}}')
+          echo "- **${{ matrix.nom }}** : $((TAILLE / 1024 / 1024)) Mio" >> "$GITHUB_STEP_SUMMARY"
+
+  # --- Étape de livraison ------------------------------------------------
+  #
+  # Compétence visée : C19 (épreuve E5) — « l'étape de livraison est intégrée
+  # et exécutée une fois la ou les étapes de packaging validées »
+  # Compétence visée : C13 (épreuve E3) — livraison et déploiement
+  #
+  # Le déclencheur, en clair, puisque le critère demande qu'il soit
+  # identifiable :
+  #
+  # | Question | Réponse |
+  # |---|---|
+  # | Sur quel événement ? | une poussée (`push`), ou un lancement manuel |
+  # | Sur quelle branche ? | `main` uniquement |
+  # | Sous quelle condition ? | les trois travaux précédents au vert |
+  # | Avec quel effet ? | deux images publiées au registre, puis redéploiement demandé à l'hébergeur |
+  #
+  # Choix : `needs` porte les trois travaux, et non le seul `image`.
+  # Motivation : publier une image dont les tests échouent reviendrait à
+  # livrer ce qu'on vient de constater défaillant. Le packaging valide le
+  # contenant, les tests valident le contenu ; la livraison attend les deux.
+  #
+  # Choix : `main` seulement. Motivation : une branche de chantier publie
+  # plusieurs fois par jour un état non fusionné. L'hébergeur servirait alors
+  # un code qui n'est dans aucune version de référence, et l'étiquette
+  # `:main` ne voudrait plus rien dire.
+  publication:
+    name: Publication des images et déclenchement du déploiement
+    needs: [qualite, tests, image]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    # Droits au strict nécessaire : lire le dépôt, écrire les paquets. Le
+    # jeton fourni par la chaîne n'a rien d'autre, et notamment pas le droit
+    # d'écrire dans le dépôt.
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Préparer Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Ouvrir une session au registre
+        # GHCR plutôt qu'un registre tiers : le jeton de la chaîne y donne
+        # accès sans qu'aucun secret n'ait à être créé ni renouvelé. Un secret
+        # qu'on n'a pas à gérer est un secret qui ne fuit pas.
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Établir les noms d'images
+        # Le registre exige des noms en minuscules, or le propriétaire du
+        # dépôt porte des majuscules. Sans cette conversion, la publication
+        # échoue sur un message qui ne dit pas pourquoi.
+        id: noms
+        run: |
+          DEPOT=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "web=ghcr.io/${DEPOT}/web" >> "$GITHUB_OUTPUT"
+          echo "service_ia=ghcr.io/${DEPOT}/service-ia" >> "$GITHUB_OUTPUT"
+
+      - name: Publier l'image de l'application web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          # Deux étiquettes, deux usages. `main` est ce que l'hébergeur
+          # déploie ; l'empreinte de commit est ce qui permet de dire quelle
+          # version tourne, et d'y revenir. Une étiquette mobile seule
+          # rendrait tout retour arrière impossible.
+          tags: |
+            ${{ steps.noms.outputs.web }}:main
+            ${{ steps.noms.outputs.web }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Publier l'image du service IA
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: service_ia/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.noms.outputs.service_ia }}:main
+            ${{ steps.noms.outputs.service_ia }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Demander le redéploiement à l'hébergeur
+        # Dernière étape de la livraison : prévenir Railway qu'une nouvelle
+        # image est publiée.
+        #
+        # Choix : un crochet de déploiement (URL secrète appelée en POST), et
+        # non les identifiants du compte d'hébergement. Motivation : le
+        # crochet ne peut faire qu'une chose, redéployer ce service. Des
+        # identifiants pourraient tout faire, y compris supprimer le projet.
+        #
+        # Choix : l'absence du secret n'échoue PAS. Motivation : les images
+        # sont alors publiées et vérifiées — la livraison a eu lieu. Ce qui
+        # manque est le déclenchement automatique du déploiement, et le
+        # récapitulatif le dit en clair plutôt que de laisser croire à un
+        # déploiement qui n'a pas été demandé.
+        env:
+          CROCHET: ${{ secrets.RAILWAY_CROCHET_DEPLOIEMENT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CROCHET}" ]; then
+            echo "Aucun crochet de déploiement configuré." >&2
+            echo "Les images sont publiées ; le déploiement est à déclencher" >&2
+            echo "depuis l'interface de l'hébergeur." >&2
+            echo "DEPLOIEMENT=manuel" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          # --fail : sans lui, curl rend 0 sur une réponse 4xx ou 5xx, et la
+          # chaîne annoncerait un déploiement demandé alors que l'hébergeur
+          # l'a refusé. Le projet documente déjà cinq incidents de ce motif.
+          CODE=$(curl --silent --show-error --fail --request POST \
+                      --write-out '%{http_code}' --output /dev/null \
+                      --max-time 30 "${CROCHET}")
+          echo "L'hébergeur a répondu ${CODE}."
+          echo "DEPLOIEMENT=demande" >> "$GITHUB_ENV"
+
+      - name: Récapitulatif de la livraison
+        # Ce que la chaîne vient de faire, écrit là où le jury le lira sans
+        # dérouler les journaux.
+        if: always()
+        run: |
+          {
+            echo "## Livraison"
+            echo
+            echo "| Élément | Valeur |"
+            echo "|---|---|"
+            echo "| Déclencheur | \`${{ github.event_name }}\` sur \`${{ github.ref_name }}\` |"
+            echo "| Commit livré | \`${{ github.sha }}\` |"
+            echo "| Image application web | \`${{ steps.noms.outputs.web }}:main\` |"
+            echo "| Image service IA | \`${{ steps.noms.outputs.service_ia }}:main\` |"
+            echo "| Déploiement | ${DEPLOIEMENT:-non atteint} |"
+            echo
+            echo "Le corpus vectoriel n'est PAS dans ces images : il est monté"
+            echo "depuis un volume persistant, et se met à jour hors ligne."
+            echo "Procédure : \`docs/chaine_livraison.md\`."
+          } >> "$GITHUB_STEP_SUMMARY"

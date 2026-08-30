@@ -12,8 +12,8 @@
 # Choix : le dépôt entier est copié. Motivation : l'application appelle les
 # agents de `apps/agents`, la sonde de `apps/monitoring` et les modèles de
 # `apps/api_data`. Ce que la copie embarque réellement est décidé par
-# `.dockerignore` — et depuis le 29/08/2026, le corpus vectoriel en fait partie
-# (voir plus bas).
+# `.dockerignore`, qui en exclut le corpus vectoriel : il arrive par un volume
+# persistant, pour la raison expliquée plus bas.
 
 FROM python:3.13-slim
 
@@ -56,19 +56,27 @@ COPY --chown=eduai:eduai pyproject.toml uv.lock ./
 # test (groupe `dev`) n'ont d'usage à l'exécution. Voir pyproject.toml.
 RUN uv sync --frozen --no-install-project --no-default-groups
 
-# Le corpus vectoriel entre ici, avec le reste du dépôt.
+# Le corpus vectoriel n'entre PAS dans cette image : `.dockerignore` l'exclut.
 #
 # Compétence visée : C13 (épreuve E3)
 #
-# Il a d'abord eu sa propre couche, avant celle du code, pour n'être recopié
-# que lorsqu'il change. C'était un doublon coûteux : `.dockerignore` ne
-# l'excluant plus, la copie du dépôt le reprenait intégralement, et Docker ne
-# déduplique pas deux couches d'une même image — 219 Mio étaient transportés
-# deux fois. Une seule copie, donc.
+# Il y a été embarqué le 29/08, puis retiré le 30/08 (docs/decisions/023) : il
+# est dans .gitignore, donc absent du clone dont part la chaîne d'intégration,
+# qui ne peut pas publier une image contenant ce qu'elle ne voit pas. Le corpus
+# arrive par un volume persistant monté sur `apps/rag/chroma`, peuplé une fois
+# et mis à jour hors ligne — procédure dans docs/chaine_livraison.md.
 #
-# Le choix d'embarquer le corpus plutôt que de l'indexer au démarrage est
-# documenté dans docs/decisions/021 : réindexer les 21 189 fragments demande
-# plus de dix-sept heures, qu'aucun démarrage de conteneur ne peut porter.
+# Ce que cette exclusion NE dit pas : que le corpus s'indexerait au démarrage.
+# Réindexer les 21 189 fragments demande plus de dix-sept heures, qu'aucun
+# démarrage de conteneur ne peut porter. Il est produit hors ligne, puis
+# téléversé.
+#
+# Le répertoire est créé vide pour que le point de montage existe dans l'image
+# et appartienne au compte sans privilège. Sans lui, un volume monté par
+# l'hébergeur appartiendrait à root, et SQLite ne pourrait pas y écrire son
+# journal WAL — ce que la décision 018 impose.
+RUN mkdir -p /app/apps/rag/chroma
+
 COPY --chown=eduai:eduai . .
 RUN uv sync --frozen --no-default-groups
 
