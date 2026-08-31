@@ -236,6 +236,22 @@ C'est la même commande, avec le contexte de l'environnement cible. Un test
 vérifié uniquement là où il est commode de le lancer n'a été vérifié qu'à
 moitié.
 
+**Et quand cela ne suffit pas : rejouer depuis un clone.** Les variables
+d'environnement ne sont qu'une partie de l'écart ; l'autre est le contenu du
+répertoire. Le poste porte des fichiers que le dépôt ne contient pas — corpus
+vectoriel, `staticfiles/` produit par un ancien `collectstatic`, base SQLite
+héritée. La chaîne, elle, part d'un clone.
+
+```bash
+git clone --branch <branche> . /tmp/clone-ci
+cd /tmp/clone-ci && DJANGO_DEBUG=False uv run --project <depot> pytest
+```
+
+C'est ce qui a permis, le 31/08/2026, d'identifier en une exécution un échec
+que ni les variables ni la base neuve ne reproduisaient : la page de connexion
+ne se rendait pas hors DEBUG faute de manifeste de fichiers statiques, absent
+d'un dépôt fraîchement cloné.
+
 ### État à la date de ce document
 
 ```

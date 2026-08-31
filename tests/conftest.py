@@ -134,3 +134,43 @@ def corpus_charge(base_donnees):
 def repertoire_temporaire(tmp_path):
     """Répertoire jetable, propre à chaque test."""
     return tmp_path
+
+
+@pytest.fixture(autouse=True)
+def stockage_statique_sans_manifeste(settings):
+    """
+    Sert les fichiers statiques sans manifeste pendant les tests.
+
+    Compétence visée : C18 (épreuve E4)
+    Compétence concernée : C13 (E3) — construction de l'image
+
+    Hors DEBUG, le projet emploie un stockage à manifeste : chaque
+    `{% static %}` est résolu par `staticfiles/staticfiles.json`, produit par
+    `collectstatic`. C'est ce qu'on veut en production — les fichiers y portent
+    une empreinte, et le navigateur peut les garder en cache indéfiniment.
+
+    Dans un dépôt fraîchement cloné, ce fichier n'existe pas : `staticfiles/`
+    n'est pas versionné, et l'intégration continue ne lance pas
+    `collectstatic` avant les tests. Toute page rendue avec `DJANGO_DEBUG=False`
+    échoue alors sur la première référence statique — constaté le 31/08/2026,
+    quand le premier test à rendre la page de connexion hors DEBUG a échoué en
+    intégration continue sur `koda-ia/SALUTE.gif`, tandis qu'il passait sur le
+    poste, où `staticfiles/` traîne depuis un ancien `collectstatic`.
+
+    Choix : neutraliser le manifeste dans les tests plutôt que d'y lancer
+    `collectstatic`. Motivation : le manifeste est une préoccupation de
+    production, et il y est déjà éprouvé — l'image est construite avec
+    `collectstatic`, et le travail « image » de la chaîne échouerait si cette
+    étape échouait. Le rejouer avant chaque suite ajouterait une minute à
+    chaque exécution pour vérifier une seconde fois la même chose.
+
+    Ce que ce choix NE couvre plus : une référence à un fichier statique
+    réellement absent ne sera pas détectée par les tests. C'est la construction
+    de l'image qui joue ce rôle.
+    """
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
