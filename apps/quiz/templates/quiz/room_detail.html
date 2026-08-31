@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}Room {{ room.code }} - EduAI Tutor{% endblock %}
@@ -17,10 +18,10 @@
         
         <div class="flex items-center space-x-3">
             {% if is_host %}
-                <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">Host</span>
+                <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">{% trans "Host" %}</span>
                 <button onclick="deleteRoom()" class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium hover:bg-red-500/30 transition-colors flex items-center space-x-1">
                     <i data-lucide="trash-2" class="w-3 h-3"></i>
-                    <span>Delete</span>
+                    <span>{% trans "Delete" %}</span>
                 </button>
             {% endif %}
             <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">{{ room.get_status_display }}</span>
@@ -31,23 +32,23 @@
         <!-- Game Info -->
         <div class="lg:col-span-1">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700 space-y-4">
-                <h3 class="text-lg font-bold text-white mb-4">Game Settings</h3>
+                <h3 class="text-lg font-bold text-white mb-4">{% trans "Game Settings" %}</h3>
                 
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-400">Questions</span>
+                        <span class="text-sm text-gray-400">{% trans "Questions" %}</span>
                         <span class="text-sm text-white font-medium">{{ room.num_questions }}</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-400">Max Players</span>
+                        <span class="text-sm text-gray-400">{% trans "Max Players" %}</span>
                         <span class="text-sm text-white font-medium">{{ room.max_players }}</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-400">Time per Question</span>
-                        <span class="text-sm text-white font-medium">60 seconds</span>
+                        <span class="text-sm text-gray-400">{% trans "Time per Question" %}</span>
+                        <span class="text-sm text-white font-medium">{% trans "60 seconds" %}</span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-400">Room Code</span>
+                        <span class="text-sm text-gray-400">{% trans "Room Code" %}</span>
                         <span class="text-sm text-white font-mono font-bold">{{ room.code }}</span>
                     </div>
                 </div>
@@ -56,7 +57,7 @@
                 <div class="pt-4 border-t border-gray-600">
                     <button onclick="copyRoomCode()" class="w-full py-2 px-4 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2">
                         <i data-lucide="copy" class="w-4 h-4"></i>
-                        <span>Copy Room Code</span>
+                        <span>{% trans "Copy Room Code" %}</span>
                     </button>
                 </div>
             </div>
@@ -70,7 +71,7 @@
                     {% if is_host and can_start %}
                         <button onclick="startGame()" id="start-game-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
                             <i data-lucide="play" class="w-4 h-4"></i>
-                            <span>Start Game</span>
+                            <span>{% trans "Start Game" %}</span>
                         </button>
                     {% endif %}
                 </div>
@@ -80,12 +81,12 @@
                     <div class="flex items-center space-x-6 p-6 bg-gray-900 rounded-lg border border-gray-600">
                         {% if participant.user.avatar %}
                             {% if participant.user.avatar.url %}
-                                <img src="{{ participant.user.avatar.url }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
+                                <img src="{{ participant.user.avatar.url }}" alt="{% trans "Avatar" %}" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
                             {% else %}
-                                <img src="{% static 'koda/' %}{{ participant.user.avatar }}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
+                                <img src="{% static 'koda/' %}{{ participant.user.avatar }}" alt="{% trans "Avatar" %}" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
                             {% endif %}
                         {% else %}
-                            <img src="{% static 'koda/koda_base.png' %}" alt="Avatar" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
+                            <img src="{% static 'koda/koda_base.png' %}" alt="{% trans "Avatar" %}" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
                         {% endif %}
                         
                         <div class="flex-1">
@@ -106,7 +107,7 @@
 
                 {% if not can_start and is_host %}
                     <div class="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <p class="text-sm text-yellow-400">Perfect for testing! You can start the game solo.</p>
+                        <p class="text-sm text-yellow-400">{% trans "Perfect for testing! You can start the game solo." %}</p>
                     </div>
                 {% endif %}
             </div>
@@ -116,7 +117,7 @@
     <!-- Back button -->
     <div class="flex justify-center">
         <a href="{% url 'quiz:lobby' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-            Back to Lobby
+            {% trans "Back to Lobby" %}
         </a>
     </div>
 </div>

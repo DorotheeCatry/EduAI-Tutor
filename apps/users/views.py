@@ -72,7 +72,7 @@ class CustomLogoutView(LogoutView):
     
     def dispatch(self, request, *args, **kwargs):
         response = super().dispatch(request, *args, **kwargs)
-        messages.success(request, 'You have been logged out successfully.')
+        messages.success(request, _('You have been logged out successfully.'))
         return response
     
 

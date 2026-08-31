@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}Ma Progression - Exercices Python{% endblock %}
 
@@ -6,14 +7,14 @@
 <div class="p-6 space-y-6 h-full overflow-y-auto">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="trending-up" class="w-6 h-6 text-primary-blue"></i>
-        <h1 class="text-xl font-bold text-white">My Progress - Python Exercises</h1>
+        <h1 class="text-xl font-bold text-white">{% trans "My Progress - Python Exercises" %}</h1>
     </div>
 
     <!-- General statistics -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Completed exercises</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "Completed exercises" %}</h3>
                 <i data-lucide="check-circle" class="w-5 h-5 text-green-500"></i>
             </div>
             <div class="text-2xl font-bold text-green-500 mb-2">{{ completed_exercises }}</div>
@@ -25,31 +26,31 @@
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Success rate</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "Success rate" %}</h3>
                 <i data-lucide="target" class="w-5 h-5 text-blue-500"></i>
             </div>
             <div class="text-2xl font-bold text-blue-500 mb-2">
                 {% if completed_exercises > 0 %}{{ completion_percentage }}%{% else %}0%{% endif %}
             </div>
-            <div class="text-xs text-gray-500">First try</div>
+            <div class="text-xs text-gray-500">{% trans "First try" %}</div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Current streak</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "Current streak" %}</h3>
                 <i data-lucide="flame" class="w-5 h-5 text-orange-500"></i>
             </div>
             <div class="text-2xl font-bold text-orange-500 mb-2">{{ user.current_streak }}</div>
-            <div class="text-xs text-gray-500">consecutive days</div>
+            <div class="text-xs text-gray-500">{% trans "consecutive days" %}</div>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">XP earned</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "XP earned" %}</h3>
                 <i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i>
             </div>
             <div class="text-2xl font-bold text-yellow-500 mb-2">{{ user.xp }}</div>
-            <div class="text-xs text-gray-500">experience points</div>
+            <div class="text-xs text-gray-500">{% trans "experience points" %}</div>
         </div>
     </div>
 
@@ -57,7 +58,7 @@
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
         <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-primary-green"></i>
-            <span>Progress by difficulty</span>
+            <span>{% trans "Progress by difficulty" %}</span>
         </h3>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -91,7 +92,7 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
                 <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i>
-                <span>Recent exercises</span>
+                <span>{% trans "Recent exercises" %}</span>
             </h3>
             
             <div class="space-y-3">
@@ -113,9 +114,9 @@
                 {% empty %}
                     <div class="text-center py-8 text-gray-400">
                         <i data-lucide="code" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
-                        <p>No exercises started</p>
+                        <p>{% trans "No exercises started" %}</p>
                         <a href="{% url 'exercises:list' %}" class="text-primary-blue hover:text-blue-400 text-sm">
-                            Start now
+                            {% trans "Start now" %}
                         </a>
                     </div>
                 {% endfor %}
@@ -126,7 +127,7 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
                 <i data-lucide="send" class="w-5 h-5 text-purple-500"></i>
-                <span>Recent submissions</span>
+                <span>{% trans "Recent submissions" %}</span>
             </h3>
             
             <div class="space-y-3">
@@ -150,7 +151,7 @@
                 {% empty %}
                     <div class="text-center py-8 text-gray-400">
                         <i data-lucide="send" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
-                        <p>No submissions</p>
+                        <p>{% trans "No submissions" %}</p>
                     </div>
                 {% endfor %}
             </div>
@@ -161,12 +162,12 @@
     <div class="flex justify-center space-x-4">
         <a href="{% url 'exercises:list' %}" class="px-6 py-3 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
             <i data-lucide="code" class="w-5 h-5"></i>
-            <span>Continue exercises</span>
+            <span>{% trans "Continue exercises" %}</span>
         </a>
         
         <a href="{% url 'courses:generator' %}" class="px-6 py-3 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
             <i data-lucide="book-open" class="w-5 h-5"></i>
-            <span>Generate a course</span>
+            <span>{% trans "Generate a course" %}</span>
         </a>
     </div>
 </div>

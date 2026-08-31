@@ -1,3 +1,4 @@
+{% load i18n %}
 <!-- XP/Level Up Notification -->
 <div id="xp-notification" class="fixed top-4 right-4 z-50 hidden">
     <div class="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-4 rounded-lg shadow-2xl border border-green-400 transform transition-all duration-500 scale-95 opacity-0">
@@ -6,8 +7,8 @@
                 <i data-lucide="zap" class="w-6 h-6 text-yellow-300"></i>
             </div>
             <div>
-                <div class="font-bold text-lg" id="xp-title">+15 XP Earned!</div>
-                <div class="text-sm opacity-90" id="xp-description">Course generation</div>
+                <div class="font-bold text-lg" id="xp-title">{% trans "+15 XP Earned!" %}</div>
+                <div class="text-sm opacity-90" id="xp-description">{% trans "Course generation" %}</div>
             </div>
         </div>
     </div>
@@ -21,8 +22,8 @@
                 <i data-lucide="crown" class="w-8 h-8 text-yellow-200"></i>
             </div>
             <div>
-                <div class="font-bold text-xl" id="levelup-title">Level Up!</div>
-                <div class="text-sm opacity-90" id="levelup-description">You are now level 3</div>
+                <div class="font-bold text-xl" id="levelup-title">{% trans "Level Up!" %}</div>
+                <div class="text-sm opacity-90" id="levelup-description">{% trans "You are now level 3" %}</div>
             </div>
         </div>
     </div>

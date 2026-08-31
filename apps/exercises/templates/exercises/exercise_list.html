@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}Exercices Python - EduAI Tutor{% endblock %}
 
@@ -7,18 +8,18 @@
     <div class="flex items-center justify-between mb-6">
         <div class="flex items-center space-x-3">
             <i data-lucide="code" class="w-6 h-6 text-primary-green"></i>
-            <h1 class="text-xl font-bold text-white">Exercices Python</h1>
+            <h1 class="text-xl font-bold text-white">{% trans "Exercices Python" %}</h1>
         </div>
         
         <div class="flex items-center space-x-3">
             <a href="{% url 'exercises:progress' %}" class="px-4 py-2 text-sm bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="bar-chart" class="w-4 h-4"></i>
-                <span>My Progress</span>
+                <span>{% trans "My Progress" %}</span>
             </a>
             
             <button onclick="showGenerateModal()" class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="plus" class="w-4 h-4"></i>
-                <span>Generate Exercise</span>
+                <span>{% trans "Generate Exercise" %}</span>
             </button>
         </div>
     </div>
@@ -28,26 +29,26 @@
         <form method="get" class="flex flex-wrap items-center gap-4">
             <div class="flex-1 min-w-64">
                 <input type="text" name="search" value="{{ current_search }}" 
-                       placeholder="Search an exercise..."
+                       placeholder="{% trans "Search an exercise..." %}"
                        class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green">
             </div>
             
             <select name="difficulty" class="px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green">
-                <option value="">All difficulties</option>
+                <option value="">{% trans "All difficulties" %}</option>
                 {% for value, label in difficulty_choices %}
                     <option value="{{ value }}" {% if value == current_difficulty %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
             
             <select name="topic" class="px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green">
-                <option value="">All topics</option>
+                <option value="">{% trans "All topics" %}</option>
                 {% for topic in topics %}
                     <option value="{{ topic }}" {% if topic == current_topic %}selected{% endif %}>{{ topic|title }}</option>
                 {% endfor %}
             </select>
             
             <button type="submit" class="px-4 py-2 text-sm bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors">
-                Filter
+                {% trans "Filter" %}
             </button>
         </form>
     </div>
@@ -61,11 +62,11 @@
                         <h3 class="text-lg font-bold text-white mb-2">{{ exercise.title }}</h3>
                         <div class="flex items-center space-x-2">
                             {% if exercise.difficulty == 'beginner' %}
-                                <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">Beginner</span>
+                                <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">{% trans "Beginner" %}</span>
                             {% elif exercise.difficulty == 'intermediate' %}
-                                <span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">Intermediate</span>
+                                <span class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-medium">{% trans "Intermediate" %}</span>
                             {% else %}
-                                <span class="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium">Advanced</span>
+                                <span class="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium">{% trans "Advanced" %}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -107,7 +108,7 @@
                         <div class="flex items-center space-x-2">
                             <a href="{% url 'exercises:detail' exercise.id %}" 
                                class="px-3 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-1">
-                                <span>Start</span>
+                                <span>{% trans "Start" %}</span>
                                 <i data-lucide="arrow-right" class="w-3 h-3"></i>
                             </a>
                             {% if exercise.created_by == user %}
@@ -123,10 +124,10 @@
         {% empty %}
             <div class="col-span-full text-center py-12">
                 <i data-lucide="code" class="w-16 h-16 text-gray-500 mx-auto mb-4"></i>
-                <h3 class="text-lg font-bold text-white mb-2">No exercises found</h3>
-                <p class="text-gray-400 mb-4">Try modifying your filters or generate a new exercise.</p>
+                <h3 class="text-lg font-bold text-white mb-2">{% trans "No exercises found" %}</h3>
+                <p class="text-gray-400 mb-4">{% trans "Try modifying your filters or generate a new exercise." %}</p>
                 <button onclick="showGenerateModal()" class="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                    Generate an exercise
+                    {% trans "Generate an exercise" %}
                 </button>
             </div>
         {% endfor %}
@@ -138,7 +139,7 @@
             <nav class="flex items-center space-x-2">
                 {% if exercises.has_previous %}
                     <a href="?page={{ exercises.previous_page_number }}" class="px-3 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                        Previous
+                        {% trans "Previous" %}
                     </a>
                 {% endif %}
                 
@@ -148,7 +149,7 @@
                 
                 {% if exercises.has_next %}
                     <a href="?page={{ exercises.next_page_number }}" class="px-3 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                        Next
+                        {% trans "Next" %}
                     </a>
                 {% endif %}
             </nav>
@@ -160,7 +161,7 @@
 <div id="generate-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 border border-gray-700">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-white">Generate an exercise</h3>
+            <h3 class="text-lg font-bold text-white">{% trans "Generate an exercise" %}</h3>
             <button onclick="hideGenerateModal()" class="text-gray-400 hover:text-white">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -175,14 +176,14 @@
             {% csrf_token %}
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Topic</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">{% trans "Topic" %}</label>
                     <input type="text" name="topic" required
-                           placeholder="e.g.: Python functions, loops, classes..."
+                           placeholder="{% trans "e.g.: Python functions, loops, classes..." %}"
                            class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Difficulty</label>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">{% trans "Difficulty" %}</label>
                     <select name="difficulty" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green">
                         {% for value, label in difficulty_choices %}
                             <option value="{{ value }}">{{ label }}</option>
@@ -192,10 +193,10 @@
                 
                 <div class="flex justify-end space-x-3 pt-4">
                     <button type="button" onclick="hideGenerateModal()" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                        Cancel
+                        {% trans "Cancel" %}
                     </button>
                     <button type="submit" class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                        Generate
+                        {% trans "Generate" %}
                     </button>
                 </div>
             </div>

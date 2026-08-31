@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}Profil utilisateur - EduAI Tutor{% endblock %}
@@ -7,14 +8,14 @@
 <div class="p-6 space-y-6 h-full overflow-y-auto">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="user" class="w-6 h-6 text-primary-green"></i>
-        <h1 class="text-xl font-bold text-white">My Profile</h1>
+        <h1 class="text-xl font-bold text-white">{% trans "My Profile" %}</h1>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Informations du profil -->
         <div class="lg:col-span-1 space-y-6">
             <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
-                <h2 class="text-lg font-bold text-white mb-4">Personal Information</h2>
+                <h2 class="text-lg font-bold text-white mb-4">{% trans "Personal Information" %}</h2>
                 
                 {% for message in messages %}
                     {% if message.tags == 'success' %}
@@ -33,14 +34,14 @@
                     
                     <!-- Section Avatar -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-300 mb-4">Choose your avatar</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-4">{% trans "Choose your avatar" %}</label>
                         
                         <!-- Avatar actuel -->
                         <div class="text-center mb-6">
                             <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-700 border-4 border-gray-600 mx-auto mb-3 shadow-lg">
-                                <img id="current-avatar" src="{{ current_avatar_url }}" alt="Avatar actuel" class="w-full h-full object-cover">
+                                <img id="current-avatar" src="{{ current_avatar_url }}" alt="{% trans "Avatar actuel" %}" class="w-full h-full object-cover">
                             </div>
-                            <p class="text-sm text-gray-400">Current avatar</p>
+                            <p class="text-sm text-gray-400">{% trans "Current avatar" %}</p>
                         </div>
                         
                         <!-- Tabs -->
@@ -49,12 +50,12 @@
                                 <button type="button" id="koda-tab"
                                     class="px-4 py-2 text-sm font-medium text-primary-green border-b-2 border-primary-green tab-button active flex items-center">
                                     <i data-lucide="smile" class="w-4 h-4 mr-2"></i>
-                                    <span>Koda Avatars</span>
+                                    <span>{% trans "Koda Avatars" %}</span>
                                 </button>
                                 <button type="button" id="upload-tab"
                                     class="px-4 py-2 text-sm font-medium text-gray-300 border-b-2 border-transparent hover:text-white hover:border-primary-green transition-colors tab-button flex items-center">
                                     <i data-lucide="upload" class="w-4 h-4 mr-2"></i>
-                                    <span>Upload Custom</span>
+                                    <span>{% trans "Upload Custom" %}</span>
                                 </button>
                             </div>
                         </div>
@@ -85,7 +86,7 @@
                                 {% endfor %}
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-400 mt-2 text-center">Click on a Koda avatar to select it</p>
+                            <p class="text-xs text-gray-400 mt-2 text-center">{% trans "Click on a Koda avatar to select it" %}</p>
                         </div>
 
                         <!-- Upload tab content -->
@@ -94,14 +95,14 @@
                                 <input type="file" id="avatar-input" name="avatar" accept="image/*" class="hidden">
                                 <div class="flex flex-col items-center space-y-3">
                                     <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-700 border-2 border-gray-600">
-                                        <img id="upload-preview" src="{{ current_avatar_url }}" alt="Preview" class="w-full h-full object-cover">
+                                        <img id="upload-preview" src="{{ current_avatar_url }}" alt="{% trans "Preview" %}" class="w-full h-full object-cover">
                                     </div>
                                     <div>
                                         <button type="button" onclick="document.getElementById('avatar-input').click()" 
                                                 class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                                            Choose image
+                                            {% trans "Choose image" %}
                                         </button>
-                                        <p class="text-xs text-gray-400 mt-2">JPG, PNG (max 2MB)</p>
+                                        <p class="text-xs text-gray-400 mt-2">{% trans "JPG, PNG (max 2MB)" %}</p>
                                     </div>
                                 </div>
                             </div>
@@ -111,13 +112,13 @@
                         <div id="crop-container" class="hidden mt-4">
                             <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-sm font-medium text-white">Adjust your avatar</h4>
+                                    <h4 class="text-sm font-medium text-white">{% trans "Adjust your avatar" %}</h4>
                                     <div class="flex space-x-2">
                                         <button type="button" id="crop-save" class="px-3 py-1 bg-primary-green text-white rounded text-xs hover:bg-green-600">
-                                            Save
+                                            {% trans "Save" %}
                                         </button>
                                         <button type="button" id="crop-cancel" class="px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-500">
-                                            Cancel
+                                            {% trans "Cancel" %}
                                         </button>
                                     </div>
                                 </div>
@@ -126,7 +127,7 @@
                                 </div>
                                 <div class="mt-3">
                                     <div class="flex items-center space-x-3">
-                                        <label class="text-xs text-gray-400 w-12">Zoom:</label>
+                                        <label class="text-xs text-gray-400 w-12">{% trans "Zoom:" %}</label>
                                         <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" 
                                                class="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                                     </div>
@@ -142,39 +143,47 @@
                     <!-- Form fields -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">{% trans "Username" %}</label>
                             <input type="text" name="username" value="{{ form.username.value|default:user.username }}" 
                                    class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">{% trans "Email" %}</label>
                             <input type="email" name="email" value="{{ form.email.value|default:user.email }}" 
                                    class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Biography</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">{% trans "Biography" %}</label>
                         <textarea name="bio" rows="3" 
                                   class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors"
-                                  placeholder="Tell us about yourself...">{{ form.bio.value|default:user.bio }}</textarea>
+                                  placeholder="{% trans "Tell us about yourself..." %}">{{ form.bio.value|default:user.bio }}</textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Preferred Language</label>
-                        <select name="language_preference" 
+                        {% comment %}
+                        Chaque langue est écrite DANS SA PROPRE LANGUE, et les
+                        catalogues le respectent : « English » reste « English »
+                        en français, « Français » reste « Français » en anglais.
+                        Traduire les noms de langue rendrait le sélecteur
+                        inutilisable pour qui ne lit pas la langue courante —
+                        c'est précisément la personne qui vient le chercher.
+                        {% endcomment %}
+                        <label for="selecteur-langue" class="block text-sm font-medium text-gray-300 mb-2">{% trans "Preferred Language" %}</label>
+                        <select name="language_preference" id="selecteur-langue" 
                                 class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-colors">
-                            <option value="fr" {% if user.language_preference == 'fr' %}selected{% endif %}>Français</option>
-                            <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>English</option>
+                            <option value="fr" {% if user.language_preference == 'fr' %}selected{% endif %}>{% trans "Français" %}</option>
+                            <option value="en" {% if user.language_preference == 'en' %}selected{% endif %}>{% trans "English" %}</option>
                         </select>
                     </div>
 
                     <div class="flex justify-end space-x-4">
                         <a href="{% url 'courses:generator' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                            Cancel
+                            {% trans "Cancel" %}
                         </a>
                         <button type="submit" class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors">
-                            Save
+                            {% trans "Save" %}
                         </button>
                     </div>
                 </form>
@@ -184,9 +193,9 @@
         <!-- Profile preview -->
         <div class="lg:col-span-2 space-y-4">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h3 class="text-lg font-bold text-white mb-4">Preview</h3>
+                <h3 class="text-lg font-bold text-white mb-4">{% trans "Preview" %}</h3>
                 <div class="text-center">
-                    <img id="sidebar-preview" src="{{ current_avatar_url }}" alt="Avatar" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-600 shadow-lg">
+                    <img id="sidebar-preview" src="{{ current_avatar_url }}" alt="{% trans "Avatar" %}" class="w-40 h-40 rounded-full object-cover mx-auto mb-6 border-4 border-gray-600 shadow-lg">
                     <h4 class="text-xl font-bold text-white mb-2">{{ user.username }}</h4>
                     <p class="text-sm text-gray-400 mb-4">{{ user.email }}</p>
                 </div>
@@ -198,23 +207,23 @@
             </div>
 
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h3 class="text-lg font-bold text-white mb-4">Statistics</h3>
+                <h3 class="text-lg font-bold text-white mb-4">{% trans "Statistics" %}</h3>
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Title</span>
+                        <span class="text-sm text-gray-400">{% trans "Title" %}</span>
                         <span class="text-sm font-bold text-yellow-500">{{ user.level_title }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Level</span>
+                        <span class="text-sm text-gray-400">{% trans "Level" %}</span>
                         <span class="text-sm font-bold text-primary-blue">{{ user.level }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">XP</span>
+                        <span class="text-sm text-gray-400">{% trans "XP" %}</span>
                         <span class="text-sm font-bold text-primary-green">{{ user.xp }}</span>
                     </div>
                     <div class="mb-2">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm text-gray-400">Progress</span>
+                            <span class="text-sm text-gray-400">{% trans "Progress" %}</span>
                             <span class="text-sm text-gray-300">{{ user.xp_progress }}/{{ user.xp_needed_for_level_up }} XP ({{ user.xp_progress_percentage|floatformat:1 }}%)</span>
                         </div>
                         <div class="w-full bg-gray-700 rounded-full h-2">
@@ -222,19 +231,19 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Completed courses</span>
+                        <span class="text-sm text-gray-400">{% trans "Completed courses" %}</span>
                         <span class="text-sm text-gray-300">{{ user.total_courses_completed }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Successful quizzes</span>
+                        <span class="text-sm text-gray-400">{% trans "Successful quizzes" %}</span>
                         <span class="text-sm text-gray-300">{{ user.total_quizzes_completed }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Current streak</span>
+                        <span class="text-sm text-gray-400">{% trans "Current streak" %}</span>
                         <span class="text-sm font-bold text-orange-500">{{ user.current_streak }} day{{ user.current_streak|pluralize }}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-400">Member since</span>
+                        <span class="text-sm text-gray-400">{% trans "Member since" %}</span>
                         <span class="text-sm text-gray-300">{{ user.date_joined|date:"M Y" }}</span>
                     </div>
                 </div>

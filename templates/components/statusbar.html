@@ -1,19 +1,20 @@
+{% load i18n %}
 <!-- Status Bar Component - Stuck at bottom -->
 <div class="h-6 bg-blue-500/90 backdrop-blur-md text-white text-xs flex items-center justify-between px-4 flex-shrink-0 shadow-sm border-t border-blue-400/30">
     <div class="flex items-center space-x-4">
         <span class="flex items-center space-x-1">
             <i data-lucide="clock" class="w-3 h-3"></i>
-            <span id="session-time">Streak: {{ user.current_streak }}d</span>
+            <span id="session-time">{% blocktrans with jours=user.current_streak %}Série : {{ jours }} j{% endblocktrans %}</span>
         </span>
         <span class="flex items-center space-x-1">
             <i data-lucide="star" class="w-3 h-3 text-yellow-400"></i>
-            <span>{{ user.level_title }} Lv.{{ user.level|default:"1" }}</span>
+            <span>{% blocktrans with titre=user.level_title niveau=user.level|default:"1" %}{{ titre }} niv. {{ niveau }}{% endblocktrans %}</span>
         </span>
         <span class="flex items-center space-x-1">
             <i data-lucide="zap" class="w-3 h-3 text-green-400"></i>
             <span>{{ user.xp|default:"0" }} XP</span>
         </span>
-        <span class="text-primary-green">● Online</span>
+        <span class="text-primary-green">{% trans "● Online" %}</span>
     </div>
     
     <div class="flex items-center space-x-2">

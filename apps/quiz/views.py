@@ -9,6 +9,7 @@ from .models import GameRoom, GameParticipant, GameQuestion, GameAnswer
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 import json
+from django.utils.translation import gettext as _
 
 @login_required
 def delete_room(request, room_code):
@@ -18,17 +19,19 @@ def delete_room(request, room_code):
         
         # Check if user is host
         if room.host != request.user:
-            messages.error(request, 'Only the host can delete this room.')
+            messages.error(request, _('Only the host can delete this room.'))
             return redirect('quiz:lobby')
         
         room_topic = room.topic
         room.delete()
-        messages.success(request, f'Room "{room_topic}" deleted successfully!')
+        messages.success(request, _('Room "%(sujet)s" deleted successfully!')
+                              % {"sujet": room_topic})
         
     except GameRoom.DoesNotExist:
-        messages.error(request, 'Room not found.')
+        messages.error(request, _('Room not found.'))
     except Exception as e:
-        messages.error(request, f'Error deleting room: {str(e)}')
+        messages.error(request, _("Error deleting room: %(erreur)s")
+                            % {"erreur": e})
     
     return redirect('quiz:lobby')
 
@@ -65,7 +68,8 @@ def create_room(request):
             user=request.user
         )
         
-        messages.success(request, f'Room created with code: {room.code}')
+        messages.success(request, _("Room created with code: %(code)s")
+                              % {"code": room.code})
         return redirect('quiz:room_detail', room_code=room.code)
     
     return render(request, 'quiz/create_room.html')
@@ -77,12 +81,12 @@ def start_multiplayer_game(request, room_code):
     
     # Check if user is host
     if room.host != request.user:
-        messages.error(request, 'Only the host can start the game.')
+        messages.error(request, _('Only the host can start the game.'))
         return redirect('quiz:room_detail', room_code=room_code)
     
     # Check if room is in waiting state
     if room.status != 'waiting':
-        messages.error(request, 'Game already started or finished.')
+        messages.error(request, _('Game already started or finished.'))
         return redirect('quiz:room_detail', room_code=room_code)
     
     # Generate questions using AI
@@ -107,10 +111,11 @@ def start_multiplayer_game(request, room_code):
             room.current_question = 1
             room.save()
             
-            messages.success(request, f'Game started! {len(quiz_data["questions"])} questions generated.')
+            messages.success(request, _("Game started! %(nombre)s questions generated.")
+                              % {"nombre": len(quiz_data["questions"])})
             return redirect('quiz:multiplayer_game', room_code=room_code)
         else:
-            messages.error(request, 'Failed to generate questions. Please try again.')
+            messages.error(request, _('Failed to generate questions. Please try again.'))
             
     # Quota de génération (C13), intercepté avant le cas général : le message
     # « réessayez » du bloc suivant serait faux ici, la partie ne pouvant pas
@@ -120,7 +125,8 @@ def start_multiplayer_game(request, room_code):
 
     except Exception as e:
         print(f"Error generating questions: {e}")
-        messages.error(request, f'Error generating questions: {str(e)}')
+        messages.error(request, _("Error generating questions: %(erreur)s")
+                            % {"erreur": e})
     
     return redirect('quiz:room_detail', room_code=room_code)
 
@@ -134,7 +140,7 @@ def join_room(request):
             room = GameRoom.objects.get(code=room_code, status__in=['waiting', 'starting'])
             
             if room.is_full:
-                messages.error(request, 'This room is full.')
+                messages.error(request, _('This room is full.'))
                 return render(request, 'quiz/join_room.html')
             
             # Add player if not already in room
@@ -151,7 +157,7 @@ def join_room(request):
             return redirect('quiz:room_detail', room_code=room.code)
             
         except GameRoom.DoesNotExist:
-            messages.error(request, 'Room not found or already finished.')
+            messages.error(request, _('Room not found or already finished.'))
     
     return render(request, 'quiz/join_room.html')
 
@@ -166,7 +172,7 @@ def room_detail(request, room_code):
         # l'objet lui-même n'est jamais utilisé.
         GameParticipant.objects.get(room=room, user=request.user)
     except GameParticipant.DoesNotExist:
-        messages.error(request, 'You must join this room to access it.')
+        messages.error(request, _('You must join this room to access it.'))
         return redirect('quiz:join_room')
     
     participants = room.participants.filter(is_active=True).order_by('joined_at')
@@ -364,7 +370,7 @@ def multiplayer_game(request, room_code):
     try:
         participant = GameParticipant.objects.get(room=room, user=request.user, is_active=True)
     except GameParticipant.DoesNotExist:
-        messages.error(request, 'You are not authorized to access this game.')
+        messages.error(request, _('You are not authorized to access this game.'))
         return redirect('quiz:lobby')
     
     context = {

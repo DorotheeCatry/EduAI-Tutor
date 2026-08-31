@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}{{ exercise.title }} - Exercices Python{% endblock %}
 
@@ -23,24 +24,24 @@
                 
                 <div class="flex items-center space-x-3">
                     {% if exercise.difficulty == 'beginner' %}
-                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">Beginner</span>
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">{% trans "Beginner" %}</span>
                     {% elif exercise.difficulty == 'intermediate' %}
-                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">Intermediate</span>
+                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm font-medium">{% trans "Intermediate" %}</span>
                     {% else %}
-                        <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium">Advanced</span>
+                        <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium">{% trans "Advanced" %}</span>
                     {% endif %}
                     
                     {% if progress.is_completed %}
                         <span class="px-3 py-1 bg-primary-green/20 text-primary-green rounded-full text-sm font-medium flex items-center space-x-1">
                             <i data-lucide="check" class="w-3 h-3"></i>
-                            <span>Completed</span>
+                            <span>{% trans "Completed" %}</span>
                         </span>
                     {% endif %}
                     
                     {% if exercise.created_by == user %}
                         <button onclick="deleteExercise()" class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-medium hover:bg-red-500/30 transition-colors flex items-center space-x-1">
                             <i data-lucide="trash-2" class="w-3 h-3"></i>
-                            <span>Delete</span>
+                            <span>{% trans "Delete" %}</span>
                         </button>
                     {% endif %}
                 </div>
@@ -61,13 +62,13 @@
         <!-- Description -->
         <div class="flex-1 overflow-y-auto p-6">
             <div class="prose prose-invert max-w-none">
-                <h3 class="text-lg font-bold text-white mb-4">📋 Statement</h3>
+                <h3 class="text-lg font-bold text-white mb-4">{% trans "📋 Statement" %}</h3>
                 <div class="text-gray-300 leading-relaxed mb-6">
                     {{ exercise.description|linebreaks }}
                 </div>
                 
                 <!-- Tests to pass -->
-                <h3 class="text-lg font-bold text-white mb-4">🧪 Tests to pass</h3>
+                <h3 class="text-lg font-bold text-white mb-4">{% trans "🧪 Tests to pass" %}</h3>
                 <div class="space-y-3" id="tests-display">
                     {% for test in exercise.tests %}
                         <div class="bg-gray-900 rounded-lg p-4 border border-gray-600 test-case" data-test-index="{{ forloop.counter0 }}">
@@ -78,11 +79,11 @@
                                     </div>
                                     <div>
                                         <code class="text-primary-blue text-sm">{{ test.input }}</code>
-                                        <div class="text-xs text-gray-500 mt-1">Expected: <code class="text-primary-green">{{ test.expected }}</code></div>
+                                        <div class="text-xs text-gray-500 mt-1">{% trans "Expected:" %} <code class="text-primary-green">{{ test.expected }}</code></div>
                                     </div>
                                 </div>
                                 <div class="test-result hidden">
-                                    <div class="text-xs text-gray-400">Got: <code class="test-actual"></code></div>
+                                    <div class="text-xs text-gray-400">{% trans "Got:" %} <code class="test-actual"></code></div>
                                 </div>
                             </div>
                         </div>
@@ -91,17 +92,17 @@
                 
                 <!-- Recent submissions -->
                 {% if recent_submissions %}
-                    <h3 class="text-lg font-bold text-white mb-4 mt-8">📊 Recent attempts</h3>
+                    <h3 class="text-lg font-bold text-white mb-4 mt-8">{% trans "📊 Recent attempts" %}</h3>
                     <div class="space-y-2">
                         {% for submission in recent_submissions %}
                             <div class="bg-gray-900 rounded-lg p-3 border border-gray-600 flex items-center justify-between">
                                 <div class="flex items-center space-x-3">
                                     {% if submission.status == 'success' %}
                                         <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
-                                        <span class="text-green-400 text-sm">Success</span>
+                                        <span class="text-green-400 text-sm">{% trans "Success" %}</span>
                                     {% else %}
                                         <i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i>
-                                        <span class="text-red-400 text-sm">Failed</span>
+                                        <span class="text-red-400 text-sm">{% trans "Failed" %}</span>
                                     {% endif %}
                                     <span class="text-gray-400 text-sm">{{ submission.passed_tests_count }}/{{ submission.total_tests_count }} tests</span>
                                 </div>
@@ -121,20 +122,20 @@
             <div class="flex items-center space-x-3">
                 <i data-lucide="code" class="w-5 h-5 text-primary-green"></i>
                 <div>
-                    <span class="text-white font-semibold">Python Editor</span>
-                    <div class="text-xs text-gray-400">Write your solution here</div>
+                    <span class="text-white font-semibold">{% trans "Python Editor" %}</span>
+                    <div class="text-xs text-gray-400">{% trans "Write your solution here" %}</div>
                 </div>
             </div>
             
             <div class="flex items-center space-x-3">
                 <button id="reset-code" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
                     <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                    <span>Reset</span>
+                    <span>{% trans "Reset" %}</span>
                 </button>
                 
                 <button id="run-code" class="px-6 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2 font-medium shadow-lg">
                     <i data-lucide="play" class="w-4 h-4"></i>
-                    <span>Test Code</span>
+                    <span>{% trans "Test Code" %}</span>
                 </button>
             </div>
         </div>
@@ -148,7 +149,7 @@
                     id="code-editor" 
                     class="w-full h-full bg-[#1e1e1e] text-white font-mono text-sm p-4 border-none outline-none resize-none"
                     style="font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace; line-height: 1.6; tab-size: 4;"
-                    placeholder="Write your Python code here..."
+                    placeholder="{% trans "Write your Python code here..." %}"
                     spellcheck="false"
                 >{{ exercise.starter_code }}</textarea>
                 

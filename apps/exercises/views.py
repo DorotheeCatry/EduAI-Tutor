@@ -12,6 +12,7 @@ from .models import Exercise, ExerciseSubmission, UserExerciseProgress
 from .security import secure_executor
 import json
 import time
+from django.utils.translation import gettext as _
 
 @login_required
 def exercise_list(request):
@@ -217,7 +218,7 @@ def generate_exercise(request):
         difficulty = request.POST.get('difficulty', 'beginner')
         
         if not topic:
-            messages.error(request, 'Please specify a topic for the exercise.')
+            messages.error(request, _('Please specify a topic for the exercise.'))
             return redirect('exercises:list')
         
         try:
@@ -363,7 +364,7 @@ def generate_exercise(request):
                     )
                     
                     print(f"✅ Exercise created successfully: {exercise.title} (ID: {exercise.id})")
-                    messages.success(request, f'Exercise "{exercise.title}" generated successfully!')
+                    messages.success(request, _('Exercise "%(titre)s" generated successfully!') % {"titre": exercise.title})
                     return redirect('exercises:detail', exercise_id=exercise.id)
                     
                 except (json.JSONDecodeError, KeyError, ValueError) as e:
@@ -434,7 +435,7 @@ def generate_exercise(request):
                         )
                         
                         print(f"✅ Exercise created with manual parsing: {exercise.title} (ID: {exercise.id})")
-                        messages.success(request, f'Exercise "{exercise.title}" generated successfully!')
+                        messages.success(request, _('Exercise "%(titre)s" generated successfully!') % {"titre": exercise.title})
                         return redirect('exercises:detail', exercise_id=exercise.id)
                         
                     except Exception as manual_error:
@@ -454,11 +455,11 @@ def generate_exercise(request):
                         created_by=request.user
                     )
                     
-                    messages.warning(request, f'AI generated a malformed response. Basic exercise created on "{topic}".')
+                    messages.warning(request, _('AI generated a malformed response. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
                     return redirect('exercises:detail', exercise_id=fallback_exercise.id)
             else:
                 print(f"❌ Orchestrator error: {result.get('error', 'Unknown error')}")
-                messages.error(request, f'Generation error: {result.get("error", "Unknown error")}')
+                messages.error(request, _("Generation error: %(erreur)s") % {"erreur": result.get("error", _("Unknown error"))})
                 
         # Quota de génération (C13) : intercepté AVANT le `except Exception`
         # qui suit. Celui-ci fabrique un exercice de repli — comportement juste
@@ -486,10 +487,10 @@ def generate_exercise(request):
                     created_by=request.user
                 )
                 
-                messages.warning(request, f'AI generation error. Basic exercise created on "{topic}".')
+                messages.warning(request, _('AI generation error. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
                 return redirect('exercises:detail', exercise_id=fallback_exercise.id)
             except Exception:
-                messages.error(request, f'Generation error: {str(e)}')
+                messages.error(request, _("Generation error: %(erreur)s") % {"erreur": e})
     
     return redirect('exercises:list')
 
@@ -501,7 +502,7 @@ def generate_exercise_from_course(request):
     difficulty = request.GET.get('difficulty', 'intermediate')  # Default difficulty for courses
     
     if not topic:
-        messages.error(request, 'No topic specified to generate the exercise.')
+        messages.error(request, _('No topic specified to generate the exercise.'))
         return redirect('exercises:list')
     
     try:
@@ -624,7 +625,7 @@ def generate_exercise_from_course(request):
                 )
                 
                 print(f"✅ Exercise created successfully: {exercise.title} (ID: {exercise.id})")
-                messages.success(request, f'Exercise "{exercise.title}" generated successfully from course!')
+                messages.success(request, _('Exercise "%(titre)s" generated successfully from course!') % {"titre": exercise.title})
                 return redirect('exercises:detail', exercise_id=exercise.id)
                 
             except (json.JSONDecodeError, KeyError, ValueError) as e:
@@ -693,7 +694,7 @@ def generate_exercise_from_course(request):
                     )
                     
                     print(f"✅ Exercise created with manual parsing: {exercise.title} (ID: {exercise.id})")
-                    messages.success(request, f'Exercise "{exercise.title}" generated successfully from course!')
+                    messages.success(request, _('Exercise "%(titre)s" generated successfully from course!') % {"titre": exercise.title})
                     return redirect('exercises:detail', exercise_id=exercise.id)
                     
                 except Exception as manual_error:
@@ -713,11 +714,11 @@ def generate_exercise_from_course(request):
                     created_by=request.user
                 )
                 
-                messages.warning(request, f'AI generated a malformed response. Basic exercise created on "{topic}".')
+                messages.warning(request, _('AI generated a malformed response. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
                 return redirect('exercises:detail', exercise_id=fallback_exercise.id)
         else:
             print(f"❌ Orchestrator error: {result.get('error', 'Unknown error')}")
-            messages.error(request, f'Generation error: {result.get("error", "Unknown error")}')
+            messages.error(request, _("Generation error: %(erreur)s") % {"erreur": result.get("error", _("Unknown error"))})
             
     # Voir la vue précédente : le refus de quota ne doit pas emprunter le
     # chemin de repli, qui créerait un exercice sans que rien n'explique
@@ -744,10 +745,10 @@ def generate_exercise_from_course(request):
                 created_by=request.user
             )
             
-            messages.warning(request, f'AI generation error. Basic exercise created on "{topic}".')
+            messages.warning(request, _('AI generation error. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
             return redirect('exercises:detail', exercise_id=fallback_exercise.id)
         except Exception:
-            messages.error(request, f'Generation error: {str(e)}')
+            messages.error(request, _("Generation error: %(erreur)s") % {"erreur": e})
     
     return redirect('exercises:list')
 
@@ -809,16 +810,16 @@ def delete_exercise(request, exercise_id):
         
         # Check if user is the creator
         if exercise.created_by != request.user:
-            messages.error(request, 'You can only delete exercises you created.')
+            messages.error(request, _('You can only delete exercises you created.'))
             return redirect('exercises:list')
         
         exercise_title = exercise.title
         exercise.delete()
-        messages.success(request, f'Exercise "{exercise_title}" deleted successfully!')
+        messages.success(request, _('Exercise "%(titre)s" deleted successfully!') % {"titre": exercise_title})
         
     except Exercise.DoesNotExist:
-        messages.error(request, 'Exercise not found.')
+        messages.error(request, _('Exercise not found.'))
     except Exception as e:
-        messages.error(request, f'Error deleting exercise: {str(e)}')
+        messages.error(request, _("Error deleting exercise: %(erreur)s") % {"erreur": e})
     
     return redirect('exercises:list')

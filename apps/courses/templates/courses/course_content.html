@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 <!-- Dedicated template for course content display -->
 <div class="flex flex-col h-full overflow-hidden">
     <!-- Course header -->
@@ -27,24 +27,24 @@
                     
                     <button type="submit" class="px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
                         <i data-lucide="save" class="w-4 h-4"></i>
-                        <span>Save</span>
+                        <span>{% trans "Save" %}</span>
                     </button>
                 </form>
             {% endif %}
                 
             <a href="{% url 'quiz:start' %}?topic={{ course.topic }}" class="px-4 py-2 bg-primary-rose text-white rounded-lg hover:bg-pink-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="brain" class="w-4 h-4"></i>
-                <span>Quiz</span>
+                <span>{% trans "Quiz" %}</span>
             </a>
             
             <a href="{% url 'exercises:generate_from_course' %}?topic={{ course.topic }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2">
                 <i data-lucide="code" class="w-4 h-4"></i>
-                <span>Exercise</span>
+                <span>{% trans "Exercise" %}</span>
             </a>
             
             <a href="{% if is_saved_course %}{% url 'courses:my_courses' %}{% else %}{% url 'courses:generator' %}{% endif %}" class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                <span>Back</span>
+                <span>{% trans "Back" %}</span>
             </a>
         </div>
     </div>
@@ -54,7 +54,7 @@
             <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4">
                 <div class="flex items-center space-x-2">
                     <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                    <span class="text-red-400 font-medium">Error</span>
+                    <span class="text-red-400 font-medium">{% trans "Error" %}</span>
                 </div>
                 <p class="text-red-300 mt-2">{{ error }}</p>
             </div>
@@ -81,8 +81,8 @@
         <div class="flex-1 bg-gray-900 flex items-center justify-center">
             <div class="text-center">
                 <i data-lucide="book-x" class="w-16 h-16 text-gray-500 mx-auto mb-4"></i>
-                <h3 class="text-xl font-bold text-white mb-2">No content available</h3>
-                <p class="text-gray-400">This course content could not be loaded.</p>
+                <h3 class="text-xl font-bold text-white mb-2">{% trans "No content available" %}</h3>
+                <p class="text-gray-400">{% trans "This course content could not be loaded." %}</p>
             </div>
         </div>
     {% endif %}

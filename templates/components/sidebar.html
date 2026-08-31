@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 
 <!-- Sidebar Component - KodaTheme with Profile at top -->
 <div class="w-16 bg-gray-900 border-r border-gray-700 flex flex-col items-center py-3 space-y-1 shadow-xl flex-shrink-0">
@@ -13,19 +13,19 @@
         <div class="relative z-[9999]">
             <button onclick="toggleProfileMenu()" 
                     id="profile-button"
-                    title="Profile"
+                    title="{% trans "Profile" %}"
                     class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                            {% if 'profile' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
                 {% if user.avatar %}
                     {% if user.avatar.url %}
-                        <img src="{{ user.avatar.url }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
+                        <img src="{{ user.avatar.url }}" alt="{% trans "Avatar" %}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                     {% else %}
-                        <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
+                        <img src="{% static 'koda/' %}{{ user.avatar }}" alt="{% trans "Avatar" %}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                     {% endif %}
                 {% elif user.koda_avatar %}
-                    <img src="{% static 'koda/' %}{{ user.koda_avatar }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
+                    <img src="{% static 'koda/' %}{{ user.koda_avatar }}" alt="{% trans "Avatar" %}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                 {% else %}
-                    <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
+                    <img src="{% static 'koda/koda_base.png' %}" alt="{% trans "Avatar par défaut" %}" class="w-10 h-10 rounded-full object-cover border-2 border-gray-600" style="object-position: center top;">
                 {% endif %}
             </button>
 
@@ -39,14 +39,14 @@
                     <div class="flex items-center space-x-3">
                         {% if user.avatar %}
                             {% if user.avatar.url %}
-                                <img src="{{ user.avatar.url }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
+                                <img src="{{ user.avatar.url }}" alt="{% trans "Avatar" %}" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                             {% else %}
-                                <img src="{% static 'koda/' %}{{ user.avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
+                                <img src="{% static 'koda/' %}{{ user.avatar }}" alt="{% trans "Avatar" %}" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                             {% endif %}
                         {% elif user.koda_avatar %}
-                            <img src="{% static 'koda/' %}{{ user.koda_avatar }}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
+                            <img src="{% static 'koda/' %}{{ user.koda_avatar }}" alt="{% trans "Avatar" %}" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                         {% else %}
-                            <img src="{% static 'koda/koda_base.png' %}" alt="Avatar par défaut" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
+                            <img src="{% static 'koda/koda_base.png' %}" alt="{% trans "Avatar par défaut" %}" class="w-8 h-8 rounded-full object-cover" style="object-position: center top;">
                         {% endif %}
                         <div>
                             <div class="text-sm font-medium text-white">{{ user.username }}</div>
@@ -59,7 +59,7 @@
                     <!-- Edit Profile Button -->
                     <button onclick="openTab('profile')" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-200 text-left">
                         <i data-lucide="user" class="w-4 h-4 mr-2"></i>
-                        <span>Edit Profile</span>
+                        <span>{% trans "Edit Profile" %}</span>
                     </button>
 
                     <!-- Logout Form -->
@@ -67,7 +67,7 @@
                         {% csrf_token %}
                         <button type="submit" class="w-full flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-red-600 hover:text-red-400 transition-all duration-200 text-left">
                             <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
-                            <span>Sign Out</span>
+                            <span>{% trans "Sign Out" %}</span>
                         </button>
                     </form>
                 </div>
@@ -75,43 +75,43 @@
         </div>
 
         <!-- Other buttons -->
-        <button onclick="openTab('courses')" title="Courses"
+        <button onclick="openTab('courses')" title="{% trans "Courses" %}"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                     {% if request.path == '/courses/generator/' %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="book-open" class="w-5 h-5 relative z-10"></i>
         </button>
 
-        <button onclick="openTab('my-courses')" title="My Courses"
+        <button onclick="openTab('my-courses')" title="{% trans "My Courses" %}"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                     {% if request.path == '/courses/my-courses/' %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="bookmark" class="w-5 h-5 relative z-10"></i>
         </button>
 
-        <button onclick="openTab('chat')" title="Search"
+        <button onclick="openTab('chat')" title="{% trans "Search" %}"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'chat' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="search" class="w-5 h-5 relative z-10"></i>
         </button>
 
-        <button onclick="openTab('exercises')" title="Python Exercises"
+        <button onclick="openTab('exercises')" title="{% trans "Python Exercises" %}"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'exercises' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="code" class="w-5 h-5 relative z-10"></i>
         </button>
 
-        <button onclick="openTab('quiz')" title="Quiz"
+        <button onclick="openTab('quiz')" title="{% trans "Quiz" %}"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'quiz' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="brain" class="w-5 h-5 relative z-10"></i>
         </button>
 
-        <button onclick="openTab('revision')" title="Revision"
+        <button onclick="openTab('revision')" title="{% trans "Revision" %}"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'revision' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="rotate-ccw" class="w-5 h-5 relative z-10"></i>
         </button>
 
-        <button onclick="openTab('tracker')" title="Performance"
+        <button onclick="openTab('tracker')" title="{% trans "Performance" %}"
                 class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
                        {% if 'tracker' in request.path %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
             <i data-lucide="bar-chart-3" class="w-5 h-5 relative z-10"></i>

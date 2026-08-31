@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}Multiplayer Quiz - Room {{ room.code }}{% endblock %}
 
@@ -30,7 +31,7 @@
                 <span class="text-primary-blue font-mono text-lg" id="timer">60s</span>
             </div>
             <div class="text-white">
-                Question <span id="current-question">1</span> of <span id="total-questions">{{ room.num_questions }}</span>
+                {% trans "Question" %} <span id="current-question">1</span> {% trans "of" %} <span id="total-questions">{{ room.num_questions }}</span>
             </div>
         </div>
     </div>
@@ -54,8 +55,8 @@
                             <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i data-lucide="loader-2" class="w-8 h-8 text-purple-500 animate-spin"></i>
                             </div>
-                            <h2 class="text-xl font-bold text-white mb-2">Loading question...</h2>
-                            <p class="text-gray-400">Please wait while we load the first question</p>
+                            <h2 class="text-xl font-bold text-white mb-2">{% trans "Loading question..." %}</h2>
+                            <p class="text-gray-400">{% trans "Please wait while we load the first question" %}</p>
                         </div>
                     </div>
                 </div>
@@ -73,10 +74,10 @@
         <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 flex-shrink-0">
             <h3 class="text-base font-bold text-white mb-3 flex items-center space-x-2">
                 <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
-                <span>Live Leaderboard</span>
+                <span>{% trans "Live Leaderboard" %}</span>
             </h3>
             <div id="leaderboard-content">
-                <div class="text-center text-gray-400">Loading players...</div>
+                <div class="text-center text-gray-400">{% trans "Loading players..." %}</div>
             </div>
         </div>
     </div>
@@ -84,10 +85,10 @@
     <!-- Footer -->
     <div class="flex justify-between items-center mt-6 flex-shrink-0">
         <a href="{% url 'quiz:room_detail' room.code %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-            Back to Room
+            {% trans "Back to Room" %}
         </a>
         <div class="text-sm text-white font-semibold">
-            Your Score: <span id="my-score">0</span>
+            {% trans "Your Score:" %} <span id="my-score">0</span>
         </div>
     </div>
 </div>

@@ -10,6 +10,7 @@ from apps.rag.module_loader import module_loader
 from .models import Course
 import re
 import markdown2
+from django.utils.translation import gettext as _
 
 
 # Extras markdown2 retenus pour le rendu des cours. Regroupés ici plutôt que
@@ -79,7 +80,7 @@ def course_generator(request):
         module = request.POST.get('module', '')
         
         if not topic:
-            messages.error(request, 'Please enter a topic to generate the course.')
+            messages.error(request, _('Please enter a topic to generate the course.'))
             context = {'modules': module_loader.get_available_modules()}
             return render(request, 'courses/generate.html', context)
         
@@ -173,12 +174,14 @@ def save_course(request):
             request.user.total_courses_completed += 1
             request.user.save()
             
-            messages.success(request, f'✨ Course "{course.title}" saved successfully!')
+            messages.success(request, _('✨ Course "%(titre)s" saved successfully!')
+                              % {"titre": course.title})
             return redirect('courses:detail', course_id=course.id)
             
         except Exception as save_error:
             print(f"❌ Save error: {save_error}")
-            messages.error(request, f'❌ Save error: {save_error}')
+            messages.error(request, _("❌ Save error: %(erreur)s")
+                            % {"erreur": save_error})
             return redirect('courses:generator')
     
     return redirect('courses:generator')
@@ -210,7 +213,7 @@ def course_detail(request, course_id):
             'is_saved_course': True  # Flag pour identifier un cours sauvegardé
         }
     except Course.DoesNotExist:
-        messages.error(request, '❌ Course not found.')
+        messages.error(request, _('❌ Course not found.'))
         return redirect('courses:generator')
     
     return render(request, 'courses/course_detail.html', context)
@@ -259,10 +262,12 @@ def delete_course(request, course_id):
             course = get_object_or_404(Course, id=course_id, created_by=request.user)
             course_title = course.title
             course.delete()
-            messages.success(request, f'🗑️ Course "{course_title}" deleted successfully!')
+            messages.success(request, _('🗑️ Course "%(titre)s" deleted successfully!')
+                              % {"titre": course_title})
         except Course.DoesNotExist:
-            messages.error(request, '❌ Course not found.')
+            messages.error(request, _('❌ Course not found.'))
         except Exception as delete_error:
-            messages.error(request, f'❌ Delete error: {delete_error}')
+            messages.error(request, _("❌ Delete error: %(erreur)s")
+                            % {"erreur": delete_error})
     
     return redirect('courses:my_courses')

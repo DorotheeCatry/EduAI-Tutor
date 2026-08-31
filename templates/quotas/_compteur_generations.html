@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 Compteur de générations restantes pour la journée.
 
@@ -31,25 +32,31 @@ Accessibilité :
 
     {% if quota_generation.total_global >= quota_generation.plafond_global %}
         <p>
-            <strong>Génération suspendue pour aujourd'hui.</strong>
-            Le service a atteint son plafond quotidien
-            ({{ quota_generation.plafond_global }} générations).
-            La consultation reste ouverte : vos cours, exercices et quiz déjà
-            enregistrés restent accessibles. La génération reprendra demain.
+            <strong>{% trans "Génération suspendue pour aujourd'hui." %}</strong>
+            {% blocktrans with plafond=quota_generation.plafond_global %}Le service a atteint son plafond quotidien ({{ plafond }} générations). La consultation reste ouverte : vos cours, exercices et quiz déjà enregistrés restent accessibles. La génération reprendra demain.{% endblocktrans %}
         </p>
     {% elif quota_generation.restantes == 0 %}
         <p>
-            <strong>Vous avez utilisé vos {{ quota_generation.quota }} générations du jour.</strong>
-            Le compteur repart à zéro à minuit. Vos cours, exercices et quiz
-            déjà enregistrés restent accessibles.
+            <strong>{% blocktrans with quota=quota_generation.quota %}Vous avez utilisé vos {{ quota }} générations du jour.{% endblocktrans %}</strong>
+            {% trans "Le compteur repart à zéro à minuit. Vos cours, exercices et quiz déjà enregistrés restent accessibles." %}
         </p>
     {% else %}
+        {% comment %}
+        `blocktrans ... count` et non une concaténation : le pluriel ne se
+        décide pas de la même façon dans toutes les langues, et l'anglais dit
+        « 1 generation left » là où le français écrit « Il vous reste 1
+        génération ». La forme `plural` laisse chaque catalogue trancher.
+
+        Le libellé français est repris mot pour mot : `tests/test_quotas.py`
+        vérifie que la page porte bien « Il vous reste », et le script de
+        vérification du déploiement le cherche aussi sur l'URL publique.
+        {% endcomment %}
         <p>
-            Il vous reste
-            <strong>{{ quota_generation.restantes }}</strong>
-            génération{{ quota_generation.restantes|pluralize }} sur
-            {{ quota_generation.quota }} aujourd'hui.
-            Le compteur repart à zéro à minuit.
+            {% blocktrans count restantes=quota_generation.restantes with quota=quota_generation.quota %}
+            Il vous reste <strong>{{ restantes }}</strong> génération sur {{ quota }} aujourd'hui. Le compteur repart à zéro à minuit.
+            {% plural %}
+            Il vous reste <strong>{{ restantes }}</strong> générations sur {{ quota }} aujourd'hui. Le compteur repart à zéro à minuit.
+            {% endblocktrans %}
         </p>
     {% endif %}
 </div>

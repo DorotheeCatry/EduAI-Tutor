@@ -1,10 +1,11 @@
-{% load static %}
+{% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - EduAI Tutor</title>
+    <title>{% trans "Connexion - EduAI Tutor" %}</title>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script src="https://unpkg.com/lucide@1.37.0/dist/umd/lucide.js"></script>
     <script>
@@ -48,15 +49,15 @@
                     <div class="w-10 h-10 bg-primary-green rounded-lg flex items-center justify-center">
                         <i data-lucide="code" class="w-6 h-6 text-white"></i>
                     </div>
-                    <h1 class="text-2xl font-bold text-white">EduAI Tutor</h1>
+                    <h1 class="text-2xl font-bold text-white">{% trans "EduAI Tutor" %}</h1>
                 </div>
                 
-                <h2 class="text-3xl font-bold text-white mb-2">Bon retour !</h2>
+                <h2 class="text-3xl font-bold text-white mb-2">{% trans "Bon retour !" %}</h2>
                 <p class="text-gray-400 mb-6">
-                    Continue your learning in seconds.<br>
-                    Don't have an account yet? 
+                    {% trans "Continue your learning in seconds." %}<br>
+                    {% trans "Don't have an account yet?" %} 
                     <a href="{% url 'users:register' %}" class="text-primary-blue hover:text-blue-400 transition-colors">
-                        Sign up
+                        {% trans "Sign up" %}
                     </a>
                 </p>
             </div>
@@ -68,7 +69,7 @@
                     <div class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4">
                         <div class="flex items-center space-x-2">
                             <i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>
-                            <span class="text-red-400 text-sm">Login error</span>
+                            <span class="text-red-400 text-sm">{% trans "Login error" %}</span>
                         </div>
                         {% for field, errors in form.errors.items %}
                             {% for error in errors %}
@@ -91,14 +92,14 @@
 
                 <div>
                     <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                        Email or username
+                        {% trans "Email or username" %}
                     </label>
                     {{ form.username }}
                 </div>
 
                 <div>
                     <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
-                        Password
+                        {% trans "Password" %}
                     </label>
                     {{ form.password }}
                 </div>
@@ -106,16 +107,16 @@
                 <div class="flex items-center justify-between">
                     <label class="flex items-center">
                         <input type="checkbox" name="remember_me" class="w-4 h-4 text-primary-green bg-gray-700 border-gray-600 rounded focus:ring-primary-green focus:ring-2">
-                        <span class="ml-2 text-sm text-gray-300">Remember me</span>
+                        <span class="ml-2 text-sm text-gray-300">{% trans "Remember me" %}</span>
                     </label>
                     <a href="#" class="text-sm text-primary-blue hover:text-blue-400 transition-colors">
-                        Forgot password?
+                        {% trans "Forgot password?" %}
                     </a>
                 </div>
 
                 <div class="space-y-4">
                     <button type="submit" class="w-full py-3 px-4 bg-primary-blue text-white rounded-lg font-medium hover:bg-blue-600 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2">
-                        <span>Sign in</span>
+                        <span>{% trans "Sign in" %}</span>
                         <i data-lucide="arrow-right" class="w-5 h-5"></i>
                     </button>
                     
@@ -124,18 +125,18 @@
                             <div class="w-full border-t border-gray-600"></div>
                         </div>
                         <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-gray-800 text-gray-400">or</span>
+                            <span class="px-2 bg-gray-800 text-gray-400">{% trans "or" %}</span>
                         </div>
                     </div>
                     
                     <button type="button" class="w-full py-3 px-4 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2 border border-gray-600">
                         <i data-lucide="github" class="w-5 h-5"></i>
-                        <span>Continue with GitHub</span>
+                        <span>{% trans "Continue with GitHub" %}</span>
                     </button>
                     
                     <button type="button" class="w-full py-3 px-4 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-all duration-200 flex items-center justify-center space-x-2 border border-gray-600">
                         <i data-lucide="mail" class="w-5 h-5"></i>
-                        <span>Continue with Google</span>
+                        <span>{% trans "Continue with Google" %}</span>
                     </button>
                 </div>
             </form>
@@ -146,7 +147,7 @@
             <!-- Koda géant -->
             <div class="floating-animation relative z-0 w-full h-full flex">
                 <img src="{% static 'koda-ia/SALUTE.gif' %}" 
-                    alt="EduAI Tutor waving" 
+                    alt="{% trans "EduAI Tutor waving" %}" 
                     class="w-[600px] h-[600px] object-contain" />
             </div>
                 

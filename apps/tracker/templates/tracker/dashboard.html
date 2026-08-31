@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}Performance Dashboard - EduAI Tutor{% endblock %}
 
@@ -6,14 +7,14 @@
 <div class="p-6 space-y-6 h-full overflow-y-auto">
     <div class="flex items-center space-x-3 mb-6">
         <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-500"></i>
-        <h1 class="text-xl font-bold text-white">Performance Dashboard</h1>
+        <h1 class="text-xl font-bold text-white">{% trans "Performance Dashboard" %}</h1>
     </div>
 
     <!-- Statistiques principales -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Completed courses</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "Completed courses" %}</h3>
                 <i data-lucide="book-check" class="w-5 h-5 text-green-500"></i>
             </div>
             <div class="text-2xl font-bold text-green-500 mb-2">{{ total_courses }}</div>
@@ -22,7 +23,7 @@
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Success rate</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "Success rate" %}</h3>
                 <i data-lucide="target" class="w-5 h-5 text-blue-500"></i>
             </div>
             <div class="text-2xl font-bold text-blue-500 mb-2">{{ success_rate }}%</div>
@@ -31,7 +32,7 @@
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Study time</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "Study time" %}</h3>
                 <i data-lucide="clock" class="w-5 h-5 text-pink-500"></i>
             </div>
             <div class="text-2xl font-bold text-pink-500 mb-2">{{ total_study_time }}</div>
@@ -40,7 +41,7 @@
 
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">Current level</h3>
+                <h3 class="text-sm font-medium text-gray-400">{% trans "Current level" %}</h3>
                 <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
             </div>
             <div class="text-2xl font-bold text-yellow-500 mb-2">{{ user.level }}</div>
@@ -52,7 +53,7 @@
     <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
         <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
             <i data-lucide="trending-up" class="w-5 h-5 text-green-500"></i>
-            <span>This week's progress</span>
+            <span>{% trans "This week's progress" %}</span>
         </h3>
         <div class="space-y-4">
             {% for day in week_progress %}
@@ -74,7 +75,7 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
                 <i data-lucide="book-open" class="w-5 h-5 text-blue-500"></i>
-                <span>Studied topics</span>
+                <span>{% trans "Studied topics" %}</span>
             </h3>
             <div class="space-y-3">
                 {% for subject in recent_subjects %}
@@ -92,12 +93,12 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
                 <i data-lucide="target" class="w-5 h-5 text-pink-500"></i>
-                <span>Goals</span>
+                <span>{% trans "Goals" %}</span>
             </h3>
             <div class="space-y-4">
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-300">Courses this week</span>
+                        <span class="text-sm text-gray-300">{% trans "Courses this week" %}</span>
                         <span class="text-sm text-gray-400">{{ goals.courses.current }}/{{ goals.courses.target }}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
@@ -106,7 +107,7 @@
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-300">Successful quizzes</span>
+                        <span class="text-sm text-gray-300">{% trans "Successful quizzes" %}</span>
                         <span class="text-sm text-gray-400">{{ goals.quizzes.current }}/{{ goals.quizzes.target }}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
@@ -115,7 +116,7 @@
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-300">Daily time</span>
+                        <span class="text-sm text-gray-300">{% trans "Daily time" %}</span>
                         <span class="text-sm text-gray-400">{{ goals.daily_time.display }}</span>
                     </div>
                     <div class="w-full bg-gray-700 rounded-full h-2">
