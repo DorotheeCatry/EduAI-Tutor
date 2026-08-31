@@ -15,11 +15,10 @@
 </button>
 
 {# --- Panneau --- #}
-<aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre"
-       style="display: none; flex-direction: column"
-       class="tuteur-dock h-full w-[400px] max-w-[50vw] flex-shrink-0
-              bg-gray-800 border-l border-gray-700
-              overflow-hidden">
+<aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre" hidden
+       class="tuteur-dock fixed top-0 right-0 z-50 h-full w-full sm:w-[400px]
+              bg-gray-800 border-l border-gray-700 flex flex-col shadow-2xl
+              rounded-l-xl overflow-hidden">
 
     {# Barre de titre = poignée de glissement #}
     <div id="tuteur-poignee"
@@ -113,34 +112,15 @@
             </button>
         </form>
     </div>
-
-    {# Poignée de redimensionnement (mode docké) #}
-    <div id="tuteur-redim" class="tuteur-redim-dock"
-         title="{% trans "Glissez pour redimensionner" %}"></div>
 </aside>
 
 <style>
-#tuteur-panneau {
-    transition: width 200ms ease;
-    flex: 0 0 400px;
-    width: 400px;
-    height: 100%;
-}
-#tuteur-panneau[style*="display: none"] { flex-basis: 0; width: 0; }
-#tuteur-panneau.tuteur-dock:not(.tuteur-flottant) {
-    position: fixed;
-    top: 52px;
-    right: 0;
-    bottom: 24px;
-    height: auto;
-    z-index: 45;
-}
-#tuteur-panneau.tuteur-flottant { flex: none; height: 520px; }
+#tuteur-panneau { transition: transform 200ms ease, left 200ms ease, top 200ms ease,
+                   width 200ms ease, height 200ms ease, border-radius 200ms ease; }
 
-/* --- Mode flottant (détaché) --- */
 #tuteur-panneau.tuteur-flottant {
     position: fixed;
-    height: 520px;
+    height: auto;
     max-height: 80vh;
     min-height: 320px;
     width: 400px;
@@ -148,49 +128,10 @@
     border: 1px solid #374151;
     border-radius: 0.75rem;
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
-    z-index: 50;
-    transition: none;
 }
 #tuteur-panneau.tuteur-flottant #tuteur-poignee { cursor: grabbing; }
 #tuteur-panneau.tuteur-glissement { transition: none; user-select: none; }
 #tuteur-panneau.tuteur-glissement * { pointer-events: none; }
-#tuteur-panneau.tuteur-glissement #tuteur-redim { pointer-events: none; }
-
-/* --- Poignée de redimensionnement : mode docké (bord gauche) --- */
-#tuteur-redim.tuteur-redim-dock {
-    position: absolute;
-    top: 0; left: 0; width: 4px; height: 100%;
-    cursor: col-resize;
-    background: transparent;
-    z-index: 10;
-}
-#tuteur-redim.tuteur-redim-dock:hover {
-    background: rgba(76, 175, 80, 0.4);
-}
-
-/* --- Poignée de redimensionnement : mode flottant (coin bas-droite) --- */
-#tuteur-panneau.tuteur-flottant #tuteur-redim.tuteur-redim-dock {
-    top: auto; left: auto; bottom: 0; right: 0;
-    width: 20px; height: 20px;
-    cursor: nwse-resize;
-    background: transparent;
-    border-bottom-right-radius: 0.75rem;
-}
-#tuteur-panneau.tuteur-flottant #tuteur-redim.tuteur-redim-dock:hover {
-    background: rgba(76, 175, 80, 0.3);
-    border-bottom-right-radius: 0.75rem;
-}
-#tuteur-panneau.tuteur-flottant #tuteur-redim.tuteur-redim-dock::after {
-    content: "";
-    position: absolute;
-    bottom: 4px; right: 4px;
-    width: 8px; height: 8px;
-    border-right: 2px solid #6B7280;
-    border-bottom: 2px solid #6B7280;
-}
-#tuteur-panneau.tuteur-flottant #tuteur-redim.tuteur-redim-dock:hover::after {
-    border-color: #4CAF50;
-}
 
 #tuteur-messages {
     scrollbar-width: thin;
@@ -244,7 +185,7 @@
 }
 
 @media (max-width: 639px) {
-    #tuteur-panneau { flex-basis: 100% !important; width: 100% !important; max-width: 100% !important; }
+    #tuteur-panneau { width: 100% !important; }
     #tuteur-panneau.tuteur-flottant {
         width: calc(100vw - 32px) !important;
         max-width: calc(100vw - 32px);
@@ -260,7 +201,6 @@
     const fermer      = document.getElementById('tuteur-fermer');
     const redock      = document.getElementById('tuteur-redock');
     const poignee     = document.getElementById('tuteur-poignee');
-    const redim       = document.getElementById('tuteur-redim');
     const messages    = document.getElementById('tuteur-messages');
     const chargement  = document.getElementById('tuteur-chargement');
     const formulaire  = document.getElementById('tuteur-formulaire');
@@ -428,7 +368,7 @@
 
     {# --- Ouverture / fermeture --- #}
     function ouvrirPanneau(donnerFocus) {
-        panneau.style.display = 'flex';
+        panneau.hidden = false;
         ouvrir.setAttribute('aria-expanded', 'true');
         fermer.setAttribute('aria-expanded', 'true');
         ouvrir.hidden = true;
@@ -437,7 +377,7 @@
     }
 
     function fermerPanneau(donnerFocus) {
-        panneau.style.display = 'none';
+        panneau.hidden = true;
         ouvrir.hidden = false;
         ouvrir.setAttribute('aria-expanded', 'false');
         fermer.setAttribute('aria-expanded', 'false');
@@ -453,7 +393,7 @@
         return window.matchMedia('(max-width: 639px)').matches;
     }
 
-    {# --- Glissement (détachement du dock) --- #}
+    {# --- Glissement --- #}
     let enGlissement = false;
     let decalageX = 0, decalageY = 0;
 
@@ -461,10 +401,9 @@
         if (panneau.classList.contains('tuteur-flottant')) return;
         panneau.classList.add('tuteur-flottant');
         const rect = panneau.getBoundingClientRect();
-        panneau.style.left = Math.max(16, Math.min(rect.left, window.innerWidth - 416)) + 'px';
-        panneau.style.top  = Math.max(64, Math.min(rect.top, window.innerHeight - 536)) + 'px';
+        panneau.style.left = Math.max(16, rect.left) + 'px';
+        panneau.style.top  = Math.max(16, rect.top) + 'px';
         panneau.style.right = 'auto';
-        panneau.style.height = '520px';
         try { localStorage.setItem('tuteur-flottant', '1'); } catch (e) {}
     }
 
@@ -518,69 +457,11 @@
     document.addEventListener('touchend', finirGlissement);
     redock.addEventListener('click', redocker);
 
-    {# --- Redimensionnement --- #}
-    let enRedimensionnement = false;
-    let redimStartX = 0, redimStartY = 0, redimStartW = 0, redimStartH = 0;
-
-    function demarrerRedim(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        enRedimensionnement = true;
-        panneau.classList.add('tuteur-glissement');
-        const rect = panneau.getBoundingClientRect();
-        redimStartX = e.touches ? e.touches[0].clientX : e.clientX;
-        redimStartY = e.touches ? e.touches[0].clientY : e.clientY;
-        redimStartW = rect.width;
-        redimStartH = rect.height;
-    }
-
-    function pendantRedim(e) {
-        if (!enRedimensionnement) return;
-        e.preventDefault();
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        const dx = cx - redimStartX;
-        const dy = cy - redimStartY;
-
-        if (panneau.classList.contains('tuteur-flottant')) {
-            {# Mode flottant : redimensionnement par le coin bas-droite #}
-            let w = redimStartW + dx;
-            let h = redimStartH + dy;
-            w = Math.max(280, Math.min(w, window.innerWidth - 32));
-            h = Math.max(320, Math.min(h, window.innerHeight - 32));
-            panneau.style.width = w + 'px';
-            panneau.style.height = h + 'px';
-            try {
-                localStorage.setItem('tuteur-w', w);
-                localStorage.setItem('tuteur-h', h);
-            } catch (e) {}
-        } else {
-            {# Mode docké : redimensionnement par le bord gauche #}
-            let w = redimStartW - dx;
-            w = Math.max(280, Math.min(w, window.innerWidth * 0.7));
-            panneau.style.width = w + 'px';
-            try { localStorage.setItem('tuteur-w-dock', w); } catch (e) {}
-        }
-    }
-
-    function finirRedim() {
-        if (!enRedimensionnement) return;
-        enRedimensionnement = false;
-        panneau.classList.remove('tuteur-glissement');
-    }
-
-    redim.addEventListener('mousedown', demarrerRedim);
-    redim.addEventListener('touchstart', demarrerRedim, {passive: false});
-    document.addEventListener('mousemove', pendantRedim);
-    document.addEventListener('touchmove', pendantRedim, {passive: false});
-    document.addEventListener('mouseup', finirRedim);
-    document.addEventListener('touchend', finirRedim);
-
     {# --- Raccourci clavier --- #}
     document.addEventListener('keydown', function(e) {
         if (e.altKey && (e.key === 't' || e.key === 'T')) {
             e.preventDefault();
-            if (panneau.style.display === 'none') ouvrirPanneau(); else fermerPanneau();
+            if (panneau.hidden) ouvrirPanneau(); else fermerPanneau();
         }
     });
 
@@ -641,39 +522,24 @@
     });
     {% endif %}
 
-    {# Restaurer la largeur dockée #}
-    try {
-        const wDock = localStorage.getItem('tuteur-w-dock');
-        if (wDock && !petitEcran()) panneau.style.width = wDock + 'px';
-    } catch (e) {}
-
     let etatMemorise = '0';
     try { etatMemorise = localStorage.getItem('tuteur-ouvert') || '0'; } catch (e) {}
 
     if (etatMemorise === '1' && !petitEcran()) {
-        panneau.style.display = 'flex';
-        panneau.style.height = '100%';
-        ouvrir.hidden = true;
-        ouvrir.setAttribute('aria-expanded', 'true');
-        fermer.setAttribute('aria-expanded', 'true');
+        ouvrirPanneau(false);
         try {
-            localStorage.setItem('tuteur-flottant', '0');
-            localStorage.removeItem('tuteur-x');
-            localStorage.removeItem('tuteur-y');
-            localStorage.removeItem('tuteur-w');
-            localStorage.removeItem('tuteur-h');
-            panneau.classList.remove('tuteur-flottant');
-            panneau.style.left = '';
-            panneau.style.top = '';
-            panneau.style.right = '';
-            panneau.style.width = '';
-            panneau.style.height = '100%';
+            if (localStorage.getItem('tuteur-flottant') === '1') {
+                const x = parseFloat(localStorage.getItem('tuteur-x'));
+                const y = parseFloat(localStorage.getItem('tuteur-y'));
+                if (!isNaN(x) && !isNaN(y)) {
+                    rendreFlottant();
+                    panneau.style.left = x + 'px';
+                    panneau.style.top = y + 'px';
+                }
+            }
         } catch (e) {}
     } else {
-        panneau.style.display = 'none';
-        ouvrir.hidden = false;
-        ouvrir.setAttribute('aria-expanded', 'false');
-        fermer.setAttribute('aria-expanded', 'false');
+        fermerPanneau(false);
     }
 
     new MutationObserver(() => {
