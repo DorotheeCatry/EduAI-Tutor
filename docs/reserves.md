@@ -480,15 +480,15 @@ explication.
 
 ---
 
-## 12. ~~Quatre pages affichaient des chiffres inventés~~ — levée le 31/08/2026
+## 12. ~~Sept foyers de données fabriquées~~ — levée le 31/08/2026
 
 **Composants :** `apps/tracker/`, `apps/revision/`, `apps/quiz/`
 **Nature :** l'interface présentait comme mesuré ce qui était fabriqué
 **Statut :** **levée**, incident 011
 
 Le chantier de la page d'accueil signalait « Python Basics 85 % » sur le
-tableau de bord. La vérification demandée en a trouvé **quatre foyers**, et le
-tableau de bord n'était pas le pire.
+tableau de bord. Les vérifications successives en ont trouvé **sept**, et le tableau de bord
+n'était pas le pire.
 
 | Emplacement | Ce qui s'affichait |
 |---|---|
@@ -496,6 +496,18 @@ tableau de bord n'était pas le pire.
 | `revision/flashcards.html` | **Toute la page** : séance inventée, 24 cartes maîtrisées, 92 % de réussite, 7 jours de série. La vue ne passait aucune donnée |
 | `quiz/quiz_lobby.html` | 127 quiz terminés, 85 % d'exactitude, 12 jours, 3 h 42 — en dur, identiques sur tous les comptes |
 | `exercises/views.py` | Les exercices de **repli**, créés quand la génération échoue, étaient rattachés à une compétence. Leur solution attendue est `return 'Hello World'` : trois échecs de génération auraient donné un niveau 2 |
+| `chat/views.py` | `'timestamp': '12:34:56'` — trois fois, en dur. Chaque message du tuteur portait la même heure |
+| `templates/base.html` | Un compteur JavaScript partant de **154 minutes**, incrémenté chaque minute, écrivant « Session: 2h 34m » dans un élément que la barre d'état venait de remplir avec la série réelle de l'apprenant |
+
+### Le septième mérite d'être distingué
+
+Les six premiers **inventaient** une donnée là où il n'y en avait pas. Le
+septième **écrasait une donnée mesurée par une donnée fabriquée** : la barre
+d'état affichait la série réelle, rendue par le serveur, et une minute plus
+tard le JavaScript la remplaçait par un compteur parti de 154.
+
+C'est la seule variante où la fabrication ne comble pas un vide, mais recouvre
+une mesure.
 
 ### Ce qui distingue ce cas d'une maquette oubliée
 
@@ -518,6 +530,26 @@ compétence.
 
 Un test échoue si l'une des valeurs inventées réapparaît sur l'une des quatre
 pages.
+
+### L'habitude, nommée
+
+Sept occurrences ne sont plus des oublis : c'est une manière de travailler.
+
+Elle a une logique, et il vaut mieux l'énoncer que la taire. Pour voir à quoi
+une page ressemblera, on la remplit ; pour qu'elle ressemble à quelque chose,
+on la remplit **avec du vraisemblable**. Puis la donnée réelle arrive ailleurs,
+et le remplissage reste — parce qu'il ne casse rien, ne lève aucune erreur, et
+qu'aucun test ne le regarde. Il ne se voit qu'à une chose : il est trop beau
+pour un compte neuf.
+
+**La règle qui en découle**, et qui vaut pour la suite du projet : une valeur
+d'attente est écrite de façon à **échouer visiblement** si elle survit. Un
+`0`, un `—`, un « non mesuré » ; jamais un 85 %, jamais une durée plausible,
+jamais un nom de sujet crédible. Une maquette doit avoir l'air d'une maquette.
+
+Le corollaire est déjà appliqué : les états vides de la page d'accueil sont
+écrits comme une fonctionnalité, avec leurs propres tests. Un état vide soigné
+est ce qui rend le remplissage inutile.
 
 ### Ce qui reste ouvert
 
@@ -554,3 +586,57 @@ Le renommer — en `soumissions_count`, ou en lui adjoignant une propriété
 `tentatives_avant_reussite` — touche une migration, un modèle, plusieurs vues
 et un gabarit. **À faire après le 14 septembre.** D'ici là, la réserve est ce
 qui empêche l'erreur de se refaire.
+
+---
+
+## 14. `@csrf_exempt` sur les points de terminaison qui dépensent — deuxième occurrence
+
+**Composants :** `apps/quiz/views.py` (corrigé), `apps/chat/views.py` (corrigé)
+**Nature :** protection CSRF retirée sur des vues qui écrivent et qui dépensent
+**Statut :** **les deux occurrences sont corrigées** ; la réserve reste ouverte
+comme point de vigilance
+
+**Trois** vues portaient `@csrf_exempt` — la troisième trouvée en écrivant
+cette réserve, alors qu'elle affirmait qu'il n'en restait pas :
+
+| Vue | Ce qu'elle fait | Corrigée le |
+|---|---|---|
+| `quiz.views.submit_quiz` | Écrit le score, les erreurs, le compteur de quiz du compte | 31/08 |
+| `chat.views.send_message` | Déclenche un appel **facturé** et décompte le quota du compte | 31/08 |
+| `exercises.views.submit_code` | Écrit une soumission, met à jour la progression, attribue des XP | 31/08 |
+
+La troisième était en outre **inutile** : le gabarit envoyait déjà l'en-tête
+`X-CSRFToken`. L'exemption ne servait donc rien, et ouvrait tout.
+
+L'exemption est particulièrement mal placée sur la seconde : sans protection
+CSRF, n'importe quelle page tierce ouverte dans le navigateur de l'apprenant
+pouvait **épuiser son quota à son insu**, et faire payer les appels au projet.
+
+### Pourquoi c'est une réserve et non un simple correctif
+
+**Trois occurrences du même geste** dans trois applications différentes, sur les
+trois vues qui, précisément, ne devaient pas le porter. Le motif est
+compréhensible : `@csrf_exempt` fait taire une erreur 403 pendant qu'on
+développe un appel JavaScript, et il ne se rappelle plus à personne ensuite —
+comme les données d'attente de la réserve 12, il ne casse rien.
+
+**La règle qui en découle** : un point de terminaison appelé en JavaScript
+reçoit le jeton CSRF, jamais l'exemption. Le jeton coûte une ligne dans le
+gabarit et un en-tête dans la requête.
+
+### Une leçon sur la vérification elle-même
+
+Cette réserve a d'abord été écrite en annonçant deux occurrences et en
+concluant qu'aucune autre ne subsistait. **La vérification a été faite après
+l'affirmation, et l'a démentie** : une troisième attendait dans
+`apps/exercises`.
+
+C'est le motif du projet retourné contre sa propre documentation — annoncer un
+état sans l'avoir constaté. Le paragraphe est conservé tel quel plutôt que
+réécrit en silence.
+
+### Ce qui reste à faire
+
+Aucun autre `@csrf_exempt` ne subsiste — vérifié **après** l'avoir écrit, cette
+fois, par `grep -rn "^@csrf_exempt" apps/`. La réserve est conservée pour que
+la quatrième occurrence, si elle vient, soit reconnue comme telle.

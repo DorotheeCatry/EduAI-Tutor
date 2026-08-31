@@ -33,7 +33,26 @@ logger = logging.getLogger(__name__)
 #: défauts asymétriques déjà appliquée aux secrets vaut pour les plafonds — un
 #: réglage absent doit produire un service restreint et visible, pas un service
 #: ouvert et silencieux.
-QUOTA_INDIVIDUEL_DEFAUT = 5
+#:
+#: **Relevé de 5 à 15 le 31/08/2026, et c'est un changement d'usage, pas un
+#: confort.** Le tuteur est devenu contextuel : il est à portée sur chaque
+#: page, au lieu d'occuper une page qu'il fallait aller ouvrir. Une question
+#: posée en cours d'exercice coûte une génération, comme un cours — et trois
+#: questions sur un exercice épuisaient un plafond de cinq avant qu'aucun cours
+#: n'ait été demandé.
+#:
+#: La distinction est la même que pour le seuil de latence du monitorage
+#: (décision 024) : on ne relève pas un plafond parce qu'il gêne, on le relève
+#: parce que ce qu'il mesure a changé de nature. Ici, l'unité comptée est
+#: passée de « une génération de contenu » à « un appel au modèle, quel qu'il
+#: soit », et le nombre d'appels d'une session d'apprentissage normale a
+#: augmenté d'autant.
+#:
+#: Ce que ce relèvement ne touche pas : le plafond global, qui protège le
+#: budget tous comptes confondus et reste à 200. C'est lui la vraie protection
+#: financière ; le plafond individuel protège d'un usage déséquilibré entre
+#: apprenants.
+QUOTA_INDIVIDUEL_DEFAUT = 15
 PLAFOND_GLOBAL_DEFAUT = 200
 
 

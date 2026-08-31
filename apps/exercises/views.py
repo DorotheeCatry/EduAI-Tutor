@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Avg
@@ -13,6 +12,8 @@ from .security import secure_executor
 import json
 import time
 from django.utils.translation import gettext as _
+from apps.chat.actions import actions_pour
+from apps.chat.contexte import contexte_d_exercice
 from apps.referentiel.services import (
     competence_par_code,
     competences_du_referentiel_actif,
@@ -98,18 +99,50 @@ def exercise_detail(request, exercise_id):
         exercise=exercise
     ).order_by('-submitted_at')[:2]
     
+    # Contexte transmis au tuteur : l'énoncé, le code saisi et la dernière
+    # erreur. Composé ICI, côté serveur, et écrit dans la page — la bannière du
+    # panneau et la requête lisent la même source, si bien qu'un contexte
+    # absent se voit à l'écran (décision 029).
+    #
+    # La solution attendue n'est PAS transmise : un tuteur qui l'a la donne, et
+    # l'exercice cesse de mesurer une production.
+    derniere = recent_submissions[0] if recent_submissions else None
+    contexte_tuteur = contexte_d_exercice(
+        exercise,
+        code_saisi=derniere.submitted_code if derniere else None,
+        derniere_erreur=derniere.error_message if derniere else None,
+    )
+    contexte_tuteur['actions'] = [
+        {'code': action['code'], 'libelle': str(action['libelle'])}
+        for action in actions_pour('exercice')
+    ]
+
     context = {
         'exercise': exercise,
         'progress': progress,
         'recent_submissions': recent_submissions,
+        'contexte_tuteur': contexte_tuteur,
     }
     
     return render(request, 'exercises/exercise_detail.html', context)
 
-@csrf_exempt
 @login_required
 def submit_code(request, exercise_id):
-    """API endpoint pour soumettre et exécuter du code"""
+    """
+    Exécute le code soumis et enregistre le résultat.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C13 (E3) — CSRF
+
+    `@csrf_exempt` est RETIRÉ. Cette vue écrit une soumission, met à jour la
+    progression et attribue des XP : sans protection CSRF, elle était
+    déclenchable depuis n'importe quelle page tierce ouverte dans le navigateur
+    de l'apprenant.
+
+    L'exemption était en outre inutile — le gabarit envoie déjà l'en-tête
+    `X-CSRFToken`. Troisième occurrence du même geste dans ce projet
+    (réserve 14).
+    """
     
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)

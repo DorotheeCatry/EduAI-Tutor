@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.chat.actions import actions_pour
 from apps.referentiel.services import (
     competence_par_code,
     competences_du_referentiel_actif,
@@ -440,10 +441,43 @@ def quiz_start(request):
     # Check that questions were actually returned
     quiz_data = result if result and "questions" in result and result["questions"] else None
 
+    # Contexte transmis au tuteur, EXPURGÉ des bonnes réponses.
+    #
+    # Compétence visée : C10 (épreuve E3)
+    #
+    # `quiz_data` porte `correct_answer` et `explanation` : le navigateur en a
+    # besoin pour afficher la correction après chaque question. Le tuteur, non.
+    # Un tuteur qui connaît la réponse attendue la donne — c'est ce qu'on lui
+    # demande de faire, aider — et le quiz cesse de mesurer quoi que ce soit
+    # (décision 029).
+    #
+    # L'expurgation a lieu ICI, côté serveur : la version destinée au tuteur ne
+    # contient jamais la réponse, pas même dans la page. La laisser au
+    # navigateur reviendrait à confier ce refus à du JavaScript qu'une refonte
+    # peut réécrire.
+    contexte_tuteur = None
+    if quiz_data:
+        contexte_tuteur = {
+            'page': 'quiz',
+            'resume': topic,
+            'elements': [{'libelle': "Quiz", 'valeur': topic}],
+            'charge': {'sujet': topic},
+            'questions_sans_reponse': [
+                {'question': question.get('question', ''),
+                 'options': list(question.get('options', []))}
+                for question in quiz_data['questions']
+            ],
+            'actions': [
+                {'code': action['code'], 'libelle': str(action['libelle'])}
+                for action in actions_pour('quiz')
+            ],
+        }
+
     context = {
         'mode': mode,
         'topic': topic,
         'quiz_data': quiz_data,
+        'contexte_tuteur': contexte_tuteur,
         'error': None if quiz_data else "⚠️ No quiz could be generated."
     }
     return render(request, 'quiz/quiz_start.html', context)

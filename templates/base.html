@@ -63,6 +63,23 @@
     <!-- XP Notifications -->
     {% include 'components/xp_notification.html' %}
 
+    {% comment %}
+    Le tuteur, présent sur toute page où l'apprenant est connecté.
+
+    Compétence visée : C10 (épreuve E3)
+
+    C'est le point du chantier : on pose une question parce qu'on bloque sur
+    quelque chose, et ce quelque chose est précisément ce qu'on quittait pour
+    aller poser la question. Le panneau évite ce départ.
+
+    Le jeton CSRF est requis par l'envoi : la vue ne porte plus `@csrf_exempt`,
+    elle déclenche un appel facturé et décompte le quota du compte.
+    {% endcomment %}
+    {% if user.is_authenticated %}
+        <form style="display: none">{% csrf_token %}</form>
+        {% include 'components/tuteur.html' %}
+    {% endif %}
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Lucide icons
@@ -87,20 +104,20 @@
             updateTime();
             setInterval(updateTime, 60000);
             
-            // Simulate session time (optional)
-            let sessionMinutes = 154; // 2h34m in minutes
-            function updateSessionTime() {
-                sessionMinutes++;
-                const hours = Math.floor(sessionMinutes / 60);
-                const minutes = sessionMinutes % 60;
-                const sessionElement = document.getElementById('session-time');
-                if (sessionElement) {
-                    sessionElement.textContent = `Session: ${hours}h ${minutes.toString().padStart(2, '0')}m`;
-                }
-            }
-            
-            // Update session time every minute
-            setInterval(updateSessionTime, 60000);
+            // Un compteur de session simulé occupait cet emplacement.
+            //
+            // Compétence visée : C17 (épreuve E4)
+            //
+            // Il partait de 154 minutes — « 2h34m » — s'incrémentait chaque
+            // minute, et écrivait « Session: 2h 34m » dans #session-time, un
+            // élément que la barre d'état venait de remplir avec une valeur
+            // réelle. Il ne se contentait donc pas d'inventer une donnée : il
+            // ÉCRASAIT une donnée mesurée par une donnée fabriquée, sur toutes
+            // les pages, au bout d'une minute d'affichage.
+            //
+            // Septième et dernier foyer de données factices du projet
+            // (incident 011, réserve 12). Retiré, sans remplacement : la durée
+            // des séances n'est pas mesurée, et la page Performance le dit.
         });
     </script>
 </body>

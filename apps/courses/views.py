@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from apps.agents.agent_orchestrator import get_orchestrator
@@ -11,6 +10,8 @@ from .models import Course
 import re
 import markdown2
 from django.utils.translation import gettext as _
+from apps.chat.actions import actions_pour
+from apps.chat.contexte import contexte_de_cours
 
 
 # Extras markdown2 retenus pour le rendu des cours. Regroupés ici plutôt que
@@ -199,8 +200,19 @@ def course_detail(request, course_id):
         content = course.content
         title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
         course_title = title_match.group(1) if title_match else course.title
-        
+
+        # Contexte transmis au tuteur : le cours, et la section lue quand elle
+        # est connue — jamais le cours entier. C'est l'unité sur laquelle on
+        # bloque, et transporter le tout saturerait la fenêtre du modèle à
+        # chaque question (décision 029).
+        contexte_tuteur = contexte_de_cours(course)
+        contexte_tuteur['actions'] = [
+            {'code': action['code'], 'libelle': str(action['libelle'])}
+            for action in actions_pour('cours')
+        ]
+
         context = {
+            'contexte_tuteur': contexte_tuteur,
             'course': {
                 'title': course_title,
                 'topic': course.topic,

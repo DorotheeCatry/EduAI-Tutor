@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 14:26+0000\n"
+"POT-Creation-Date: 2026-08-31 15:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: apps/accueil/templates/accueil/accueil.html:27
 msgid "Accueil"
-msgstr ""
+msgstr "Home"
 
 #: apps/accueil/templates/accueil/accueil.html:35
 msgid "Où j'en suis"
@@ -211,6 +211,34 @@ msgstr "No activity yet."
 msgid "Votre premier cours, exercice ou quiz apparaîtra ici avec son résultat."
 msgstr "Your first course, exercise or quiz will appear here with its result."
 
+#: apps/chat/actions.py:23
+msgid "Développe cette partie"
+msgstr "Expand this part"
+
+#: apps/chat/actions.py:30
+msgid "Un cas plus complexe"
+msgstr "A more complex case"
+
+#: apps/chat/actions.py:36
+msgid "Je ne comprends pas"
+msgstr "I don't understand"
+
+#: apps/chat/actions.py:42
+msgid "Montre-moi un exemple"
+msgstr "Show me an example"
+
+#: apps/chat/actions.py:56
+msgid "Pourquoi mon code échoue"
+msgstr "Why my code fails"
+
+#: apps/chat/actions.py:63
+msgid "Un indice sans la solution"
+msgstr "A hint, not the solution"
+
+#: apps/chat/actions.py:78
+msgid "Que demande cette question ?"
+msgstr "What is this question asking?"
+
 #: apps/chat/templates/chat/chat.html:20
 msgid "AI Search"
 msgstr ""
@@ -232,6 +260,15 @@ msgstr ""
 #: apps/chat/templates/chat/chat.html:69
 msgid "Ask me anything about programming..."
 msgstr ""
+
+#: apps/chat/views.py:103
+#, python-format
+msgid "Désolé, je n'ai pas pu traiter votre question : %(motif)s"
+msgstr "Sorry, I could not process your question: %(motif)s"
+
+#: apps/chat/views.py:104
+msgid "erreur inconnue"
+msgstr "unknown error"
 
 #: apps/courses/templates/courses/course_content.html:30
 #: apps/users/templates/users/profile.html:118
@@ -329,30 +366,30 @@ msgstr ""
 msgid "Create my first course"
 msgstr ""
 
-#: apps/courses/views.py:83
+#: apps/courses/views.py:84
 msgid "Please enter a topic to generate the course."
 msgstr ""
 
-#: apps/courses/views.py:177
+#: apps/courses/views.py:178
 #, python-format
 msgid "✨ Course \"%(titre)s\" saved successfully!"
 msgstr ""
 
-#: apps/courses/views.py:183
+#: apps/courses/views.py:184
 #, python-format
 msgid "❌ Save error: %(erreur)s"
 msgstr ""
 
-#: apps/courses/views.py:216 apps/courses/views.py:268
+#: apps/courses/views.py:228 apps/courses/views.py:280
 msgid "❌ Course not found."
 msgstr ""
 
-#: apps/courses/views.py:265
+#: apps/courses/views.py:277
 #, python-format
 msgid "🗑️ Course \"%(titre)s\" deleted successfully!"
 msgstr ""
 
-#: apps/courses/views.py:270
+#: apps/courses/views.py:282
 #, python-format
 msgid "❌ Delete error: %(erreur)s"
 msgstr ""
@@ -590,59 +627,59 @@ msgstr ""
 msgid "Generate a course"
 msgstr ""
 
-#: apps/exercises/views.py:241
+#: apps/exercises/views.py:274
 msgid "Please specify a topic for the exercise."
 msgstr ""
 
-#: apps/exercises/views.py:388 apps/exercises/views.py:460
+#: apps/exercises/views.py:421 apps/exercises/views.py:493
 #, python-format
 msgid "Exercise \"%(titre)s\" generated successfully!"
 msgstr ""
 
-#: apps/exercises/views.py:481 apps/exercises/views.py:759
+#: apps/exercises/views.py:517 apps/exercises/views.py:821
 #, python-format
 msgid ""
 "AI generated a malformed response. Basic exercise created on \"%(sujet)s\"."
 msgstr ""
 
-#: apps/exercises/views.py:485 apps/exercises/views.py:517
-#: apps/exercises/views.py:763 apps/exercises/views.py:793
+#: apps/exercises/views.py:521 apps/exercises/views.py:566
+#: apps/exercises/views.py:825 apps/exercises/views.py:855
 #, python-format
 msgid "Generation error: %(erreur)s"
 msgstr ""
 
-#: apps/exercises/views.py:485 apps/exercises/views.py:763
+#: apps/exercises/views.py:521 apps/exercises/views.py:825
 msgid "Unknown error"
 msgstr ""
 
-#: apps/exercises/views.py:514 apps/exercises/views.py:790
+#: apps/exercises/views.py:563 apps/exercises/views.py:852
 #, python-format
 msgid "AI generation error. Basic exercise created on \"%(sujet)s\"."
 msgstr ""
 
-#: apps/exercises/views.py:544
+#: apps/exercises/views.py:593
 msgid "No topic specified to generate the exercise."
 msgstr ""
 
-#: apps/exercises/views.py:668 apps/exercises/views.py:738
+#: apps/exercises/views.py:717 apps/exercises/views.py:787
 #, python-format
 msgid "Exercise \"%(titre)s\" generated successfully from course!"
 msgstr ""
 
-#: apps/exercises/views.py:855
+#: apps/exercises/views.py:917
 msgid "You can only delete exercises you created."
 msgstr ""
 
-#: apps/exercises/views.py:860
+#: apps/exercises/views.py:922
 #, python-format
 msgid "Exercise \"%(titre)s\" deleted successfully!"
 msgstr ""
 
-#: apps/exercises/views.py:863
+#: apps/exercises/views.py:925
 msgid "Exercise not found."
 msgstr ""
 
-#: apps/exercises/views.py:865
+#: apps/exercises/views.py:927
 #, python-format
 msgid "Error deleting exercise: %(erreur)s"
 msgstr ""
@@ -922,64 +959,64 @@ msgstr ""
 msgid "Perfect for testing! You can start the game solo."
 msgstr ""
 
-#: apps/quiz/views.py:26
+#: apps/quiz/views.py:27
 msgid "Only the host can delete this room."
 msgstr ""
 
-#: apps/quiz/views.py:31
+#: apps/quiz/views.py:32
 #, python-format
 msgid "Room \"%(sujet)s\" deleted successfully!"
 msgstr ""
 
-#: apps/quiz/views.py:35
+#: apps/quiz/views.py:36
 msgid "Room not found."
 msgstr ""
 
-#: apps/quiz/views.py:37
+#: apps/quiz/views.py:38
 #, python-format
 msgid "Error deleting room: %(erreur)s"
 msgstr ""
 
-#: apps/quiz/views.py:91
+#: apps/quiz/views.py:92
 #, python-format
 msgid "Room created with code: %(code)s"
 msgstr ""
 
-#: apps/quiz/views.py:104
+#: apps/quiz/views.py:105
 msgid "Only the host can start the game."
 msgstr ""
 
-#: apps/quiz/views.py:109
+#: apps/quiz/views.py:110
 msgid "Game already started or finished."
 msgstr ""
 
-#: apps/quiz/views.py:134
+#: apps/quiz/views.py:135
 #, python-format
 msgid "Game started! %(nombre)s questions generated."
 msgstr ""
 
-#: apps/quiz/views.py:138
+#: apps/quiz/views.py:139
 msgid "Failed to generate questions. Please try again."
 msgstr ""
 
-#: apps/quiz/views.py:148
+#: apps/quiz/views.py:149
 #, python-format
 msgid "Error generating questions: %(erreur)s"
 msgstr ""
 
-#: apps/quiz/views.py:163
+#: apps/quiz/views.py:164
 msgid "This room is full."
 msgstr ""
 
-#: apps/quiz/views.py:180
+#: apps/quiz/views.py:181
 msgid "Room not found or already finished."
 msgstr ""
 
-#: apps/quiz/views.py:195
+#: apps/quiz/views.py:196
 msgid "You must join this room to access it."
 msgstr ""
 
-#: apps/quiz/views.py:393
+#: apps/quiz/views.py:394
 msgid "You are not authorized to access this game."
 msgstr ""
 
@@ -1635,6 +1672,51 @@ msgstr "Streak: %(jours)s d"
 #, python-format
 msgid "%(titre)s niv. %(niveau)s"
 msgstr "%(titre)s lv. %(niveau)s"
+
+#: templates/components/tuteur.html:31 templates/components/tuteur.html:39
+#: templates/components/tuteur.html:140
+msgid "Tuteur"
+msgstr "Tutor"
+
+#: templates/components/tuteur.html:48
+msgid "Le tuteur voit :"
+msgstr "The tutor sees:"
+
+#: templates/components/tuteur.html:48 templates/components/tuteur.html:110
+msgid "aucun contexte — question générale"
+msgstr "no context — general question"
+
+#: templates/components/tuteur.html:54
+msgid "Fermer le tuteur"
+msgstr "Close the tutor"
+
+#: templates/components/tuteur.html:67
+msgid "Le tuteur réfléchit…"
+msgstr "The tutor is thinking…"
+
+#: templates/components/tuteur.html:71
+msgid "Votre question"
+msgstr "Your question"
+
+#: templates/components/tuteur.html:73
+msgid "Posez votre question…"
+msgstr "Ask your question…"
+
+#: templates/components/tuteur.html:79
+msgid "Envoyer"
+msgstr "Send"
+
+#: templates/components/tuteur.html:140
+msgid "Vous"
+msgstr "You"
+
+#: templates/components/tuteur.html:171
+msgid "Il vous reste"
+msgstr "You have left"
+
+#: templates/components/tuteur.html:175
+msgid "La réponse n’a pas pu être obtenue."
+msgstr "The answer could not be retrieved."
 
 #: templates/components/xp_notification.html:10
 msgid "+15 XP Earned!"

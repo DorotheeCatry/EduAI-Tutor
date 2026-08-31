@@ -1,0 +1,215 @@
+{% load i18n %}
+
+{% comment %}
+Panneau du tuteur — contextuel, rétractable, navigable au clavier.
+
+Compétence visée : C10 (épreuve E3) — intégration du modèle
+Compétences concernées : C17 (E4) ; C13 (E3) — accessibilité ; C9 (E2)
+
+Le contexte est écrit ici par le SERVEUR, dans un bloc JSON, et lu deux fois :
+pour la bannière « le tuteur voit : … » et pour composer la requête. Les deux
+lisent la même source — si rien n'est transmis, la bannière le dit, et
+l'absence se voit à l'écran au lieu de manquer en silence.
+
+Accessibilité, tenue pour critère d'acceptation :
+  - `role="complementary"` et un titre, pour que le panneau soit annoncé ;
+  - ouverture et fermeture au clavier, focus porté dans le panneau à
+    l'ouverture et RENDU au bouton à la fermeture — on doit pouvoir revenir à
+    la page ;
+  - `Échap` ferme, depuis n'importe où dans le panneau ;
+  - les réponses arrivent dans une région `aria-live="polite"` ;
+  - le chargement porte un texte, pas seulement une animation ;
+  - l'état rétracté est conservé d'une page à l'autre.
+{% endcomment %}
+
+{{ contexte_tuteur|default_if_none:""|json_script:"contexte-tuteur" }}
+
+<button type="button" id="tuteur-ouvrir"
+        aria-expanded="false" aria-controls="tuteur-panneau"
+        class="fixed bottom-6 right-6 z-40 px-4 py-3 rounded-full bg-primary-green text-white shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+    <span aria-hidden="true">💬</span>
+    {% trans "Tuteur" %}
+</button>
+
+<aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre" hidden
+       class="fixed top-0 right-0 z-50 h-full w-full sm:w-96 bg-gray-900 border-l border-gray-700 flex flex-col">
+
+    <div class="flex items-start justify-between p-4 border-b border-gray-700">
+        <div>
+            <h2 id="tuteur-titre" class="text-lg font-bold text-white">{% trans "Tuteur" %}</h2>
+            {% comment %}
+            La bannière de contexte. Transmettre le code de quelqu'un à un
+            modèle sans le lui dire n'est pas acceptable ; l'afficher évite
+            aussi les malentendus quand la réponse porte sur autre chose que ce
+            qu'il croyait.
+            {% endcomment %}
+            <p id="tuteur-contexte" class="text-xs text-gray-400 mt-1">
+                {% trans "Le tuteur voit :" %} <span id="tuteur-contexte-detail">{% trans "aucun contexte — question générale" %}</span>
+            </p>
+        </div>
+        <button type="button" id="tuteur-fermer"
+                class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded">
+            <span aria-hidden="true">✕</span>
+            <span class="sr-only">{% trans "Fermer le tuteur" %}</span>
+        </button>
+    </div>
+
+    {# Actions préformées : les questions qui reviennent n'ont pas à être tapées #}
+    <div id="tuteur-actions" class="p-3 flex flex-wrap gap-2 border-b border-gray-700"></div>
+
+    <div id="tuteur-messages" role="log" aria-live="polite" aria-atomic="false"
+         class="flex-1 overflow-y-auto p-4 space-y-3 text-sm"></div>
+
+    <p id="tuteur-chargement" hidden class="px-4 py-2 text-sm text-gray-300">
+        {# Un texte, et pas seulement une animation : un indicateur qui ne
+           repose que sur un mouvement n'est pas perçu par tous. #}
+        <span aria-hidden="true">⏳</span> {% trans "Le tuteur réfléchit…" %}
+    </p>
+
+    <form id="tuteur-formulaire" class="p-3 border-t border-gray-700 space-y-2">
+        <label for="tuteur-question" class="sr-only">{% trans "Votre question" %}</label>
+        <textarea id="tuteur-question" rows="2" required
+                  placeholder="{% trans "Posez votre question…" %}"
+                  class="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green"></textarea>
+        <div class="flex items-center justify-between gap-2">
+            <p id="tuteur-quota" class="text-xs text-gray-400"></p>
+            <button type="submit"
+                    class="px-3 py-2 text-sm rounded-lg bg-primary-green text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                {% trans "Envoyer" %}
+            </button>
+        </div>
+    </form>
+</aside>
+
+<script>
+(function () {
+    const ouvrir = document.getElementById('tuteur-ouvrir');
+    const panneau = document.getElementById('tuteur-panneau');
+    const fermer = document.getElementById('tuteur-fermer');
+    const messages = document.getElementById('tuteur-messages');
+    const chargement = document.getElementById('tuteur-chargement');
+    const formulaire = document.getElementById('tuteur-formulaire');
+    const champ = document.getElementById('tuteur-question');
+    const quota = document.getElementById('tuteur-quota');
+    const detailContexte = document.getElementById('tuteur-contexte-detail');
+    const zoneActions = document.getElementById('tuteur-actions');
+
+    // Le contexte vient du serveur. Un bloc absent donne un contexte général,
+    // et la bannière l'annonce — l'absence se voit.
+    let contexte = {page: 'general', resume: '', elements: [], charge: {}};
+    const bloc = document.getElementById('contexte-tuteur');
+    if (bloc && bloc.textContent.trim() && bloc.textContent.trim() !== '""') {
+        try { contexte = JSON.parse(bloc.textContent) || contexte; } catch (e) {}
+    }
+
+    const historique = [];
+
+    function decrireContexte() {
+        if (!contexte.elements || contexte.elements.length === 0) {
+            detailContexte.textContent = "{% trans 'aucun contexte — question générale' %}";
+            return;
+        }
+        detailContexte.textContent = contexte.elements
+            .map(e => e.libelle + " : " + e.valeur)
+            .join(" · ");
+    }
+
+    function poserActions() {
+        const actions = (contexte.actions || []);
+        zoneActions.innerHTML = '';
+        if (actions.length === 0) { zoneActions.hidden = true; return; }
+        zoneActions.hidden = false;
+        actions.forEach(action => {
+            const bouton = document.createElement('button');
+            bouton.type = 'button';
+            bouton.className = 'px-2 py-1 text-xs rounded border border-gray-600 text-gray-200 hover:border-primary-green focus:outline-none focus:ring-2 focus:ring-white';
+            bouton.textContent = action.libelle;
+            bouton.addEventListener('click', () => envoyer({action: action.code, libelle: action.libelle}));
+            zoneActions.appendChild(bouton);
+        });
+    }
+
+    function ajouterMessage(auteur, texte, heure) {
+        const bulle = document.createElement('div');
+        bulle.className = auteur === 'moi'
+            ? 'p-2 rounded-lg bg-gray-800 text-gray-100'
+            : 'p-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200';
+        const entete = document.createElement('p');
+        entete.className = 'text-xs text-gray-400 mb-1';
+        entete.textContent = (auteur === 'moi' ? "{% trans 'Vous' %}" : "{% trans 'Tuteur' %}")
+            + (heure ? ' · ' + heure : '');
+        const corps = document.createElement('p');
+        corps.textContent = texte;
+        bulle.appendChild(entete);
+        bulle.appendChild(corps);
+        messages.appendChild(bulle);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function envoyer({message, action, libelle}) {
+        ajouterMessage('moi', libelle || message);
+        chargement.hidden = false;
+        try {
+            const reponse = await fetch("{% url 'chat:send_message' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({
+                    message: message || '',
+                    action: action || '',
+                    contexte: contexte,
+                    historique: historique.slice(-2),
+                }),
+            });
+            const corps = await reponse.json();
+            ajouterMessage('tuteur', corps.reponse || corps.error, corps.horodatage);
+            historique.push({question: libelle || message, reponse: corps.reponse || ''});
+            if (corps.quota) {
+                quota.textContent = "{% trans 'Il vous reste' %} " + corps.quota.restantes
+                    + " / " + corps.quota.quota;
+            }
+        } catch (e) {
+            ajouterMessage('tuteur', "{% trans 'La réponse n’a pas pu être obtenue.' %}");
+        } finally {
+            chargement.hidden = true;
+        }
+    }
+
+    function ouvrirPanneau() {
+        panneau.hidden = false;
+        ouvrir.setAttribute('aria-expanded', 'true');
+        champ.focus();
+        try { localStorage.setItem('tuteur-ouvert', '1'); } catch (e) {}
+    }
+
+    function fermerPanneau() {
+        panneau.hidden = true;
+        ouvrir.setAttribute('aria-expanded', 'false');
+        // Le focus revient à son point de départ : un panneau qui garde le
+        // focus après sa fermeture piège la navigation au clavier.
+        ouvrir.focus();
+        try { localStorage.setItem('tuteur-ouvert', '0'); } catch (e) {}
+    }
+
+    ouvrir.addEventListener('click', ouvrirPanneau);
+    fermer.addEventListener('click', fermerPanneau);
+    panneau.addEventListener('keydown', evenement => {
+        if (evenement.key === 'Escape') { fermerPanneau(); }
+    });
+    formulaire.addEventListener('submit', evenement => {
+        evenement.preventDefault();
+        const texte = champ.value.trim();
+        if (!texte) { return; }
+        champ.value = '';
+        envoyer({message: texte});
+    });
+
+    decrireContexte();
+    poserActions();
+    try {
+        if (localStorage.getItem('tuteur-ouvert') === '1') { ouvrirPanneau(); }
+    } catch (e) {}
+})();
+</script>
