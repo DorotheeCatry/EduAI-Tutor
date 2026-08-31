@@ -120,12 +120,27 @@
 </aside>
 
 <style>
-#tuteur-panneau { transition: width 200ms ease; }
+#tuteur-panneau {
+    transition: width 200ms ease;
+    flex: 0 0 400px;
+    width: 400px;
+    height: 100%;
+}
+#tuteur-panneau[style*="display: none"] { flex-basis: 0; width: 0; }
+#tuteur-panneau.tuteur-dock:not(.tuteur-flottant) {
+    position: fixed;
+    top: 52px;
+    right: 0;
+    bottom: 24px;
+    height: auto;
+    z-index: 45;
+}
+#tuteur-panneau.tuteur-flottant { flex: none; height: 520px; }
 
 /* --- Mode flottant (détaché) --- */
 #tuteur-panneau.tuteur-flottant {
     position: fixed;
-    height: auto;
+    height: 520px;
     max-height: 80vh;
     min-height: 320px;
     width: 400px;
@@ -229,7 +244,7 @@
 }
 
 @media (max-width: 639px) {
-    #tuteur-panneau { width: 100% !important; max-width: 100% !important; }
+    #tuteur-panneau { flex-basis: 100% !important; width: 100% !important; max-width: 100% !important; }
     #tuteur-panneau.tuteur-flottant {
         width: calc(100vw - 32px) !important;
         max-width: calc(100vw - 32px);
@@ -446,9 +461,10 @@
         if (panneau.classList.contains('tuteur-flottant')) return;
         panneau.classList.add('tuteur-flottant');
         const rect = panneau.getBoundingClientRect();
-        panneau.style.left = Math.max(16, rect.left) + 'px';
-        panneau.style.top  = Math.max(16, rect.top) + 'px';
+        panneau.style.left = Math.max(16, Math.min(rect.left, window.innerWidth - 416)) + 'px';
+        panneau.style.top  = Math.max(64, Math.min(rect.top, window.innerHeight - 536)) + 'px';
         panneau.style.right = 'auto';
+        panneau.style.height = '520px';
         try { localStorage.setItem('tuteur-flottant', '1'); } catch (e) {}
     }
 
@@ -636,23 +652,22 @@
 
     if (etatMemorise === '1' && !petitEcran()) {
         panneau.style.display = 'flex';
+        panneau.style.height = '100%';
         ouvrir.hidden = true;
         ouvrir.setAttribute('aria-expanded', 'true');
         fermer.setAttribute('aria-expanded', 'true');
         try {
-            if (localStorage.getItem('tuteur-flottant') === '1') {
-                const x = parseFloat(localStorage.getItem('tuteur-x'));
-                const y = parseFloat(localStorage.getItem('tuteur-y'));
-                const w = parseFloat(localStorage.getItem('tuteur-w'));
-                const h = parseFloat(localStorage.getItem('tuteur-h'));
-                if (!isNaN(x) && !isNaN(y)) {
-                    rendreFlottant();
-                    panneau.style.left = x + 'px';
-                    panneau.style.top = y + 'px';
-                    if (!isNaN(w)) panneau.style.width = w + 'px';
-                    if (!isNaN(h)) panneau.style.height = h + 'px';
-                }
-            }
+            localStorage.setItem('tuteur-flottant', '0');
+            localStorage.removeItem('tuteur-x');
+            localStorage.removeItem('tuteur-y');
+            localStorage.removeItem('tuteur-w');
+            localStorage.removeItem('tuteur-h');
+            panneau.classList.remove('tuteur-flottant');
+            panneau.style.left = '';
+            panneau.style.top = '';
+            panneau.style.right = '';
+            panneau.style.width = '';
+            panneau.style.height = '100%';
         } catch (e) {}
     } else {
         panneau.style.display = 'none';
