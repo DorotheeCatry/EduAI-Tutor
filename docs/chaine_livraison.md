@@ -622,7 +622,8 @@ démarrage, il ne bascule pas sur une valeur permissive.
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://<sous-domaine>.up.railway.app` | Tout formulaire refusé en 403 |
 | `DJANGO_DERRIERE_PROXY` | `True` | **Boucle de redirection infinie** — voir ci-dessous |
 | `DJANGO_DB_NAME` | `eduai_app` | — |
-| `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | ceux du service PostgreSQL | Démarrage refusé |
+| `POSTGRES_HOST`, `POSTGRES_PORT` | ceux du service PostgreSQL | Démarrage refusé |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD` | **`eduai_application`** et son mot de passe — **jamais le superutilisateur** | Démarrage refusé |
 | `EDUAI_DATA_USER`, `EDUAI_DATA_PASSWORD` | `eduai_lecture` et son mot de passe | L'API du jeu de données ne répond plus |
 | `GROQ_API_KEY` | clé du fournisseur | Bascule sur le repli local, indisponible ici |
 | `OLLAMA_BASE_URL` | adresse interne du serveur d'embarquement | Aucune recherche RAG n'aboutit |
@@ -679,12 +680,44 @@ et ouvre la possibilité qu'elles divergent.
 les comptes du serveur. Le rôle de lecture seule dont dépend l'API du jeu de
 données (C5) est à créer sur le serveur cible :
 
+**Deux rôles, et aucun des deux n'est superutilisateur.** Le rôle applicatif
+possède le schéma de `eduai_app`, ce que les migrations Django exigent ; le rôle
+de lecture ne peut rien faire d'autre que lire `eduai_data`. Les faire porter
+par le superutilisateur du serveur — ce qui était le cas jusqu'au 31/08 —
+annulerait les trois niveaux de garantie décrits ici : une injection aboutie
+s'exercerait sur les deux bases, les rôles et l'instance entière.
+
 ```sql
+-- Rôle applicatif, propriétaire du schéma de eduai_app
+CREATE ROLE eduai_application LOGIN PASSWORD '<secret>';
+GRANT CONNECT ON DATABASE eduai_app TO eduai_application;
+-- CREATE, et pas seulement USAGE : Django crée des tables à chaque migration
+GRANT USAGE, CREATE ON SCHEMA public TO eduai_application;
+```
+
+Les objets déjà migrés doivent lui être transférés, faute de quoi la prochaine
+migration échouera sur un `ALTER TABLE` — les privilèges ne suffisent pas, il
+faut la propriété. **Objet par objet, jamais par `REASSIGN OWNED`** : cette
+commande s'applique à tout ce que l'ancien rôle possède, y compris des objets
+partagés de l'instance, et `postgres` est le rôle d'amorçage du serveur. Les
+séquences rattachées à une colonne d'identité suivent leur table et ne se
+transfèrent pas séparément — PostgreSQL le refuse.
+
+```sql
+-- Rôle de lecture seule, dont dépend l'API du jeu de données (C5)
 CREATE ROLE eduai_lecture LOGIN PASSWORD '<secret>';
 GRANT CONNECT ON DATABASE eduai_data TO eduai_lecture;
 GRANT USAGE ON SCHEMA public TO eduai_lecture;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO eduai_lecture;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO eduai_lecture;
+
+-- Fermer chaque base au pseudo-rôle PUBLIC : PostgreSQL accorde par défaut la
+-- connexion à toute base, donc chaque rôle peut ouvrir une session sur celle
+-- qui ne le concerne pas. L'isolation des deux bases (décision 006) n'est
+-- complète qu'avec ces deux lignes.
+REVOKE CONNECT ON DATABASE eduai_app  FROM PUBLIC;
+REVOKE CONNECT ON DATABASE eduai_data FROM PUBLIC;
+GRANT  CONNECT ON DATABASE eduai_data TO eduai_lecture;
 ```
 
 **Ouvrir le tunnel** — la base de l'hébergeur n'a pas d'adresse publique, et

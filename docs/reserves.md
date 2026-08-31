@@ -216,15 +216,58 @@ Trois options, aucune tranchée à ce jour :
 | **Modèle d'embarquement plus léger** | Inférence plus rapide sans GPU | **Impose de réindexer les 21 189 fragments** : les vecteurs d'un autre modèle n'ont aucun rapport avec ceux du corpus. Plus de dix-sept heures, et le corpus déployé devient inutilisable entre-temps |
 | **Démonstration du RAG en local**, le reste déployé | Une recherche à 3 s devant le jury | Affaiblit la démonstration : ce qui est montré n'est plus ce qui est déployé, et il faut le dire |
 
-**Une quatrième option est apparue avec la mesure** : demander plus de
-processeur à l'hébergeur. L'inférence est ici entièrement liée au calcul, et la
-dispersion d'un facteur quatre suggère une ressource partagée. Elle n'a pas été
-chiffrée — ni le gain, ni le prix — et le rester serait supposer.
+### L'option « plus de processeur », mesurée le 31/08
 
-Le choix appartient à l'autrice. Ce que les chiffres disent : deux des trois
-options initiales tiennent encore, le préchauffage n'en fait plus partie, et le
-modèle plus léger demanderait de rejouer une indexation dont la durée, avec un
-modèle plus rapide, n'a pas non plus été mesurée.
+C'était la seule option sans réindexation, donc la seule ouvrable à quatre
+jours du rendu. Elle a été chiffrée avant d'être choisie.
+
+**Ce que l'hébergeur impose aujourd'hui**, relevé par `railway metrics` : tous
+les services sont plafonnés à **2 vCPU et 1024 Mio**. Ce sont les limites du
+palier d'essai, non un réglage par service : les relever est une décision
+d'abonnement. Le serveur d'embarquement occupe **1010 Mio sur 1024, soit 99 %**
+— il vit à son plafond mémoire.
+
+**Le gain a été mesuré en local**, en rejouant la même image d'embarquement
+sous les mêmes contraintes, puis sans elles :
+
+| Contexte | Texte court | Texte long |
+|---|---|---|
+| Poste bridé à **2 vCPU / 1 Go** — les plafonds de l'hébergeur | **0,43 s** | **4,86 s** |
+| Poste entier, **8 vCPU / 8 Go** | **0,23 s** | **2,27 s** |
+| **Railway, 2 vCPU** (mesures du 30/08) | **13,6 s** | **52,2 s** |
+
+Moyennes de trois tirs, modèle préchargé hors mesure.
+
+**Deux enseignements, et le second n'était pas attendu.**
+
+Quadrupler les vCPU rapporte **un facteur deux environ**, pas quatre :
+l'inférence ne se parallélise pas linéairement. Reporté à la médiane constatée
+en production, 28 secondes, un passage à 8 vCPU ferait espérer **une quinzaine
+de secondes**. C'est mieux, ce n'est pas démontrable.
+
+Surtout : à **contraintes identiques**, le poste est 11 à 32 fois plus rapide
+que l'hébergeur. Le problème n'est donc pas le *nombre* de vCPU alloués, mais
+leur *vitesse* — des cœurs partagés, mutualisés, dont la dispersion d'un facteur
+quatre observée en production porte la signature. Aucune quantité de vCPU de
+cette qualité ne ramènera la recherche à trois secondes.
+
+**Réserve mesurée, non levée.** Relever le plafond reste utile pour la mémoire —
+99 % d'occupation expose à un arrêt brutal du service — mais ne rend pas le RAG
+démontrable en direct. Rien ne garantit non plus que les cœurs d'un palier
+payant soient les mêmes, et cela ne se mesure qu'en payant.
+
+### Décision
+
+**On assume et on documente**, conformément à l'arbitrage du 31/08 : pas de
+changement de modèle d'embarquement à quatre jours du rendu — il imposerait de
+réindexer 21 189 fragments et de retéléverser deux volumes.
+
+Ce qui est dit en soutenance, plutôt que découvert : la recherche documentaire
+est déployée, fonctionnelle et vérifiée sur l'URL publique ; elle répond en une
+trentaine de secondes chez l'hébergeur contre trois secondes en local, faute de
+GPU et sur des cœurs mutualisés ; l'écart est mesuré, sa cause est identifiée,
+et la démonstration en direct se fait donc en local si le temps de la soutenance
+l'exige.
 
 **Ce qui ne change pas quelle que soit l'issue** : le déploiement lui-même, les
 deux API, l'application et le monitorage ne dépendent pas de cette latence. Ce
@@ -233,11 +276,11 @@ déploiement.
 
 ---
 
-## 8. Les deux services se connectent à PostgreSQL en superutilisateur
+## 8. ~~Les deux services se connectent à PostgreSQL en superutilisateur~~ — levée le 31/08/2026
 
 **Composant :** variables d'environnement de `web` et `service-ai` chez l'hébergeur
 **Nature :** moindre privilège non appliqué à la connexion applicative
-**Statut :** **ouverte**, constatée le 31/08/2026
+**Statut :** **levée le jour même**, vérifications à l'appui
 
 Les deux services portent `POSTGRES_USER=postgres`, le superutilisateur créé
 par le modèle PostgreSQL de l'hébergeur. Une injection SQL aboutie, ou une
@@ -250,13 +293,46 @@ lit les 6 836 documents, il ne peut ni écrire, ni créer une table, ni depuis c
 jour se connecter à `eduai_app`. C'est le reste de l'application qui passe en
 superutilisateur.
 
-La correction est connue et sans difficulté : un rôle applicatif propriétaire
-de `eduai_app`, avec les droits sur ce seul schéma, et la variable changée.
-Elle n'a pas été faite à quatre jours du rendu parce qu'elle impose de
-recréer le propriétaire des 24 tables déjà migrées, opération qui peut échouer
-à moitié — et un schéma applicatif à moitié réattribué est pire que le défaut
-qu'on corrige.
+### La correction, appliquée le 31/08
 
-**À reprendre après le 14 septembre**, et à dire à l'oral si la question vient :
-le cloisonnement entre les deux bases est réel et vérifié, la connexion
-applicative ne l'est pas encore.
+Le rôle `eduai_application` — sans privilège de superutilisateur — a été créé,
+et les 46 objets de `eduai_app` lui ont été transférés objet par objet. **Pas
+par `REASSIGN OWNED`** : cette commande s'applique à tout ce que le rôle
+possède, y compris des objets partagés de l'instance, et `postgres` est le rôle
+d'amorçage du serveur. Une boucle explicite ne touche que le schéma visé.
+
+Un détail a d'abord fait échouer le transfert, et il valait mieux qu'il échoue :
+les séquences rattachées à une colonne d'identité ne se transfèrent pas
+séparément de leur table. Le bloc étant transactionnel, rien n'avait été
+modifié à moitié.
+
+### Ce qui a été vérifié, dans les deux sens
+
+| Vérification | Attendu | Constaté |
+|---|---|---|
+| `eduai_application` est superutilisateur ? | non | **false** |
+| Lit les tables applicatives | oui | **1 compte lu** |
+| `CREATE TABLE` puis `DROP TABLE` — une migration | possible | **possible** |
+| Se connecte à `eduai_data` | refus | **permission denied for database** |
+| `eduai_lecture` lit toujours le jeu de données | oui | **6 836 documents** |
+| Migrations Django au redéploiement | passent | **« No migrations to apply »**, sous le nouveau rôle |
+| Application web après bascule | répond | **`/auth/login/` 200** |
+
+`REVOKE CONNECT ON DATABASE eduai_data FROM PUBLIC` complète la symétrie :
+`eduai_app` avait été fermée au pseudo-rôle `PUBLIC` la veille, `eduai_data` ne
+l'était pas.
+
+### Un effet de bord utile
+
+Les deux services portaient une **copie littérale** du mot de passe
+superutilisateur, et non une référence : le renouveler aurait mis les deux
+services à terre sans prévenir. Ils dépendent désormais du mot de passe du rôle
+applicatif, et le mot de passe superutilisateur peut être renouvelé sans les
+toucher.
+
+### Ce qui reste
+
+Le rôle applicatif est propriétaire du schéma, donc capable de le modifier —
+c'est nécessaire aux migrations Django. Un découpage plus fin, séparant le rôle
+qui migre de celui qui sert les requêtes, serait la étape suivante. Elle n'est
+pas ouverte avant le 14 septembre.
