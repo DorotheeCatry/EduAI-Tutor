@@ -58,27 +58,27 @@
                 {% include 'components/statusbar.html' %}
             {% endif %}
         </div>
+
+        {% comment %}
+        Le tuteur, présent sur toute page où l'apprenant est connecté.
+
+        Compétence visée : C10 (épreuve E3)
+
+        C'est le point du chantier : on pose une question parce qu'on bloque sur
+        quelque chose, et ce quelque chose est précisément ce qu'on quittait pour
+        aller poser la question. Le panneau évite ce départ.
+
+        Le jeton CSRF est requis par l'envoi : la vue ne porte plus `@csrf_exempt`,
+        elle déclenche un appel facturé et décompte le quota du compte.
+        {% endcomment %}
+        {% if user.is_authenticated %}
+            <form style="display: none">{% csrf_token %}</form>
+            {% include 'components/tuteur.html' %}
+        {% endif %}
     </div>
     
     <!-- XP Notifications -->
     {% include 'components/xp_notification.html' %}
-
-    {% comment %}
-    Le tuteur, présent sur toute page où l'apprenant est connecté.
-
-    Compétence visée : C10 (épreuve E3)
-
-    C'est le point du chantier : on pose une question parce qu'on bloque sur
-    quelque chose, et ce quelque chose est précisément ce qu'on quittait pour
-    aller poser la question. Le panneau évite ce départ.
-
-    Le jeton CSRF est requis par l'envoi : la vue ne porte plus `@csrf_exempt`,
-    elle déclenche un appel facturé et décompte le quota du compte.
-    {% endcomment %}
-    {% if user.is_authenticated %}
-        <form style="display: none">{% csrf_token %}</form>
-        {% include 'components/tuteur.html' %}
-    {% endif %}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
