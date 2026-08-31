@@ -173,6 +173,19 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Applique à l'interface la langue enregistrée sur le compte.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    #
+    # Placé APRÈS AuthenticationMiddleware, sans quoi `request.user` n'existe
+    # pas encore et la préférence serait illisible. Il complète
+    # LocaleMiddleware plus haut, qui sert les visiteurs non connectés à
+    # partir de l'en-tête Accept-Language de leur navigateur.
+    #
+    # Sans cet intergiciel, le sélecteur de langue du profil enregistrait un
+    # choix que rien ne lisait pour l'affichage — un réglage stocké et sans
+    # effet, motif documenté par les incidents de ce projet.
+    'apps.users.middleware.LangueDeLApprenant',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
@@ -324,7 +337,21 @@ LOGOUT_REDIRECT_URL = '/auth/login/'
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en'
+# Langue par défaut du service.
+#
+# Compétence visée : C17 (épreuve E4) — application web
+#
+# Choix : le français. Motivation : l'organisme de formation et ses apprenants
+# sont francophones, et les seules traductions du projet allaient jusqu'ici du
+# français vers... rien — le catalogue `fr` existait, mais LANGUAGE_CODE valait
+# 'en', si bien qu'aucune traduction n'était jamais appliquée. L'interface
+# affichait donc ses chaînes sources, en anglais, à côté des quelques messages
+# écrits en français : c'est l'origine du mélange des deux langues sur une même
+# page.
+#
+# Cette valeur n'est qu'un défaut : LocaleMiddleware la remplace par la langue
+# choisie par la personne connectée, quand elle en a choisi une.
+LANGUAGE_CODE = 'fr'
 
 TIME_ZONE = 'UTC'
 
@@ -337,6 +364,15 @@ LANGUAGES = [
     ('fr', _('Français')),
 ]
 
+# Catalogues de traduction du projet.
+#
+# Compétence visée : C17 (épreuve E4)
+#
+# Un seul emplacement, à la racine, plutôt qu'un catalogue par application.
+# Motivation : le projet n'a pas d'application réutilisable hors de lui, et
+# disperser les traductions ferait chercher dans huit dossiers la chaîne qu'on
+# veut corriger. Les chemins de LOCALE_PATHS ont priorité sur les catalogues
+# d'application, ce qui rend l'emplacement unique et non ambigu.
 LOCALE_PATHS = [
     BASE_DIR / 'locale',
 ]

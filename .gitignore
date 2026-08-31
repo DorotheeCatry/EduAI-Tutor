@@ -51,9 +51,12 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Translations
-*.mo
-*.pot
+# Traductions.
+#
+# Les `.pot` sont des fichiers de travail, produits à la demande : exclus.
+#
+# Les `.mo` sont VERSIONNÉS, contrairement à l'usage courant — voir plus bas,
+# à la règle sur `locale/`. Le motif y est écrit.
 
 # Django stuff:
 *.log
@@ -223,9 +226,24 @@ KodaTheme/
 staticfiles
 staticfiles/
 
-*/locale/
-*/locale/*
-*/locale/*/LC_MESSAGES/*
+# Catalogues de traduction : VERSIONNÉS, `.po` comme `.mo`.
+#
+# Ces trois lignes les excluaient toutes, et rien ne le signalait : le projet
+# n'avait pas de traduction effective, donc leur absence ne se voyait pas.
+#
+# Pourquoi versionner les `.mo`, que l'on exclut d'ordinaire : les images de
+# déploiement sont construites à partir d'un clone du dépôt, et la chaîne
+# d'intégration ne compile pas les catalogues. Sans les fichiers compilés,
+# l'application déployée servirait ses chaînes sources — un mélange de français
+# et d'anglais que personne ne verrait avant la démonstration.
+#
+# La contrepartie est connue : un `.mo` peut diverger de son `.po` si l'on
+# oublie `compilemessages`. La procédure du README fait des deux commandes une
+# seule séquence, pour cette raison.
+#
+# Les fichiers de travail de gettext, eux, restent exclus.
+*.pot
+locale/**/*.po~
 
 !*/migrations/__init__.py
 
