@@ -1,110 +1,124 @@
 {% load i18n %}
 
-{% comment %}
-Panneau du tuteur — contextuel, rétractable, navigable au clavier.
-
-Compétence visée : C10 (épreuve E3) — intégration du modèle
-Compétences concernées : C17 (E4) ; C13 (E3) — accessibilité ; C9 (E2)
-
-Le contexte est écrit ici par le SERVEUR, dans un bloc JSON, et lu deux fois :
-pour la bannière « le tuteur voit : … » et pour composer la requête. Les deux
-lisent la même source — si rien n'est transmis, la bannière le dit, et
-l'absence se voit à l'écran au lieu de manquer en silence.
-
-Accessibilité, tenue pour critère d'acceptation :
-  - `role="complementary"` et un titre, pour que le panneau soit annoncé ;
-  - ouverture et fermeture au clavier, focus porté dans le panneau à
-    l'ouverture et RENDU au bouton à la fermeture — on doit pouvoir revenir à
-    la page ;
-  - `Échap` ferme, depuis n'importe où dans le panneau ;
-  - les réponses arrivent dans une région `aria-live="polite"` ;
-  - le chargement porte un texte, pas seulement une animation ;
-  - l'état rétracté est conservé d'une page à l'autre.
-{% endcomment %}
-
 {{ contexte_tuteur|default_if_none:""|json_script:"contexte-tuteur" }}
 
-{% comment %}
-Poignée de réouverture. Elle reste visible quand le panneau est fermé : un
-panneau qu'on ferme sans savoir comment le rouvrir est un panneau perdu.
-
-`aria-expanded` reflète l'état réel, et le focus revient ici à la fermeture —
-jamais dans le vide.
-{% endcomment %}
+{# Poignée de réouverture — toujours visible quand le panneau est fermé #}
 <button type="button" id="tuteur-ouvrir"
         aria-expanded="false" aria-controls="tuteur-panneau"
-        class="fixed bottom-6 right-6 z-40 px-4 py-3 rounded-full bg-primary-green text-white shadow-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+        title="{% trans "Ouvrir le tuteur (Alt+T)" %}"
+        class="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full
+               bg-primary-green text-white shadow-lg hover:bg-green-600
+               focus:outline-none focus:ring-2 focus:ring-white transition-colors">
     <span aria-hidden="true">💬</span>
-    {% trans "Tuteur" %}
+    <span class="text-sm font-medium">{% trans "Tuteur" %}</span>
+    <span id="tuteur-quotas-rapide" class="text-xs opacity-75"></span>
 </button>
 
 <aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre" hidden
-       class="fixed top-0 right-0 z-50 h-full w-full sm:w-96 bg-gray-900 border-l border-gray-700 flex flex-col transition-transform duration-200">
+       class="tuteur-dock fixed top-0 right-0 z-50 h-full w-full sm:w-96
+              bg-gray-900 border-l border-gray-700 flex flex-col shadow-2xl">
 
-    <div class="flex items-start justify-between p-4 border-b border-gray-700">
-        <div>
+    {# Barre de titre — poignée de glissement #}
+    <div id="tuteur-poignee" class="flex items-start justify-between p-4 border-b border-gray-700 cursor-grab"
+         role="toolbar" aria-label="{% trans "Barre du tuteur" %}">
+        <div class="min-w-0">
             <h2 id="tuteur-titre" class="text-lg font-bold text-white">{% trans "Tuteur" %}</h2>
-            {% comment %}
-            La bannière de contexte. Transmettre le code de quelqu'un à un
-            modèle sans le lui dire n'est pas acceptable ; l'afficher évite
-            aussi les malentendus quand la réponse porte sur autre chose que ce
-            qu'il croyait.
-            {% endcomment %}
             <p id="tuteur-contexte" class="text-xs text-gray-400 mt-1">
                 {% trans "Le tuteur voit :" %} <span id="tuteur-contexte-detail">{% trans "aucun contexte — question générale" %}</span>
             </p>
         </div>
-        <button type="button" id="tuteur-fermer"
-                aria-expanded="true" aria-controls="tuteur-panneau"
-                class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1">
-            <span aria-hidden="true">→</span>
-            <span class="sr-only">{% trans "Replier le tuteur" %}</span>
-        </button>
+        <div class="flex items-center gap-1 flex-shrink-0">
+            <button type="button" id="tuteur-redock"
+                    title="{% trans "Redocker à droite" %}"
+                    class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1">
+                <span aria-hidden="true">⤓</span>
+                <span class="sr-only">{% trans "Redocker" %}</span>
+            </button>
+            <button type="button" id="tuteur-fermer"
+                    aria-expanded="true" aria-controls="tuteur-panneau"
+                    title="{% trans "Replier le tuteur (Échap)" %}"
+                    class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1">
+                <span aria-hidden="true">→</span>
+                <span class="sr-only">{% trans "Replier le tuteur" %}</span>
+            </button>
+        </div>
     </div>
 
-    {# Actions préformées : les questions qui reviennent n'ont pas à être tapées #}
+    {# Actions préformées — varient selon la page #}
     <div id="tuteur-actions" class="p-3 flex flex-wrap gap-2 border-b border-gray-700"></div>
 
+    {# Messages — région annoncée aux lecteurs d'écran #}
     <div id="tuteur-messages" role="log" aria-live="polite" aria-atomic="false"
          class="flex-1 overflow-y-auto p-4 space-y-3 text-sm"></div>
 
+    {# Chargement — texte, pas seulement animation #}
     <p id="tuteur-chargement" hidden class="px-4 py-2 text-sm text-gray-300">
-        {% comment %} Un texte, et pas seulement une animation : un indicateur qui ne
-           repose que sur un mouvement n'est pas perçu par tous. {% endcomment %}
         <span aria-hidden="true">⏳</span> {% trans "Le tuteur réfléchit…" %}
     </p>
 
+    {# Formulaire #}
     <form id="tuteur-formulaire" class="p-3 border-t border-gray-700 space-y-2">
         <label for="tuteur-question" class="sr-only">{% trans "Votre question" %}</label>
         <textarea id="tuteur-question" rows="2" required
                   placeholder="{% trans "Posez votre question…" %}"
-                  class="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary-green"></textarea>
+                  class="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 rounded-lg
+                         text-white placeholder-gray-400 focus:outline-none focus:border-primary-green
+                         focus:ring-1 focus:ring-primary-green resize-none"></textarea>
         <div class="flex items-center justify-between gap-2">
             <p id="tuteur-quota" class="text-xs text-gray-400"></p>
             <button type="submit"
-                    class="px-3 py-2 text-sm rounded-lg bg-primary-green text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                    class="px-3 py-2 text-sm rounded-lg bg-primary-green text-white
+                           hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
                 {% trans "Envoyer" %}
             </button>
         </div>
     </form>
 </aside>
 
+<style>
+#tuteur-panneau { transition: transform 200ms ease, left 200ms ease, top 200ms ease,
+                   width 200ms ease, height 200ms ease; }
+#tuteur-panneau.tuteur-flottant {
+    position: fixed;
+    height: auto;
+    max-height: 80vh;
+    min-height: 300px;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    border: 1px solid #374151;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+}
+#tuteur-panneau.tuteur-flottant #tuteur-poignee { cursor: grabbing; }
+#tuteur-panneau.tuteur-glissement { transition: none; user-select: none; }
+#tuteur-panneau.tuteur-glissement * { pointer-events: none; }
+@media (max-width: 639px) {
+    #tuteur-panneau { width: 100% !important; }
+    #tuteur-panneau.tuteur-flottant {
+        width: calc(100vw - 32px) !important;
+        max-width: calc(100vw - 32px);
+        max-height: 70vh;
+    }
+}
+</style>
+
 <script>
 (function () {
-    const ouvrir = document.getElementById('tuteur-ouvrir');
-    const panneau = document.getElementById('tuteur-panneau');
-    const fermer = document.getElementById('tuteur-fermer');
-    const messages = document.getElementById('tuteur-messages');
-    const chargement = document.getElementById('tuteur-chargement');
-    const formulaire = document.getElementById('tuteur-formulaire');
-    const champ = document.getElementById('tuteur-question');
-    const quota = document.getElementById('tuteur-quota');
-    const detailContexte = document.getElementById('tuteur-contexte-detail');
+    const ouvrir    = document.getElementById('tuteur-ouvrir');
+    const panneau   = document.getElementById('tuteur-panneau');
+    const fermer    = document.getElementById('tuteur-fermer');
+    const redock    = document.getElementById('tuteur-redock');
+    const poignee   = document.getElementById('tuteur-poignee');
+    const messages  = document.getElementById('tuteur-messages');
+    const chargement= document.getElementById('tuteur-chargement');
+    const formulaire= document.getElementById('tuteur-formulaire');
+    const champ     = document.getElementById('tuteur-question');
+    const quota     = document.getElementById('tuteur-quota');
+    const quotaRapide = document.getElementById('tuteur-quotas-rapide');
+    const detailCtx = document.getElementById('tuteur-contexte-detail');
     const zoneActions = document.getElementById('tuteur-actions');
 
-    // Le contexte vient du serveur. Un bloc absent donne un contexte général,
-    // et la bannière l'annonce — l'absence se voit.
-    let contexte = {page: 'general', resume: '', elements: [], charge: {}};
+    let contexte = {page: 'general', resume: '', elements: [], charge: {}, actions: []};
     const bloc = document.getElementById('contexte-tuteur');
     if (bloc && bloc.textContent.trim() && bloc.textContent.trim() !== '""') {
         try { contexte = JSON.parse(bloc.textContent) || contexte; } catch (e) {}
@@ -114,26 +128,26 @@ jamais dans le vide.
 
     function decrireContexte() {
         if (!contexte.elements || contexte.elements.length === 0) {
-            detailContexte.textContent = "{% trans 'aucun contexte — question générale' %}";
+            detailCtx.textContent = "{% trans 'aucun contexte — question générale' %}";
             return;
         }
-        detailContexte.textContent = contexte.elements
-            .map(e => e.libelle + " : " + e.valeur)
-            .join(" · ");
+        detailCtx.textContent = contexte.elements
+            .map(e => e.libelle + " : " + e.valeur).join(" · ");
     }
 
     function poserActions() {
-        const actions = (contexte.actions || []);
+        const actions = contexte.actions || [];
         zoneActions.innerHTML = '';
         if (actions.length === 0) { zoneActions.hidden = true; return; }
         zoneActions.hidden = false;
         actions.forEach(action => {
-            const bouton = document.createElement('button');
-            bouton.type = 'button';
-            bouton.className = 'px-2 py-1 text-xs rounded border border-gray-600 text-gray-200 hover:border-primary-green focus:outline-none focus:ring-2 focus:ring-white';
-            bouton.textContent = action.libelle;
-            bouton.addEventListener('click', () => envoyer({action: action.code, libelle: action.libelle}));
-            zoneActions.appendChild(bouton);
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'px-2 py-1 text-xs rounded border border-gray-600 text-gray-200 ' +
+                           'hover:border-primary-green focus:outline-none focus:ring-2 focus:ring-white';
+            b.textContent = action.libelle;
+            b.addEventListener('click', () => envoyer({action: action.code, libelle: action.libelle}));
+            zoneActions.appendChild(b);
         });
     }
 
@@ -152,6 +166,13 @@ jamais dans le vide.
         bulle.appendChild(corps);
         messages.appendChild(bulle);
         messages.scrollTop = messages.scrollHeight;
+    }
+
+    function afficherQuota(etatQuota) {
+        if (!etatQuota) return;
+        const txt = "{% trans 'restantes' %}" + " " + etatQuota.restantes + "/" + etatQuota.quota;
+        quota.textContent = txt;
+        quotaRapide.textContent = "· " + etatQuota.restantes + "/" + etatQuota.quota;
     }
 
     async function envoyer({message, action, libelle}) {
@@ -174,39 +195,30 @@ jamais dans le vide.
             const corps = await reponse.json();
             ajouterMessage('tuteur', corps.reponse || corps.error, corps.horodatage);
             historique.push({question: libelle || message, reponse: corps.reponse || ''});
-            if (corps.quota) {
-                quota.textContent = "{% trans 'Il vous reste' %} " + corps.quota.restantes
-                    + " / " + corps.quota.quota;
-            }
+            if (corps.quota) afficherQuota(corps.quota);
         } catch (e) {
-            ajouterMessage('tuteur', "{% trans 'La réponse n’a pas pu être obtenue.' %}");
+            ajouterMessage('tuteur', "{% trans 'La réponse n'a pas pu être obtenue.' %}");
         } finally {
             chargement.hidden = true;
         }
     }
 
-    // Le panneau est masqué par `hidden`, et non seulement déplacé hors de
-    // l'écran : un panneau simplement translaté reste dans l'ordre de
-    // tabulation, et la navigation au clavier continue d'y entrer alors qu'il
-    // est invisible.
-    function ouvrirPanneau(donnerLeFocus) {
+    {# --- Ouverture / fermeture --- #}
+    function ouvrirPanneau(donnerFocus) {
         panneau.hidden = false;
         ouvrir.setAttribute('aria-expanded', 'true');
         fermer.setAttribute('aria-expanded', 'true');
         ouvrir.hidden = true;
-        if (donnerLeFocus !== false) { champ.focus(); }
+        if (donnerFocus !== false) champ.focus();
         memoriser('1');
     }
 
-    function fermerPanneau(donnerLeFocus) {
+    function fermerPanneau(donnerFocus) {
         panneau.hidden = true;
         ouvrir.hidden = false;
         ouvrir.setAttribute('aria-expanded', 'false');
         fermer.setAttribute('aria-expanded', 'false');
-        // Le focus revient sur la poignée, jamais dans le vide : un panneau
-        // qui garde le focus après sa fermeture piège la navigation au
-        // clavier, et un focus perdu renvoie en haut de page.
-        if (donnerLeFocus !== false) { ouvrir.focus(); }
+        if (donnerFocus !== false) ouvrir.focus();
         memoriser('0');
     }
 
@@ -214,41 +226,139 @@ jamais dans le vide.
         try { localStorage.setItem('tuteur-ouvert', valeur); } catch (e) {}
     }
 
-    // Sur petit écran, le panneau occupe toute la largeur : ouvert par
-    // défaut, il masquerait le contenu principal. L'état mémorisé s'applique
-    // aux écrans larges seulement.
     function petitEcran() {
         return window.matchMedia('(max-width: 639px)').matches;
     }
 
+    {# --- Glissement (drag) --- #}
+    let enGlissement = false;
+    let decalageX = 0, decalageY = 0;
+
+    function rendreFlottant() {
+        if (panneau.classList.contains('tuteur-flottant')) return;
+        panneau.classList.add('tuteur-flottant');
+        const rect = panneau.getBoundingClientRect();
+        panneau.style.left = Math.max(16, rect.left) + 'px';
+        panneau.style.top  = Math.max(16, rect.top) + 'px';
+        panneau.style.right = 'auto';
+        try { localStorage.setItem('tuteur-flottant', '1'); } catch (e) {}
+    }
+
+    function redocker() {
+        panneau.classList.remove('tuteur-flottant');
+        panneau.style.left = '';
+        panneau.style.top = '';
+        panneau.style.right = '';
+        panneau.style.width = '';
+        panneau.style.height = '';
+        try { localStorage.setItem('tuteur-flottant', '0'); } catch (e) {}
+    }
+
+    function demarrerGlissement(e) {
+        if (e.target.closest('button')) return;
+        rendreFlottant();
+        enGlissement = true;
+        panneau.classList.add('tuteur-glissement');
+        const rect = panneau.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        decalageX = clientX - rect.left;
+        decalageY = clientY - rect.top;
+        e.preventDefault();
+    }
+
+    function pendantGlissement(e) {
+        if (!enGlissement) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let x = clientX - decalageX;
+        let y = clientY - decalageY;
+        const w = panneau.offsetWidth;
+        const h = panneau.offsetHeight;
+        x = Math.max(0, Math.min(x, window.innerWidth - w));
+        y = Math.max(0, Math.min(y, window.innerHeight - h));
+        panneau.style.left = x + 'px';
+        panneau.style.top = y + 'px';
+        e.preventDefault();
+    }
+
+    function finirGlissement() {
+        if (!enGlissement) return;
+        enGlissement = false;
+        panneau.classList.remove('tuteur-glissement');
+    }
+
+    poignee.addEventListener('mousedown', demarrerGlissement);
+    poignee.addEventListener('touchstart', demarrerGlissement, {passive: false});
+    document.addEventListener('mousemove', pendantGlissement);
+    document.addEventListener('touchmove', pendantGlissement, {passive: false});
+    document.addEventListener('mouseup', finirGlissement);
+    document.addEventListener('touchend', finirGlissement);
+
+    redock.addEventListener('click', redocker);
+
+    {# --- Raccourcis clavier --- #}
+    document.addEventListener('keydown', function(e) {
+        if (e.altKey && (e.key === 't' || e.key === 'T')) {
+            e.preventDefault();
+            if (panneau.hidden) ouvrirPanneau(); else fermerPanneau();
+        }
+    });
+
+    {# --- Événements --- #}
     ouvrir.addEventListener('click', ouvrirPanneau);
     fermer.addEventListener('click', fermerPanneau);
-    panneau.addEventListener('keydown', evenement => {
-        if (evenement.key === 'Escape') { fermerPanneau(); }
+    panneau.addEventListener('keydown', e => {
+        if (e.key === 'Escape') fermerPanneau();
     });
-    formulaire.addEventListener('submit', evenement => {
-        evenement.preventDefault();
+    formulaire.addEventListener('submit', e => {
+        e.preventDefault();
         const texte = champ.value.trim();
-        if (!texte) { return; }
+        if (!texte) return;
         champ.value = '';
         envoyer({message: texte});
     });
 
+    {# --- Initialisation --- #}
     decrireContexte();
     poserActions();
 
-    // État initial. Le panneau est fermé par défaut : il ne s'ouvre que si
-    // l'apprenant l'avait laissé ouvert, et jamais sur petit écran.
+    {# Quota initial depuis le contexte serveur #}
+    {% if quota_generation %}
+    afficherQuota({
+        restantes: {{ quota_generation.restantes }},
+        quota: {{ quota_generation.quota }},
+    });
+    {% endif %}
+
     let etatMemorise = '0';
     try { etatMemorise = localStorage.getItem('tuteur-ouvert') || '0'; } catch (e) {}
 
     if (etatMemorise === '1' && !petitEcran()) {
-        // Le focus n'est PAS donné au chargement : porter le focus dans un
-        // panneau à l'arrivée sur une page ferait perdre sa place à qui navigue
-        // au clavier, et ferait lire le panneau avant la page.
         ouvrirPanneau(false);
+        try {
+            if (localStorage.getItem('tuteur-flottant') === '1') {
+                const x = parseFloat(localStorage.getItem('tuteur-x'));
+                const y = parseFloat(localStorage.getItem('tuteur-y'));
+                if (!isNaN(x) && !isNaN(y)) {
+                    rendreFlottant();
+                    panneau.style.left = x + 'px';
+                    panneau.style.top = y + 'px';
+                }
+            }
+        } catch (e) {}
     } else {
         fermerPanneau(false);
     }
+
+    {# Sauvegarder la position flottante #}
+    new MutationObserver(() => {
+        if (panneau.classList.contains('tuteur-flottant') && !enGlissement) {
+            try {
+                localStorage.setItem('tuteur-x', panneau.style.left);
+                localStorage.setItem('tuteur-y', panneau.style.top);
+            } catch (e) {}
+        }
+    }).observe(panneau, {attributes: true, attributeFilter: ['style']});
 })();
 </script>
