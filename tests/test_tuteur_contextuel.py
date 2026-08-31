@@ -373,3 +373,36 @@ def test_le_plafond_individuel_par_defaut_est_de_quinze(monkeypatch, apprenant):
     assert service_quotas.QUOTA_INDIVIDUEL_DEFAUT == 15
     assert service_quotas.quota_individuel() == 15
     assert ConsommationJournaliere.objects.filter(utilisateur=apprenant).count() == 0
+
+
+@pytest.mark.django_db
+def test_le_panneau_est_retractable_et_sa_poignee_reste_visible(client, apprenant):
+    """
+    Le panneau se replie, et le bouton de réouverture demeure.
+
+    Compétence visée : C13 (épreuve E3) — accessibilité
+    Compétence visée : C17 (E4)
+
+    Un panneau qu'on ferme sans savoir comment le rouvrir est perdu. La poignée
+    est donc un bouton distinct, hors du panneau, qui réapparaît à la
+    fermeture.
+
+    `aria-expanded` est porté par les deux commandes — la poignée et la flèche —
+    et reflète l'état réel : une technologie d'assistance doit pouvoir annoncer
+    si le panneau est déplié.
+    """
+    client.force_login(apprenant)
+
+    contenu = client.get(reverse("accueil:accueil"), secure=True).content.decode("utf-8")
+
+    assert 'id="tuteur-ouvrir"' in contenu, "la poignée de réouverture est absente"
+    assert 'id="tuteur-fermer"' in contenu, "la flèche de repli est absente"
+    assert contenu.count('aria-controls="tuteur-panneau"') >= 2
+    assert 'aria-expanded="false"' in contenu, (
+        "l'état initial du panneau est replié"
+    )
+    assert "Replier le tuteur" in contenu
+    assert "localStorage" in contenu, "l'état doit être conservé d'une page à l'autre"
+    assert "max-width: 639px" in contenu, (
+        "le panneau doit rester fermé par défaut sur petit écran"
+    )

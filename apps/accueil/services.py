@@ -200,9 +200,18 @@ def resume_de_l_accueil(utilisateur):
     from apps.referentiel.progression import resume_par_module
     from apps.referentiel.services import referentiel_actif
 
+    modules = resume_par_module(utilisateur)
+    entames = [ligne for ligne in modules if ligne["au_niveau_1"]]
+
     return {
         "referentiel": referentiel_actif(),
-        "modules": resume_par_module(utilisateur),
+        "modules": modules,
+        # De quoi replier l'affichage quand rien n'est entamé : le bloc
+        # occupait la moitié de l'écran pour dire qu'il n'y avait rien.
+        "competences_entamees": bool(entames),
+        "modules_non_entames": len(modules) - len(entames),
+        "total_competences": sum(ligne["competences"] for ligne in modules),
+        "premier_module": modules[0]["module"] if modules else None,
         "prochaine": prochaine_competence(utilisateur),
         "seuil_niveau_2": SEUIL_NIVEAU_ADAPTER,
         "a_revoir": notions_a_revoir(utilisateur),

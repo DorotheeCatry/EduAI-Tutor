@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 15:06+0000\n"
+"POT-Creation-Date: 2026-08-31 15:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,121 +22,136 @@ msgstr ""
 msgid "Accueil"
 msgstr "Home"
 
-#: apps/accueil/templates/accueil/accueil.html:35
-msgid "Où j'en suis"
-msgstr ""
-
-#: apps/accueil/templates/accueil/accueil.html:44
-msgid "Aucun référentiel de compétences n'est actif pour l'instant."
-msgstr "No competency framework is active at the moment."
-
-#: apps/accueil/templates/accueil/accueil.html:47
-msgid ""
-"Votre travail est enregistré ; la progression s'affichera dès qu'un "
-"référentiel sera chargé."
-msgstr ""
-
-#: apps/accueil/templates/accueil/accueil.html:61
-#: apps/tracker/templates/tracker/dashboard.html:109
-msgid "Niveau 1"
-msgstr "Level 1"
-
-#: apps/accueil/templates/accueil/accueil.html:64
-#: apps/tracker/templates/tracker/dashboard.html:105
-msgid "Niveau 2"
-msgstr "Level 2"
-
-#: apps/accueil/templates/accueil/accueil.html:67
-msgid "Niveau 3"
-msgstr "Level 3"
-
-#: apps/accueil/templates/accueil/accueil.html:68
-#: apps/tracker/templates/tracker/dashboard.html:69
-msgid "non mesuré"
-msgstr "not measured"
-
-#: apps/accueil/templates/accueil/accueil.html:72
-msgid ""
-"« Non mesuré » ne veut pas dire « non atteint » : ce niveau suppose "
-"d'appliquer une notion à un contexte nouveau, ce que le nombre d'exercices "
-"réussis ne permet pas de constater."
-msgstr ""
-
-#: apps/accueil/templates/accueil/accueil.html:77
-msgid "Ce référentiel ne contient aucun module."
-msgstr "This framework contains no module."
-
-#: apps/accueil/templates/accueil/accueil.html:87
-#, python-format
-msgid ""
-"%(atteintes)s compétences sur %(total)s au niveau 1, %(niveau2)s au niveau 2"
-msgstr ""
-
-#: apps/accueil/templates/accueil/accueil.html:95
-#, python-format
-msgid "%(total)s compétences, aucune entamée"
-msgstr "%(total)s competencies, none started"
-
-#: apps/accueil/templates/accueil/accueil.html:120
+#: apps/accueil/templates/accueil/accueil.html:42
 msgid "Ce que je fais maintenant"
 msgstr "What I do now"
 
-#: apps/accueil/templates/accueil/accueil.html:132
+#: apps/accueil/templates/accueil/accueil.html:48
 #, python-format
 msgid ""
 "Prochaine compétence du parcours : <strong>%(competence)s</strong>, dans "
 "%(module)s."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:134
+#: apps/accueil/templates/accueil/accueil.html:50
 #, python-format
 msgid ""
 "Encore %(restant)s exercice(s) réussi(s) sur <strong>%(competence)s</strong> "
 "pour atteindre le niveau 2."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:139
+#: apps/accueil/templates/accueil/accueil.html:55
 msgid "S'exercer sur cette compétence"
 msgstr "Practise this competency"
 
-#: apps/accueil/templates/accueil/accueil.html:145
+#: apps/accueil/templates/accueil/accueil.html:59
 msgid ""
 "Toutes les compétences du référentiel sont au niveau 2. Le niveau 3 n'est "
 "pas mesuré par ce dispositif."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:149
+#: apps/accueil/templates/accueil/accueil.html:63
 msgid "Explorer un nouveau sujet"
 msgstr "Explore a new topic"
 
-#: apps/accueil/templates/accueil/accueil.html:153
+#: apps/accueil/templates/accueil/accueil.html:67
 msgid "Commencez par générer un cours sur le sujet de votre choix."
 msgstr "Start by generating a course on a topic of your choice."
 
-#: apps/accueil/templates/accueil/accueil.html:157
+#: apps/accueil/templates/accueil/accueil.html:71
 msgid "Générer un cours"
 msgstr "Generate a course"
 
-#: apps/accueil/templates/accueil/accueil.html:165
+#: apps/accueil/templates/accueil/accueil.html:86
+msgid "Où j'en suis"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:92
+msgid "Aucun référentiel de compétences n'est actif pour l'instant."
+msgstr "No competency framework is active at the moment."
+
+#: apps/accueil/templates/accueil/accueil.html:95
+msgid ""
+"Votre travail est enregistré ; la progression s'affichera dès qu'un "
+"référentiel sera chargé."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:107
+#, python-format
+msgid ""
+"Aucune compétence entamée sur %(total)s — commencez par le module %(module)s."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:111
+msgid "Voir les modules du référentiel"
+msgstr "See the framework's modules"
+
+#: apps/accueil/templates/accueil/accueil.html:116
+#: apps/accueil/templates/accueil/accueil.html:150
+#, fuzzy, python-format
+#| msgid "%(total)s compétences, aucune entamée"
+msgid "%(total)s compétence"
+msgid_plural "%(total)s compétences"
+msgstr[0] "%(total)s competencies, none started"
+msgstr[1] "%(total)s competencies, none started"
+
+#: apps/accueil/templates/accueil/accueil.html:130
+#, python-format
+msgid "%(atteintes)s sur %(total)s au niveau 1, %(niveau2)s au niveau 2"
+msgstr "%(atteintes)s of %(total)s at level 1, %(niveau2)s at level 2"
+
+#: apps/accueil/templates/accueil/accueil.html:144
+#, python-format
+msgid "%(restants)s module non entamé"
+msgid_plural "%(restants)s modules non entamés"
+msgstr[0] ""
+msgstr[1] ""
+
+#: apps/accueil/templates/accueil/accueil.html:169
+#, fuzzy
+#| msgid "Libellés des trois niveaux"
+msgid "Comment se lisent les trois niveaux"
+msgstr "Labels of the three levels"
+
+#: apps/accueil/templates/accueil/accueil.html:173
+#: apps/tracker/templates/tracker/dashboard.html:109
+msgid "Niveau 1"
+msgstr "Level 1"
+
+#: apps/accueil/templates/accueil/accueil.html:176
+#: apps/tracker/templates/tracker/dashboard.html:105
+msgid "Niveau 2"
+msgstr "Level 2"
+
+#: apps/accueil/templates/accueil/accueil.html:179
+msgid "Niveau 3"
+msgstr "Level 3"
+
+#: apps/accueil/templates/accueil/accueil.html:180
+#: apps/tracker/templates/tracker/dashboard.html:69
+msgid "non mesuré"
+msgstr "not measured"
+
+#: apps/accueil/templates/accueil/accueil.html:184
+msgid ""
+"« Non mesuré » ne veut pas dire « non atteint » : ce niveau suppose "
+"d'appliquer une notion à un contexte nouveau, ce que le nombre d'exercices "
+"réussis ne permet pas de constater."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:196
 #: apps/revision/templates/revision/flashcards.html:24
 #, fuzzy
 #| msgid "À savoir :"
 msgid "À revoir"
 msgstr "Worth knowing:"
 
-#: apps/accueil/templates/accueil/accueil.html:173
-#: apps/revision/templates/revision/flashcards.html:26
-msgid ""
-"Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt "
-"que ce qui est ancien."
-msgstr ""
-
-#: apps/accueil/templates/accueil/accueil.html:185
+#: apps/accueil/templates/accueil/accueil.html:208
 #: apps/revision/templates/revision/flashcards.html:40
 msgid "hors référentiel"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:189
+#: apps/accueil/templates/accueil/accueil.html:212
 #: apps/revision/templates/revision/flashcards.html:44
 #, python-format
 msgid "%(tentatives)s tentative"
@@ -144,12 +159,12 @@ msgid_plural "%(tentatives)s tentatives"
 msgstr[0] ""
 msgstr[1] ""
 
-#: apps/accueil/templates/accueil/accueil.html:199
+#: apps/accueil/templates/accueil/accueil.html:222
 #: apps/revision/templates/revision/flashcards.html:54
 msgid "quiz"
 msgstr "quiz"
 
-#: apps/accueil/templates/accueil/accueil.html:202
+#: apps/accueil/templates/accueil/accueil.html:225
 #: apps/revision/templates/revision/flashcards.html:57
 #, python-format
 msgid "%(erreurs)s réponse manquée"
@@ -157,58 +172,71 @@ msgid_plural "%(erreurs)s réponses manquées"
 msgstr[0] ""
 msgstr[1] ""
 
-#: apps/accueil/templates/accueil/accueil.html:215
+#: apps/accueil/templates/accueil/accueil.html:239
 #: apps/revision/templates/revision/flashcards.html:66
 msgid "Rien à revoir pour l'instant."
 msgstr "Nothing to review at the moment."
 
-#: apps/accueil/templates/accueil/accueil.html:218
+#: apps/accueil/templates/accueil/accueil.html:241
 #: apps/revision/templates/revision/flashcards.html:68
 msgid ""
 "Cette liste se remplit toute seule : un exercice qui demande plusieurs "
 "tentatives, ou une réponse manquée dans un quiz, y apparaît avec sa date."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:222
+#: apps/accueil/templates/accueil/accueil.html:245
 #: apps/revision/templates/revision/flashcards.html:72
 msgid "Faire un quiz pour repérer mes lacunes"
 msgstr "Take a quiz to spot my gaps"
 
-#: apps/accueil/templates/accueil/accueil.html:231
+#: apps/accueil/templates/accueil/accueil.html:252
+msgid "Comment cette liste est construite"
+msgstr "How this list is built"
+
+#: apps/accueil/templates/accueil/accueil.html:255
+msgid ""
+"Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt "
+"que ce qui est ancien. Un exercice réussi du premier coup il y a un mois est "
+"probablement encore acquis ; un exercice réussi à la cinquième tentative la "
+"semaine dernière ne l'est pas."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:267
 msgid "Dernière activité"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:238
+#: apps/accueil/templates/accueil/accueil.html:274
 #, fuzzy
 #| msgid "Exercices créés"
 msgid "Exercice"
 msgstr "Exercises created"
 
-#: apps/accueil/templates/accueil/accueil.html:242
+#: apps/accueil/templates/accueil/accueil.html:278
 msgid "réussi"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:244
+#: apps/accueil/templates/accueil/accueil.html:280
 msgid "en cours"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:250
+#: apps/accueil/templates/accueil/accueil.html:286
 #: apps/courses/templates/courses/course_content.html:37
 #: apps/courses/templates/courses/my_courses.html:50
 #: templates/components/sidebar.html:102
 msgid "Quiz"
 msgstr "Quiz"
 
-#: apps/accueil/templates/accueil/accueil.html:258
+#: apps/accueil/templates/accueil/accueil.html:294
 msgid "Cours"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:266
-msgid "Aucune activité pour l'instant."
-msgstr "No activity yet."
-
-#: apps/accueil/templates/accueil/accueil.html:268
-msgid "Votre premier cours, exercice ou quiz apparaîtra ici avec son résultat."
+#: apps/accueil/templates/accueil/accueil.html:302
+#, fuzzy
+#| msgid ""
+#| "Votre premier cours, exercice ou quiz apparaîtra ici avec son résultat."
+msgid ""
+"Aucune activité pour l'instant. Votre premier cours, exercice ou quiz "
+"apparaîtra ici avec son résultat."
 msgstr "Your first course, exercise or quiz will appear here with its result."
 
 #: apps/chat/actions.py:23
@@ -1134,6 +1162,12 @@ msgstr ""
 msgid "Révision"
 msgstr ""
 
+#: apps/revision/templates/revision/flashcards.html:26
+msgid ""
+"Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt "
+"que ce qui est ancien."
+msgstr ""
+
 #: apps/revision/templates/revision/flashcards.html:75
 msgid "S'exercer"
 msgstr ""
@@ -1673,48 +1707,50 @@ msgstr "Streak: %(jours)s d"
 msgid "%(titre)s niv. %(niveau)s"
 msgstr "%(titre)s lv. %(niveau)s"
 
-#: templates/components/tuteur.html:31 templates/components/tuteur.html:39
-#: templates/components/tuteur.html:140
+#: templates/components/tuteur.html:38 templates/components/tuteur.html:46
+#: templates/components/tuteur.html:149
 msgid "Tuteur"
 msgstr "Tutor"
 
-#: templates/components/tuteur.html:48
+#: templates/components/tuteur.html:55
 msgid "Le tuteur voit :"
 msgstr "The tutor sees:"
 
-#: templates/components/tuteur.html:48 templates/components/tuteur.html:110
+#: templates/components/tuteur.html:55 templates/components/tuteur.html:119
 msgid "aucun contexte — question générale"
 msgstr "no context — general question"
 
-#: templates/components/tuteur.html:54
-msgid "Fermer le tuteur"
+#: templates/components/tuteur.html:62
+#, fuzzy
+#| msgid "Fermer le tuteur"
+msgid "Replier le tuteur"
 msgstr "Close the tutor"
 
-#: templates/components/tuteur.html:67
+#: templates/components/tuteur.html:76
 msgid "Le tuteur réfléchit…"
 msgstr "The tutor is thinking…"
 
-#: templates/components/tuteur.html:71
+#: templates/components/tuteur.html:80
 msgid "Votre question"
 msgstr "Your question"
 
-#: templates/components/tuteur.html:73
+#: templates/components/tuteur.html:82
 msgid "Posez votre question…"
 msgstr "Ask your question…"
 
-#: templates/components/tuteur.html:79
+#: templates/components/tuteur.html:88
 msgid "Envoyer"
 msgstr "Send"
 
-#: templates/components/tuteur.html:140
+#: templates/components/tuteur.html:149
 msgid "Vous"
 msgstr "You"
 
-#: templates/components/tuteur.html:171
+#: templates/components/tuteur.html:180
 msgid "Il vous reste"
 msgstr "You have left"
 
-#: templates/components/tuteur.html:175
+#: templates/components/tuteur.html:184
 msgid "La réponse n’a pas pu être obtenue."
 msgstr "The answer could not be retrieved."
 
@@ -1791,3 +1827,9 @@ msgstr ""
 #: theme/templates/base.html:23
 msgid "Django + Tailwind = ❤️"
 msgstr ""
+
+#~ msgid "Ce référentiel ne contient aucun module."
+#~ msgstr "This framework contains no module."
+
+#~ msgid "Aucune activité pour l'instant."
+#~ msgstr "No activity yet."

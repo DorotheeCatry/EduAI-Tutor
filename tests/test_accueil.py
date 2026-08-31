@@ -93,7 +93,10 @@ def test_les_quatre_blocs_ont_un_etat_vide_sur_une_base_neuve(
     contenu = _page(client, apprenant)
 
     assert "Où j'en suis" in contenu
-    assert "aucune entamée" in contenu
+    assert "Aucune compétence entamée sur 21" in contenu, (
+        "l'état vide tient en une phrase, et non en quatre lignes identiques"
+    )
+    assert "commencez par le module Python" in contenu
     assert "Ce que je fais maintenant" in contenu
     assert "Rien à revoir pour l'instant" in contenu
     assert "Aucune activité pour l'instant" in contenu
@@ -162,7 +165,10 @@ def test_le_bloc_ou_j_en_suis_compte_les_niveaux_reels(
 
     contenu = _page(client, apprenant)
 
-    assert "1 compétences sur 7 au niveau 1, 1 au niveau 2" in contenu
+    assert "1 sur 7 au niveau 1, 1 au niveau 2" in contenu
+    assert "3 modules non entamés" in contenu, (
+        "les modules non entamés sont repliés, non développés"
+    )
 
 
 @pytest.mark.django_db
@@ -289,3 +295,112 @@ def test_le_temps_d_etude_est_annonce_comme_non_mesure(client, apprenant):
 
     assert "Temps d'étude" in contenu
     assert "non mesuré" in contenu
+
+
+def test_aucun_gabarit_ne_porte_de_commentaire_multiligne():
+    """
+    Un commentaire `{# … #}` ne doit jamais s'étendre sur plusieurs lignes.
+
+    Compétence visée : C18 (épreuve E4)
+    Compétence concernée : C17 (E4)
+
+    Django n'interprète `{# … #}` que sur UNE ligne. Sur plusieurs, la syntaxe
+    n'est pas reconnue et le commentaire **s'affiche en clair sur la page** —
+    quatre s'affichaient ainsi sur la page d'accueil, dont deux au-dessus du
+    contenu, le 31/08/2026.
+
+    Ce test est statique plutôt que fondé sur un rendu : il couvre aussi les
+    gabarits qu'aucun test de page n'atteint, et il nomme le fichier et la
+    ligne au lieu de faire chercher.
+
+    La forme correcte sur plusieurs lignes est `{% comment %}…{% endcomment %}`.
+    """
+    from pathlib import Path
+
+    fautifs = []
+    gabarits = list(Path("apps").rglob("*.html")) + list(Path("templates").rglob("*.html"))
+
+    for chemin in gabarits:
+        contenu = chemin.read_text(encoding="utf-8")
+        position = 0
+        while True:
+            debut = contenu.find("{#", position)
+            if debut == -1:
+                break
+            fin = contenu.find("#}", debut)
+            if fin == -1 or "\n" in contenu[debut:fin]:
+                ligne = contenu[:debut].count("\n") + 1
+                fautifs.append(f"{chemin}:{ligne}")
+                position = debut + 2
+            else:
+                position = fin + 2
+
+    assert not fautifs, (
+        "commentaires {# … #} sur plusieurs lignes, qui s'afficheront sur la "
+        "page — employer {% comment %} : " + ", ".join(fautifs)
+    )
+
+
+@pytest.mark.django_db
+def test_aucune_page_rendue_n_affiche_de_syntaxe_de_gabarit(
+        client, apprenant, referentiel):
+    """
+    Aucune page servie ne contient `{#`, `{%` ou `{{` non interprétés.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    Le contrôle statique dit qu'aucun gabarit n'en porte ; celui-ci dit
+    qu'aucune page n'en affiche. Les deux se complètent : le premier prévient,
+    le second constate.
+    """
+    from django.urls import reverse
+
+    client.force_login(apprenant)
+    for page in [reverse("accueil:accueil"), reverse("tracker:dashboard"),
+                 reverse("revision:flashcards"), reverse("quiz:lobby"),
+                 reverse("exercises:list")]:
+        contenu = client.get(page, secure=True).content.decode("utf-8")
+        assert "{#" not in contenu, f"syntaxe de commentaire visible sur {page}"
+        assert "{% " not in contenu, f"balise de gabarit visible sur {page}"
+
+
+@pytest.mark.django_db
+def test_l_action_vient_avant_la_progression(client, apprenant, referentiel):
+    """
+    « Ce que je fais maintenant » est le premier bloc de la page.
+
+    Compétence visée : C17 (épreuve E4)
+
+    L'action était enterrée au milieu de la page, sous quatre lignes de
+    progression vide. Un apprenant qui arrive doit voir en premier ce qu'il a à
+    faire — c'est la raison d'être de cette page.
+    """
+    contenu = _page(client, apprenant)
+
+    assert contenu.index("Ce que je fais maintenant") < contenu.index("Où j'en suis")
+    assert contenu.index("Où j'en suis") < contenu.index("À revoir")
+    assert contenu.index("À revoir") < contenu.index("Dernière activité")
+
+
+@pytest.mark.django_db
+def test_les_notes_de_methode_sont_repliees(client, apprenant, referentiel):
+    """
+    Les explications pédagogiques sont dans un `<details>`, pas en tête de page.
+
+    Compétence visée : C13 (épreuve E3) — accessibilité
+    Compétence visée : C17 (épreuve E4)
+
+    Elles doivent rester atteignables — un `<details>` l'est au clavier et se
+    lit par un lecteur d'écran, contrairement à une infobulle — mais elles ne
+    sont pas du contenu de page : ce sont des notes de méthode.
+    """
+    contenu = _page(client, apprenant)
+
+    assert "Comment se lisent les trois niveaux" in contenu
+    assert "Comment cette liste est construite" in contenu
+
+    avant_details = contenu.split("Comment se lisent les trois niveaux")[0]
+    assert "« Non mesuré » ne veut pas dire" not in avant_details, (
+        "l'explication du niveau 3 ne doit plus précéder le contenu"
+    )
+    assert contenu.count("<details") >= 2
