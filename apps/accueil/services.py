@@ -209,6 +209,7 @@ def resume_de_l_accueil(utilisateur):
         # De quoi replier l'affichage quand rien n'est entamé : le bloc
         # occupait la moitié de l'écran pour dire qu'il n'y avait rien.
         "competences_entamees": bool(entames),
+        "competences_entamees_nombre": sum(ligne["au_niveau_1"] for ligne in modules),
         "modules_non_entames": len(modules) - len(entames),
         "total_competences": sum(ligne["competences"] for ligne in modules),
         "premier_module": modules[0]["module"] if modules else None,
