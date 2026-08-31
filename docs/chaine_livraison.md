@@ -799,7 +799,19 @@ uv run python -m apps.rag.empreinte_corpus
 
 **3. Téléverser**, l'empreinte **en dernier** — c'est elle qui atteste que le
 transfert est complet, et un `EMPREINTE.json` posé sur un corpus partiel
-mentirait :
+mentirait.
+
+**Lire la sortie de chaque montée, et ne pas se fier à l'ordre seul.** Cette
+règle protège d'une interruption à la fin ; elle ne protège pas d'un échec au
+début suivi d'une reprise. Le 31/08, la première montée a échoué sur un
+`Timeout` et les suivantes ont réussi, empreinte comprise : le corpus était
+incomplet et attesté complet (réserve 9). **Comparer les tailles, volume contre
+poste, avant de conclure** :
+
+```bash
+railway volume files --volume <volume> list /<collection> --json   # tailles distantes
+```
+
 
 ```bash
 railway volume files --volume <volume> upload apps/rag/chroma/<collection> /<collection>

@@ -336,3 +336,53 @@ Le rôle applicatif est propriétaire du schéma, donc capable de le modifier �
 c'est nécessaire aux migrations Django. Un découpage plus fin, séparant le rôle
 qui migre de celui qui sert les requêtes, serait la étape suivante. Elle n'est
 pas ouverte avant le 14 septembre.
+
+---
+
+## 9. « L'empreinte en dernier » ne protège pas d'un échec en première position
+
+**Composant :** procédure de transfert du corpus (`docs/chaine_livraison.md`, § 7.4)
+**Nature :** limite de conception du contrôle d'intégrité, non erreur d'exécution
+**Statut :** **ouverte**, constatée le 31/08/2026
+
+La procédure de transfert pose une règle : téléverser `EMPREINTE.json` **en
+dernier**, parce que c'est elle qui atteste que le corpus est complet. Un
+transfert interrompu laisse alors un corpus partiel sans empreinte, donc
+visiblement incomplet.
+
+**Cette règle ne couvre que la dernière moitié du problème.**
+
+Le 31/08, au transfert vers le volume de l'application web, la **première**
+montée — la collection pédagogique — a échoué sur un `Timeout`. Les quatre
+suivantes ont réussi, empreinte comprise. Résultat : **un corpus incomplet
+attesté complet**, et attesté par le dispositif même qui existe pour l'éviter.
+
+L'ordre des opérations ne protège que d'une interruption *à la fin*. Il ne dit
+rien d'un échec *au début* suivi d'une reprise qui se poursuit comme si de rien
+n'était.
+
+### Ce qui a rattrapé le coup, et qui n'était pas le dispositif
+
+Une comparaison fichier par fichier des tailles, volume contre poste, faite à la
+main après avoir lu le mot `Timeout` dans la sortie. Autrement dit : la
+vigilance de l'opérateur, pas le contrôle. Un transfert lancé sans regarder la
+sortie aurait produit exactement la même attestation mensongère.
+
+### La correction, et pourquoi elle n'est pas encore faite
+
+Elle est connue : **vérifier chaque partie avant d'écrire l'attestation**. Le
+transfert devrait être un script unique qui téléverse, relit la liste distante,
+compare tailles et nombre de fichiers à la source, et n'envoie `EMPREINTE.json`
+qu'ensuite — l'attestation portant alors sur une vérification, non sur un ordre
+d'exécution.
+
+Ce n'est pas fait à quatre jours du rendu, parce que le corpus est en place sur
+les deux volumes et vérifié. Écrire ce script maintenant ajouterait du code non
+éprouvé à un chemin qui fonctionne.
+
+**Ce que cette réserve dit du motif récurrent du projet.** Les huit incidents
+documentés partagent une forme : une action et son effet ne coïncident pas sans
+qu'on aille le constater. Celui-ci ajoute une nuance — le contrôle existait, il
+était correct, et il a quand même attesté du faux, parce qu'il vérifiait
+**l'ordre** des opérations et non **leur résultat**. Un contrôle qui repose sur
+une convention d'exécution n'est pas un contrôle : c'est une convention.

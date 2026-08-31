@@ -47,9 +47,37 @@ SEUIL_TAUX_ERREUR = float(os.environ.get("MONITORAGE_SEUIL_ERREUR", "0.20"))
 
 #: Latence d'un appel au-delà de laquelle une alerte est levée, en secondes.
 #:
-#: Dix secondes : au-delà, l'apprenant qui attend une correction dans l'éditeur
-#: considère le service comme bloqué. Le seuil est un choix d'expérience, pas
-#: une limite technique.
+#: **Ce seuil se règle par environnement, et les deux valeurs ne répondent pas
+#: à la même question.** La valeur par défaut est celle du poste ; celle de
+#: l'hébergeur est posée par la variable d'environnement.
+#:
+#: **Dix secondes en local, et c'est un seuil d'expérience.** Au-delà,
+#: l'apprenant qui attend une correction dans l'éditeur considère le service
+#: comme bloqué. La recherche y répond en 3 secondes : le seuil marque bien un
+#: écart au fonctionnement normal.
+#:
+#: **Soixante-quinze secondes chez l'hébergeur, et c'est un seuil d'anomalie.**
+#: Sans GPU et sur des cœurs mutualisés, la même recherche y demande 14 à 59
+#: secondes, médiane 28 (réserve 7). Garder 10 s ferait lever une alerte à
+#: chaque appel : une alerte permanente n'est plus une alerte, on cesse de la
+#: lire — c'est le motif de l'incident 009, et il ne s'agit pas de le répéter
+#: ici sous prétexte de confort.
+#:
+#: La valeur n'est donc pas choisie pour faire taire l'alarme, elle est
+#: **dérivée de la dispersion mesurée**, par deux règles qui convergent :
+#:
+#:   moyenne + 2,5 écarts-types = 76,4 s      (moyenne 32,6 ; écart-type 17,5)
+#:   maximum observé + 30 %     = 76,6 s      (maximum 58,9)
+#:
+#: Ce qui reste au-dessus de 75 s est ce qu'on veut précisément voir : le
+#: premier appel après un déploiement (90 à 92 s, modèle à charger) et les
+#: recherches concurrentes (102 et 128 s, sérialisées par
+#: `OLLAMA_NUM_PARALLEL=1`). Ce sont des événements réels, pas le régime normal.
+#:
+#: **Ce que ce réglage ne dit pas** : que l'indicateur était faux. Il était
+#: juste, et le contexte a changé — le service est passé d'une machine avec GPU
+#: à un hébergeur qui n'en a pas. Un indicateur se règle sur ce qu'il observe ;
+#: il ne se supprime pas parce qu'il dérange.
 SEUIL_LATENCE_SECONDES = float(os.environ.get("MONITORAGE_SEUIL_LATENCE", "10"))
 
 #: Délai minimal entre deux alertes de même nature.
