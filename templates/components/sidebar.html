@@ -9,6 +9,13 @@
 
     <!-- Navigation Items -->
     <nav class="flex flex-col space-y-1 flex-1">
+        <!-- Home Button -->
+        <button onclick="openTab('accueil')" title="{% trans "Accueil" %}"
+                class="w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 relative flex-shrink-0 mx-auto
+                       {% if request.path == '/accueil/' %}bg-green-500/20 text-green-500 border border-green-500/30 shadow-lg{% else %}text-gray-400 hover:text-white hover:bg-gray-800/50{% endif %}">
+            <i data-lucide="home" class="w-5 h-5 relative z-10"></i>
+        </button>
+
         <!-- Profile Button -->
         <div class="relative z-[9999]">
             <button onclick="toggleProfileMenu()" 
@@ -148,7 +155,8 @@ document.addEventListener("DOMContentLoaded", function () {
 // Global function to open a tab from sidebar
 window.openTab = function(tabId) {
     const urls = {
-        'profile': '/auth/profile/',
+        'accueil': '/accueil/',
+    'profile': '/auth/profile/',
         'courses': '/courses/generator/',
         'my-courses': '/courses/my-courses/',
         'chat': '/chat/search/',

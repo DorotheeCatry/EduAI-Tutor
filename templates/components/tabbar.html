@@ -12,6 +12,10 @@ let openTabsOrder = []; // Array to maintain opening order
 
 // Available tabs configuration
 const availableTabs = {
+    'accueil': {
+        title: 'Accueil',
+        url: "/accueil/"
+    },
     'profile': {
         title: 'Profile',
         url: "/auth/profile/"
@@ -49,6 +53,7 @@ const availableTabs = {
 // Detect current tab based on URL
 function getCurrentTab() {
     const path = window.location.pathname;
+    if (path.includes('accueil')) return 'accueil';
     if (path.includes('profile')) return 'profile';
     if (path.includes('generator')) return 'courses';
     if (path.includes('my-courses')) return 'my-courses';
