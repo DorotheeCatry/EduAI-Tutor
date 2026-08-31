@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from apps.agents.agent_orchestrator import get_orchestrator
 from apps.quotas.service import QuotaDepasse
 from .models import GameRoom, GameParticipant, GameQuestion, GameAnswer
@@ -416,22 +416,52 @@ def quiz_start(request):
     }
     return render(request, 'quiz/quiz_start.html', context)
 
-@csrf_exempt
+@require_POST
 @login_required
 def submit_quiz(request):
-    """API endpoint to submit quiz results"""
-    if request.method == 'POST':
+    """
+    Enregistre le résultat d'un quiz solo.
+
+    Compétence visée : C17 (épreuve E4) — application web
+    Compétences concernées : C20 (E5) — les données du suivi ; C13 (E3)
+
+    Ce point de terminaison existait, était routé, et n'était appelé par
+    personne : le gabarit du quiz affichait le score dans une boîte de dialogue
+    puis redirigeait, sans rien envoyer. Aucune session n'était close, aucune
+    erreur enregistrée, aucun compteur incrémenté (incident 010).
+
+    Choix : `@require_POST` remplace le test manuel de la méthode, et
+    `@csrf_exempt` est RETIRÉ. Motivation : cette vue modifie les statistiques
+    du compte connecté. Un point de terminaison qui écrit sans protection CSRF
+    est déclenchable depuis n'importe quelle page tierce ouverte dans le
+    navigateur de l'apprenant — le gabarit envoie donc le jeton.
+
+    Choix : le corps n'apporte que `session_id` et `answers`. Motivation : le
+    sujet du quiz et ses bonnes réponses sont relus côté serveur, depuis la
+    session et le quiz enregistrés. Les accepter du client permettrait de
+    s'attribuer un score en les fabriquant.
+    """
+    try:
         data = json.loads(request.body)
-        session_id = data.get('session_id')
-        answers = data.get('answers', [])
-        quiz_data = data.get('quiz_data', {})
-        
-        orchestrator = get_orchestrator(request.user)
-        result = orchestrator.submit_quiz_results(session_id, answers, quiz_data)
-        
-        return JsonResponse(result)
-    
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "error": "corps de requête illisible"},
+            status=400,
+        )
+
+    session_id = data.get("session_id")
+    answers = data.get("answers", [])
+
+    if not isinstance(answers, list):
+        return JsonResponse(
+            {"success": False, "error": "`answers` doit être une liste"},
+            status=400,
+        )
+
+    orchestrator = get_orchestrator(request.user)
+    resultat = orchestrator.submit_quiz_results(session_id, answers)
+
+    return JsonResponse(resultat, status=200 if resultat.get("success") else 400)
 @login_required
 def quiz_result(request):
     return render(request, 'quiz/quiz_result.html')

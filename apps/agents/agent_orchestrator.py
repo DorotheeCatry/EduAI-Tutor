@@ -3,7 +3,7 @@
 from .agent_researcher import get_researcher_chain
 from .agent_pedagogue import get_pedagogue_chain
 from .agent_coach import generate_quiz, generate_code_exercise
-from .agent_watcher import get_watcher_agent
+from .agent_watcher import LearningSession, get_watcher_agent
 from django.contrib.auth import get_user_model
 
 # Déclare l'agent courant au monitorage (C20). Sans cette déclaration,
@@ -17,6 +17,10 @@ from apps.monitoring.sondes import sous_agent
 # ces mêmes agents. Un contrôle posé sur les vues laisserait le second sans
 # protection. Voir docs/decisions/019.
 from apps.quotas.service import consommer, consommer_pour_le_service_ia
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -232,6 +236,22 @@ class AIOrchestrator:
                     metadata={
                         'num_questions': num_questions,
                         'language': user_language,
+                        # Les questions sont conservées côté serveur.
+                        #
+                        # Compétence visée : C17 (épreuve E4)
+                        #
+                        # Sans elles, la correction du quiz ne pouvait se faire
+                        # qu'à partir de ce que le navigateur renvoyait — donc
+                        # à partir de données que l'apprenant peut réécrire. Le
+                        # score, le décompte des bonnes réponses et l'énoncé
+                        # des erreurs se calculent désormais ici.
+                        #
+                        # Ce que cela ne corrige pas : les bonnes réponses sont
+                        # envoyées au navigateur pour l'affichage de la
+                        # correction, et restent donc lisibles dans la page. Ce
+                        # quiz mesure un apprentissage, il ne certifie rien —
+                        # la triche y coûte plus qu'elle ne rapporte.
+                        'questions': quiz_data["questions"],
                     }
                 )
 
@@ -252,68 +272,123 @@ class AIOrchestrator:
             }
 
     
-    def submit_quiz_results(self, session_id, answers, quiz_data):
+    def submit_quiz_results(self, session_id, answers):
         """
-        Processes quiz results and updates statistics
+        Enregistre le résultat d'un quiz solo terminé.
+
+        Compétence visée : C17 (épreuve E4) — application web
+        Compétences concernées : C20 (E5) — données du suivi ; C21 (E5)
+
+        Deux défauts corrigés le 31/08/2026, consignés en incident 010.
+
+        Le premier : cette méthode n'était appelée par personne. Le gabarit du
+        quiz affichait le score dans une boîte de dialogue puis redirigeait.
+
+        Le second : les erreurs étaient enregistrées avec `topic=session_id`,
+        sous un commentaire « temporary topic ». Le sujet d'une erreur était
+        donc un identifiant de session — un nombre — au lieu de la notion. Rien
+        ne pouvait se construire dessus, et le provisoire avait duré.
+
+        Choix : la notion vient de la session, relue en base, et non du corps
+        de la requête. Motivation : c'est la seule valeur dont le serveur soit
+        l'auteur. Elle a été écrite par `create_quiz` au moment de la
+        génération, avec le sujet réellement demandé.
         """
         if not self.user or not session_id:
             return {'success': False, 'error': 'User or session not found'}
-        
+
+        session = LearningSession.objects.filter(
+            id=session_id, user=self.user, activity_type='quiz',
+        ).first()
+
+        if session is None:
+            return {'success': False, 'error': 'Session de quiz introuvable'}
+
+        questions = (session.metadata or {}).get('questions') or []
+        if not questions:
+            # Une session ouverte avant que les questions ne soient conservées
+            # côté serveur. On ne fabrique pas un score à partir de rien.
+            return {'success': False,
+                    'error': 'Questions absentes de la session, résultat non enregistré'}
+
         try:
-            # Calculate score
             correct_answers = 0
-            total_questions = len(quiz_data['questions'])
-            
-            for i, user_answer in enumerate(answers):
-                question = quiz_data['questions'][i]
-                correct_answer = question['correct_answer']
-                
-                if user_answer == correct_answer:
+
+            for index, question in enumerate(questions):
+                reponse = answers[index] if index < len(answers) else -1
+                bonne_reponse = question.get('correct_answer')
+
+                if reponse == bonne_reponse:
                     correct_answers += 1
+                    continue
+
+                options = question.get('options') or []
+                # -1 signale une question laissée sans réponse : le temps
+                # écoulé sans clic. C'est un état distinct d'une mauvaise
+                # réponse, et l'écrire tel quel évite de compter comme erreur
+                # de compréhension ce qui n'est qu'un abandon.
+                if reponse == -1:
+                    donnee = 'Sans réponse'
+                elif 0 <= reponse < len(options):
+                    donnee = options[reponse]
                 else:
-                    # Record the error
-                    self.watcher.record_mistake(
-                        topic=session_id,  # Use session_id as temporary topic
-                        mistake_type='quiz_wrong_answer',
-                        question=question['question'],
-                        user_answer=question['options'][user_answer] if user_answer < len(question['options']) else 'No answer',
-                        correct_answer=question['options'][correct_answer]
-                    )
-            
+                    donnee = 'Réponse hors des options proposées'
+
+                self.watcher.record_mistake(
+                    # La NOTION, et non l'identifiant de session.
+                    topic=session.topic,
+                    mistake_type='quiz_wrong_answer',
+                    question=question.get('question', ''),
+                    user_answer=donnee,
+                    correct_answer=(options[bonne_reponse]
+                                    if isinstance(bonne_reponse, int)
+                                    and 0 <= bonne_reponse < len(options)
+                                    else ''),
+                )
+
+            total_questions = len(questions)
             score = (correct_answers / total_questions) * 100
-            
-            # End session
-            session = self.watcher.end_session(session_id, score)
-            
-            # Calculate XP based on performance
-            base_xp = 10  # Base XP for completing a quiz
-            bonus_xp = int(score / 10)  # Score-based bonus (0-10 XP)
-            streak_bonus = min(self.user.current_streak * 2, 20)  # Streak bonus (max 20 XP)
-            
+
+            session_close = self.watcher.end_session(session_id, score)
+
+            base_xp = 10
+            bonus_xp = int(score / 10)
+            streak_bonus = min(self.user.current_streak * 2, 20)
             total_xp = base_xp + bonus_xp + streak_bonus
-            
-            # Add XP and update stats
+
             xp_result = self.user.add_xp(total_xp, 'quiz_completion')
             self.user.total_quizzes_completed += 1
             self.user.save()
-            
+
             return {
                 'success': True,
                 'score': score,
                 'correct_answers': correct_answers,
                 'total_questions': total_questions,
+                'topic': session.topic,
                 'xp_result': xp_result,
-                'session': session,
-                'streak_bonus': streak_bonus
+                # Un résumé, et non l'objet de session : un modèle Django ne
+                # se sérialise pas en JSON, et le renvoyer levait une erreur
+                # 500. Le défaut existait depuis l'origine dans ce chemin que
+                # rien n'appelait — il attendait d'être exécuté pour se voir.
+                'session': {
+                    'id': session_close.id,
+                    'duree_secondes': session_close.duration_seconds,
+                } if session_close else None,
+                'streak_bonus': streak_bonus,
             }
-            
-        except Exception as e:
-            print(f"Error processing results: {e}")
-            return {
-                'success': False,
-                'error': str(e)
-            }
-    
+
+        except Exception as erreur:
+            # Volontairement large, et journalisée plutôt que tue : le quiz est
+            # terminé du point de vue de l'apprenant, mais son résultat n'a pas
+            # été enregistré. L'absence de clôture de la session est ce qui
+            # rendra l'écart visible au monitorage.
+            logger.exception(
+                "resultat de quiz non enregistre pour la session %s : %s",
+                session_id, erreur,
+            )
+            return {'success': False, 'error': str(erreur)}
+
     def get_user_dashboard(self):
         """
         Generates user dashboard data

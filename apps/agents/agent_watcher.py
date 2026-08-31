@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from datetime import datetime, timedelta
 from collections import defaultdict
 import json
@@ -53,10 +54,23 @@ class WatcherAgent:
         return session
     
     def end_session(self, session_id, score=None):
-        """Ends a session and calculates duration"""
+        """
+        Clôt une session et calcule sa durée.
+
+        Compétence visée : C20 (épreuve E5) — données du suivi
+        Compétence concernée : C21 (E5)
+
+        Choix : `timezone.now()` et non `datetime.now()`. Motivation : le
+        projet a `USE_TZ = True`, donc `start_time` porte un fuseau. Les
+        soustraire produisait `TypeError: can't subtract offset-naive and
+        offset-aware datetimes` — cette méthode n'a jamais pu aboutir depuis
+        qu'elle existe. Personne ne s'en était aperçu parce que rien ne
+        l'appelait : le gabarit du quiz ne soumettait pas ses résultats
+        (incident 010). Un défaut dans du code mort ne se voit pas, il attend.
+        """
         try:
             session = LearningSession.objects.get(id=session_id, user=self.user)
-            session.end_time = datetime.now()
+            session.end_time = timezone.now()
             session.duration_seconds = int((session.end_time - session.start_time).total_seconds())
             if score is not None:
                 session.score = score

@@ -8,8 +8,8 @@
 
 ## Pourquoi ce document
 
-Neuf incidents ont été documentés entre le 26 et le 31 août 2026. Pris un par
-un, ce sont neuf accidents. Regroupés, ce sont **deux familles** — et une
+Dix incidents ont été documentés entre le 26 et le 31 août 2026. Pris un par
+un, ce sont dix accidents. Regroupés, ce sont **trois familles** — et une
 famille se prévient, là où un accident ne fait que se réparer.
 
 Ce document ne remplace pas les dossiers d'incident : il dit ce qu'ils ont en
@@ -113,35 +113,58 @@ l'absence se remarque, tandis qu'une alarme permanente s'apprend, et finit par
 
 ---
 
-## Ce que les deux familles partagent
+## Famille C — Écrit, joignable, jamais appelé
 
-Une action et son effet ne coïncident pas sans qu'on aille le constater.
+Ouverte à deux occurrences le 31/08 au matin, **déclarée le soir même** par la
+troisième.
 
-La famille A porte sur **où** l'on constate, la famille B sur **quoi**. Les deux
-se traitent par la même discipline, et c'est la seule règle générale que ce
-projet retire de ses neuf incidents :
+| # | Ce qui était écrit | Ce qui manquait |
+|---|---|---|
+| — , 31/08 | `language_preference`, choisi et enregistré | rien ne le lisait pour l'interface ; seul l'orchestrateur d'agents le consultait, pour la langue des quiz générés |
+| — , 31/08 | `LANGUAGE_CODE = 'en'` avec un unique catalogue `fr` | aucune traduction n'était jamais appliquée |
+| 010, 31/08 | route, vue, orchestrateur, agent — la chaîne entière d'enregistrement d'un quiz | **aucun appel depuis le navigateur** |
 
-> Vérifier l'effet, dans les conditions où il se produira.
+### Le mécanisme commun
+
+Un élément est écrit, correct, atteignable — et personne ne s'en sert. Rien
+n'échoue, puisque rien ne s'exécute.
+
+L'incident 010 en donne la forme la plus coûteuse : **le code mort ne signale
+pas ses défauts, il les conserve.** Les tests écrits pour brancher cette chaîne
+ont révélé qu'elle aurait échoué de trois façons si elle avait été appelée un
+jour — dont une comparaison de dates qui n'a jamais pu aboutir depuis que la
+méthode existe.
+
+### La question à poser
+
+> **Qui appelle ce code, et par quel chemin l'utilisateur y arrive-t-il ?**
+
+Si la réponse est « la fonction est là », ce n'est pas une réponse.
+
+### La parade
+
+Un test qui **part de ce que l'utilisateur fait** — une requête sur l'URL réelle
+— et qui vérifie **l'effet sur les données**, pas la présence d'une fonction.
+Une couverture par fonction aurait atteint `submit_quiz_results` avec des
+données fabriquées et serait passée au vert sur les trois défauts.
+
+C'est la même discipline que pour un réglage : vérifier l'effet sur ce que
+l'utilisateur reçoit, jamais la valeur en base. Un test affirmant « la
+préférence est bien enregistrée » serait resté vert pendant toute la durée du
+défaut.
 
 ---
 
-## Une troisième famille, ouverte
+## Ce que les trois familles partagent
 
-Deux occurrences seulement, donc pas encore une famille — mais le compte est
-tenu.
+Une action et son effet ne coïncident pas sans qu'on aille le constater.
 
-| Date | Le réglage | Ce qui manquait |
-|---|---|---|
-| 31/08 | `language_preference`, choisi et enregistré | rien ne le lisait pour l'interface, seul l'orchestrateur d'agents le consultait |
-| 31/08 | `LANGUAGE_CODE = 'en'` avec un unique catalogue `fr` | aucune traduction n'était jamais appliquée |
+La famille A porte sur **où** l'on constate, la famille B sur **quoi**, la
+famille C sur **si** quelque chose s'exécute. Les trois se traitent par la même
+discipline, et c'est la seule règle générale que ce projet retire de ses dix
+incidents :
 
-**Un réglage stocké sans être lu**, ou lu ailleurs que là où on le croit. La
-parade est un test qui porte sur l'effet du réglage sur ce que l'utilisateur
-reçoit — jamais sur sa présence en base. Un test vérifiant « la préférence est
-bien enregistrée » serait passé au vert pendant toute la durée du défaut.
-
-Si une troisième occurrence apparaît, cette section devient une famille et
-rejoint les deux premières.
+> Vérifier l'effet, dans les conditions où il se produira.
 
 ---
 
@@ -149,7 +172,7 @@ rejoint les deux premières.
 
 | Document | Contenu |
 |---|---|
-| `incidents/` | Les neuf dossiers, un par incident |
+| `incidents/` | Les dix dossiers, un par incident |
 | `strategie_tests.md` | Les trois niveaux de reproduction d'un échec d'intégration |
 | `decisions/024-seuil-de-latence-par-environnement.md` | Régler un indicateur juste dont le contexte a changé |
 | `reserves.md`, réserve 9 | Un contrôle qui repose sur une convention d'exécution |

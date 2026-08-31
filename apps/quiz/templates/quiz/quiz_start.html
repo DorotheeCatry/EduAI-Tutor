@@ -79,6 +79,14 @@
 
 {{ quiz_data|json_script:"quiz-data" }}
 
+{% comment %}
+Le jeton CSRF est requis par l'envoi du résultat en fin de quiz. La vue
+`quiz:submit` ne porte plus `@csrf_exempt` : elle modifie les statistiques du
+compte, et un point de terminaison qui écrit sans protection CSRF est
+exploitable depuis n'importe quelle page tierce ouverte dans le navigateur.
+{% endcomment %}
+<form style="display: none">{% csrf_token %}</form>
+
 <!-- Dynamic JS script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -88,6 +96,14 @@ document.addEventListener('DOMContentLoaded', function () {
     let score = 0;
     let timeLeft = 30;
     let timer;
+
+    // Les réponses données, dans l'ordre des questions.
+    //
+    // -1 vaut « pas de réponse » : le temps écoulé sans clic est un état réel,
+    // distinct d'une mauvaise réponse, et le serveur doit pouvoir les
+    // distinguer. Les confondre ferait compter comme erreur de compréhension
+    // ce qui n'est qu'un abandon.
+    const reponses = [];
 
     const quizData = JSON.parse(document.getElementById("quiz-data").textContent);
     const questions = quizData.questions.map(q => ({
@@ -108,6 +124,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (timeLeft <= 0) {
                 clearInterval(timer);
+                if (reponses[currentQuestion - 1] === undefined) {
+                    reponses[currentQuestion - 1] = -1;
+                }
                 showCorrectAnswer();
             }
         }, 1000);
@@ -166,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleAnswer(answerIndex) {
         const question = questions[currentQuestion - 1];
         clearInterval(timer);
+        reponses[currentQuestion - 1] = answerIndex;
 
         if (answerIndex === question.correct) {
             score++;
@@ -266,8 +286,38 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         
-        alert(message);
-        window.location.href = "{% url 'quiz:lobby' %}";
+        // Le résultat part au serveur AVANT la redirection.
+        //
+        // Sans cet envoi, la vue `quiz:submit` et tout ce qu'elle déclenche —
+        // clôture de la session, enregistrement des erreurs, compteur de quiz
+        // terminés — n'étaient jamais appelés : du code écrit, joignable, et
+        // que rien n'exécutait (incident 010). Le score s'affichait dans une
+        // boîte de dialogue et disparaissait avec elle.
+        //
+        // `keepalive` : la requête doit survivre à la navigation qui suit.
+        // Sans lui, le navigateur est en droit d'abandonner un appel en cours
+        // au moment où la page change — et le résultat serait perdu une fois
+        // sur deux, de façon intermittente, donc difficile à diagnostiquer.
+        fetch("{% url 'quiz:submit' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+            },
+            body: JSON.stringify({
+                session_id: quizData.session_id,
+                answers: Array.from(questions, (_, i) =>
+                    reponses[i] === undefined ? -1 : reponses[i]),
+            }),
+            keepalive: true,
+        }).catch(() => {
+            // Un échec d'enregistrement ne doit pas retenir l'apprenant sur la
+            // page : il a fini son quiz. La perte est signalée côté serveur
+            // par l'absence de clôture de session, visible au monitorage.
+        }).finally(() => {
+            alert(message);
+            window.location.href = "{% url 'quiz:lobby' %}";
+        });
     }
 
     updateQuestion();
