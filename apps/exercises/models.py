@@ -27,6 +27,34 @@ class Exercise(models.Model):
     # Tests to execute (JSON format)
     tests = models.JSONField(default=list)
     
+    # Rattachement au référentiel de compétences.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    #
+    # Choix : renseigné par un CHOIX EXPLICITE au moment de la génération,
+    # jamais déduit du sujet libre. Motivation : un rattachement approché
+    # produirait une progression fausse que rien ne signalerait, alors qu'un
+    # rattachement absent se voit — l'exercice s'affiche « hors référentiel »
+    # et ne compte pas dans la progression. Entre une donnée fausse et une
+    # donnée manquante, ce projet a appris à préférer la seconde.
+    #
+    # Choix : `null=True` assumé, et non un rattachement obligatoire.
+    # Motivation : un apprenant doit pouvoir s'exercer sur un sujet hors du
+    # référentiel de son organisme. Le rendre obligatoire fermerait cet usage,
+    # ou pousserait à choisir une compétence au hasard pour passer le
+    # formulaire — ce qui reviendrait à fabriquer la donnée qu'on refuse.
+    #
+    # Choix : `SET_NULL`. Motivation : retirer une compétence d'un référentiel
+    # ne doit pas supprimer les exercices qui s'y rattachaient. Ils
+    # redeviennent hors référentiel, ce qui est visible et exact.
+    competence = models.ForeignKey(
+        "referentiel.Competence",
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="exercices",
+        verbose_name="Compétence visée",
+    )
+
     # Metadata
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

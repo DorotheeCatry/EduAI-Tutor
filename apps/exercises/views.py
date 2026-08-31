@@ -13,6 +13,10 @@ from .security import secure_executor
 import json
 import time
 from django.utils.translation import gettext as _
+from apps.referentiel.services import (
+    competence_par_code,
+    competences_du_referentiel_actif,
+)
 
 @login_required
 def exercise_list(request):
@@ -67,6 +71,11 @@ def exercise_list(request):
         'current_topic': topic,
         'current_search': search,
         'difficulty_choices': Exercise.DIFFICULTY_CHOICES,
+        # Les compétences du référentiel actif, groupées par module : c'est ce
+        # que le formulaire de génération propose. Liste vide si aucun
+        # référentiel n'est actif — le formulaire retombe alors sur le sujet
+        # libre, et le dit.
+        'competences_par_module': competences_du_referentiel_actif(),
     }
     
     return render(request, 'exercises/exercise_list.html', context)
@@ -214,9 +223,20 @@ def generate_exercise(request):
     """Generate a new exercise with AI"""
     
     if request.method == 'POST':
-        topic = request.POST.get('topic', '').strip()
         difficulty = request.POST.get('difficulty', 'beginner')
-        
+
+        # Le rattachement au référentiel vient d'un CHOIX, jamais d'une
+        # déduction sur le sujet libre. Voir la décision 027 : un rattachement
+        # approché produirait une progression fausse et muette.
+        #
+        # Quand une compétence est choisie, son intitulé devient le sujet
+        # transmis au modèle : c'est ce que l'apprenant a demandé, et cela
+        # garantit que le sujet de l'exercice et la compétence qu'il vise
+        # désignent la même chose.
+        competence = competence_par_code(request.POST.get('competence', '').strip())
+        topic = (competence.intitule if competence
+                 else request.POST.get('topic', '').strip())
+
         if not topic:
             messages.error(request, _('Please specify a topic for the exercise.'))
             return redirect('exercises:list')
@@ -360,7 +380,8 @@ def generate_exercise(request):
                         starter_code=exercise_data['starter_code'],
                         solution=exercise_data['solution'],
                         tests=exercise_data['tests'],
-                        created_by=request.user
+                        created_by=request.user,
+                        competence=competence,
                     )
                     
                     print(f"✅ Exercise created successfully: {exercise.title} (ID: {exercise.id})")
@@ -431,7 +452,8 @@ def generate_exercise(request):
                             starter_code=starter_code,
                             solution=solution,
                             tests=tests,
-                            created_by=request.user
+                            created_by=request.user,
+                            competence=competence,
                         )
                         
                         print(f"✅ Exercise created with manual parsing: {exercise.title} (ID: {exercise.id})")
@@ -452,7 +474,8 @@ def generate_exercise(request):
                         tests=[
                             {"input": "my_function()", "expected": "Hello World"}
                         ],
-                        created_by=request.user
+                        created_by=request.user,
+                        competence=competence,
                     )
                     
                     messages.warning(request, _('AI generated a malformed response. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
@@ -484,7 +507,8 @@ def generate_exercise(request):
                     tests=[
                         {"input": "my_function()", "expected": "Hello World"}
                     ],
-                    created_by=request.user
+                    created_by=request.user,
+                    competence=competence,
                 )
                 
                 messages.warning(request, _('AI generation error. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
@@ -496,8 +520,23 @@ def generate_exercise(request):
 
 @login_required
 def generate_exercise_from_course(request):
-    """Generate an exercise based on a course topic"""
-    
+    """
+    Génère un exercice à partir du sujet d'un cours.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Ce chemin ne rattache PAS l'exercice à une compétence : il part du sujet
+    d'un cours, texte libre, et aucun choix n'y est demandé. L'exercice produit
+    s'affiche donc « hors référentiel » et ne compte pas dans la progression.
+
+    Choix : laisser le rattachement vide plutôt que de le déduire du sujet du
+    cours. Motivation : la même que pour la génération ordinaire — un
+    rattachement approché produirait une progression fausse et muette, là où un
+    rattachement absent se lit sur l'écran (décision 027).
+    """
+    # Rattachement volontairement absent sur ce chemin : voir la docstring.
+    competence = None
+
     topic = request.GET.get('topic', '').strip()
     difficulty = request.GET.get('difficulty', 'intermediate')  # Default difficulty for courses
     
@@ -621,7 +660,8 @@ def generate_exercise_from_course(request):
                     starter_code=exercise_data['starter_code'],
                     solution=exercise_data['solution'],
                     tests=exercise_data['tests'],
-                    created_by=request.user
+                    created_by=request.user,
+                    competence=competence,
                 )
                 
                 print(f"✅ Exercise created successfully: {exercise.title} (ID: {exercise.id})")
@@ -690,7 +730,8 @@ def generate_exercise_from_course(request):
                         starter_code=starter_code,
                         solution=solution,
                         tests=tests,
-                        created_by=request.user
+                        created_by=request.user,
+                        competence=competence,
                     )
                     
                     print(f"✅ Exercise created with manual parsing: {exercise.title} (ID: {exercise.id})")
@@ -711,7 +752,8 @@ def generate_exercise_from_course(request):
                     tests=[
                         {"input": "my_function()", "expected": "Hello World"}
                     ],
-                    created_by=request.user
+                    created_by=request.user,
+                    competence=competence,
                 )
                 
                 messages.warning(request, _('AI generated a malformed response. Basic exercise created on "%(sujet)s".') % {"sujet": topic})

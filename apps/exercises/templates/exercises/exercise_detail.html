@@ -51,6 +51,27 @@
                 <span class="flex items-center space-x-1">
                     <i data-lucide="tag" class="w-4 h-4"></i>
                     <span>{{ exercise.topic|title }}</span>
+                        {% comment %}
+                        Le rattachement, ou son absence, est affiché tel quel.
+                        Un exercice hors référentiel ne compte pas dans la
+                        progression : le taire ferait chercher longtemps
+                        pourquoi une compétence n'avance pas (décision 027).
+
+                        Accessibilité : l'information est portée par le texte,
+                        jamais par la seule couleur.
+                        {% endcomment %}
+                        {% if exercise.competence %}
+                            <span class="inline-flex items-center gap-1 text-xs text-gray-300">
+                                <span aria-hidden="true">🎯</span>
+                                {{ exercise.competence.module.intitule }} —
+                                {{ exercise.competence.intitule }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                                <span aria-hidden="true">○</span>
+                                {% trans "Hors référentiel — ne compte pas dans la progression" %}
+                            </span>
+                        {% endif %}
                 </span>
                 <span class="flex items-center space-x-1">
                     <i data-lucide="clock" class="w-4 h-4"></i>
