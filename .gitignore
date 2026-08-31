@@ -247,6 +247,13 @@ locale/**/*.po~
 
 !*/migrations/__init__.py
 
+# Exports Power BI de l'autrice, deposes dans docs/notes : fichiers de travail
+# personnels, sans rapport avec le depot. Exclus apres avoir ete commites par
+# erreur le 31/08/2026 — un `git add -A` sur docs/ les avait emportes, alors
+# que le cahier des charges interdit precisement l'ajout aveugle.
+docs/notes/*.tmdl
+docs/notes/tmdl.txt
+
 key_groq.txt
 .env
 
