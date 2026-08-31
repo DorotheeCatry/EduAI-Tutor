@@ -19,7 +19,23 @@ class LearningSession(models.Model):
     duration_seconds = models.IntegerField(default=0)
     score = models.FloatField(null=True, blank=True)  # For quizzes
     metadata = models.JSONField(default=dict)  # Additional data
-    
+
+    # Compétence visée, si l'apprenant en a choisi une.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    #
+    # Même mécanique que pour les exercices (décision 027) : un choix
+    # explicite, jamais une déduction sur le sujet libre. Un quiz ne fait
+    # PAS progresser un niveau — faire attester une production par une
+    # reconnaissance n'aurait pas de sens (décision 028) — mais il alimente le
+    # bloc « à revoir », qui doit parler la même langue que le reste de la
+    # page : une compétence, et non un sujet libre.
+    competence = models.ForeignKey(
+        "referentiel.Competence", on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="sessions",
+        verbose_name="Compétence visée",
+    )
+
     class Meta:
         app_label = 'agents'
 
@@ -33,7 +49,21 @@ class UserMistake(models.Model):
     correct_answer = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     reviewed = models.BooleanField(default=False)
-    
+
+    # La compétence, reprise de la session du quiz.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    #
+    # `topic` reste renseigné : c'est le sujet du quiz, utile quand aucune
+    # compétence n'a été choisie. Les deux coexistent parce qu'ils ne disent
+    # pas la même chose — l'un est ce que l'apprenant a demandé, l'autre ce
+    # que le référentiel en retient.
+    competence = models.ForeignKey(
+        "referentiel.Competence", on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="erreurs",
+        verbose_name="Compétence visée",
+    )
+
     class Meta:
         app_label = 'agents'
 
@@ -43,13 +73,18 @@ class WatcherAgent:
     def __init__(self, user):
         self.user = user
     
-    def track_session(self, topic, activity_type, metadata=None):
-        """Starts session tracking"""
+    def track_session(self, topic, activity_type, metadata=None, competence=None):
+        """
+        Ouvre une session d'apprentissage.
+
+        Compétence visée : C20 (épreuve E5)
+        """
         session = LearningSession.objects.create(
             user=self.user,
             topic=topic,
             activity_type=activity_type,
-            metadata=metadata or {}
+            metadata=metadata or {},
+            competence=competence,
         )
         return session
     
@@ -79,15 +114,28 @@ class WatcherAgent:
         except LearningSession.DoesNotExist:
             return None
     
-    def record_mistake(self, topic, mistake_type, question, user_answer, correct_answer):
-        """Records a user mistake"""
+    def record_mistake(self, topic, mistake_type, question, user_answer,
+                       correct_answer, competence=None):
+        """
+        Enregistre une erreur d'apprenant.
+
+        Compétence visée : C20 (épreuve E5) — données du suivi
+        Compétence concernée : C17 (E4)
+
+        `topic` porte le sujet du quiz, `competence` le rattachement au
+        référentiel quand l'apprenant en a choisi un. Les deux sont conservés :
+        le premier dit ce qui a été demandé, le second ce que le référentiel en
+        retient. Sans le second, le bloc « à revoir » parlerait en sujets
+        libres pendant que le reste de la page parle en compétences.
+        """
         mistake = UserMistake.objects.create(
             user=self.user,
             topic=topic,
             mistake_type=mistake_type,
             question=question,
             user_answer=user_answer,
-            correct_answer=correct_answer
+            correct_answer=correct_answer,
+            competence=competence,
         )
         return mistake
     

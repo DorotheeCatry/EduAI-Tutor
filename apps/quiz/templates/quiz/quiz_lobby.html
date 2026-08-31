@@ -25,12 +25,41 @@
                 <!-- Integrated solo form -->
                 <form action="{% url 'quiz:start' %}" method="get" class="space-y-3 mt-4">
                     <input type="hidden" name="mode" value="solo">
+                    {% if competences_par_module %}
+                    {% comment %}
+                    Même menu, même mécanique que pour les exercices
+                    (décision 027) : un choix explicite, jamais une déduction.
+
+                    Un quiz ne fait progresser aucun niveau — c'est une
+                    reconnaissance, pas une production (décision 028) — mais la
+                    compétence choisie fait que le bloc « à revoir » nommera
+                    « Manipuler les listes » et non « les listes en python »,
+                    là où le reste de la page parle en compétences.
+                    {% endcomment %}
+                    <label for="competence-quiz" class="sr-only">{% trans "Compétence visée" %}</label>
+                    <select name="competence" id="competence-quiz"
+                            aria-describedby="aide-competence-quiz"
+                            class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+                        <option value="">{% trans "Aucune — sujet libre, hors référentiel" %}</option>
+                        {% for module, competences in competences_par_module %}
+                            <optgroup label="{{ module.intitule }}">
+                                {% for competence in competences %}
+                                    <option value="{{ competence.code }}">{{ competence.intitule }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
+                    <p id="aide-competence-quiz" class="text-xs text-gray-400">
+                        {% trans "Un quiz ne fait pas progresser de niveau : il signale ce qui reste à revoir." %}
+                    </p>
+                    {% endif %}
+                    <label for="sujet-quiz" class="sr-only">{% trans "Topic" %}</label>
                     <input
                         type="text"
                         name="topic"
+                        id="sujet-quiz"
                         placeholder="{% trans "e.g. Python functions, Django models..." %}"
                         class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                        required
                     >
                     <select name="num_questions" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
                         <option value="5">{% trans "5 questions" %}</option>

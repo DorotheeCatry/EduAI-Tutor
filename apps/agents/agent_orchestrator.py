@@ -209,7 +209,7 @@ class AIOrchestrator:
             }
     
     @sous_agent("coach")
-    def create_quiz(self, topic, num_questions):
+    def create_quiz(self, topic, num_questions, competence=None):
         """
         Creates a quiz on a given topic and returns a directly usable dict.
 
@@ -233,6 +233,7 @@ class AIOrchestrator:
                 session = self.watcher.track_session(
                     topic=topic,
                     activity_type='quiz',
+                    competence=competence,
                     metadata={
                         'num_questions': num_questions,
                         'language': user_language,
@@ -337,6 +338,10 @@ class AIOrchestrator:
                 self.watcher.record_mistake(
                     # La NOTION, et non l'identifiant de session.
                     topic=session.topic,
+                    # Et la compétence, quand l'apprenant en a choisi une :
+                    # c'est ce qui permet au bloc « à revoir » de parler la
+                    # même langue que le reste de la page.
+                    competence=session.competence,
                     mistake_type='quiz_wrong_answer',
                     question=question.get('question', ''),
                     user_answer=donnee,

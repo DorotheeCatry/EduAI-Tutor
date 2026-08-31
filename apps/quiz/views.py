@@ -4,6 +4,10 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.referentiel.services import (
+    competence_par_code,
+    competences_du_referentiel_actif,
+)
 from apps.quotas.service import QuotaDepasse
 from .models import GameRoom, GameParticipant, GameQuestion, GameAnswer
 from django.shortcuts import get_object_or_404
@@ -39,9 +43,13 @@ def delete_room(request, room_code):
 def quiz_lobby(request):
     # Get active rooms
     active_rooms = GameRoom.objects.filter(status__in=['waiting', 'starting']).order_by('-created_at')[:10]
-    
+
     context = {
-        'active_rooms': active_rooms
+        'active_rooms': active_rooms,
+        # Les compétences proposées au lancement d'un quiz solo. Sans ce menu,
+        # aucune session ne porterait de compétence et le bloc « à revoir »
+        # resterait en sujets libres.
+        'competences_par_module': competences_du_referentiel_actif(),
     }
     return render(request, 'quiz/quiz_lobby.html', context)
 
@@ -381,8 +389,20 @@ def multiplayer_game(request, room_code):
     return render(request, 'quiz/multiplayer_game.html', context)
 @login_required
 def quiz_start(request):
+    """
+    Lance un quiz solo sur un sujet ou une compétence choisie.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Le rattachement au référentiel vient d'un choix explicite, comme pour les
+    exercices (décision 027). Quand une compétence est choisie, son intitulé
+    devient le sujet du quiz : les deux désignent alors la même chose par
+    construction.
+    """
     mode = request.GET.get('mode', 'solo')
-    topic = request.GET.get('topic', 'General Python')
+    competence = competence_par_code(request.GET.get('competence', '').strip())
+    topic = (competence.intitule if competence
+             else request.GET.get('topic', 'General Python'))
 
     # Generate quiz with AI
     orchestrator = get_orchestrator(request.user)
@@ -396,7 +416,7 @@ def quiz_start(request):
     # Quota de génération (C13). La page prévoit déjà un champ `error` : le
     # message du refus y prend la place du message d'échec technique.
     try:
-        result = orchestrator.create_quiz(topic, num_questions)
+        result = orchestrator.create_quiz(topic, num_questions, competence=competence)
     except QuotaDepasse as depassement:
         return render(request, 'quiz/quiz_start.html', {
             'mode': mode,
