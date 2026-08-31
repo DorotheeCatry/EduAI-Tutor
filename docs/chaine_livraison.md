@@ -687,6 +687,18 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO eduai_lecture;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO eduai_lecture;
 ```
 
+**Ouvrir le tunnel** — la base de l'hébergeur n'a pas d'adresse publique, et
+il n'est pas souhaitable de lui en donner une :
+
+```bash
+railway connect --tunnel-only -P 15432 Postgres
+# puis, dans un autre terminal, psql -h 127.0.0.1 -p 15432 -U postgres ...
+```
+
+Le tunnel affiche le mot de passe du superutilisateur en clair dans le
+terminal. En tenir compte : refermer le tunnel après usage, et ne pas laisser
+la trace dans un fichier de journal.
+
 **Vérifier après chargement, et non supposer.** L'export écrit à côté de
 l'archive un fichier `.volumetrie` relevé **avant** l'export ; les mêmes
 décomptes se relisent sur le serveur :
@@ -700,27 +712,90 @@ UNION ALL SELECT 'sources='   || count(*) FROM source;
 C'est le contrôle qui manquait le 27/08, quand un chargement s'est annoncé
 réussi sur une base restée vide (incident 001).
 
+**Relevé du 31/08/2026, chargement réel** : 6 836 documents, 1 211 mots-clés,
+5 sources sur le serveur — identiques au relevé d'avant export. 17 tables
+créées.
+
+**Vérifier le rôle dans les deux sens.** Un rôle de lecture seule dont on n'a
+éprouvé que la lecture n'est pas éprouvé :
+
+| Ce qui a été tenté avec `eduai_lecture` | Attendu | Constaté |
+|---|---|---|
+| `SELECT count(*) FROM document` | 6 836 | **6 836** |
+| `DELETE FROM document` | refus | **permission denied for table document** |
+| `CREATE TABLE …` | refus | **permission denied for schema public** |
+| Connexion à `eduai_app` | refus | **permission denied for database** |
+
+Le dernier point a demandé une correction : PostgreSQL accorde par défaut la
+connexion à toute base au pseudo-rôle `PUBLIC`. `eduai_lecture` pouvait donc
+ouvrir une session sur la base applicative — sans y lire quoi que ce soit,
+faute de `SELECT`, mais la porte était ouverte. Refermée par :
+
+```sql
+REVOKE CONNECT ON DATABASE eduai_app FROM PUBLIC;
+```
+
+Sans effet sur les deux services, qui se connectent en superutilisateur — ce
+qui est en soi une réserve, la huitième.
+
 ### 7.4 Transférer le corpus vectoriel
 
 Le corpus **n'est pas dans les images** (décision 023) : il est dans
 `.gitignore`, donc absent de tout clone, et la chaîne ne peut pas embarquer ce
 qu'elle ne voit pas.
 
-1. **Créer un volume persistant** et le monter sur `/app/apps/rag/chroma`, pour
-   l'application web **et** pour le service IA. Le chemin est écrit en dur dans
-   quatre modules ; ce n'est pas un réglage.
-2. **Relever l'empreinte** sur le poste : `uv run python -m
-   apps.rag.empreinte_corpus`.
-3. **Téléverser les 219 Mio** — `chroma.sqlite3`, les répertoires d'index des
-   deux collections, et `EMPREINTE.json`.
-4. **Vérifier** que `/ai/sante` renvoie l'empreinte attendue (§ 7.5).
+Procédure éprouvée le 31/08/2026, dans cet ordre.
 
-Le volume est **partagé par les deux services** s'ils tournent dans le même
-projet ; à défaut, le corpus est téléversé deux fois.
+**1. Créer le volume**, monté sur `/app/apps/rag/chroma` :
 
-**Le montage doit être en écriture.** SQLite écrit son journal WAL et ses
-verrous même pour une lecture : un corpus monté en lecture seule fait échouer
-la moindre recherche (décision 018, incident du 29/08).
+```bash
+railway volume add -m /app/apps/rag/chroma        # sur le service lié
+railway volume list                                # vérifier le point de montage
+```
+
+Un volume Railway appartient à **un** service. Le service IA a le sien ; si
+l'application web doit interroger le corpus elle aussi, il lui en faut un
+second, et le corpus est téléversé deux fois. Le chemin est écrit en dur dans
+quatre modules : ce n'est pas un réglage.
+
+**2. Relever l'empreinte** sur le poste, avant tout envoi :
+
+```bash
+uv run python -m apps.rag.empreinte_corpus
+```
+
+**3. Téléverser**, l'empreinte **en dernier** — c'est elle qui atteste que le
+transfert est complet, et un `EMPREINTE.json` posé sur un corpus partiel
+mentirait :
+
+```bash
+railway volume files --volume <volume> upload apps/rag/chroma/<collection> /<collection>
+railway volume files --volume <volume> upload apps/rag/chroma/chroma.sqlite3 /chroma.sqlite3
+railway volume files --volume <volume> upload apps/rag/chroma/EMPREINTE.json /EMPREINTE.json
+```
+
+**4. Donner les fichiers au compte sans privilège.** `railway volume files
+upload` écrit en **root**, or le conteneur tourne en `eduai` (uid 1000) :
+
+```bash
+railway ssh -s <service> -- "chown -R 1000:1000 /app/apps/rag/chroma"
+```
+
+**Sans cette étape, la recherche échoue en 503** avec `attempt to write a
+readonly database`. SQLite écrit son journal WAL et ses verrous même pour une
+lecture (décision 018) : un corpus que le processus ne peut pas écrire est un
+corpus qu'il ne peut pas lire. C'est la deuxième fois que ce projet rencontre
+ce mur, sous une forme différente — la première, le 29/08, venait d'un montage
+déclaré en lecture seule.
+
+**5. Redéployer** le service, puis **vérifier** que `/ai/sante` renvoie
+l'empreinte attendue (§ 7.5) et qu'une recherche aboutit.
+
+**Contrôle de bout en bout, éprouvé** : le fichier a été retéléchargé depuis le
+volume et sa somme SHA-256 comparée à celle du poste — identiques. Le compteur
+d'occupation affiché par `railway volume list` retarde de plusieurs minutes ; il
+annonçait 32 Mo pour 219 Mio réellement transférés. **Ne pas conclure sur ce
+compteur** : la taille exacte se lit dans `railway volume files list / --json`.
 
 ### 7.5 Mettre à jour le corpus — étape manuelle, et assumée
 

@@ -82,9 +82,25 @@ d'être silencieuse.
 
 Le corpus porte désormais une **empreinte** — `apps/rag/chroma/EMPREINTE.json`,
 produite par `apps/rag/empreinte_corpus.py` — qui relève la date d'indexation,
-la somme SHA-256 de `chroma.sqlite3`, le modèle d'embarquement, et le décompte
-de fragments de chaque collection. Elle est téléversée avec le corpus, et
+le modèle d'embarquement, et, pour chaque collection, son décompte de fragments
+et l'empreinte de ses identifiants. Elle est téléversée avec le corpus, et
 `/ai/sante` la restitue.
+
+**Complément du 31 août 2026, à la première utilisation réelle.** L'empreinte
+portait d'abord sur les octets de `chroma.sqlite3`. C'était une erreur, et le
+premier transfert l'a révélée : le fichier téléversé était rigoureusement
+identique à celui du poste, et ni l'un ni l'autre ne correspondait à l'empreinte
+enregistrée la veille. **SQLite réécrit son fichier à la simple lecture** — les
+recherches de vérification avaient suffi.
+
+Une empreinte qui change sans que le contenu change est une alarme qui se
+déclenche toujours, donc une alarme que plus personne ne lit. Elle porte
+maintenant sur le **contenu logique** : les identifiants de fragments, triés
+puis hachés par collection. Vérifié par deux relevés consécutifs — empreinte
+logique identique, empreinte des octets différente à chaque fois. La somme des
+octets reste relevée sous `empreinte_fichier`, à titre indicatif : elle répond
+à « est-ce le même fichier ? », utile juste après un transfert, quand
+`empreinte_sha256` répond à « est-ce le même corpus ? ».
 
 Deux conséquences concrètes :
 

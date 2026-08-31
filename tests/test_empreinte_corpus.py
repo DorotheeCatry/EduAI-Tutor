@@ -61,10 +61,15 @@ def test_l_empreinte_relue_est_celle_qui_a_ete_ecrite(tmp_path, monkeypatch):
     releve = {
         "date_releve": "2026-08-30T15:43:32+00:00",
         "empreinte_sha256": "a" * 64,
+        "empreinte_fichier": "b" * 64,
         "octets_base": 140_701_696,
         "modele_embarquement": "mxbai-embed-large",
-        "collections": {"eduai_corpus_documentaire": 21189,
-                        "eduai_knowledge_base": 387},
+        "collections": {
+            "eduai_corpus_documentaire": {"fragments": 21189,
+                                          "empreinte": "c" * 64},
+            "eduai_knowledge_base": {"fragments": 387,
+                                     "empreinte": "d" * 64},
+        },
     }
 
     empreinte_corpus.ecrire(releve)
@@ -110,10 +115,36 @@ def test_un_repertoire_sans_base_chroma_interrompt_le_releve(tmp_path,
         empreinte_corpus.verifier_le_corpus()
 
 
+def _client_factice(monkeypatch, reponses):
+    """
+    Substitue un client ChromaDB rendant les identifiants fournis.
+
+    Compétence visée : C18 (épreuve E4)
+
+    Le relevé ne doit dépendre ni d'un corpus sur le disque ni d'un modèle
+    d'embarquement : ce sont les identifiants seuls qui le déterminent.
+    """
+    class Collection:
+        def __init__(self, ids):
+            self._ids = ids
+
+        def get(self, include=None):
+            return {"ids": list(self._ids)}
+
+    class Client:
+        def get_collection(self, nom):
+            if nom not in reponses:
+                raise ValueError(f"collection {nom} introuvable")
+            return Collection(reponses[nom])
+
+    faux = type("chromadb", (), {"PersistentClient": staticmethod(lambda path: Client())})
+    monkeypatch.setitem(__import__("sys").modules, "chromadb", faux)
+
+
 def test_une_collection_illisible_vaut_absente_et_non_zero(tmp_path,
                                                            monkeypatch):
     """
-    Une collection introuvable est relevée `None`, pas `0`.
+    Une collection introuvable est relevée `None`, pas un décompte de zéro.
 
     Compétence visée : C13 (épreuve E3)
 
@@ -121,21 +152,62 @@ def test_une_collection_illisible_vaut_absente_et_non_zero(tmp_path,
     deux états différents. Les confondre est ce que ce projet a déjà payé :
     un chargement annoncé réussi sur une base restée vide (incident 001).
     """
-    class ClientSansCollection:
-        def get_collection(self, nom):
-            raise ValueError(f"collection {nom} introuvable")
-
-    faux_chromadb = type("chromadb", (), {
-        "PersistentClient": staticmethod(lambda path: ClientSansCollection()),
-    })
-    monkeypatch.setitem(__import__("sys").modules, "chromadb", faux_chromadb)
+    _client_factice(monkeypatch, {})
     monkeypatch.setattr(empreinte_corpus, "CHEMIN_CORPUS", tmp_path)
 
     releve = empreinte_corpus.relever_collections()
 
     assert releve == {"eduai_corpus_documentaire": None,
                       "eduai_knowledge_base": None}
-    assert 0 not in releve.values()
+
+
+def test_l_empreinte_ne_depend_pas_de_l_ordre_de_lecture(tmp_path, monkeypatch):
+    """
+    Deux lectures rendant les mêmes identifiants dans un ordre différent
+    donnent la même empreinte.
+
+    Compétence visée : C13 (épreuve E3)
+
+    Rien ne garantit que ChromaDB rende ses identifiants dans un ordre stable.
+    Une empreinte qui en dépendrait varierait sans que le corpus varie — le
+    défaut même que ce dispositif a connu le 31/08/2026, quand il portait sur
+    les octets de SQLite.
+    """
+    monkeypatch.setattr(empreinte_corpus, "CHEMIN_CORPUS", tmp_path)
+
+    _client_factice(monkeypatch, {"eduai_corpus_documentaire": ["a", "b", "c"],
+                                  "eduai_knowledge_base": ["x"]})
+    premier = empreinte_corpus.relever_collections()
+
+    _client_factice(monkeypatch, {"eduai_corpus_documentaire": ["c", "a", "b"],
+                                  "eduai_knowledge_base": ["x"]})
+    second = empreinte_corpus.relever_collections()
+
+    assert premier == second
+    assert premier["eduai_corpus_documentaire"]["fragments"] == 3
+
+
+def test_un_fragment_de_plus_change_l_empreinte(tmp_path, monkeypatch):
+    """
+    Ajouter un fragment change l'empreinte de la collection.
+
+    Compétence visée : C13 (épreuve E3)
+
+    C'est la propriété qui fait tout le dispositif : sans elle, comparer
+    l'empreinte du serveur à celle du poste ne prouverait rien.
+    """
+    monkeypatch.setattr(empreinte_corpus, "CHEMIN_CORPUS", tmp_path)
+
+    _client_factice(monkeypatch, {"eduai_corpus_documentaire": ["a", "b"],
+                                  "eduai_knowledge_base": []})
+    avant = empreinte_corpus.relever_collections()
+
+    _client_factice(monkeypatch, {"eduai_corpus_documentaire": ["a", "b", "c"],
+                                  "eduai_knowledge_base": []})
+    apres = empreinte_corpus.relever_collections()
+
+    assert (avant["eduai_corpus_documentaire"]["empreinte"]
+            != apres["eduai_corpus_documentaire"]["empreinte"])
 
 
 def test_la_somme_de_controle_change_avec_le_contenu(tmp_path):

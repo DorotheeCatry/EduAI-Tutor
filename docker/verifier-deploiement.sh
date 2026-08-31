@@ -226,8 +226,14 @@ if not distante:
 
 collections = distante.get("collections", {})
 print(f"  \033[32mOK\033[0m      corpus déployé du {distante['date_releve']}")
-for nom, nombre in collections.items():
-    print(f"            {nom} : {nombre} fragments")
+for nom, releve in collections.items():
+    # Le relevé porte le décompte ET l'empreinte de la collection depuis le
+    # 31/08 : l'empreinte ne se calcule plus sur les octets de SQLite, que la
+    # moindre lecture réécrit.
+    if isinstance(releve, dict):
+        print(f"            {nom} : {releve['fragments']} fragments")
+    else:
+        print(f"            {nom} : absente")
 
 chemin_local = Path(sys.argv[2])
 if not chemin_local.is_file():

@@ -176,20 +176,32 @@ Ollama dispose de la machine ; chez l'hébergeur, **il n'y a pas de GPU**.
 |---|---|---|
 | `/api/embeddings`, 9 jetons | — | **13,6 s** |
 | `/api/embeddings`, 343 jetons | — | **52,2 s** |
-| `POST /ai/recherche`, bout en bout | **3 s** | *non mesuré* |
-| Latence comptée par le service | **3,7 s** | *non mesuré* |
+| `POST /ai/recherche`, premier appel après démarrage | — | **90 s** |
+| `POST /ai/recherche`, à chaud — 9 tirs | **3 s** | **médiane 28 s**, de **14 s** à **59 s** |
+| Latence comptée par le service | **3,7 s** | 13,4 s à 56,3 s — soit la quasi-totalité du temps constaté |
 | Mémoire du serveur d'embarquement | — | **800 Mo** (estimation initiale : 2 Go) |
 
 Relevés du 30/08/2026. Le modèle est environ **trois fois plus lent** qu'en
 local.
 
-### Ce qui n'est pas mesuré, et pourquoi
+### Ce que la mesure du 31/08 apprend
 
-Le temps de bout en bout d'un `POST /ai/recherche` en production. Il exige le
-corpus sur le volume, qui n'est pas encore transféré. **Il sera mesuré, pas
-supposé** : `docker/verifier-deploiement.sh` chronomètre désormais cette
-requête et affiche, à côté, la latence que le service s'attribue — l'écart
-entre les deux distingue le modèle du transport.
+Le corpus est en place sur le volume, la recherche fonctionne, et neuf tirs à
+chaud donnent une **médiane de 28 secondes**, entre 14 et 59.
+
+Trois enseignements, tous issus des chiffres :
+
+- **Le préchauffage est écarté par la mesure.** Les neuf tirs sont *à chaud*,
+  le modèle déjà chargé, et ils restent entre 14 et 59 secondes. Le coût n'est
+  pas au chargement, il est à l'inférence — préchauffer ne réduirait que les
+  90 secondes du tout premier appel.
+- **Ce n'est pas le transport.** Le service s'attribue 13,4 s sur 14 s
+  constatées, et 56,3 s sur 58,9 s. Le réseau ne pèse rien ; c'est
+  l'embarquement de la requête qui prend tout.
+- **La dispersion est le fait le plus gênant.** Un facteur quatre entre le
+  meilleur et le pire tir, sans que la requête change de nature. Une
+  démonstration devant jury tomberait aussi bien sur 14 que sur 59 secondes, et
+  on ne peut pas promettre laquelle.
 
 La mémoire, elle, n'est plus un sujet : 800 Mo mesurés contre 2 Go estimés.
 C'est la latence qui coûte, pas l'empreinte.
@@ -200,14 +212,51 @@ Trois options, aucune tranchée à ce jour :
 
 | Option | Ce qu'elle donne | Ce qu'elle coûte |
 |---|---|---|
-| **Préchauffage** | Un modèle déjà chargé évite le coût du premier appel | Ne réduit pas le coût d'inférence lui-même ; ne sauve que si l'essentiel des 13,6 s est du chargement |
+| ~~**Préchauffage**~~ | ~~Un modèle déjà chargé évite le coût du premier appel~~ | **Écartée le 31/08 par la mesure** : les neuf tirs à chaud restent entre 14 et 59 s. Ne sauverait que les 90 s du premier appel |
 | **Modèle d'embarquement plus léger** | Inférence plus rapide sans GPU | **Impose de réindexer les 21 189 fragments** : les vecteurs d'un autre modèle n'ont aucun rapport avec ceux du corpus. Plus de dix-sept heures, et le corpus déployé devient inutilisable entre-temps |
 | **Démonstration du RAG en local**, le reste déployé | Une recherche à 3 s devant le jury | Affaiblit la démonstration : ce qui est montré n'est plus ce qui est déployé, et il faut le dire |
 
-Le choix dépend d'une mesure qui n'existe pas encore. Le faire maintenant
-serait supposer.
+**Une quatrième option est apparue avec la mesure** : demander plus de
+processeur à l'hébergeur. L'inférence est ici entièrement liée au calcul, et la
+dispersion d'un facteur quatre suggère une ressource partagée. Elle n'a pas été
+chiffrée — ni le gain, ni le prix — et le rester serait supposer.
+
+Le choix appartient à l'autrice. Ce que les chiffres disent : deux des trois
+options initiales tiennent encore, le préchauffage n'en fait plus partie, et le
+modèle plus léger demanderait de rejouer une indexation dont la durée, avec un
+modèle plus rapide, n'a pas non plus été mesurée.
 
 **Ce qui ne change pas quelle que soit l'issue** : le déploiement lui-même, les
 deux API, l'application et le monitorage ne dépendent pas de cette latence. Ce
 qui est en jeu est la démonstrabilité d'une fonction, pas la validité du
 déploiement.
+
+---
+
+## 8. Les deux services se connectent à PostgreSQL en superutilisateur
+
+**Composant :** variables d'environnement de `web` et `service-ai` chez l'hébergeur
+**Nature :** moindre privilège non appliqué à la connexion applicative
+**Statut :** **ouverte**, constatée le 31/08/2026
+
+Les deux services portent `POSTGRES_USER=postgres`, le superutilisateur créé
+par le modèle PostgreSQL de l'hébergeur. Une injection SQL aboutie, ou une
+erreur de ciblage dans une migration, s'exercerait donc sans aucune borne : les
+deux bases, les rôles, l'instance entière.
+
+Ce n'est pas le cas de l'API du jeu de données, qui utilise bien `eduai_lecture`
+— rôle de lecture seule créé le 31/08, **et vérifié dans les deux sens** : il
+lit les 6 836 documents, il ne peut ni écrire, ni créer une table, ni depuis ce
+jour se connecter à `eduai_app`. C'est le reste de l'application qui passe en
+superutilisateur.
+
+La correction est connue et sans difficulté : un rôle applicatif propriétaire
+de `eduai_app`, avec les droits sur ce seul schéma, et la variable changée.
+Elle n'a pas été faite à quatre jours du rendu parce qu'elle impose de
+recréer le propriétaire des 24 tables déjà migrées, opération qui peut échouer
+à moitié — et un schéma applicatif à moitié réattribué est pire que le défaut
+qu'on corrige.
+
+**À reprendre après le 14 septembre**, et à dire à l'oral si la question vient :
+le cloisonnement entre les deux bases est réel et vérifié, la connexion
+applicative ne l'est pas encore.
