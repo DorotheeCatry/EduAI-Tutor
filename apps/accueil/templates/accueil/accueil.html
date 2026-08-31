@@ -4,174 +4,312 @@
 {% block title %}{% trans "Accueil" %} — EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="min-h-full overflow-y-auto bg-slate-950 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
-    <div class="mx-auto max-w-6xl space-y-6">
-        <section aria-labelledby="titre-action" class="relative overflow-hidden rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900 p-6 shadow-2xl shadow-black/20 sm:p-8">
-            <div class="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-emerald-400/10 blur-3xl" aria-hidden="true"></div>
-            <div class="relative max-w-3xl">
-                <p class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">{% trans "Votre prochain repère" %}</p>
-                <h1 id="titre-action" class="text-2xl font-bold leading-tight text-white sm:text-3xl">
-                    {% trans "Ce que je fais maintenant" %}
-                </h1>
+<div class="p-6 space-y-6 overflow-y-auto">
 
-                {% if prochaine %}
-                    <p class="mt-5 text-lg leading-8 text-slate-200 sm:text-xl">
-                        {% if prochaine.niveau_atteint == 0 %}
-                            {% blocktrans with competence=prochaine.competence.intitule module=prochaine.module.intitule %}Prochaine compétence du parcours : <strong class="font-semibold text-white">{{ competence }}</strong>, dans {{ module }}.{% endblocktrans %}
-                        {% else %}
-                            {% blocktrans with competence=prochaine.competence.intitule restant=prochaine.restant_avant_niveau_2 %}Encore {{ restant }} exercice(s) réussi(s) sur <strong class="font-semibold text-white">{{ competence }}</strong> pour atteindre le niveau 2.{% endblocktrans %}
-                        {% endif %}
-                    </p>
-                    <a href="{% url 'exercises:list' %}" class="mt-6 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-slate-800">
-                        {% trans "S'exercer sur cette compétence" %}
-                        <span class="ml-2 text-lg" aria-hidden="true">→</span>
-                    </a>
-                {% elif referentiel %}
-                    <p class="mt-5 text-lg leading-8 text-slate-200 sm:text-xl">
-                        {% trans "Toutes les compétences du référentiel sont au niveau 2. Le niveau 3 n'est pas mesuré par ce dispositif." %}
-                    </p>
-                    <a href="{% url 'courses:generator' %}" class="mt-6 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-slate-800">
-                        {% trans "Explorer un nouveau sujet" %}
-                        <span class="ml-2 text-lg" aria-hidden="true">→</span>
-                    </a>
+    {% comment %}
+    ---------- 1. Ce que je fais maintenant ----------
+    En tête, et visuellement dominant : c'est la raison d'être de la page.
+    Un bouton, pas trois — proposer trois chemins revient à demander de choisir
+    avant de savoir.
+    {% endcomment %}
+    <section aria-labelledby="titre-action"
+             class="p-6 rounded-lg border border-primary-green/40 bg-gray-800">
+        <h1 id="titre-action" class="text-2xl font-bold text-white mb-3">
+            {% trans "Ce que je fais maintenant" %}
+        </h1>
+
+        {% if prochaine %}
+            <p class="text-gray-200 text-lg mb-4">
+                {% if prochaine.niveau_atteint == 0 %}
+                    {% blocktrans with competence=prochaine.competence.intitule module=prochaine.module.intitule %}Prochaine compétence du parcours : <strong>{{ competence }}</strong>, dans {{ module }}.{% endblocktrans %}
                 {% else %}
-                    <p class="mt-5 text-lg leading-8 text-slate-200 sm:text-xl">
-                        {% trans "Commencez par générer un cours sur le sujet de votre choix." %}
+                    {% blocktrans with competence=prochaine.competence.intitule restant=prochaine.restant_avant_niveau_2 %}Encore {{ restant }} exercice(s) réussi(s) sur <strong>{{ competence }}</strong> pour atteindre le niveau 2.{% endblocktrans %}
+                {% endif %}
+            </p>
+            <a href="{% url 'exercises:list' %}"
+               class="inline-block px-5 py-3 rounded-lg bg-primary-green text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
+                {% trans "S'exercer sur cette compétence" %}
+            </a>
+        {% elif referentiel %}
+            <p class="text-gray-200 text-lg mb-4">
+                {% trans "Toutes les compétences du référentiel sont au niveau 2. Le niveau 3 n'est pas mesuré par ce dispositif." %}
+            </p>
+            <a href="{% url 'courses:generator' %}"
+               class="inline-block px-5 py-3 rounded-lg bg-primary-blue text-white font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
+                {% trans "Explorer un nouveau sujet" %}
+            </a>
+        {% else %}
+            <p class="text-gray-200 text-lg mb-4">
+                {% trans "Commencez par générer un cours sur le sujet de votre choix." %}
+            </p>
+            <a href="{% url 'courses:generator' %}"
+               class="inline-block px-5 py-3 rounded-lg bg-primary-green text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
+                {% trans "Générer un cours" %}
+            </a>
+        {% endif %}
+    </section>
+
+    {% comment %}
+    ---------- Grille : progression (principal) + colonne secondaire ----------
+    La progression occupe plus de largeur ; « À revoir » et « Dernière
+    activité » se partagent la colonne de droite. L'œil se pose d'abord sur
+    l'action, puis sur le chemin parcouru, puis sur le reste.
+    {% endcomment %}
+    <div class="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+
+        {% comment %}
+        ---------- 2. Où j'en suis ----------
+        {% endcomment %}
+        <section aria-labelledby="titre-progression"
+                 class="p-5 rounded-lg border border-gray-700 bg-gray-800">
+            <div class="flex flex-wrap items-end justify-between gap-3 border-b border-gray-700 pb-3 mb-4">
+                <h2 id="titre-progression" class="text-lg font-bold text-white">
+                    {% trans "Où j'en suis" %}
+                </h2>
+                {% if referentiel and competences_entamees %}
+                    <p class="text-sm text-gray-300">
+                        {% blocktrans with entamees=competences_entamees_nombre total=total_competences %}{{ entamees }} compétences entamées sur {{ total }}{% endblocktrans %}
                     </p>
-                    <a href="{% url 'courses:generator' %}" class="mt-6 inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-slate-800">
-                        {% trans "Générer un cours" %}
-                        <span class="ml-2 text-lg" aria-hidden="true">→</span>
-                    </a>
                 {% endif %}
             </div>
-        </section>
 
-        <div class="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
-            <section aria-labelledby="titre-progression" class="rounded-2xl border border-slate-700 bg-slate-900/80 p-5 shadow-xl shadow-black/10 sm:p-6">
-                <div class="flex flex-wrap items-end justify-between gap-3 border-b border-slate-800 pb-4">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">{% trans "Le chemin parcouru" %}</p>
-                        <h2 id="titre-progression" class="mt-1 text-xl font-bold text-white">{% trans "Où j'en suis" %}</h2>
-                    </div>
-                    {% if referentiel and competences_entamees %}
-                        <p class="text-sm font-medium text-slate-300">
-                            {% blocktrans with entamees=competences_entamees_nombre total=total_competences %}{{ entamees }} compétences entamées sur {{ total }}{% endblocktrans %}
-                        </p>
-                    {% endif %}
+            {% if not referentiel %}
+                <div class="p-4 rounded-lg border border-gray-700 bg-gray-800/60">
+                    <p class="text-gray-300">
+                        {% trans "Aucun référentiel de compétences n'est actif pour l'instant." %}
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                        {% trans "Votre travail est enregistré ; la progression s'affichera dès qu'un référentiel sera chargé." %}
+                    </p>
                 </div>
 
-                {% if not referentiel %}
-                    <div class="mt-5 rounded-xl border border-dashed border-slate-600 bg-slate-950/50 p-5">
-                        <p class="text-slate-200">{% trans "Aucun référentiel de compétences n'est actif pour l'instant." %}</p>
-                        <p class="mt-2 text-sm leading-6 text-slate-400">{% trans "Votre travail est enregistré ; la progression s'affichera dès qu'un référentiel sera chargé." %}</p>
-                    </div>
-                {% elif not competences_entamees %}
-                    <div class="mt-5 rounded-xl border border-sky-400/30 bg-sky-400/5 p-5">
-                        <p class="text-lg font-semibold text-white">{% blocktrans with total=total_competences %}Aucune compétence entamée sur {{ total }}{% endblocktrans %}</p>
-                        <p class="mt-2 text-sm leading-6 text-slate-300">{% blocktrans with module=premier_module.intitule %}C'est le début du parcours. La première étape vous attend dans le module {{ module }}.{% endblocktrans %}</p>
-                    </div>
-                    <details class="mt-4 rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3">
-                        <summary class="cursor-pointer text-sm font-semibold text-slate-200 hover:text-white">{% trans "Voir les modules du référentiel" %}</summary>
-                        <ul class="mt-4 space-y-3 text-sm text-slate-300">
-                            {% for ligne in modules %}
-                                <li class="flex items-center justify-between gap-4 border-t border-slate-800 pt-3 first:border-0 first:pt-0">
-                                    <span>{{ ligne.module.intitule }}</span>
-                                    <span class="shrink-0 text-slate-400">{% blocktrans count total=ligne.competences %}{{ total }} compétence{% plural %}{{ total }} compétences{% endblocktrans %}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </details>
-                {% else %}
-                    <ul class="mt-5 space-y-4">
+            {% elif not competences_entamees %}
+                {% comment %}
+                État vide replié en une phrase. Dire « 0 sur 7 » quatre fois serait
+                exact et décourageant ; dire ce qu'il y a à faire est aussi exact et
+                sert à quelque chose.
+                {% endcomment %}
+                <div class="p-4 rounded-lg border border-gray-600 bg-gray-900/40">
+                    <p class="text-gray-200 font-medium">
+                        {% blocktrans with total=total_competences %}Aucune compétence entamée sur {{ total }}{% endblocktrans %}
+                    </p>
+                    <p class="text-sm text-gray-400 mt-1">
+                        {% blocktrans with module=premier_module.intitule %}C'est le début du parcours. La première étape vous attend dans le module {{ module }}.{% endblocktrans %}
+                    </p>
+                </div>
+                <details class="mt-3">
+                    <summary class="text-sm text-gray-400 cursor-pointer hover:text-gray-200">
+                        {% trans "Voir les modules du référentiel" %}
+                    </summary>
+                    <ul class="mt-2 space-y-2 text-sm text-gray-400">
                         {% for ligne in modules %}
-                            {% if ligne.au_niveau_1 %}
-                                <li class="rounded-xl border border-slate-700 bg-slate-950/50 p-4">
-                                    <div class="flex flex-wrap items-baseline justify-between gap-2">
-                                        <span class="font-semibold text-white">{{ ligne.module.intitule }}</span>
-                                        <span class="text-sm text-slate-300">{% blocktrans with atteintes=ligne.au_niveau_1 total=ligne.competences niveau2=ligne.au_niveau_2 %}{{ atteintes }} sur {{ total }} au niveau 1, {{ niveau2 }} au niveau 2{% endblocktrans %}</span>
-                                    </div>
-                                    <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-700" role="progressbar" aria-valuemin="0" aria-valuemax="{{ ligne.competences }}" aria-valuenow="{{ ligne.au_niveau_1 }}" aria-label="{{ ligne.module.intitule }}">
-                                        <div class="h-full rounded-full bg-emerald-400" style="width: {% widthratio ligne.au_niveau_1 ligne.competences 100 %}%"></div>
-                                    </div>
-                                    <p class="mt-2 text-xs text-slate-400">{% blocktrans with atteintes=ligne.au_niveau_1 total=ligne.competences %}Équivalent textuel : {{ atteintes }} compétence sur {{ total }} au niveau 1.{% endblocktrans %}</p>
-                                </li>
-                            {% endif %}
+                            <li class="flex items-center justify-between gap-4 border-t border-gray-700 pt-2 first:border-0 first:pt-0">
+                                <span>{{ ligne.module.intitule }}</span>
+                                <span class="shrink-0">
+                                    {% blocktrans count total=ligne.competences %}{{ total }} compétence{% plural %}{{ total }} compétences{% endblocktrans %}
+                                </span>
+                            </li>
                         {% endfor %}
                     </ul>
-                    {% if modules_non_entames %}
-                        <details class="mt-4 rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3">
-                            <summary class="cursor-pointer text-sm font-semibold text-slate-300 hover:text-white">{% blocktrans count restants=modules_non_entames %}{{ restants }} module non entamé{% plural %}{{ restants }} modules non entamés{% endblocktrans %}</summary>
-                            <ul class="mt-4 space-y-3 text-sm text-slate-400">
-                                {% for ligne in modules %}
-                                    {% if not ligne.au_niveau_1 %}
-                                        <li class="flex items-center justify-between gap-4 border-t border-slate-800 pt-3 first:border-0 first:pt-0"><span>{{ ligne.module.intitule }}</span><span class="shrink-0">{% blocktrans count total=ligne.competences %}{{ total }} compétence{% plural %}{{ total }} compétences{% endblocktrans %}</span></li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
-                        </details>
-                    {% endif %}
-                {% endif %}
+                </details>
 
-                {% if referentiel %}
-                    <details class="mt-4 rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3">
-                        <summary class="cursor-pointer text-sm font-semibold text-slate-300 hover:text-white">{% trans "Comment se lisent les trois niveaux" %}</summary>
-                        <ul class="mt-4 grid gap-3 sm:grid-cols-3">
-                            <li class="rounded-lg border border-emerald-400/50 bg-emerald-400/5 p-3 text-sm text-emerald-200"><span class="font-bold">{% trans "Niveau 1" %}</span><span class="mt-1 block text-slate-200">{{ referentiel.niveaux.0 }}</span></li>
-                            <li class="rounded-lg border border-sky-400/50 bg-sky-400/5 p-3 text-sm text-sky-200"><span class="font-bold">{% trans "Niveau 2" %}</span><span class="mt-1 block text-slate-200">{{ referentiel.niveaux.1 }}</span></li>
-                            <li class="rounded-lg border border-dashed border-slate-400 bg-slate-800/60 p-3 text-sm text-slate-200"><span class="font-bold">{% trans "Niveau 3" %}</span><span class="mt-1 block">{{ referentiel.niveaux.2 }}</span><span class="mt-2 block text-xs font-bold uppercase tracking-wide text-amber-200">{% trans "Non mesuré" %}</span></li>
+            {% else %}
+                <ul class="space-y-3">
+                    {% for ligne in modules %}
+                        {% if ligne.au_niveau_1 %}
+                            <li class="p-3 rounded-lg border border-gray-700 bg-gray-900/40">
+                                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                                    <span class="font-medium text-white">{{ ligne.module.intitule }}</span>
+                                    <span class="text-sm text-gray-300">
+                                        {% blocktrans with atteintes=ligne.au_niveau_1 total=ligne.competences niveau2=ligne.au_niveau_2 %}{{ atteintes }} sur {{ total }} au niveau 1, {{ niveau2 }} au niveau 2{% endblocktrans %}
+                                    </span>
+                                </div>
+                                <div class="mt-2 h-1.5 w-full rounded bg-gray-900" aria-hidden="true">
+                                    <div class="h-1.5 rounded bg-green-600"
+                                         style="width: {% widthratio ligne.au_niveau_1 ligne.competences 100 %}%"></div>
+                                </div>
+                                <p class="mt-1.5 text-xs text-gray-400">
+                                    {% blocktrans with atteintes=ligne.au_niveau_1 total=ligne.competences %}Équivalent textuel : {{ atteintes }} compétence sur {{ total }} au niveau 1.{% endblocktrans %}
+                                </p>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+                {% if modules_non_entames %}
+                    <details class="mt-3">
+                        <summary class="text-sm text-gray-400 cursor-pointer hover:text-gray-200">
+                            {% blocktrans count restants=modules_non_entames %}{{ restants }} module non entamé{% plural %}{{ restants }} modules non entamés{% endblocktrans %}
+                        </summary>
+                        <ul class="mt-2 space-y-2 text-sm text-gray-400">
+                            {% for ligne in modules %}
+                                {% if not ligne.au_niveau_1 %}
+                                    <li class="flex items-center justify-between gap-4 border-t border-gray-700 pt-2 first:border-0 first:pt-0">
+                                        <span>{{ ligne.module.intitule }}</span>
+                                        <span class="shrink-0">
+                                            {% blocktrans count total=ligne.competences %}{{ total }} compétence{% plural %}{{ total }} compétences{% endblocktrans %}
+                                        </span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
                         </ul>
-                        <p class="mt-4 text-xs leading-5 text-slate-400">{% trans "« Non mesuré » ne veut pas dire « non atteint » : ce niveau suppose d'appliquer une notion à un contexte nouveau, ce que le nombre d'exercices réussis ne permet pas de constater." %}</p>
                     </details>
                 {% endif %}
+            {% endif %}
+
+            {% if referentiel %}
+                {% comment %}
+                La légende des paliers et la note sur le niveau 3 sont repliées : ce
+                sont des explications de méthode, pas du contenu de page. Un
+                <details> plutôt qu'une infobulle — atteignable au clavier et lu par
+                un lecteur d'écran sans travail supplémentaire.
+                {% endcomment %}
+                <details class="mt-3">
+                    <summary class="text-sm text-gray-400 cursor-pointer hover:text-gray-200">
+                        {% trans "Comment se lisent les trois niveaux" %}
+                    </summary>
+                    <ul class="flex flex-wrap gap-3 mt-2 text-xs">
+                        <li class="px-2 py-1 rounded border border-green-600 bg-green-600/15 text-green-300">
+                            {% trans "Niveau 1" %} · {{ referentiel.niveaux.0 }}
+                        </li>
+                        <li class="px-2 py-1 rounded border border-blue-500 bg-blue-500/15 text-blue-300">
+                            {% trans "Niveau 2" %} · {{ referentiel.niveaux.1 }}
+                        </li>
+                        <li class="px-2 py-1 rounded border border-dashed border-gray-500 bg-gray-800 text-gray-300">
+                            {% trans "Niveau 3" %} · {{ referentiel.niveaux.2 }} —
+                            <strong class="font-semibold">{% trans "non mesuré" %}</strong>
+                        </li>
+                    </ul>
+                    <p class="text-xs text-gray-400 mt-2">
+                        {% trans "« Non mesuré » ne veut pas dire « non atteint » : ce niveau suppose d'appliquer une notion à un contexte nouveau, ce que le nombre d'exercices réussis ne permet pas de constater." %}
+                    </p>
+                </details>
+            {% endif %}
+        </section>
+
+        {% comment %}
+        ---------- Colonne secondaire : À revoir + Dernière activité ----------
+        {% endcomment %}
+        <div class="space-y-6">
+
+            {% comment %}
+            ---------- 3. À revoir ----------
+            {% endcomment %}
+            <section aria-labelledby="titre-a-revoir"
+                     class="p-5 rounded-lg border border-gray-700 bg-gray-800">
+                <h2 id="titre-a-revoir" class="text-lg font-bold text-white mb-3">
+                    {% trans "À revoir" %}
+                </h2>
+
+                {% if a_revoir or erreurs_de_quiz %}
+                    <ul class="space-y-2">
+                        {% for notion in a_revoir %}
+                            <li class="p-3 rounded-lg border border-gray-700 bg-gray-900/40">
+                                <div class="flex flex-wrap items-start justify-between gap-2">
+                                    <span class="text-white font-medium">{{ notion.exercice.title }}</span>
+                                    <span class="text-xs text-gray-400 shrink-0">{{ notion.dernier_passage|date:"j F Y" }}</span>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-300">
+                                    {% blocktrans count tentatives=notion.tentatives %}{{ tentatives }} tentative{% plural %}{{ tentatives }} tentatives{% endblocktrans %}
+                                    <span class="text-gray-600">·</span>
+                                    {% if notion.competence %}
+                                        {{ notion.competence.intitule }}
+                                    {% else %}
+                                        {% trans "hors référentiel" %}
+                                    {% endif %}
+                                </p>
+                            </li>
+                        {% endfor %}
+                        {% for erreur in erreurs_de_quiz %}
+                            <li class="p-3 rounded-lg border border-gray-700 bg-gray-900/40">
+                                <div class="flex flex-wrap items-start justify-between gap-2">
+                                    <span class="text-white font-medium">{{ erreur.intitule }}</span>
+                                    <span class="text-xs text-gray-400 shrink-0">{{ erreur.dernier_passage|date:"j F Y" }}</span>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-300">
+                                    {% blocktrans count erreurs=erreur.erreurs %}{{ erreurs }} réponse manquée{% plural %}{{ erreurs }} réponses manquées{% endblocktrans %}
+                                    <span class="text-gray-600">·</span>
+                                    {% trans "quiz" %}
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    {% comment %}
+                    État vide du bloc qui porte la valeur. Il ne constate pas une
+                    absence : il dit ce qui produira la donnée, et propose de le faire.
+                    {% endcomment %}
+                    <div class="p-4 rounded-lg border border-gray-700 bg-gray-800/60">
+                        <p class="text-gray-300">{% trans "Rien à revoir pour l'instant." %}</p>
+                        <p class="text-sm text-gray-400 mt-1">
+                            {% trans "Cette liste se remplit toute seule : un exercice qui demande plusieurs tentatives, ou une réponse manquée dans un quiz, y apparaît avec sa date." %}
+                        </p>
+                        <a href="{% url 'quiz:lobby' %}"
+                           class="inline-block mt-3 text-sm text-primary-blue hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded">
+                            {% trans "Faire un quiz pour repérer mes lacunes" %}
+                        </a>
+                    </div>
+                {% endif %}
+
+                <details class="mt-3">
+                    <summary class="text-sm text-gray-400 cursor-pointer hover:text-gray-200">
+                        {% trans "Comment cette liste est construite" %}
+                    </summary>
+                    <p class="text-xs text-gray-400 mt-1">
+                        {% trans "Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt que ce qui est ancien. Un exercice réussi du premier coup il y a un mois est probablement encore acquis ; un exercice réussi à la cinquième tentative la semaine dernière ne l'est pas." %}
+                    </p>
+                </details>
             </section>
 
-            <div class="space-y-6">
-                <section aria-labelledby="titre-a-revoir" class="rounded-2xl border border-amber-400/25 bg-slate-900/80 p-5 shadow-xl shadow-black/10 sm:p-6">
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">{% trans "Ce qui a résisté" %}</p>
-                    <h2 id="titre-a-revoir" class="mt-1 text-xl font-bold text-white">{% trans "À revoir" %}</h2>
+            {% comment %}
+            ---------- 4. Dernière activité ----------
+            Du contexte, pas une décision : en dernier, et discret.
+            {% endcomment %}
+            <section aria-labelledby="titre-activite"
+                     class="p-5 rounded-lg border border-gray-700 bg-gray-800/60">
+                <h2 id="titre-activite" class="text-base font-medium text-gray-300 mb-2">
+                    {% trans "Dernière activité" %}
+                </h2>
 
-                    {% if a_revoir or erreurs_de_quiz %}
-                        <ul class="mt-5 space-y-3">
-                            {% for notion in a_revoir %}
-                                <li class="rounded-xl border border-slate-700 bg-slate-950/60 p-4">
-                                    <div class="flex flex-wrap items-start justify-between gap-2"><span class="font-medium text-white">{{ notion.exercice.title }}</span><span class="text-right text-xs text-slate-400">{{ notion.dernier_passage|date:"j F Y" }}</span></div>
-                                    <div class="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm text-slate-300"><span>{% blocktrans count tentatives=notion.tentatives %}{{ tentatives }} tentative{% plural %}{{ tentatives }} tentatives{% endblocktrans %}</span><span class="text-slate-600" aria-hidden="true">·</span>{% if notion.competence %}<span>{{ notion.competence.intitule }}</span>{% else %}<span>{% trans "hors référentiel" %}</span>{% endif %}</div>
-                                </li>
-                            {% endfor %}
-                            {% for erreur in erreurs_de_quiz %}
-                                <li class="rounded-xl border border-slate-700 bg-slate-950/60 p-4">
-                                    <div class="flex flex-wrap items-start justify-between gap-2"><span class="font-medium text-white">{{ erreur.intitule }}</span><span class="text-right text-xs text-slate-400">{{ erreur.dernier_passage|date:"j F Y" }}</span></div>
-                                    <div class="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-sm text-slate-300"><span>{% blocktrans count erreurs=erreur.erreurs %}{{ erreurs }} réponse manquée{% plural %}{{ erreurs }} réponses manquées{% endblocktrans %}</span><span class="text-slate-600" aria-hidden="true">·</span><span>{% trans "quiz" %}</span></div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <div class="mt-5 rounded-xl border border-dashed border-slate-600 bg-slate-950/50 p-4">
-                            <p class="font-semibold text-slate-100">{% trans "Rien à revoir pour l'instant" %}</p>
-                            <p class="mt-2 text-sm leading-6 text-slate-400">{% trans "Cette liste se remplit toute seule : un exercice qui demande plusieurs tentatives, ou une réponse manquée dans un quiz, y apparaît avec sa date." %}</p>
-                            <a href="{% url 'quiz:lobby' %}" class="mt-4 inline-flex rounded-lg text-sm font-semibold text-sky-300 underline decoration-sky-300/50 underline-offset-4 hover:text-sky-200 focus:outline-none focus:ring-2 focus:ring-sky-300">{% trans "Faire un quiz pour repérer mes lacunes" %}</a>
-                        </div>
-                    {% endif %}
-                    <details class="mt-4">
-                        <summary class="cursor-pointer text-xs font-semibold text-slate-400 hover:text-slate-200">{% trans "Comment cette liste est construite" %}</summary>
-                        <p class="mt-2 text-xs leading-5 text-slate-500">{% trans "Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt que ce qui est ancien. Un exercice réussi du premier coup il y a un mois est probablement encore acquis ; un exercice réussi à la cinquième tentative la semaine dernière ne l'est pas." %}</p>
-                    </details>
-                </section>
-
-                <section aria-labelledby="titre-activite" class="rounded-2xl border border-slate-700 bg-slate-900/50 p-5 sm:p-6">
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">{% trans "Pour se resituer" %}</p>
-                    <h2 id="titre-activite" class="mt-1 text-lg font-bold text-white">{% trans "Dernière activité" %}</h2>
-                    {% if activite.exercice or activite.quiz or activite.cours %}
-                        <ul class="mt-4 space-y-3 text-sm text-slate-300">
-                            {% if activite.exercice %}<li class="border-l-2 border-emerald-400 pl-3"><span class="font-semibold text-white">{% trans "Exercice" %}</span> — {{ activite.exercice.exercise.title }}<span class="block text-xs text-slate-400">{% if activite.exercice.is_completed %}{% trans "réussi" %} · {{ activite.exercice.completed_at|date:"j F Y" }}{% else %}{% trans "en cours" %}{% endif %}</span></li>{% endif %}
-                            {% if activite.quiz %}<li class="border-l-2 border-sky-400 pl-3"><span class="font-semibold text-white">{% trans "Quiz" %}</span> — {{ activite.quiz.competence.intitule|default:activite.quiz.topic }}<span class="block text-xs text-slate-400">{{ activite.quiz.score|floatformat:0 }} % · {{ activite.quiz.end_time|date:"j F Y" }}</span></li>{% endif %}
-                            {% if activite.cours %}<li class="border-l-2 border-slate-500 pl-3"><span class="font-semibold text-white">{% trans "Cours" %}</span> — {{ activite.cours.title }}<span class="block text-xs text-slate-400">{{ activite.cours.created_at|date:"j F Y" }}</span></li>{% endif %}
-                        </ul>
-                    {% else %}
-                        <p class="mt-4 text-sm leading-6 text-slate-400">{% trans "Aucune activité pour l'instant. Votre premier cours, exercice ou quiz apparaîtra ici avec son résultat." %}</p>
-                    {% endif %}
-                </section>
-            </div>
+                {% if activite.exercice or activite.quiz or activite.cours %}
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        {% if activite.exercice %}
+                            <li class="border-l-2 border-green-600 pl-3">
+                                <span class="text-gray-200">{% trans "Exercice" %}</span> :
+                                {{ activite.exercice.exercise.title }}
+                                <span class="block text-xs text-gray-500">
+                                    {% if activite.exercice.is_completed %}
+                                        {% trans "réussi" %} · {{ activite.exercice.completed_at|date:"j F Y" }}
+                                    {% else %}
+                                        {% trans "en cours" %}
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endif %}
+                        {% if activite.quiz %}
+                            <li class="border-l-2 border-blue-500 pl-3">
+                                <span class="text-gray-200">{% trans "Quiz" %}</span> :
+                                {{ activite.quiz.competence.intitule|default:activite.quiz.topic }}
+                                <span class="block text-xs text-gray-500">
+                                    {{ activite.quiz.score|floatformat:0 }} % · {{ activite.quiz.end_time|date:"j F Y" }}
+                                </span>
+                            </li>
+                        {% endif %}
+                        {% if activite.cours %}
+                            <li class="border-l-2 border-gray-500 pl-3">
+                                <span class="text-gray-200">{% trans "Cours" %}</span> :
+                                {{ activite.cours.title }}
+                                <span class="block text-xs text-gray-500">
+                                    {{ activite.cours.created_at|date:"j F Y" }}
+                                </span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% else %}
+                    <p class="text-sm text-gray-500">
+                        {% trans "Aucune activité pour l'instant. Votre premier cours, exercice ou quiz apparaîtra ici avec son résultat." %}
+                    </p>
+                {% endif %}
+            </section>
         </div>
     </div>
 </div>
