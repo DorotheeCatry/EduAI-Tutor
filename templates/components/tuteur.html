@@ -124,11 +124,14 @@
     height: auto;
     max-height: 80vh;
     min-height: 320px;
+    min-width: 280px;
     width: 400px;
     max-width: calc(100vw - 32px);
     border: 1px solid #374151;
     border-radius: 0.75rem;
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+    overflow: hidden;
+    resize: both;
 }
 #tuteur-panneau.tuteur-flottant #tuteur-poignee { cursor: grabbing; }
 #tuteur-panneau.tuteur-glissement { transition: none; user-select: none; }
@@ -595,18 +598,22 @@
     try { etatMemorise = localStorage.getItem('tuteur-ouvert') || '0'; } catch (e) {}
 
     if (etatMemorise === '1' && !petitEcran()) {
-        ouvrirPanneau(false);
         try {
             if (localStorage.getItem('tuteur-flottant') === '1') {
+                rendreFlottant();
                 const x = parseFloat(localStorage.getItem('tuteur-x'));
                 const y = parseFloat(localStorage.getItem('tuteur-y'));
+                const w = parseFloat(localStorage.getItem('tuteur-largeur'));
+                const h = parseFloat(localStorage.getItem('tuteur-hauteur'));
                 if (!isNaN(x) && !isNaN(y)) {
-                    rendreFlottant();
                     panneau.style.left = x + 'px';
                     panneau.style.top = y + 'px';
                 }
+                if (!isNaN(w) && w > 0) panneau.style.width = w + 'px';
+                if (!isNaN(h) && h > 0) panneau.style.height = h + 'px';
             }
         } catch (e) {}
+        ouvrirPanneau(false);
     } else {
         fermerPanneau(false);
     }
@@ -616,6 +623,8 @@
             try {
                 localStorage.setItem('tuteur-x', panneau.style.left);
                 localStorage.setItem('tuteur-y', panneau.style.top);
+                localStorage.setItem('tuteur-largeur', panneau.style.width);
+                localStorage.setItem('tuteur-hauteur', panneau.style.height);
             } catch (e) {}
         }
     }).observe(panneau, {attributes: true, attributeFilter: ['style']});
