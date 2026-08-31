@@ -19,20 +19,22 @@ commun, et quelle question poser pour éviter la prochaine occurrence.
 
 ## Famille A — Vérifié dans un contexte, employé dans un autre
 
-**Trois occurrences en quatre jours.** C'est ce qui la qualifie de famille.
+**Quatre occurrences en quatre jours.** C'est ce qui la qualifie de famille.
 
 | # | Vérifié dans… | Employé dans… | Ce qui a échoué |
 |---|---|---|---|
 | 003, 28/08 | un script, contexte de l'import | une requête HTTP, fil ou tâche distincte | La sonde de monitorage n'attachait aucun rappel. **22 heures de traces perdues** |
 | 007, 30/08 | le poste, `DEBUG=True` | l'intégration continue, `DEBUG=False` | Quatre tests échouaient sur une redirection HTTPS que le poste ne déclenche jamais |
 | — , 31/08 | un poste encombré, `staticfiles/` hérité d'un ancien `collectstatic` | un clone vierge | Aucune page ne se rendait hors DEBUG, faute de manifeste de fichiers statiques |
+| 011, 31/08 | une **maquette**, où une valeur d'attente est attendue | une page servie, où elle est crue | Sept foyers de données fabriquées, dont un taux de réussite et une page de révision entière |
 
 ### Le mécanisme commun
 
-Dans les trois cas, **l'objet vérifié était correct**. Ce qui différait était
-l'environnement : un contexte d'exécution, une variable, le contenu d'un
-répertoire. La vérification avait eu lieu là où elle était commode, pas là où
-le code allait servir.
+Dans les quatre cas, **l'objet était correct dans le contexte où il a été
+écrit**. Ce qui différait était l'environnement : un contexte d'exécution, une
+variable, le contenu d'un répertoire — ou, pour le quatrième, l'intention de
+lecture. Une valeur d'attente est vraie dans une maquette et fausse dans une
+page servie ; rien n'a changé en elle, tout a changé autour.
 
 Ce déplacement est invisible par construction : on ne voit pas ce dont on
 dispose sans y penser. Le poste de développement porte un fichier produit six
@@ -62,6 +64,46 @@ Le 31/08, les deux premières reproductions n'ont rien donné et la troisième a
 trouvé en une exécution. L'ordre a son importance : la plus coûteuse est aussi
 la plus complète.
 
+### La contre-mesure, sous sa forme la plus utile
+
+Les trois premières occurrences se préviennent en **rejouant dans le bon
+contexte**. La quatrième ne le peut pas : on ne « rejoue » pas une maquette en
+production, on l'y laisse par inadvertance.
+
+D'où une contre-mesure d'une autre nature, et c'est la plus utile que ce projet
+ait dégagée :
+
+> **Une valeur d'attente doit échouer visiblement si elle survit.**
+
+Un `0`, un `—`, un « non mesuré », un `LOREM` en capitales. Jamais un 85 %,
+jamais une durée plausible, jamais un nom de sujet crédible. **Une maquette doit
+avoir l'air d'une maquette.**
+
+C'est ce qui distingue une valeur d'attente qui se signale d'une valeur d'attente
+qui se fond : la première meurt à la première relecture, la seconde survit des
+mois. Sept fois, ici.
+
+Le corollaire est déjà appliqué : les états vides de la page d'accueil sont
+écrits comme une fonctionnalité, avec leurs propres tests. **Un état vide soigné
+est ce qui rend le remplissage inutile.**
+
+### La variante qui recouvre au lieu de combler
+
+Six des sept foyers inventaient une donnée là où il n'y en avait pas. Le
+septième — un compteur JavaScript parti de 154 minutes — **écrasait une donnée
+mesurée** : la barre d'état affichait la série réelle de l'apprenant, rendue par
+le serveur, et une minute plus tard le script la remplaçait.
+
+Cette variante est plus grave, et elle explique pourquoi le motif est resté
+invisible si longtemps : **la page affichait bien la donnée juste**. Qui la
+regardait au chargement voyait un système correct. Il fallait attendre une
+minute, sur la même page, pour voir la mesure disparaître — et personne ne
+regarde une barre d'état pendant une minute.
+
+Une fabrication qui comble un vide se démasque en comparant à zéro. Une
+fabrication qui recouvre une mesure ne se démasque qu'en observant dans la
+durée.
+
 ### Ce qui est en place
 
 - `docs/strategie_tests.md` porte les trois niveaux de reproduction.
@@ -80,6 +122,7 @@ la plus complète.
 | 006, 29/08 | une sonde de santé nommant une collection | une collection que la recherche n'interrogeait pas |
 | 009, 31/08 | une empreinte de corpus | les octets d'un fichier que SQLite réécrit à la lecture |
 | 011, 31/08 | un « taux de réussite » sur le tableau de bord | `60 + xp // 50` — l'expérience gagnée, sans rapport avec la réussite |
+| 011, 31/08 | `success_rate`, `total_study_time`, « sujets étudiés » | des grandeurs dérivées d'autres grandeurs sans lien avec ce que leur étiquette annonce |
 | 011, 31/08 | le champ `attempts_count` | les soumissions, y compris après la réussite — jamais les tentatives avant réussite, que son nom annonce |
 
 ### Le mécanisme commun
@@ -105,6 +148,20 @@ change, le contrôle est à réécrire. C'est ce qui a condamné l'empreinte sur
 octets de SQLite — et ce qui a conduit, le même jour, à régler le seuil de
 latence par environnement plutôt qu'à le relever pour faire taire l'alarme
 (décision 024).
+
+### L'incident 011 appartient aux deux familles, et c'est instructif
+
+Ses sept foyers relèvent de la **famille A** par leur origine : des valeurs
+d'attente écrites pour une maquette et survivant dans une page servie.
+
+Mais deux d'entre eux relèvent aussi de la **famille B** par leur nature : un
+« taux de réussite » calculé sur l'expérience gagnée ne mesure pas ce que son
+étiquette annonce, et l'aurait mal mesuré même écrit intentionnellement.
+
+La distinction commande le traitement. Ce qui relève de A se prévient en
+rendant les valeurs d'attente **visiblement fausses** ; ce qui relève de B se
+prévient en demandant **de quoi la valeur est l'effet**. Un remplissage bien
+signalé n'aurait pas sauvé `60 + xp // 50`.
 
 ### La troisième question, ajoutée le 31/08
 
@@ -177,9 +234,28 @@ Une action et son effet ne coïncident pas sans qu'on aille le constater.
 La famille A porte sur **où** l'on constate, la famille B sur **quoi**, la
 famille C sur **si** quelque chose s'exécute. Les trois se traitent par la même
 discipline, et c'est la seule règle générale que ce projet retire de ses onze
-incidents :
+incidents et de leurs répliques :
 
 > Vérifier l'effet, dans les conditions où il se produira.
+
+### Une occurrence qui vaut pour toutes : connaître le motif ne suffit pas
+
+Le 31/08, en rédigeant la réserve 14 sur les exemptions CSRF, ce document a
+écrit noir sur blanc : « aucun autre `@csrf_exempt` ne subsiste dans le projet
+— vérifié le 31/08 ».
+
+**La vérification a été faite après l'affirmation, et l'a démentie.** Une
+troisième exemption attendait dans `apps/exercises`, sur la vue qui enregistre
+les soumissions de code.
+
+C'est-à-dire : le motif que ce document décrit — annoncer un état sans l'avoir
+constaté — a été reproduit **dans le paragraphe même qui le décrivait**, par
+quelqu'un qui venait d'en documenter dix occurrences.
+
+Le paragraphe fautif est conservé dans la réserve 14, non réécrit. Il établit
+ce qu'aucune des dix autres occurrences ne montrait aussi nettement :
+**connaître un motif ne prémunit pas contre lui.** Seule la vérification
+prémunit, et elle doit précéder l'affirmation, pas la suivre.
 
 ---
 
