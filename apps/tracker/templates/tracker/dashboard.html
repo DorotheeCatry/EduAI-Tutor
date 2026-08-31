@@ -1,138 +1,137 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Performance Dashboard - EduAI Tutor{% endblock %}
+{% comment %}
+Page Performance — le rétrospectif, et rien d'inventé.
+
+Compétence visée : C17 (épreuve E4) — application web
+Compétences concernées : C13 (E3) — accessibilité ; C20 (E5) ; C21 (E5)
+
+Ce gabarit affichait « Python Basics 85 % », « Web Development 72 % » et
+« Data Structures 90 % » sur un compte à zéro cours, une semaine d'activité
+dérivée d'un temps d'étude simulé, et un taux de réussite calculé sur
+l'expérience gagnée. Tout cela est retiré (incident 011).
+
+Ce qui reste est mesuré. Ce qui n'est pas mesuré est annoncé comme tel — c'est
+le même traitement que le niveau 3 du référentiel : une donnée absente qui se
+dit vaut mieux qu'une donnée plausible qui ment.
+{% endcomment %}
+
+{% block title %}{% trans "Performance" %} — EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 h-full overflow-y-auto">
-    <div class="flex items-center space-x-3 mb-6">
-        <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-500"></i>
-        <h1 class="text-xl font-bold text-white">{% trans "Performance Dashboard" %}</h1>
-    </div>
+<div class="p-6 space-y-6 overflow-y-auto">
 
-    <!-- Statistiques principales -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">{% trans "Completed courses" %}</h3>
-                <i data-lucide="book-check" class="w-5 h-5 text-green-500"></i>
-            </div>
-            <div class="text-2xl font-bold text-green-500 mb-2">{{ total_courses }}</div>
-            <div class="text-xs text-gray-500">{{ user.total_courses_completed }} total</div>
+    <h1 class="text-2xl font-bold text-white">{% trans "Performance" %}</h1>
+    <p class="text-sm text-gray-400">
+        {% trans "Ce que vous avez fait, tel que la base l'enregistre. Aucune valeur n'est estimée." %}
+    </p>
+
+    {# ---------- Décomptes mesurés ---------- #}
+    <section aria-labelledby="titre-decomptes" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <h2 id="titre-decomptes" class="sr-only">{% trans "Décomptes" %}</h2>
+
+        <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+            <h3 class="text-sm font-medium text-gray-400">{% trans "Cours créés" %}</h3>
+            <p class="text-2xl font-bold text-green-500">{{ cours_crees }}</p>
         </div>
 
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">{% trans "Success rate" %}</h3>
-                <i data-lucide="target" class="w-5 h-5 text-blue-500"></i>
-            </div>
-            <div class="text-2xl font-bold text-blue-500 mb-2">{{ success_rate }}%</div>
-            <div class="text-xs text-gray-500">Based on {{ user.total_quizzes_completed }} quizzes</div>
+        <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+            <h3 class="text-sm font-medium text-gray-400">{% trans "Exercices réussis" %}</h3>
+            <p class="text-2xl font-bold text-blue-500">{{ exercices_reussis }}</p>
         </div>
 
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">{% trans "Study time" %}</h3>
-                <i data-lucide="clock" class="w-5 h-5 text-pink-500"></i>
-            </div>
-            <div class="text-2xl font-bold text-pink-500 mb-2">{{ total_study_time }}</div>
-            <div class="text-xs text-gray-500">{{ today_study_time }} today</div>
+        <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+            <h3 class="text-sm font-medium text-gray-400">{% trans "Quiz terminés" %}</h3>
+            <p class="text-2xl font-bold text-pink-500">{{ quiz_termines }}</p>
+            {% if score_moyen is not None %}
+                <p class="text-xs text-gray-400 mt-1">
+                    {% blocktrans with moyenne=score_moyen|floatformat:0 %}Score moyen : {{ moyenne }} %{% endblocktrans %}
+                </p>
+            {% else %}
+                <p class="text-xs text-gray-500 mt-1">{% trans "Aucun score enregistré" %}</p>
+            {% endif %}
         </div>
 
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-medium text-gray-400">{% trans "Current level" %}</h3>
-                <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
-            </div>
-            <div class="text-2xl font-bold text-yellow-500 mb-2">{{ user.level }}</div>
-            <div class="text-xs text-gray-500">{{ user.xp }} XP</div>
+        <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+            <h3 class="text-sm font-medium text-gray-400">{% trans "Niveau" %}</h3>
+            <p class="text-2xl font-bold text-yellow-500">{{ user.level }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ user.xp }} XP</p>
         </div>
-    </div>
+    </section>
 
-    <!-- Progress chart -->
-    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-            <i data-lucide="trending-up" class="w-5 h-5 text-green-500"></i>
-            <span>{% trans "This week's progress" %}</span>
-        </h3>
-        <div class="space-y-4">
-            {% for day in week_progress %}
-            <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-300 w-16">{{ day.day }}</span>
-                <div class="flex-1 mx-4">
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ day.percentage }}%"></div>
-                    </div>
-                </div>
-                <span class="text-sm text-gray-400 w-16 text-right">{{ day.minutes }}m</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+    {# ---------- Temps d'étude : non mesuré ---------- #}
+    {% if not temps_d_etude_mesure %}
+    <section aria-labelledby="titre-temps"
+             class="p-4 rounded-lg border border-dashed border-gray-600 bg-gray-800">
+        <h2 id="titre-temps" class="text-sm font-medium text-gray-300">
+            {% trans "Temps d'étude" %} —
+            <strong class="font-semibold">{% trans "non mesuré" %}</strong>
+        </h2>
+        <p class="text-sm text-gray-400 mt-1">
+            {% trans "Le produit n'enregistre pas la durée des séances. Cette page affichait auparavant une estimation calculée à partir du nombre de cours ; elle a été retirée plutôt que présentée comme une mesure." %}
+        </p>
+    </section>
+    {% endif %}
 
-    <!-- Recent topics -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-                <i data-lucide="book-open" class="w-5 h-5 text-blue-500"></i>
-                <span>{% trans "Studied topics" %}</span>
-            </h3>
-            <div class="space-y-3">
-                {% for subject in recent_subjects %}
-                <div class="flex items-center justify-between p-3 bg-gray-900 rounded-lg">
-                    <div class="min-w-0 flex-1">
-                        <div class="text-sm font-medium text-white truncate">{{ subject.title }}</div>
-                        <div class="text-xs text-gray-400">{{ subject.status }} {{ subject.time_ago }}</div>
-                    </div>
-                    <div class="{% if subject.score >= 80 %}text-green-500{% elif subject.score >= 70 %}text-blue-500{% else %}text-yellow-500{% endif %} text-sm font-bold ml-4">{{ subject.score }}%</div>
-                </div>
+    {# ---------- Progression par compétence ---------- #}
+    <section aria-labelledby="titre-progression">
+        <h2 id="titre-progression" class="text-lg font-bold text-white mb-1">
+            {% trans "Progression par compétence" %}
+        </h2>
+        <p class="text-xs text-gray-400 mb-3">
+            {% trans "Un exercice réussi donne le niveau 1, trois exercices distincts le niveau 2. Le niveau 3 n'est pas mesuré." %}
+        </p>
+
+        {% if progression %}
+            <ul class="space-y-2">
+                {% for entree in progression %}
+                    <li class="p-3 rounded-lg border border-gray-700 bg-gray-800">
+                        <div class="flex flex-wrap items-baseline justify-between gap-2">
+                            <span class="text-white">
+                                {{ entree.competence.intitule }}
+                                <span class="text-xs text-gray-400">— {{ entree.module.intitule }}</span>
+                            </span>
+
+                            {% comment %}
+                            Le niveau est écrit en toutes lettres, jamais porté
+                            par la seule couleur : un apprenant daltonien doit
+                            pouvoir le lire.
+                            {% endcomment %}
+                            <span class="text-sm">
+                                {% if entree.niveau_atteint == 2 %}
+                                    <span class="px-2 py-1 rounded border border-blue-500 bg-blue-500/15 text-blue-300">
+                                        {% trans "Niveau 2" %}
+                                    </span>
+                                {% elif entree.niveau_atteint == 1 %}
+                                    <span class="px-2 py-1 rounded border border-green-600 bg-green-600/15 text-green-300">
+                                        {% trans "Niveau 1" %}
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 py-1 rounded border border-gray-600 bg-gray-900 text-gray-400">
+                                        {% trans "Non entamée" %}
+                                    </span>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-gray-400 mt-1">
+                            {% blocktrans count reussis=entree.exercices_reussis %}{{ reussis }} exercice réussi{% plural %}{{ reussis }} exercices réussis{% endblocktrans %}{% if entree.reussis_du_premier_coup %}, {% blocktrans count premier=entree.reussis_du_premier_coup %}dont {{ premier }} du premier coup{% plural %}dont {{ premier }} du premier coup{% endblocktrans %}{% endif %}
+                        </p>
+                    </li>
                 {% endfor %}
+            </ul>
+        {% else %}
+            <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+                <p class="text-gray-300">
+                    {% trans "Aucun référentiel de compétences n'est actif." %}
+                </p>
+                <p class="text-sm text-gray-400 mt-1">
+                    {% trans "Vos cours, exercices et quiz restent enregistrés ; la progression par compétence s'affichera dès qu'un référentiel sera chargé." %}
+                </p>
             </div>
-        </div>
+        {% endif %}
+    </section>
 
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-                <i data-lucide="target" class="w-5 h-5 text-pink-500"></i>
-                <span>{% trans "Goals" %}</span>
-            </h3>
-            <div class="space-y-4">
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-300">{% trans "Courses this week" %}</span>
-                        <span class="text-sm text-gray-400">{{ goals.courses.current }}/{{ goals.courses.target }}</span>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ goals.courses.percentage }}%"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-300">{% trans "Successful quizzes" %}</span>
-                        <span class="text-sm text-gray-400">{{ goals.quizzes.current }}/{{ goals.quizzes.target }}</span>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: {{ goals.quizzes.percentage }}%"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm text-gray-300">{% trans "Daily time" %}</span>
-                        <span class="text-sm text-gray-400">{{ goals.daily_time.display }}</span>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-2">
-                        <div class="bg-pink-500 h-2 rounded-full transition-all duration-300" style="width: {{ goals.daily_time.percentage }}%"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.lucide) {
-            lucide.createIcons();
-        }
-    });
-</script>
 {% endblock %}

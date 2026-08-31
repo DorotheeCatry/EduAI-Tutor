@@ -146,22 +146,27 @@
             <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
             <h3 class="text-lg font-bold text-white">{% trans "Your Statistics" %}</h3>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% comment %}
+        Ces quatre cases affichaient 127 quiz terminés, 85 % d'exactitude,
+        12 jours de série et 3 h 42 de temps total — en dur, sur tous les
+        comptes, y compris ceux qui n'avaient jamais lancé un quiz
+        (incident 011). Deux valeurs mesurées les remplacent ; les deux autres
+        ne sont pas enregistrées par le produit et ont été retirées plutôt que
+        remplacées par une estimation.
+        {% endcomment %}
+        <div class="grid grid-cols-2 gap-4">
             <div class="text-center p-4 bg-gray-900 rounded-lg">
-                <div class="text-2xl font-bold text-green-500 mb-1">127</div>
-                <div class="text-xs text-gray-400">{% trans "Completed" %}</div>
+                <div class="text-2xl font-bold text-green-500 mb-1">{{ user.total_quizzes_completed }}</div>
+                <div class="text-xs text-gray-400">{% trans "Quiz terminés" %}</div>
             </div>
             <div class="text-center p-4 bg-gray-900 rounded-lg">
-                <div class="text-2xl font-bold text-blue-500 mb-1">85%</div>
-                <div class="text-xs text-gray-400">{% trans "Accuracy" %}</div>
-            </div>
-            <div class="text-center p-4 bg-gray-900 rounded-lg">
-                <div class="text-2xl font-bold text-pink-500 mb-1">12</div>
-                <div class="text-xs text-gray-400">{% trans "Streak" %}</div>
-            </div>
-            <div class="text-center p-4 bg-gray-900 rounded-lg">
-                <div class="text-2xl font-bold text-gray-400 mb-1">3h 42m</div>
-                <div class="text-xs text-gray-400">{% trans "Total time" %}</div>
+                {% if score_moyen is not None %}
+                    <div class="text-2xl font-bold text-blue-500 mb-1">{{ score_moyen|floatformat:0 }}&nbsp;%</div>
+                    <div class="text-xs text-gray-400">{% trans "Score moyen" %}</div>
+                {% else %}
+                    <div class="text-2xl font-bold text-gray-500 mb-1">—</div>
+                    <div class="text-xs text-gray-400">{% trans "Aucun quiz terminé" %}</div>
+                {% endif %}
             </div>
         </div>
     </div>

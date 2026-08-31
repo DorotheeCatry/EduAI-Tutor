@@ -32,9 +32,18 @@ def redirect_to_login(request):
     return redirect('users:login')
 
 def redirect_to_courses(request):
-    """Redirects to courses if logged in, otherwise to login"""
+    """
+    Oriente vers l'accueil si le compte est ouvert, vers la connexion sinon.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Cette vue menait au générateur de cours, qui était donc la porte d'entrée
+    du produit. Elle mène désormais à l'accueil : un apprenant qui arrive doit
+    d'abord savoir où il en est, et avoir une chose évidente à faire. Le
+    générateur reste accessible ; il cesse d'être ce qu'on voit en arrivant.
+    """
     if request.user.is_authenticated:
-        return redirect('courses:generator')
+        return redirect('accueil:accueil')
     return redirect('users:login')
 
 urlpatterns = [
@@ -44,6 +53,7 @@ urlpatterns = [
 
     # Custom app routes
     path('', redirect_to_courses),                      # Smart redirection
+    path('accueil/', include('apps.accueil.urls')),
     path('auth/', include('apps.users.urls')),          # authentication
     path('courses/', include('apps.courses.urls')),
     path('quiz/', include('apps.quiz.urls')),

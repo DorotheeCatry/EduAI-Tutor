@@ -138,6 +138,7 @@ INSTALLED_APPS = [
     # avant toute mise en ligne. Voir apps/quotas/service.py.
     'apps.quotas',
     'apps.referentiel',
+    'apps.accueil',
     'theme',
 
     # Third-party apps

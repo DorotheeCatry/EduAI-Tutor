@@ -8,8 +8,8 @@
 
 ## Pourquoi ce document
 
-Dix incidents ont été documentés entre le 26 et le 31 août 2026. Pris un par
-un, ce sont dix accidents. Regroupés, ce sont **trois familles** — et une
+Onze incidents ont été documentés entre le 26 et le 31 août 2026. Pris un par
+un, ce sont onze accidents. Regroupés, ce sont **trois familles** — et une
 famille se prévient, là où un accident ne fait que se réparer.
 
 Ce document ne remplace pas les dossiers d'incident : il dit ce qu'ils ont en
@@ -79,6 +79,8 @@ la plus complète.
 | 003, 28/08 | une sonde se déclarant branchée | son propre démarrage, jamais les appels |
 | 006, 29/08 | une sonde de santé nommant une collection | une collection que la recherche n'interrogeait pas |
 | 009, 31/08 | une empreinte de corpus | les octets d'un fichier que SQLite réécrit à la lecture |
+| 011, 31/08 | un « taux de réussite » sur le tableau de bord | `60 + xp // 50` — l'expérience gagnée, sans rapport avec la réussite |
+| 011, 31/08 | le champ `attempts_count` | les soumissions, y compris après la réussite — jamais les tentatives avant réussite, que son nom annonce |
 
 ### Le mécanisme commun
 
@@ -103,6 +105,19 @@ change, le contrôle est à réécrire. C'est ce qui a condamné l'empreinte sur
 octets de SQLite — et ce qui a conduit, le même jour, à régler le seuil de
 latence par environnement plutôt qu'à le relever pour faire taire l'alarme
 (décision 024).
+
+### La troisième question, ajoutée le 31/08
+
+> **Le nom de ce champ décrit-il ce qu'il contient ?**
+
+`attempts_count` compte exactement ce qu'il compte, sans erreur : les
+soumissions. C'est son nom qui promet autre chose — les tentatives avant
+réussite — et la promesse a été crue deux fois, par deux personnes, le même
+jour. Aucune ligne de code n'était fausse ; la lecture l'était.
+
+C'est la variante la plus discrète de cette famille, parce qu'elle ne laisse
+aucune trace : un nom est une promesse, et personne ne relit une promesse
+tenue.
 
 ### Le corollaire, énoncé le 31/08
 
@@ -161,7 +176,7 @@ Une action et son effet ne coïncident pas sans qu'on aille le constater.
 
 La famille A porte sur **où** l'on constate, la famille B sur **quoi**, la
 famille C sur **si** quelque chose s'exécute. Les trois se traitent par la même
-discipline, et c'est la seule règle générale que ce projet retire de ses dix
+discipline, et c'est la seule règle générale que ce projet retire de ses onze
 incidents :
 
 > Vérifier l'effet, dans les conditions où il se produira.
@@ -172,7 +187,7 @@ incidents :
 
 | Document | Contenu |
 |---|---|
-| `incidents/` | Les dix dossiers, un par incident |
+| `incidents/` | Les onze dossiers, un par incident |
 | `strategie_tests.md` | Les trois niveaux de reproduction d'un échec d'intégration |
 | `decisions/024-seuil-de-latence-par-environnement.md` | Régler un indicateur juste dont le contexte a changé |
 | `reserves.md`, réserve 9 | Un contrôle qui repose sur une convention d'exécution |

@@ -44,8 +44,20 @@ def quiz_lobby(request):
     # Get active rooms
     active_rooms = GameRoom.objects.filter(status__in=['waiting', 'starting']).order_by('-created_at')[:10]
 
+    # Score moyen réel, sur les seules sessions closes : une session ouverte
+    # est un quiz engendré, pas un quiz fait (incident 010).
+    from django.db.models import Avg
+
+    from apps.agents.agent_watcher import LearningSession
+
+    score_moyen = LearningSession.objects.filter(
+        user=request.user, activity_type='quiz',
+        end_time__isnull=False, score__isnull=False,
+    ).aggregate(moyenne=Avg('score'))['moyenne']
+
     context = {
         'active_rooms': active_rooms,
+        'score_moyen': score_moyen,
         # Les compétences proposées au lancement d'un quiz solo. Sans ce menu,
         # aucune session ne porterait de compétence et le bloc « à revoir »
         # resterait en sujets libres.

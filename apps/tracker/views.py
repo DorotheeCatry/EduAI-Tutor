@@ -8,96 +8,50 @@ from datetime import datetime, timedelta
 
 @login_required
 def dashboard(request):
-    user = request.user
-    
-    # Basic statistics
-    total_courses = Course.objects.filter(created_by=user).count()
-    
-    # Calculate total study time (simulation based on courses)
-    total_study_minutes = user.total_study_time_minutes or (total_courses * 25)  # ~25min per course
-    study_hours = total_study_minutes // 60
-    study_minutes = total_study_minutes % 60
-    
-    # Study time today (simulation)
-    today_minutes = min(150, total_study_minutes // 10)  # Max 2h30 per day
-    today_hours = today_minutes // 60
-    today_mins = today_minutes % 60
-    
-    # Success rate (based on XP and quizzes)
-    success_rate = min(95, 60 + (user.xp // 50))  # Between 60% and 95%
-    
-    # This week's progress (realistic simulation)
-    week_progress = [
-        {'day': 'Mon', 'minutes': max(0, today_minutes - 60), 'percentage': max(0, min(100, (today_minutes - 60) * 100 // 150))},
-        {'day': 'Tue', 'minutes': max(0, today_minutes - 30), 'percentage': max(0, min(100, (today_minutes - 30) * 100 // 150))},
-        {'day': 'Wed', 'minutes': max(0, today_minutes - 90), 'percentage': max(0, min(100, (today_minutes - 90) * 100 // 150))},
-        {'day': 'Thu', 'minutes': today_minutes, 'percentage': min(100, today_minutes * 100 // 150)},
-        {'day': 'Fri', 'minutes': max(0, today_minutes - 20), 'percentage': max(0, min(100, (today_minutes - 20) * 100 // 150))},
-        {'day': 'Sat', 'minutes': max(0, today_minutes - 45), 'percentage': max(0, min(100, (today_minutes - 45) * 100 // 150))},
-        {'day': 'Sun', 'minutes': max(0, today_minutes - 75), 'percentage': max(0, min(100, (today_minutes - 75) * 100 // 150))},
-    ]
-    
-    # Recent topics (real user courses)
-    recent_courses = Course.objects.filter(created_by=user).order_by('-created_at')[:3]
-    recent_subjects = []
-    
-    for i, course in enumerate(recent_courses):
-        score = min(95, 70 + (user.xp // 30) + (i * 5))  # Score based on XP
-        time_ago = "2h ago" if i == 0 else f"{i+1} day{'s' if i > 0 else ''} ago"
-        
-        recent_subjects.append({
-            'title': course.title[:30] + "..." if len(course.title) > 30 else course.title,
-            'score': score,
-            'time_ago': time_ago,
-            'status': 'Completed' if score > 80 else 'In progress'
-        })
-    
-    # If not enough courses, add examples
-    while len(recent_subjects) < 3:
-        examples = [
-            {'title': 'Python Basics', 'score': 85, 'time_ago': '3 days ago', 'status': 'Completed'},
-            {'title': 'Web Development', 'score': 72, 'time_ago': '1 week ago', 'status': 'In progress'},
-            {'title': 'Data Structures', 'score': 90, 'time_ago': '2 weeks ago', 'status': 'Completed'}
-        ]
-        recent_subjects.append(examples[len(recent_subjects)])
-    
-    # Progress goals
-    weekly_goal_courses = 3
-    weekly_goal_quizzes = 5
-    daily_goal_minutes = 60  # 1h per day
-    
-    # Calculs corrigés pour les objectifs
-    current_week_courses = min(weekly_goal_courses, user.total_courses_completed % (weekly_goal_courses + 1))
-    current_week_quizzes = min(weekly_goal_quizzes, user.total_quizzes_completed % (weekly_goal_quizzes + 1))
-    
-    goals = {
-        'courses': {
-            'current': current_week_courses,
-            'target': weekly_goal_courses,
-            'percentage': min(100, (current_week_courses * 100) // weekly_goal_courses) if weekly_goal_courses > 0 else 0
-        },
-        'quizzes': {
-            'current': current_week_quizzes,
-            'target': weekly_goal_quizzes,
-            'percentage': min(100, (current_week_quizzes * 100) // weekly_goal_quizzes) if weekly_goal_quizzes > 0 else 0
-        },
-        'daily_time': {
-            'current_minutes': today_minutes,
-            'target_minutes': daily_goal_minutes,
-            'percentage': min(100, (today_minutes * 100) // daily_goal_minutes) if daily_goal_minutes > 0 else 0,
-            'display': f"{today_hours}h {today_mins:02d}m / {daily_goal_minutes//60}h"
-        }
-    }
-    
+    """
+    Page Performance : le rétrospectif, et rien d'inventé.
+
+    Compétence visée : C17 (épreuve E4) — application web
+    Compétences concernées : C20 (E5) ; C21 (E5)
+
+    Cette vue fabriquait ses chiffres. Le temps d'étude était déduit du nombre
+    de cours — « ~25 min par cours » —, le taux de réussite calculé sur
+    l'expérience gagnée (`60 + xp // 50`), la semaine d'activité dérivée de ce
+    temps simulé, et la liste des sujets complétée par trois exemples inventés
+    quand l'apprenant n'en avait pas assez : « Python Basics 85 % » s'affichait
+    sur un compte à zéro cours (incident 011).
+
+    Ce qui reste ici est mesuré, et ce qui ne l'est pas est **annoncé comme non
+    mesuré** plutôt que simulé. C'est le même traitement que le niveau 3 du
+    référentiel : une donnée absente qui se dit vaut mieux qu'une donnée
+    plausible qui ment.
+    """
+    from apps.agents.agent_watcher import LearningSession
+    from apps.exercises.models import UserExerciseProgress
+    from apps.referentiel.progression import progression_par_competence
+
+    utilisateur = request.user
+
+    quiz_termines = LearningSession.objects.filter(
+        user=utilisateur, activity_type="quiz",
+        end_time__isnull=False, score__isnull=False,
+    )
+    score_moyen = quiz_termines.aggregate(moyenne=Avg("score"))["moyenne"]
+
     context = {
-        'user': user,
-        'total_courses': total_courses,
-        'success_rate': success_rate,
-        'total_study_time': f"{study_hours}h {study_minutes:02d}m",
-        'today_study_time': f"{today_hours}h {today_mins:02d}m",
-        'week_progress': week_progress,
-        'recent_subjects': recent_subjects,
-        'goals': goals
+        "user": utilisateur,
+        # Mesuré : ce que la base contient.
+        "cours_crees": Course.objects.filter(created_by=utilisateur).count(),
+        "exercices_reussis": UserExerciseProgress.objects.filter(
+            user=utilisateur, is_completed=True).count(),
+        "quiz_termines": quiz_termines.count(),
+        "score_moyen": score_moyen,
+        "progression": progression_par_competence(utilisateur),
+        # Non mesuré : le champ `total_study_time_minutes` existe et n'est
+        # écrit par aucun code du projet. L'afficher reviendrait à montrer un
+        # zéro permanent ; le simuler, à mentir. Il est donc annoncé comme non
+        # mesuré, et la raison tient en une phrase à l'écran.
+        "temps_d_etude_mesure": False,
     }
-    
+
     return render(request, 'tracker/dashboard.html', context)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 10:48+0000\n"
+"POT-Creation-Date: 2026-08-31 14:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,203 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: apps/accueil/templates/accueil/accueil.html:27
+msgid "Accueil"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:35
+msgid "Où j'en suis"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:44
+msgid "Aucun référentiel de compétences n'est actif pour l'instant."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:47
+msgid ""
+"Votre travail est enregistré ; la progression s'affichera dès qu'un "
+"référentiel sera chargé."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:61
+#: apps/tracker/templates/tracker/dashboard.html:109
+msgid "Niveau 1"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:64
+#: apps/tracker/templates/tracker/dashboard.html:105
+msgid "Niveau 2"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:67
+msgid "Niveau 3"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:68
+#: apps/tracker/templates/tracker/dashboard.html:69
+msgid "non mesuré"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:72
+msgid ""
+"« Non mesuré » ne veut pas dire « non atteint » : ce niveau suppose "
+"d'appliquer une notion à un contexte nouveau, ce que le nombre d'exercices "
+"réussis ne permet pas de constater."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:77
+msgid "Ce référentiel ne contient aucun module."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:87
+#, python-format
+msgid ""
+"%(atteintes)s compétences sur %(total)s au niveau 1, %(niveau2)s au niveau 2"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:95
+#, python-format
+msgid "%(total)s compétences, aucune entamée"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:120
+msgid "Ce que je fais maintenant"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:132
+#, python-format
+msgid ""
+"Prochaine compétence du parcours : <strong>%(competence)s</strong>, dans "
+"%(module)s."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:134
+#, python-format
+msgid ""
+"Encore %(restant)s exercice(s) réussi(s) sur <strong>%(competence)s</strong> "
+"pour atteindre le niveau 2."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:139
+msgid "S'exercer sur cette compétence"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:145
+msgid ""
+"Toutes les compétences du référentiel sont au niveau 2. Le niveau 3 n'est "
+"pas mesuré par ce dispositif."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:149
+msgid "Explorer un nouveau sujet"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:153
+msgid "Commencez par générer un cours sur le sujet de votre choix."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:157
+#, fuzzy
+#| msgid "Generate a course"
+msgid "Générer un cours"
+msgstr "Générer un cours"
+
+#: apps/accueil/templates/accueil/accueil.html:165
+#: apps/revision/templates/revision/flashcards.html:24
+msgid "À revoir"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:173
+#: apps/revision/templates/revision/flashcards.html:26
+msgid ""
+"Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt "
+"que ce qui est ancien."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:185
+#: apps/revision/templates/revision/flashcards.html:40
+msgid "hors référentiel"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:189
+#: apps/revision/templates/revision/flashcards.html:44
+#, python-format
+msgid "%(tentatives)s tentative"
+msgid_plural "%(tentatives)s tentatives"
+msgstr[0] ""
+msgstr[1] ""
+
+#: apps/accueil/templates/accueil/accueil.html:199
+#: apps/revision/templates/revision/flashcards.html:54
+msgid "quiz"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:202
+#: apps/revision/templates/revision/flashcards.html:57
+#, python-format
+msgid "%(erreurs)s réponse manquée"
+msgid_plural "%(erreurs)s réponses manquées"
+msgstr[0] ""
+msgstr[1] ""
+
+#: apps/accueil/templates/accueil/accueil.html:215
+#: apps/revision/templates/revision/flashcards.html:66
+msgid "Rien à revoir pour l'instant."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:218
+#: apps/revision/templates/revision/flashcards.html:68
+msgid ""
+"Cette liste se remplit toute seule : un exercice qui demande plusieurs "
+"tentatives, ou une réponse manquée dans un quiz, y apparaît avec sa date."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:222
+#: apps/revision/templates/revision/flashcards.html:72
+msgid "Faire un quiz pour repérer mes lacunes"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:231
+msgid "Dernière activité"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:238
+#, fuzzy
+#| msgid "Exercise"
+msgid "Exercice"
+msgstr "Exercice"
+
+#: apps/accueil/templates/accueil/accueil.html:242
+msgid "réussi"
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:244
+#, fuzzy
+#| msgid "Generate a course"
+msgid "en cours"
+msgstr "Générer un cours"
+
+#: apps/accueil/templates/accueil/accueil.html:250
+#: apps/courses/templates/courses/course_content.html:37
+#: apps/courses/templates/courses/my_courses.html:50
+#: templates/components/sidebar.html:102
+msgid "Quiz"
+msgstr "Quiz"
+
+#: apps/accueil/templates/accueil/accueil.html:258
+#, fuzzy
+#| msgid "Courses"
+msgid "Cours"
+msgstr "Cours"
+
+#: apps/accueil/templates/accueil/accueil.html:266
+msgid "Aucune activité pour l'instant."
+msgstr ""
+
+#: apps/accueil/templates/accueil/accueil.html:268
+msgid "Votre premier cours, exercice ou quiz apparaîtra ici avec son résultat."
+msgstr ""
 
 #: apps/chat/templates/chat/chat.html:20
 msgid "AI Search"
@@ -42,15 +239,9 @@ msgstr "Posez-moi une question sur la programmation…"
 
 #: apps/courses/templates/courses/course_content.html:30
 #: apps/users/templates/users/profile.html:118
-#: apps/users/templates/users/profile.html:178
+#: apps/users/templates/users/profile.html:187
 msgid "Save"
 msgstr "Enregistrer"
-
-#: apps/courses/templates/courses/course_content.html:37
-#: apps/courses/templates/courses/my_courses.html:50
-#: templates/components/sidebar.html:102
-msgid "Quiz"
-msgstr "Quiz"
 
 #: apps/courses/templates/courses/course_content.html:42
 #: apps/courses/templates/courses/my_courses.html:56
@@ -112,7 +303,7 @@ msgid "Today"
 msgstr "Aujourd'hui"
 
 #: apps/courses/templates/courses/generate.html:114
-#: apps/users/templates/users/profile.html:218
+#: apps/users/templates/users/profile.html:227
 msgid "Progress"
 msgstr "Progression"
 
@@ -186,55 +377,59 @@ msgid "Advanced"
 msgstr "Avancé"
 
 #: apps/exercises/templates/exercises/exercise_detail.html:37
-#: apps/quiz/templates/quiz/quiz_lobby.html:123
 msgid "Completed"
 msgstr "Terminé"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:65
+#: apps/exercises/templates/exercises/exercise_detail.html:73
+#: apps/exercises/templates/exercises/exercise_list.html:99
+msgid "Hors référentiel — ne compte pas dans la progression"
+msgstr ""
+
+#: apps/exercises/templates/exercises/exercise_detail.html:87
 msgid "📋 Statement"
 msgstr "📋 Énoncé"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:71
+#: apps/exercises/templates/exercises/exercise_detail.html:93
 msgid "🧪 Tests to pass"
 msgstr "🧪 Tests à faire passer"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:82
+#: apps/exercises/templates/exercises/exercise_detail.html:104
 msgid "Expected:"
 msgstr "Attendu :"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:86
+#: apps/exercises/templates/exercises/exercise_detail.html:108
 msgid "Got:"
 msgstr "Obtenu :"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:95
+#: apps/exercises/templates/exercises/exercise_detail.html:117
 msgid "📊 Recent attempts"
 msgstr "📊 Tentatives récentes"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:102
+#: apps/exercises/templates/exercises/exercise_detail.html:124
 msgid "Success"
 msgstr "Réussite"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:105
+#: apps/exercises/templates/exercises/exercise_detail.html:127
 msgid "Failed"
 msgstr "Échec"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:125
+#: apps/exercises/templates/exercises/exercise_detail.html:147
 msgid "Python Editor"
 msgstr "Éditeur Python"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:126
+#: apps/exercises/templates/exercises/exercise_detail.html:148
 msgid "Write your solution here"
 msgstr "Écrivez votre solution ici"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:133
+#: apps/exercises/templates/exercises/exercise_detail.html:155
 msgid "Reset"
 msgstr "Réinitialiser"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:138
+#: apps/exercises/templates/exercises/exercise_detail.html:160
 msgid "Test Code"
 msgstr "Tester le code"
 
-#: apps/exercises/templates/exercises/exercise_detail.html:152
+#: apps/exercises/templates/exercises/exercise_detail.html:174
 msgid "Write your Python code here..."
 msgstr "Écrivez votre code Python ici…"
 
@@ -266,50 +461,71 @@ msgstr "Tous les sujets"
 msgid "Filter"
 msgstr "Filtrer"
 
-#: apps/exercises/templates/exercises/exercise_list.html:111
+#: apps/exercises/templates/exercises/exercise_list.html:133
 msgid "Start"
 msgstr "Commencer"
 
-#: apps/exercises/templates/exercises/exercise_list.html:127
+#: apps/exercises/templates/exercises/exercise_list.html:149
 msgid "No exercises found"
 msgstr "Aucun exercice trouvé"
 
-#: apps/exercises/templates/exercises/exercise_list.html:128
+#: apps/exercises/templates/exercises/exercise_list.html:150
 msgid "Try modifying your filters or generate a new exercise."
 msgstr "Modifiez vos filtres, ou générez un nouvel exercice."
 
-#: apps/exercises/templates/exercises/exercise_list.html:130
-#: apps/exercises/templates/exercises/exercise_list.html:164
+#: apps/exercises/templates/exercises/exercise_list.html:152
+#: apps/exercises/templates/exercises/exercise_list.html:186
 msgid "Generate an exercise"
 msgstr "Générer un exercice"
 
-#: apps/exercises/templates/exercises/exercise_list.html:142
+#: apps/exercises/templates/exercises/exercise_list.html:164
 msgid "Previous"
 msgstr "Précédent"
 
-#: apps/exercises/templates/exercises/exercise_list.html:152
+#: apps/exercises/templates/exercises/exercise_list.html:174
 msgid "Next"
 msgstr "Suivant"
 
-#: apps/exercises/templates/exercises/exercise_list.html:179
+#: apps/exercises/templates/exercises/exercise_list.html:214
+#: apps/quiz/templates/quiz/quiz_lobby.html:40
+msgid "Compétence visée"
+msgstr ""
+
+#: apps/exercises/templates/exercises/exercise_list.html:219
+#: apps/quiz/templates/quiz/quiz_lobby.html:44
+msgid "Aucune — sujet libre, hors référentiel"
+msgstr ""
+
+#: apps/exercises/templates/exercises/exercise_list.html:229
+msgid ""
+"Seuls les exercices rattachés à une compétence comptent dans votre "
+"progression."
+msgstr ""
+
+#: apps/exercises/templates/exercises/exercise_list.html:235
+#: apps/quiz/templates/quiz/quiz_lobby.html:57
 msgid "Topic"
 msgstr "Sujet"
 
-#: apps/exercises/templates/exercises/exercise_list.html:181
+#: apps/exercises/templates/exercises/exercise_list.html:237
 msgid "e.g.: Python functions, loops, classes..."
 msgstr "par exemple : fonctions, boucles, classes…"
 
-#: apps/exercises/templates/exercises/exercise_list.html:186
+#: apps/exercises/templates/exercises/exercise_list.html:241
+msgid "Ignoré si une compétence est choisie ci-dessus."
+msgstr ""
+
+#: apps/exercises/templates/exercises/exercise_list.html:246
 msgid "Difficulty"
 msgstr "Difficulté"
 
-#: apps/exercises/templates/exercises/exercise_list.html:196
+#: apps/exercises/templates/exercises/exercise_list.html:256
 #: apps/users/templates/users/profile.html:121
-#: apps/users/templates/users/profile.html:175
+#: apps/users/templates/users/profile.html:184
 msgid "Cancel"
 msgstr "Annuler"
 
-#: apps/exercises/templates/exercises/exercise_list.html:199
+#: apps/exercises/templates/exercises/exercise_list.html:259
 msgid "Generate"
 msgstr "Générer"
 
@@ -322,8 +538,6 @@ msgid "Completed exercises"
 msgstr "Exercices terminés"
 
 #: apps/exercises/templates/exercises/user_progress.html:29
-#: apps/revision/templates/revision/flashcards.html:81
-#: apps/tracker/templates/tracker/dashboard.html:26
 msgid "Success rate"
 msgstr "Taux de réussite"
 
@@ -332,7 +546,7 @@ msgid "First try"
 msgstr "Du premier coup"
 
 #: apps/exercises/templates/exercises/user_progress.html:40
-#: apps/users/templates/users/profile.html:234
+#: apps/users/templates/users/profile.html:243
 msgid "Current streak"
 msgstr "Série en cours"
 
@@ -380,59 +594,59 @@ msgstr "Poursuivre les exercices"
 msgid "Generate a course"
 msgstr "Générer un cours"
 
-#: apps/exercises/views.py:221
+#: apps/exercises/views.py:241
 msgid "Please specify a topic for the exercise."
 msgstr "Indiquez un sujet pour l'exercice."
 
-#: apps/exercises/views.py:367 apps/exercises/views.py:438
+#: apps/exercises/views.py:388 apps/exercises/views.py:460
 #, python-format
 msgid "Exercise \"%(titre)s\" generated successfully!"
 msgstr "Exercice « %(titre)s » généré."
 
-#: apps/exercises/views.py:458 apps/exercises/views.py:717
+#: apps/exercises/views.py:481 apps/exercises/views.py:759
 #, python-format
 msgid ""
 "AI generated a malformed response. Basic exercise created on \"%(sujet)s\"."
 msgstr ""
 
-#: apps/exercises/views.py:462 apps/exercises/views.py:493
-#: apps/exercises/views.py:721 apps/exercises/views.py:751
+#: apps/exercises/views.py:485 apps/exercises/views.py:517
+#: apps/exercises/views.py:763 apps/exercises/views.py:793
 #, python-format
 msgid "Generation error: %(erreur)s"
 msgstr "Erreur de génération : %(erreur)s"
 
-#: apps/exercises/views.py:462 apps/exercises/views.py:721
+#: apps/exercises/views.py:485 apps/exercises/views.py:763
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
-#: apps/exercises/views.py:490 apps/exercises/views.py:748
+#: apps/exercises/views.py:514 apps/exercises/views.py:790
 #, python-format
 msgid "AI generation error. Basic exercise created on \"%(sujet)s\"."
 msgstr "Erreur du modèle. Un exercice simple a été créé sur « %(sujet)s »."
 
-#: apps/exercises/views.py:505
+#: apps/exercises/views.py:544
 msgid "No topic specified to generate the exercise."
 msgstr "Aucun sujet indiqué pour générer l'exercice."
 
-#: apps/exercises/views.py:628 apps/exercises/views.py:697
+#: apps/exercises/views.py:668 apps/exercises/views.py:738
 #, python-format
 msgid "Exercise \"%(titre)s\" generated successfully from course!"
 msgstr "Exercice « %(titre)s » généré à partir du cours."
 
-#: apps/exercises/views.py:813
+#: apps/exercises/views.py:855
 msgid "You can only delete exercises you created."
 msgstr "Vous ne pouvez supprimer que les exercices que vous avez créés."
 
-#: apps/exercises/views.py:818
+#: apps/exercises/views.py:860
 #, python-format
 msgid "Exercise \"%(titre)s\" deleted successfully!"
 msgstr "Exercice « %(titre)s » supprimé."
 
-#: apps/exercises/views.py:821
+#: apps/exercises/views.py:863
 msgid "Exercise not found."
 msgstr "Exercice introuvable."
 
-#: apps/exercises/views.py:823
+#: apps/exercises/views.py:865
 #, python-format
 msgid "Error deleting exercise: %(erreur)s"
 msgstr "Erreur à la suppression de l'exercice : %(erreur)s"
@@ -454,17 +668,17 @@ msgid "Number of Questions"
 msgstr "Nombre de questions"
 
 #: apps/quiz/templates/quiz/create_room.html:35
-#: apps/quiz/templates/quiz/quiz_lobby.html:36
+#: apps/quiz/templates/quiz/quiz_lobby.html:66
 msgid "5 questions"
 msgstr "5 questions"
 
 #: apps/quiz/templates/quiz/create_room.html:36
-#: apps/quiz/templates/quiz/quiz_lobby.html:37
+#: apps/quiz/templates/quiz/quiz_lobby.html:67
 msgid "10 questions"
 msgstr "10 questions"
 
 #: apps/quiz/templates/quiz/create_room.html:37
-#: apps/quiz/templates/quiz/quiz_lobby.html:38
+#: apps/quiz/templates/quiz/quiz_lobby.html:68
 msgid "15 questions"
 msgstr "15 questions"
 
@@ -521,7 +735,7 @@ msgid "Back to Lobby"
 msgstr "Retour au salon"
 
 #: apps/quiz/templates/quiz/create_room.html:74
-#: apps/quiz/templates/quiz/quiz_lobby.html:61
+#: apps/quiz/templates/quiz/quiz_lobby.html:91
 msgid "Create Room"
 msgstr "Créer la salle"
 
@@ -542,7 +756,7 @@ msgid "ABC123"
 msgstr "ABC123"
 
 #: apps/quiz/templates/quiz/join_room.html:52
-#: apps/quiz/templates/quiz/quiz_lobby.html:72
+#: apps/quiz/templates/quiz/quiz_lobby.html:102
 msgid "Join Room"
 msgstr "Rejoindre la salle"
 
@@ -608,50 +822,55 @@ msgstr "Mode solo"
 msgid "Train at your own pace with personalized quizzes"
 msgstr "Entraînez-vous à votre rythme avec des quiz adaptés"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:31
+#: apps/quiz/templates/quiz/quiz_lobby.html:54
+msgid ""
+"Un quiz ne fait pas progresser de niveau : il signale ce qui reste à revoir."
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:62
 msgid "e.g. Python functions, Django models..."
 msgstr "par exemple : fonctions Python, modèles Django…"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:41
+#: apps/quiz/templates/quiz/quiz_lobby.html:71
 msgid "Start Solo Quiz"
 msgstr "Lancer un quiz solo"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:51
+#: apps/quiz/templates/quiz/quiz_lobby.html:81
 msgid "Multiplayer Modes"
 msgstr "Modes multijoueur"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:62
+#: apps/quiz/templates/quiz/quiz_lobby.html:92
 msgid "Host a multiplayer quiz for your friends"
 msgstr "Hébergez un quiz multijoueur pour vos camarades"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:73
+#: apps/quiz/templates/quiz/quiz_lobby.html:103
 msgid "Enter a room code to join a multiplayer quiz"
 msgstr "Saisissez un code de salle pour rejoindre un quiz multijoueur"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:85
+#: apps/quiz/templates/quiz/quiz_lobby.html:115
 msgid "Active Rooms"
 msgstr "Salles actives"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:99
+#: apps/quiz/templates/quiz/quiz_lobby.html:129
 msgid "Join"
 msgstr "Rejoindre"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:118
+#: apps/quiz/templates/quiz/quiz_lobby.html:148
 msgid "Your Statistics"
 msgstr "Vos statistiques"
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:127
-msgid "Accuracy"
-msgstr "Exactitude"
+#: apps/quiz/templates/quiz/quiz_lobby.html:162
+#: apps/tracker/templates/tracker/dashboard.html:45
+msgid "Quiz terminés"
+msgstr ""
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:131
-msgid "Streak"
-msgstr "Série"
+#: apps/quiz/templates/quiz/quiz_lobby.html:167
+msgid "Score moyen"
+msgstr ""
 
-#: apps/quiz/templates/quiz/quiz_lobby.html:135
-#: apps/revision/templates/revision/flashcards.html:91
-msgid "Total time"
-msgstr "Temps total"
+#: apps/quiz/templates/quiz/quiz_lobby.html:170
+msgid "Aucun quiz terminé"
+msgstr ""
 
 #: apps/quiz/templates/quiz/quiz_start.html:30
 msgid "Revenir au salon"
@@ -696,7 +915,7 @@ msgstr "Lancer la partie"
 #: apps/quiz/templates/quiz/room_detail.html:84
 #: apps/quiz/templates/quiz/room_detail.html:86
 #: apps/quiz/templates/quiz/room_detail.html:89 apps/users/models.py:58
-#: apps/users/templates/users/profile.html:190
+#: apps/users/templates/users/profile.html:199
 #: templates/components/sidebar.html:21 templates/components/sidebar.html:23
 #: templates/components/sidebar.html:26 templates/components/sidebar.html:42
 #: templates/components/sidebar.html:44 templates/components/sidebar.html:47
@@ -707,239 +926,283 @@ msgstr "Avatar"
 msgid "Perfect for testing! You can start the game solo."
 msgstr "Idéal pour un essai : la partie peut être lancée seul."
 
-#: apps/quiz/views.py:22
+#: apps/quiz/views.py:26
 msgid "Only the host can delete this room."
 msgstr "Seul l'hôte peut supprimer cette salle."
 
-#: apps/quiz/views.py:27
+#: apps/quiz/views.py:31
 #, python-format
 msgid "Room \"%(sujet)s\" deleted successfully!"
 msgstr "Salle « %(sujet)s » supprimée."
 
-#: apps/quiz/views.py:31
+#: apps/quiz/views.py:35
 msgid "Room not found."
 msgstr "Salle introuvable."
 
-#: apps/quiz/views.py:33
+#: apps/quiz/views.py:37
 #, python-format
 msgid "Error deleting room: %(erreur)s"
 msgstr "Erreur à la suppression de la salle : %(erreur)s"
 
-#: apps/quiz/views.py:71
+#: apps/quiz/views.py:91
 #, python-format
 msgid "Room created with code: %(code)s"
 msgstr "Salle créée, code : %(code)s"
 
-#: apps/quiz/views.py:84
+#: apps/quiz/views.py:104
 msgid "Only the host can start the game."
 msgstr "Seul l'hôte peut lancer la partie."
 
-#: apps/quiz/views.py:89
+#: apps/quiz/views.py:109
 msgid "Game already started or finished."
 msgstr "La partie est déjà lancée ou terminée."
 
-#: apps/quiz/views.py:114
+#: apps/quiz/views.py:134
 #, python-format
 msgid "Game started! %(nombre)s questions generated."
 msgstr "Partie lancée : %(nombre)s questions générées."
 
-#: apps/quiz/views.py:118
+#: apps/quiz/views.py:138
 msgid "Failed to generate questions. Please try again."
 msgstr "La génération des questions a échoué. Réessayez."
 
-#: apps/quiz/views.py:128
+#: apps/quiz/views.py:148
 #, python-format
 msgid "Error generating questions: %(erreur)s"
 msgstr "Erreur à la génération des questions : %(erreur)s"
 
-#: apps/quiz/views.py:143
+#: apps/quiz/views.py:163
 msgid "This room is full."
 msgstr "Cette salle est complète."
 
-#: apps/quiz/views.py:160
+#: apps/quiz/views.py:180
 msgid "Room not found or already finished."
 msgstr "Salle introuvable ou déjà terminée."
 
-#: apps/quiz/views.py:175
+#: apps/quiz/views.py:195
 msgid "You must join this room to access it."
 msgstr "Vous devez rejoindre cette salle pour y accéder."
 
-#: apps/quiz/views.py:373
+#: apps/quiz/views.py:393
 msgid "You are not authorized to access this game."
 msgstr "Vous n'êtes pas autorisé à accéder à cette partie."
 
-#: apps/revision/templates/revision/flashcards.html:10
-msgid "Intelligent Revision"
-msgstr "Révision guidée"
+#: apps/referentiel/models.py:44
+msgid "Imiter"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:13
-msgid "Personalized revision system based on your learning progress"
-msgstr "Un système de révision fondé sur votre progression"
+#: apps/referentiel/models.py:44
+msgid "Adapter"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:22
-msgid "Next Revision Session"
-msgstr "Prochaine séance de révision"
+#: apps/referentiel/models.py:44
+msgid "Transposer"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:28
-msgid "Concept"
-msgstr "Notion"
+#: apps/referentiel/models.py:59
+msgid "Les libellés de niveaux doivent former une liste."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:29
-msgid "Python Decorators"
-msgstr "Décorateurs Python"
+#: apps/referentiel/models.py:62
+#, python-format
+msgid "Un référentiel compte exactement %(attendu)s niveaux, %(recu)s fournis."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:33
-msgid "Difficulty Level"
-msgstr "Niveau de difficulté"
+#: apps/referentiel/models.py:67
+msgid "Chaque libellé de niveau doit être un texte non vide."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:35
-msgid "Medium"
-msgstr "Moyen"
+#: apps/referentiel/models.py:85 apps/referentiel/models.py:163
+#: apps/referentiel/models.py:200
+#, fuzzy
+#| msgid "Test Code"
+msgid "Code"
+msgstr "Tester le code"
 
-#: apps/revision/templates/revision/flashcards.html:47
-msgid "Cards to Review"
-msgstr "Cartes à revoir"
+#: apps/referentiel/models.py:86
+msgid ""
+"Identifiant stable, repris à l'import pour mettre à jour plutôt que "
+"dupliquer."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:48
-msgid "8 flashcards"
-msgstr "8 cartes"
+#: apps/referentiel/models.py:89 apps/referentiel/models.py:164
+#: apps/referentiel/models.py:201
+msgid "Intitulé"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:52
-msgid "Estimated Time"
-msgstr "Durée estimée"
+#: apps/referentiel/models.py:91
+#, fuzzy
+#| msgid "Revision"
+msgid "Version"
+msgstr "Révision"
 
-#: apps/revision/templates/revision/flashcards.html:53
-msgid "~5 minutes"
-msgstr "environ 5 minutes"
+#: apps/referentiel/models.py:92
+msgid "Version du référentiel chez son auteur, telle qu'il la nomme."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:60
-msgid "Start Revision Session"
-msgstr "Commencer la séance"
+#: apps/referentiel/models.py:95
+msgid "Source"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:70
-msgid "Revision Stats"
-msgstr "Statistiques de révision"
+#: apps/referentiel/models.py:96
+msgid "D'où vient ce référentiel : organisme, document, URL."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:76
-msgid "Cards mastered"
-msgstr "Cartes maîtrisées"
+#: apps/referentiel/models.py:101
+msgid "Libellés des trois niveaux"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:86
-msgid "Day streak"
-msgstr "Jours d'affilée"
+#: apps/referentiel/models.py:104
+msgid "Actif"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:97
-msgid "Recent Progress"
-msgstr "Progression récente"
+#: apps/referentiel/models.py:105
+msgid ""
+"Un seul référentiel actif à la fois : c'est celui que l'interface affiche."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:100
-msgid "Python Functions"
-msgstr "Fonctions Python"
+#: apps/referentiel/models.py:108
+msgid "Importé le"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:101
-msgid "Mastered"
-msgstr "Maîtrisé"
+#: apps/referentiel/models.py:111 apps/referentiel/models.py:161
+msgid "Référentiel"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:104
-msgid "Django Models"
-msgstr "Modèles Django"
+#: apps/referentiel/models.py:112
+msgid "Référentiels"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:105
-msgid "In Progress"
-msgstr "En cours"
+#: apps/referentiel/models.py:166 apps/referentiel/models.py:203
+msgid "Ordre"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:108
-#: apps/revision/templates/revision/flashcards.html:127
-msgid "SQL Joins"
-msgstr "Jointures SQL"
+#: apps/referentiel/models.py:167
+msgid "Ordre d'affichage ; à défaut, l'ordre alphabétique du code."
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:109
-msgid "Needs Review"
-msgstr "À revoir"
+#: apps/referentiel/models.py:171 apps/referentiel/models.py:198
+msgid "Module"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:121
-msgid "Topics Needing Review"
-msgstr "Sujets à revoir"
+#: apps/referentiel/models.py:172
+msgid "Modules"
+msgstr ""
 
-#: apps/revision/templates/revision/flashcards.html:128
-msgid "High Priority"
-msgstr "Priorité haute"
+#: apps/referentiel/models.py:202
+#, fuzzy
+#| msgid "Question"
+msgid "Description"
+msgstr "Question"
 
-#: apps/revision/templates/revision/flashcards.html:130
-msgid "3 mistakes in last quiz"
-msgstr "3 erreurs au dernier quiz"
+#: apps/referentiel/models.py:206
+#, fuzzy
+#| msgid "Completed"
+msgid "Compétence"
+msgstr "Terminé"
 
-#: apps/revision/templates/revision/flashcards.html:132
-#: apps/revision/templates/revision/flashcards.html:143
-#: apps/revision/templates/revision/flashcards.html:154
-msgid "Review Now"
-msgstr "Revoir maintenant"
-
-#: apps/revision/templates/revision/flashcards.html:138
-msgid "Django Forms"
-msgstr "Formulaires Django"
-
-#: apps/revision/templates/revision/flashcards.html:139
-msgid "Medium Priority"
-msgstr "Priorité moyenne"
-
-#: apps/revision/templates/revision/flashcards.html:141
-msgid "2 mistakes in last quiz"
-msgstr "2 erreurs au dernier quiz"
-
-#: apps/revision/templates/revision/flashcards.html:149
-msgid "Python Classes"
-msgstr "Classes Python"
-
-#: apps/revision/templates/revision/flashcards.html:150
-msgid "Low Priority"
-msgstr "Priorité basse"
-
-#: apps/revision/templates/revision/flashcards.html:152
-msgid "1 mistake in last quiz"
-msgstr "1 erreur au dernier quiz"
-
-#: apps/tracker/templates/tracker/dashboard.html:10
-msgid "Performance Dashboard"
-msgstr "Tableau de bord"
-
-#: apps/tracker/templates/tracker/dashboard.html:17
-#: apps/users/templates/users/profile.html:226
-msgid "Completed courses"
+#: apps/referentiel/models.py:207
+#, fuzzy
+#| msgid "Completed courses"
+msgid "Compétences"
 msgstr "Cours terminés"
 
+#: apps/revision/templates/revision/flashcards.html:19
+#, fuzzy
+#| msgid "Revision"
+msgid "Révision"
+msgstr "Révision"
+
+#: apps/revision/templates/revision/flashcards.html:75
+msgid "S'exercer"
+msgstr ""
+
+#: apps/tracker/templates/tracker/dashboard.html:20
+#: apps/tracker/templates/tracker/dashboard.html:25
+#: templates/components/sidebar.html:114
+msgid "Performance"
+msgstr "Performances"
+
+#: apps/tracker/templates/tracker/dashboard.html:27
+msgid ""
+"Ce que vous avez fait, tel que la base l'enregistre. Aucune valeur n'est "
+"estimée."
+msgstr ""
+
+#: apps/tracker/templates/tracker/dashboard.html:32
+msgid "Décomptes"
+msgstr ""
+
 #: apps/tracker/templates/tracker/dashboard.html:35
-msgid "Study time"
-msgstr "Temps d'étude"
+#: apps/users/templates/users/supprimer_compte.html:60
+msgid "Cours créés"
+msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:44
-msgid "Current level"
-msgstr "Niveau actuel"
+#: apps/tracker/templates/tracker/dashboard.html:40
+msgid "Exercices réussis"
+msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:56
-msgid "This week's progress"
-msgstr "Progression de la semaine"
+#: apps/tracker/templates/tracker/dashboard.html:49
+#, python-format
+msgid "Score moyen : %(moyenne)s %%"
+msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:78
-msgid "Studied topics"
-msgstr "Sujets étudiés"
+#: apps/tracker/templates/tracker/dashboard.html:52
+msgid "Aucun score enregistré"
+msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:96
-msgid "Goals"
-msgstr "Objectifs"
+#: apps/tracker/templates/tracker/dashboard.html:57
+msgid "Niveau"
+msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:101
-msgid "Courses this week"
-msgstr "Cours cette semaine"
+#: apps/tracker/templates/tracker/dashboard.html:68
+msgid "Temps d'étude"
+msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:110
-#: apps/users/templates/users/profile.html:230
-msgid "Successful quizzes"
-msgstr "Quiz réussis"
+#: apps/tracker/templates/tracker/dashboard.html:72
+msgid ""
+"Le produit n'enregistre pas la durée des séances. Cette page affichait "
+"auparavant une estimation calculée à partir du nombre de cours ; elle a été "
+"retirée plutôt que présentée comme une mesure."
+msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:119
-msgid "Daily time"
-msgstr "Temps quotidien"
+#: apps/tracker/templates/tracker/dashboard.html:80
+msgid "Progression par compétence"
+msgstr ""
+
+#: apps/tracker/templates/tracker/dashboard.html:83
+msgid ""
+"Un exercice réussi donne le niveau 1, trois exercices distincts le niveau 2. "
+"Le niveau 3 n'est pas mesuré."
+msgstr ""
+
+#: apps/tracker/templates/tracker/dashboard.html:113
+msgid "Non entamée"
+msgstr ""
+
+#: apps/tracker/templates/tracker/dashboard.html:120
+#, python-format
+msgid "%(reussis)s exercice réussi"
+msgid_plural "%(reussis)s exercices réussis"
+msgstr[0] ""
+msgstr[1] ""
+
+#: apps/tracker/templates/tracker/dashboard.html:120
+#, python-format
+msgid "dont %(premier)s du premier coup"
+msgid_plural "dont %(premier)s du premier coup"
+msgstr[0] ""
+msgstr[1] ""
+
+#: apps/tracker/templates/tracker/dashboard.html:128
+msgid "Aucun référentiel de compétences n'est actif."
+msgstr ""
+
+#: apps/tracker/templates/tracker/dashboard.html:131
+msgid ""
+"Vos cours, exercices et quiz restent enregistrés ; la progression par "
+"compétence s'affichera dès qu'un référentiel sera chargé."
+msgstr ""
 
 #: apps/users/admin.py:12
 #, fuzzy
@@ -950,7 +1213,7 @@ msgstr "Email ou nom d'utilisateur"
 msgid "Progression"
 msgstr "Progression"
 
-#: apps/users/admin.py:25 apps/users/templates/users/profile.html:209
+#: apps/users/admin.py:25 apps/users/templates/users/profile.html:218
 msgid "Level"
 msgstr "Niveau"
 
@@ -1009,7 +1272,8 @@ msgstr "Biographie"
 msgid "A short biography of the user."
 msgstr "Une courte biographie de l'utilisateur."
 
-#: apps/users/models.py:69 apps/users/templates/users/profile.html:169
+#: apps/users/models.py:69 apps/users/templates/users/profile.html:178
+#: eduai_project/settings.py:365
 msgid "English"
 msgstr "English"
 
@@ -1123,7 +1387,7 @@ msgid "Click on a Koda avatar to select it"
 msgstr "Cliquez sur un avatar Koda pour le choisir"
 
 #: apps/users/templates/users/profile.html:98
-#: apps/users/templates/users/profile.html:188
+#: apps/users/templates/users/profile.html:197
 msgid "Preview"
 msgstr "Aperçu"
 
@@ -1147,28 +1411,36 @@ msgstr "Zoom :"
 msgid "Tell us about yourself..."
 msgstr "Présentez-vous en quelques mots…"
 
-#: apps/users/templates/users/profile.html:165
+#: apps/users/templates/users/profile.html:174
 #, fuzzy
 msgid "Preferred Language"
 msgstr "Langue préférée"
 
-#: apps/users/templates/users/profile.html:168
+#: apps/users/templates/users/profile.html:177 eduai_project/settings.py:366
 msgid "Français"
 msgstr ""
 
-#: apps/users/templates/users/profile.html:202
+#: apps/users/templates/users/profile.html:211
 msgid "Statistics"
 msgstr "Statistiques"
 
-#: apps/users/templates/users/profile.html:205
+#: apps/users/templates/users/profile.html:214
 msgid "Title"
 msgstr "Titre"
 
-#: apps/users/templates/users/profile.html:213
+#: apps/users/templates/users/profile.html:222
 msgid "XP"
 msgstr "XP"
 
-#: apps/users/templates/users/profile.html:238
+#: apps/users/templates/users/profile.html:235
+msgid "Completed courses"
+msgstr "Cours terminés"
+
+#: apps/users/templates/users/profile.html:239
+msgid "Successful quizzes"
+msgstr "Quiz réussis"
+
+#: apps/users/templates/users/profile.html:247
 msgid "Member since"
 msgstr "Membre depuis"
 
@@ -1245,10 +1517,6 @@ msgstr ""
 
 #: apps/users/templates/users/supprimer_compte.html:58
 msgid "Compte et profil"
-msgstr ""
-
-#: apps/users/templates/users/supprimer_compte.html:60
-msgid "Cours créés"
 msgstr ""
 
 #: apps/users/templates/users/supprimer_compte.html:61
@@ -1374,10 +1642,6 @@ msgstr "Exercices Python"
 msgid "Revision"
 msgstr "Révision"
 
-#: templates/components/sidebar.html:114
-msgid "Performance"
-msgstr "Performances"
-
 #: templates/components/statusbar.html:7
 #, python-format
 msgid "Série : %(jours)s j"
@@ -1439,11 +1703,13 @@ msgid_plural ""
 "            Il vous reste <strong>%(restantes)s</strong> générations sur "
 "%(quota)s aujourd'hui. Le compteur repart à zéro à minuit.\n"
 "            "
-msgstr[0] "\n"
+msgstr[0] ""
+"\n"
 "            Il vous reste <strong>%(restantes)s</strong> génération sur "
 "%(quota)s aujourd'hui. Le compteur repart à zéro à minuit.\n"
 "            "
-msgstr[1] "\n"
+msgstr[1] ""
+"\n"
 "            Il vous reste <strong>%(restantes)s</strong> générations sur "
 "%(quota)s aujourd'hui. Le compteur repart à zéro à minuit.\n"
 "            "
@@ -1459,3 +1725,132 @@ msgstr "Bonjour de la part de daisyUI 👋"
 #: theme/templates/base.html:23
 msgid "Django + Tailwind = ❤️"
 msgstr "Django + Tailwind = ❤️"
+
+#~ msgid "Accuracy"
+#~ msgstr "Exactitude"
+
+#~ msgid "Streak"
+#~ msgstr "Série"
+
+#~ msgid "Total time"
+#~ msgstr "Temps total"
+
+#~ msgid "Intelligent Revision"
+#~ msgstr "Révision guidée"
+
+#~ msgid "Personalized revision system based on your learning progress"
+#~ msgstr "Un système de révision fondé sur votre progression"
+
+#~ msgid "Next Revision Session"
+#~ msgstr "Prochaine séance de révision"
+
+#~ msgid "Concept"
+#~ msgstr "Notion"
+
+#~ msgid "Python Decorators"
+#~ msgstr "Décorateurs Python"
+
+#~ msgid "Difficulty Level"
+#~ msgstr "Niveau de difficulté"
+
+#~ msgid "Medium"
+#~ msgstr "Moyen"
+
+#~ msgid "Cards to Review"
+#~ msgstr "Cartes à revoir"
+
+#~ msgid "8 flashcards"
+#~ msgstr "8 cartes"
+
+#~ msgid "Estimated Time"
+#~ msgstr "Durée estimée"
+
+#~ msgid "~5 minutes"
+#~ msgstr "environ 5 minutes"
+
+#~ msgid "Start Revision Session"
+#~ msgstr "Commencer la séance"
+
+#~ msgid "Revision Stats"
+#~ msgstr "Statistiques de révision"
+
+#~ msgid "Cards mastered"
+#~ msgstr "Cartes maîtrisées"
+
+#~ msgid "Day streak"
+#~ msgstr "Jours d'affilée"
+
+#~ msgid "Recent Progress"
+#~ msgstr "Progression récente"
+
+#~ msgid "Python Functions"
+#~ msgstr "Fonctions Python"
+
+#~ msgid "Mastered"
+#~ msgstr "Maîtrisé"
+
+#~ msgid "Django Models"
+#~ msgstr "Modèles Django"
+
+#~ msgid "In Progress"
+#~ msgstr "En cours"
+
+#~ msgid "SQL Joins"
+#~ msgstr "Jointures SQL"
+
+#~ msgid "Needs Review"
+#~ msgstr "À revoir"
+
+#~ msgid "Topics Needing Review"
+#~ msgstr "Sujets à revoir"
+
+#~ msgid "High Priority"
+#~ msgstr "Priorité haute"
+
+#~ msgid "3 mistakes in last quiz"
+#~ msgstr "3 erreurs au dernier quiz"
+
+#~ msgid "Review Now"
+#~ msgstr "Revoir maintenant"
+
+#~ msgid "Django Forms"
+#~ msgstr "Formulaires Django"
+
+#~ msgid "Medium Priority"
+#~ msgstr "Priorité moyenne"
+
+#~ msgid "2 mistakes in last quiz"
+#~ msgstr "2 erreurs au dernier quiz"
+
+#~ msgid "Python Classes"
+#~ msgstr "Classes Python"
+
+#~ msgid "Low Priority"
+#~ msgstr "Priorité basse"
+
+#~ msgid "1 mistake in last quiz"
+#~ msgstr "1 erreur au dernier quiz"
+
+#~ msgid "Performance Dashboard"
+#~ msgstr "Tableau de bord"
+
+#~ msgid "Study time"
+#~ msgstr "Temps d'étude"
+
+#~ msgid "Current level"
+#~ msgstr "Niveau actuel"
+
+#~ msgid "This week's progress"
+#~ msgstr "Progression de la semaine"
+
+#~ msgid "Studied topics"
+#~ msgstr "Sujets étudiés"
+
+#~ msgid "Goals"
+#~ msgstr "Objectifs"
+
+#~ msgid "Courses this week"
+#~ msgstr "Cours cette semaine"
+
+#~ msgid "Daily time"
+#~ msgstr "Temps quotidien"
