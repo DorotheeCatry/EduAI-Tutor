@@ -28,10 +28,6 @@ const availableTabs = {
         title: 'My Courses',
         url: "/courses/my-courses/"
     },
-    'chat': {
-        title: 'AI Search',
-        url: "/chat/search/"
-    },
     'quiz': {
         title: 'Quiz & MCQ',
         url: "/quiz/lobby/"
@@ -57,7 +53,6 @@ function getCurrentTab() {
     if (path.includes('profile')) return 'profile';
     if (path.includes('generator')) return 'courses';
     if (path.includes('my-courses')) return 'my-courses';
-    if (path.includes('chat')) return 'chat';
     if (path.includes('quiz')) return 'quiz';
     if (path.includes('exercises')) return 'exercises';
     if (path.includes('tracker')) return 'tracker';

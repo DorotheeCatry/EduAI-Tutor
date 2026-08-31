@@ -2,88 +2,128 @@
 
 {{ contexte_tuteur|default_if_none:""|json_script:"contexte-tuteur" }}
 
-{# Poignée de réouverture — toujours visible quand le panneau est fermé #}
+{# --- Poignée flottante (panneau fermé) --- #}
 <button type="button" id="tuteur-ouvrir"
         aria-expanded="false" aria-controls="tuteur-panneau"
         title="{% trans "Ouvrir le tuteur (Alt+T)" %}"
         class="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full
                bg-primary-green text-white shadow-lg hover:bg-green-600
                focus:outline-none focus:ring-2 focus:ring-white transition-colors">
-    <span aria-hidden="true">💬</span>
+    <i data-lucide="message-circle" class="w-5 h-5"></i>
     <span class="text-sm font-medium">{% trans "Tuteur" %}</span>
     <span id="tuteur-quotas-rapide" class="text-xs opacity-75"></span>
 </button>
 
+{# --- Panneau --- #}
 <aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre" hidden
-       class="tuteur-dock fixed top-0 right-0 z-50 h-full w-full sm:w-96
-              bg-gray-900 border-l border-gray-700 flex flex-col shadow-2xl">
+       class="tuteur-dock fixed top-0 right-0 z-50 h-full w-full sm:w-[400px]
+              bg-gray-800 border-l border-gray-700 flex flex-col shadow-2xl
+              rounded-l-xl overflow-hidden">
 
-    {# Barre de titre — poignée de glissement #}
-    <div id="tuteur-poignee" class="flex items-start justify-between p-4 border-b border-gray-700 cursor-grab"
+    {# Barre de titre = poignée de glissement #}
+    <div id="tuteur-poignee"
+         class="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700 cursor-grab select-none"
          role="toolbar" aria-label="{% trans "Barre du tuteur" %}">
-        <div class="min-w-0">
-            <h2 id="tuteur-titre" class="text-lg font-bold text-white">{% trans "Tuteur" %}</h2>
-            <p id="tuteur-contexte" class="text-xs text-gray-400 mt-1">
-                {% trans "Le tuteur voit :" %} <span id="tuteur-contexte-detail">{% trans "aucun contexte — question générale" %}</span>
-            </p>
+        <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
+                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+            </div>
+            <div class="min-w-0">
+                <h2 id="tuteur-titre" class="text-sm font-semibold text-white truncate">{% trans "Tuteur IA" %}</h2>
+                <p class="text-xs text-primary-green flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-primary-green inline-block"></span>
+                    {% trans "En ligne" %}
+                </p>
+            </div>
         </div>
         <div class="flex items-center gap-1 flex-shrink-0">
             <button type="button" id="tuteur-redock"
                     title="{% trans "Redocker à droite" %}"
-                    class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1">
-                <span aria-hidden="true">⤓</span>
+                    class="text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white rounded p-1.5 transition-colors">
+                <i data-lucide="panel-right" class="w-4 h-4"></i>
                 <span class="sr-only">{% trans "Redocker" %}</span>
             </button>
             <button type="button" id="tuteur-fermer"
                     aria-expanded="true" aria-controls="tuteur-panneau"
                     title="{% trans "Replier le tuteur (Échap)" %}"
-                    class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1">
-                <span aria-hidden="true">→</span>
+                    class="text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white rounded p-1.5 transition-colors">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
                 <span class="sr-only">{% trans "Replier le tuteur" %}</span>
             </button>
         </div>
     </div>
 
-    {# Actions préformées — varient selon la page #}
-    <div id="tuteur-actions" class="p-3 flex flex-wrap gap-2 border-b border-gray-700"></div>
+    {# Bannière de contexte #}
+    <div class="px-4 py-2 bg-gray-800/50 border-b border-gray-700/50">
+        <p id="tuteur-contexte" class="text-xs text-gray-400 flex items-center gap-1.5">
+            <i data-lucide="eye" class="w-3 h-3 flex-shrink-0"></i>
+            <span class="text-gray-500">{% trans "Le tuteur voit :" %}</span>
+            <span id="tuteur-contexte-detail" class="text-gray-300">{% trans "aucun contexte — question générale" %}</span>
+        </p>
+    </div>
 
-    {# Messages — région annoncée aux lecteurs d'écran #}
+    {# Actions préformées #}
+    <div id="tuteur-actions" class="px-3 py-2 flex flex-wrap gap-2 border-b border-gray-700/50"></div>
+
+    {# Messages #}
     <div id="tuteur-messages" role="log" aria-live="polite" aria-atomic="false"
-         class="flex-1 overflow-y-auto p-4 space-y-3 text-sm"></div>
+         class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900"></div>
 
-    {# Chargement — texte, pas seulement animation #}
-    <p id="tuteur-chargement" hidden class="px-4 py-2 text-sm text-gray-300">
-        <span aria-hidden="true">⏳</span> {% trans "Le tuteur réfléchit…" %}
-    </p>
-
-    {# Formulaire #}
-    <form id="tuteur-formulaire" class="p-3 border-t border-gray-700 space-y-2">
-        <label for="tuteur-question" class="sr-only">{% trans "Votre question" %}</label>
-        <textarea id="tuteur-question" rows="2" required
-                  placeholder="{% trans "Posez votre question…" %}"
-                  class="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 rounded-lg
-                         text-white placeholder-gray-400 focus:outline-none focus:border-primary-green
-                         focus:ring-1 focus:ring-primary-green resize-none"></textarea>
-        <div class="flex items-center justify-between gap-2">
-            <p id="tuteur-quota" class="text-xs text-gray-400"></p>
-            <button type="submit"
-                    class="px-3 py-2 text-sm rounded-lg bg-primary-green text-white
-                           hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
-                {% trans "Envoyer" %}
-            </button>
+    {# Chargement #}
+    <div id="tuteur-chargement" hidden class="px-4 py-2 bg-gray-900">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
+                <i data-lucide="bot" class="w-4 h-4 text-white"></i>
+            </div>
+            <div class="bg-gray-800 rounded-lg px-4 py-3 border border-gray-700">
+                <div class="flex items-center gap-2">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay:0.1s;"></div>
+                        <div class="w-2 h-2 bg-primary-blue rounded-full animate-bounce" style="animation-delay:0.2s;"></div>
+                    </div>
+                    <span class="text-xs text-gray-400">{% trans "Le tuteur réfléchit…" %}</span>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
+
+    {# Zone de saisie #}
+    <div class="p-3 bg-gray-800 border-t border-gray-700 flex-shrink-0">
+        <div class="mb-2">
+            <p id="tuteur-quota" class="text-xs text-gray-400"></p>
+        </div>
+        <form id="tuteur-formulaire" class="flex items-end gap-2">
+            <div class="flex-1">
+                <label for="tuteur-question" class="sr-only">{% trans "Votre question" %}</label>
+                <textarea id="tuteur-question" rows="1" required
+                          placeholder="{% trans "Posez votre question…" %}"
+                          class="w-full px-4 py-3 text-sm bg-gray-900 border border-gray-600 rounded-lg
+                                 text-white placeholder-gray-400 focus:outline-none focus:border-primary-green
+                                 focus:ring-1 focus:ring-primary-green transition-colors resize-none"
+                          style="min-height: 44px; max-height: 120px;"></textarea>
+            </div>
+            <button type="submit"
+                    class="px-4 py-3 bg-primary-green text-white rounded-lg hover:bg-green-600
+                           transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                           flex items-center justify-center flex-shrink-0"
+                    style="min-width: 44px; height: 44px;">
+                <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+        </form>
+    </div>
 </aside>
 
 <style>
 #tuteur-panneau { transition: transform 200ms ease, left 200ms ease, top 200ms ease,
-                   width 200ms ease, height 200ms ease; }
+                   width 200ms ease, height 200ms ease, border-radius 200ms ease; }
+
 #tuteur-panneau.tuteur-flottant {
     position: fixed;
     height: auto;
     max-height: 80vh;
-    min-height: 300px;
-    width: 380px;
+    min-height: 320px;
+    width: 400px;
     max-width: calc(100vw - 32px);
     border: 1px solid #374151;
     border-radius: 0.75rem;
@@ -92,6 +132,58 @@
 #tuteur-panneau.tuteur-flottant #tuteur-poignee { cursor: grabbing; }
 #tuteur-panneau.tuteur-glissement { transition: none; user-select: none; }
 #tuteur-panneau.tuteur-glissement * { pointer-events: none; }
+
+#tuteur-messages {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #1F2937;
+}
+#tuteur-messages::-webkit-scrollbar { width: 6px; }
+#tuteur-messages::-webkit-scrollbar-track { background: #1F2937; }
+#tuteur-messages::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
+#tuteur-messages::-webkit-scrollbar-thumb:hover { background: #6B7280; }
+
+#tuteur-messages .msg-bubble .inline-code {
+    background: #1E293B; color: #A5F3FC; padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem; font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.75rem; border: 1px solid #334155;
+}
+#tuteur-messages .msg-bubble .code-block-container {
+    background: #0D1117; border: 1px solid #30363D; border-radius: 0.5rem;
+    overflow: hidden; margin: 0.5rem 0;
+}
+#tuteur-messages .msg-bubble .code-header {
+    background: #21262D; padding: 0.5rem 0.75rem; border-bottom: 1px solid #30363D;
+    display: flex; justify-content: space-between; align-items: center;
+}
+#tuteur-messages .msg-bubble .code-language {
+    font-size: 0.65rem; color: #7C3AED; background: #1E1B4B;
+    padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-weight: 600;
+}
+#tuteur-messages .msg-bubble .copy-btn {
+    display: flex; align-items: center; gap: 0.25rem; background: #374151;
+    color: #9CA3AF; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem;
+    font-size: 0.65rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;
+}
+#tuteur-messages .msg-bubble .copy-btn:hover { background: #4B5563; color: white; }
+#tuteur-messages .msg-bubble .copy-btn.copied { background: #4CAF50; color: white; }
+#tuteur-messages .msg-bubble .code-content {
+    padding: 0.6rem 0.75rem; background: #0D1117; color: #E6EDF3;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.75rem; line-height: 1.4; overflow-x: auto;
+}
+#tuteur-messages .msg-bubble .code-content pre { margin: 0; }
+#tuteur-messages .msg-bubble .list-container {
+    margin: 0.25rem 0; padding-left: 0; list-style: none;
+}
+#tuteur-messages .msg-bubble .list-item {
+    position: relative; margin-bottom: 0.2rem; padding-left: 1rem;
+    color: #E5E7EB; line-height: 1.5; font-size: 0.8rem;
+}
+#tuteur-messages .msg-bubble .list-item::before {
+    content: "▸"; color: #22C55E; font-weight: bold;
+    position: absolute; left: 0; top: 0;
+}
+
 @media (max-width: 639px) {
     #tuteur-panneau { width: 100% !important; }
     #tuteur-panneau.tuteur-flottant {
@@ -104,18 +196,18 @@
 
 <script>
 (function () {
-    const ouvrir    = document.getElementById('tuteur-ouvrir');
-    const panneau   = document.getElementById('tuteur-panneau');
-    const fermer    = document.getElementById('tuteur-fermer');
-    const redock    = document.getElementById('tuteur-redock');
-    const poignee   = document.getElementById('tuteur-poignee');
-    const messages  = document.getElementById('tuteur-messages');
-    const chargement= document.getElementById('tuteur-chargement');
-    const formulaire= document.getElementById('tuteur-formulaire');
-    const champ     = document.getElementById('tuteur-question');
-    const quota     = document.getElementById('tuteur-quota');
+    const ouvrir      = document.getElementById('tuteur-ouvrir');
+    const panneau     = document.getElementById('tuteur-panneau');
+    const fermer      = document.getElementById('tuteur-fermer');
+    const redock      = document.getElementById('tuteur-redock');
+    const poignee     = document.getElementById('tuteur-poignee');
+    const messages    = document.getElementById('tuteur-messages');
+    const chargement  = document.getElementById('tuteur-chargement');
+    const formulaire  = document.getElementById('tuteur-formulaire');
+    const champ       = document.getElementById('tuteur-question');
+    const quota       = document.getElementById('tuteur-quota');
     const quotaRapide = document.getElementById('tuteur-quotas-rapide');
-    const detailCtx = document.getElementById('tuteur-contexte-detail');
+    const detailCtx   = document.getElementById('tuteur-contexte-detail');
     const zoneActions = document.getElementById('tuteur-actions');
 
     let contexte = {page: 'general', resume: '', elements: [], charge: {}, actions: []};
@@ -125,6 +217,57 @@
     }
 
     const historique = [];
+
+    function escapeHtml(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    function formatResponse(text) {
+        const blocks = [];
+        const withoutCode = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
+            lang = lang || 'txt';
+            const escaped = escapeHtml(code);
+            const block = '<div class="code-block-container">'
+                + '<div class="code-header">'
+                + '<span class="code-language">' + lang.toUpperCase() + '</span>'
+                + '<button class="copy-btn" onclick="tuteurCopyCode(this)">'
+                + '<i data-lucide="copy" class="w-3 h-3"></i><span>Copy</span></button>'
+                + '</div>'
+                + '<pre class="code-content"><code>' + escaped + '</code></pre>'
+                + '</div>';
+            blocks.push(block);
+            return '<!--CODEBLOCK_' + (blocks.length - 1) + '-->';
+        });
+
+        let f = withoutCode
+            .replace(/^### (.*)$/gm, '<h3 class="text-blue-400 font-semibold text-sm mb-1 mt-2">$1</h3>')
+            .replace(/^## (.*)$/gm, '<h2 class="text-green-400 font-semibold text-base mb-1 mt-2">$1</h2>')
+            .replace(/^# (.*)$/gm, '<h1 class="text-white font-bold text-lg mb-1 mt-2">$1</h1>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-white">$1</strong>')
+            .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+
+        f = f.replace(/((?:\|[^\n]+)+)\n\|(?:\s*[-:]+\s*\|)+\n((?:\|[^\n]+\n)+)/g, (_, header, body) => {
+            const thead = header.split('|').filter(Boolean).map(h =>
+                '<th class="border border-gray-600 px-2 py-1 text-xs text-white bg-gray-700 font-semibold">' + h.trim() + '</th>'
+            ).join('');
+            const rows = body.trim().split('\n').map(row => {
+                const tds = row.split('|').filter(Boolean).map(c =>
+                    '<td class="border border-gray-700 px-2 py-1 text-xs text-gray-100">' + c.trim() + '</td>'
+                ).join('');
+                return '<tr>' + tds + '</tr>';
+            }).join('');
+            return '<table class="border-collapse border border-gray-700 my-2 w-full"><thead><tr>' + thead + '</tr></thead><tbody>' + rows + '</tbody></table>';
+        });
+
+        f = f.replace(/(^|\n)[\*-]\s+(.+)/g, '\n<li class="list-item">$2</li>');
+        f = f.replace(/(<li class="list-item">[\s\S]*?<\/li>)/gs, '<ul class="list-container">$1</ul>');
+        f = f.replace(/\n{2,}/g, '</p><p class="mb-1">');
+        f = '<p class="mb-1">' + f + '</p>';
+        f = f.replace(/<!--CODEBLOCK_(\d+)-->/g, (_, i) => blocks[parseInt(i)]);
+        return f;
+    }
 
     function decrireContexte() {
         if (!contexte.elements || contexte.elements.length === 0) {
@@ -143,28 +286,48 @@
         actions.forEach(action => {
             const b = document.createElement('button');
             b.type = 'button';
-            b.className = 'px-2 py-1 text-xs rounded border border-gray-600 text-gray-200 ' +
-                           'hover:border-primary-green focus:outline-none focus:ring-2 focus:ring-white';
+            b.className = 'px-2.5 py-1 text-xs rounded-md bg-gray-700 text-gray-200 '
+                        + 'hover:bg-primary-green hover:text-white focus:outline-none '
+                        + 'focus:ring-2 focus:ring-white transition-colors';
             b.textContent = action.libelle;
             b.addEventListener('click', () => envoyer({action: action.code, libelle: action.libelle}));
             zoneActions.appendChild(b);
         });
     }
 
-    function ajouterMessage(auteur, texte, heure) {
-        const bulle = document.createElement('div');
-        bulle.className = auteur === 'moi'
-            ? 'p-2 rounded-lg bg-gray-800 text-gray-100'
-            : 'p-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-200';
-        const entete = document.createElement('p');
-        entete.className = 'text-xs text-gray-400 mb-1';
-        entete.textContent = (auteur === 'moi' ? "{% trans 'Vous' %}" : "{% trans 'Tuteur' %}")
-            + (heure ? ' · ' + heure : '');
-        const corps = document.createElement('p');
-        corps.textContent = texte;
-        bulle.appendChild(entete);
-        bulle.appendChild(corps);
-        messages.appendChild(bulle);
+    function ajouterMessage(texte, isUser, heure) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex items-start gap-3 ' + (isUser ? 'flex-row-reverse' : '');
+
+        const avatar = document.createElement('div');
+        avatar.className = 'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 '
+            + (isUser ? 'bg-primary-green' : 'bg-primary-blue');
+        avatar.innerHTML = '<i data-lucide="' + (isUser ? 'user' : 'bot') + '" class="w-4 h-4 text-white"></i>';
+
+        const content = document.createElement('div');
+        content.className = 'flex-1 ' + (isUser ? 'flex flex-col items-end' : '');
+
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble rounded-lg px-4 py-3 border max-w-[85%] '
+            + (isUser
+                ? 'bg-primary-green border-green-600 text-white'
+                : 'bg-gray-800 border-gray-700 text-gray-100');
+        bubble.innerHTML = isUser
+            ? '<div class="text-sm leading-relaxed">' + escapeHtml(texte) + '</div>'
+            : '<div class="text-sm leading-relaxed">' + formatResponse(texte) + '</div>';
+
+        const time = document.createElement('p');
+        time.className = 'text-xs text-gray-500 mt-1';
+        time.textContent = heure || new Date().toLocaleTimeString();
+
+        content.appendChild(bubble);
+        content.appendChild(time);
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(content);
+        messages.appendChild(wrapper);
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        if (window.Prism) Prism.highlightAll();
         messages.scrollTop = messages.scrollHeight;
     }
 
@@ -176,7 +339,7 @@
     }
 
     async function envoyer({message, action, libelle}) {
-        ajouterMessage('moi', libelle || message);
+        ajouterMessage(libelle || message, true);
         chargement.hidden = false;
         try {
             const reponse = await fetch("{% url 'chat:send_message' %}", {
@@ -193,11 +356,11 @@
                 }),
             });
             const corps = await reponse.json();
-            ajouterMessage('tuteur', corps.reponse || corps.error, corps.horodatage);
+            ajouterMessage(corps.reponse || corps.error, false, corps.horodatage);
             historique.push({question: libelle || message, reponse: corps.reponse || ''});
             if (corps.quota) afficherQuota(corps.quota);
         } catch (e) {
-            ajouterMessage('tuteur', `{% trans "La réponse n'a pas pu être obtenue." %}`);
+            ajouterMessage(`{% trans "La réponse n'a pas pu être obtenue." %}`, false);
         } finally {
             chargement.hidden = true;
         }
@@ -230,7 +393,7 @@
         return window.matchMedia('(max-width: 639px)').matches;
     }
 
-    {# --- Glissement (drag) --- #}
+    {# --- Glissement --- #}
     let enGlissement = false;
     let decalageX = 0, decalageY = 0;
 
@@ -260,23 +423,21 @@
         enGlissement = true;
         panneau.classList.add('tuteur-glissement');
         const rect = panneau.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        decalageX = clientX - rect.left;
-        decalageY = clientY - rect.top;
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        decalageX = cx - rect.left;
+        decalageY = cy - rect.top;
         e.preventDefault();
     }
 
     function pendantGlissement(e) {
         if (!enGlissement) return;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        let x = clientX - decalageX;
-        let y = clientY - decalageY;
-        const w = panneau.offsetWidth;
-        const h = panneau.offsetHeight;
-        x = Math.max(0, Math.min(x, window.innerWidth - w));
-        y = Math.max(0, Math.min(y, window.innerHeight - h));
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        let x = cx - decalageX;
+        let y = cy - decalageY;
+        x = Math.max(0, Math.min(x, window.innerWidth - panneau.offsetWidth));
+        y = Math.max(0, Math.min(y, window.innerHeight - panneau.offsetHeight));
         panneau.style.left = x + 'px';
         panneau.style.top = y + 'px';
         e.preventDefault();
@@ -294,10 +455,9 @@
     document.addEventListener('touchmove', pendantGlissement, {passive: false});
     document.addEventListener('mouseup', finirGlissement);
     document.addEventListener('touchend', finirGlissement);
-
     redock.addEventListener('click', redocker);
 
-    {# --- Raccourcis clavier --- #}
+    {# --- Raccourci clavier --- #}
     document.addEventListener('keydown', function(e) {
         if (e.altKey && (e.key === 't' || e.key === 'T')) {
             e.preventDefault();
@@ -311,19 +471,50 @@
     panneau.addEventListener('keydown', e => {
         if (e.key === 'Escape') fermerPanneau();
     });
+
+    champ.addEventListener('input', () => {
+        champ.style.height = 'auto';
+        champ.style.height = Math.min(champ.scrollHeight, 120) + 'px';
+    });
+    champ.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (champ.value.trim()) formulaire.dispatchEvent(new Event('submit'));
+        }
+    });
+
     formulaire.addEventListener('submit', e => {
         e.preventDefault();
         const texte = champ.value.trim();
         if (!texte) return;
         champ.value = '';
+        champ.style.height = 'auto';
         envoyer({message: texte});
     });
+
+    {# --- Copie de code --- #}
+    window.tuteurCopyCode = function(btn) {
+        const code = btn.closest('.code-block-container').querySelector('code').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            const icon = btn.querySelector('i');
+            const label = btn.querySelector('span');
+            btn.classList.add('copied');
+            icon.setAttribute('data-lucide', 'check');
+            label.textContent = 'Copied!';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                icon.setAttribute('data-lucide', 'copy');
+                label.textContent = 'Copy';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }, 2000);
+        });
+    };
 
     {# --- Initialisation --- #}
     decrireContexte();
     poserActions();
 
-    {# Quota initial depuis le contexte serveur #}
     {% if quota_generation %}
     afficherQuota({
         restantes: {{ quota_generation.restantes }},
@@ -351,7 +542,6 @@
         fermerPanneau(false);
     }
 
-    {# Sauvegarder la position flottante #}
     new MutationObserver(() => {
         if (panneau.classList.contains('tuteur-flottant') && !enGlissement) {
             try {

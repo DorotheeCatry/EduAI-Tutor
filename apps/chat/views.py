@@ -9,7 +9,6 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
@@ -19,21 +18,6 @@ from apps.quotas.service import QuotaDepasse, etat
 
 from .actions import invite_de_l_action
 from .contexte import composer_l_invite
-
-
-@login_required
-def search_chat(request):
-    """
-    Page de chat autonome, conservée pour une conversation sans contexte.
-
-    Compétence visée : C17 (épreuve E4)
-
-    Le panneau latéral la remplace dans l'usage courant : on pose une question
-    parce qu'on bloque sur quelque chose, et ce quelque chose est ce qu'on
-    quittait pour venir ici. La page reste accessible pour les questions qui ne
-    portent sur aucune page en particulier.
-    """
-    return render(request, 'chat/chat.html')
 
 
 @require_POST
