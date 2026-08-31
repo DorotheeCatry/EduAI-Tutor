@@ -197,7 +197,7 @@
             historique.push({question: libelle || message, reponse: corps.reponse || ''});
             if (corps.quota) afficherQuota(corps.quota);
         } catch (e) {
-            ajouterMessage('tuteur', "{% trans 'La réponse n'a pas pu être obtenue.' %}");
+            ajouterMessage('tuteur', `{% trans "La réponse n'a pas pu être obtenue." %}`);
         } finally {
             chargement.hidden = true;
         }
