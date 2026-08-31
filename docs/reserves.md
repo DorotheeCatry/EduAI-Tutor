@@ -160,7 +160,7 @@ reste à reprendre après le 14 septembre.
 
 ---
 
-## 7. La latence d'embarquement en production, non arbitrée
+## 7. La latence d'embarquement en production — mesurée, arbitrée, assumée
 
 **Composant :** serveur d'embarquement déployé (`docker/ollama/Dockerfile`)
 **Nature :** performance en conditions réelles ; peut rendre le RAG non
@@ -386,3 +386,54 @@ qu'on aille le constater. Celui-ci ajoute une nuance — le contrôle existait, 
 était correct, et il a quand même attesté du faux, parce qu'il vérifiait
 **l'ordre** des opérations et non **leur résultat**. Un contrôle qui repose sur
 une convention d'exécution n'est pas un contrôle : c'est une convention.
+
+---
+
+## 10. L'interface est traduite, le contenu pédagogique ne l'est pas
+
+**Composant :** corpus vectoriel, cours et exercices générés
+**Nature :** limite fonctionnelle assumée de l'internationalisation
+**Statut :** **ouverte**, énoncée le 31/08/2026
+
+L'interface passe désormais du français à l'anglais selon le choix de
+l'apprenant. **Ce qu'elle affiche à l'intérieur, non.**
+
+| Élément | Langue | Pourquoi |
+|---|---|---|
+| Menus, boutons, formulaires, messages | fr ou en, au choix | Traduits, catalogues `locale/` |
+| Fragments du corpus RAG | **anglais** | Stack Overflow et la documentation Python sont en anglais |
+| Cours générés | français | L'orchestrateur passe `language_preference` au modèle |
+| Quiz et exercices générés | fr ou en | Idem, le modèle génère dans la langue demandée |
+
+Un apprenant qui choisit l'anglais obtient donc une interface anglaise, des
+cours anglais — et des sources citées en anglais, ce qui est cohérent. Un
+apprenant francophone obtient une interface et des cours français, **mais des
+extraits de corpus en anglais**, puisque c'est la langue des documents
+d'origine.
+
+### Pourquoi le corpus n'est pas traduit
+
+Traduire 21 189 fragments demanderait un appel au modèle par fragment, puis une
+réindexation complète — les vecteurs d'un texte traduit n'ont aucun rapport
+avec ceux de l'original. Ce serait plusieurs dizaines d'heures de traitement
+pour dégrader la matière : une réponse technique traduite automatiquement perd
+la précision de ses termes, et c'est précisément ce qu'un apprenant vient
+chercher.
+
+**Ce n'est pas un contournement, c'est le comportement attendu d'un RAG.** La
+recherche documentaire cite ses sources ; une source citée dans une autre
+langue que l'originale n'est plus une citation.
+
+### Ce qu'il faut en dire
+
+À l'oral, et dans l'interface le jour où le public le justifiera : le service
+est bilingue pour ce qu'il dit lui-même, et monolingue pour ce qu'il cite. Les
+extraits du corpus portent déjà leur attribution — titre, licence, source — ce
+qui rend leur origine visible ; il manque l'indication de leur langue.
+
+### Ce qui serait à faire, après le 14 septembre
+
+Porter la langue de chaque fragment dans ses métadonnées à l'indexation, et
+l'afficher à côté de l'attribution. Le champ n'existe pas aujourd'hui dans le
+corpus indexé — l'ajouter suppose de rejouer l'indexation, ce que la réserve 7
+a déjà écarté pour d'autres raisons.

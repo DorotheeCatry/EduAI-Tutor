@@ -240,6 +240,82 @@ redis-server
 
 ---
 
+## 🌍 Internationalisation (français / anglais)
+
+L'interface est servie en **français par défaut**, en anglais si le compte le
+demande. La langue vient de `language_preference`, un champ du compte, appliqué
+à chaque requête par `apps.users.middleware.LangueDeLApprenant`. Elle suit donc
+la personne d'un poste à l'autre, contrairement à un cookie.
+
+Les catalogues vivent à **un seul endroit** : `locale/fr/` et `locale/en/`.
+
+### Mettre à jour les traductions
+
+**Toute chaîne ajoutée dans un gabarit ou dans du code Python doit passer par
+ces trois commandes.** Un `.po` non régénéré n'échoue pas : la chaîne s'affiche
+simplement dans sa langue source, au milieu du reste. C'est un écart
+silencieux, et ce projet en a documenté assez pour ne pas en ajouter un.
+
+```bash
+# 1. Relever les chaînes nouvelles ou modifiées dans les deux catalogues
+uv run python manage.py makemessages -l fr -l en \
+    --ignore=.venv --ignore=staticfiles --ignore=node_modules \
+    --ignore=theme/static --ignore=data_pipeline --ignore=benchmark
+
+# 2. Traduire : éditer locale/fr/LC_MESSAGES/django.po et locale/en/…
+#    Une entrée msgstr vide signifie « utiliser la chaîne source ».
+
+# 3. Compiler — sans cette étape, la traduction reste sans effet
+uv run python manage.py compilemessages --ignore=.venv
+```
+
+Les `--ignore` ne sont pas décoratifs : sans eux, `makemessages` parcourt
+l'environnement virtuel et les dépendances, et `compilemessages` recompile les
+catalogues de Django lui-même.
+
+### Ce qui est versionné
+
+Les `.po` **et** les `.mo`. Les fichiers compilés sont habituellement exclus
+d'un dépôt, mais les images de déploiement sont construites à partir du clone :
+sans les `.mo`, l'application déployée servirait ses chaînes sources, et
+personne ne le verrait avant la démonstration.
+
+### Écrire une chaîne traduisible
+
+```django
+{% load i18n %}
+{% trans "Enregistrer" %}
+{% blocktrans with nom=user.username %}Bonjour {{ nom }}{% endblocktrans %}
+{% blocktrans count n=nombre %}{{ n }} cours{% plural %}{{ n }} cours{% endblocktrans %}
+```
+
+```python
+from django.utils.translation import gettext as _
+messages.success(request, _("Cours enregistré."))
+messages.error(request, _("Erreur : %(motif)s") % {"motif": motif})
+```
+
+**Substitution nommée, jamais positionnelle** : `%(motif)s` peut changer de
+place dans une traduction, `%s` non.
+
+### Ce qui n'est pas traduit, et pourquoi
+
+Les messages d'erreur des deux API, les journaux, la documentation et le corpus
+documentaire. Les motifs sont écrits dans `docs/decisions/025-portee-de-la-traduction.md`
+et `docs/reserves.md` (réserve 10).
+
+### Vérifier
+
+```bash
+DJANGO_DEBUG=False uv run pytest tests/test_i18n.py
+```
+
+Ces tests portent sur l'**effet** du réglage sur la page servie, jamais sur sa
+présence en base : le champ `language_preference` existait depuis l'origine et
+n'était lu par personne pour l'affichage.
+
+---
+
 ## 🧪 Key Features in Detail
 
 ### Multi-Agent AI System
