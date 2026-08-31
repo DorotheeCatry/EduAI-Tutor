@@ -1,0 +1,1461 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-31 10:48+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: apps/chat/templates/chat/chat.html:20
+msgid "AI Search"
+msgstr "Recherche assistée"
+
+#: apps/chat/templates/chat/chat.html:33
+msgid "AI Assistant"
+msgstr "Assistant pédagogique"
+
+#: apps/chat/templates/chat/chat.html:34 templates/components/statusbar.html:17
+msgid "● Online"
+msgstr "● En ligne"
+
+#: apps/chat/templates/chat/chat.html:48
+msgid ""
+"Hello! I'm your AI assistant. Ask me questions about programming, technical "
+"concepts, or any other learning topic."
+msgstr ""
+
+#: apps/chat/templates/chat/chat.html:69
+msgid "Ask me anything about programming..."
+msgstr "Posez-moi une question sur la programmation…"
+
+#: apps/courses/templates/courses/course_content.html:30
+#: apps/users/templates/users/profile.html:118
+#: apps/users/templates/users/profile.html:178
+msgid "Save"
+msgstr "Enregistrer"
+
+#: apps/courses/templates/courses/course_content.html:37
+#: apps/courses/templates/courses/my_courses.html:50
+#: templates/components/sidebar.html:102
+msgid "Quiz"
+msgstr "Quiz"
+
+#: apps/courses/templates/courses/course_content.html:42
+#: apps/courses/templates/courses/my_courses.html:56
+msgid "Exercise"
+msgstr "Exercice"
+
+#: apps/courses/templates/courses/course_content.html:47
+#: apps/quiz/templates/quiz/quiz_start.html:73
+msgid "Back"
+msgstr "Retour"
+
+#: apps/courses/templates/courses/course_content.html:57
+msgid "Error"
+msgstr "Erreur"
+
+#: apps/courses/templates/courses/course_content.html:84
+msgid "No content available"
+msgstr "Aucun contenu disponible"
+
+#: apps/courses/templates/courses/course_content.html:85
+msgid "This course content could not be loaded."
+msgstr "Ce contenu de cours n'a pas pu être chargé."
+
+#: apps/courses/templates/courses/generate.html:10
+msgid "Course Generation"
+msgstr "Génération de cours"
+
+#: apps/courses/templates/courses/generate.html:35
+msgid "Module / Subject"
+msgstr "Module ou matière"
+
+#: apps/courses/templates/courses/generate.html:54
+msgid "Question or topic to explore"
+msgstr "Question ou sujet à explorer"
+
+#: apps/courses/templates/courses/generate.html:60
+msgid ""
+"e.g.: How do Python decorators work? Explain Python classes with examples..."
+msgstr ""
+
+#: apps/courses/templates/courses/generate.html:73
+msgid "Generate Course"
+msgstr "Générer le cours"
+
+#: apps/courses/templates/courses/generate.html:83
+msgid "Recent Courses"
+msgstr "Cours récents"
+
+#: apps/courses/templates/courses/generate.html:89
+msgid "Level Progress"
+msgstr "Progression du niveau"
+
+#: apps/courses/templates/courses/generate.html:103
+msgid "Study Time"
+msgstr "Temps d'étude"
+
+#: apps/courses/templates/courses/generate.html:107
+msgid "Today"
+msgstr "Aujourd'hui"
+
+#: apps/courses/templates/courses/generate.html:114
+#: apps/users/templates/users/profile.html:218
+msgid "Progress"
+msgstr "Progression"
+
+#: apps/courses/templates/courses/my_courses.html:10
+msgid "My Saved Courses"
+msgstr "Mes cours enregistrés"
+
+#: apps/courses/templates/courses/my_courses.html:44
+msgid "Open"
+msgstr "Ouvrir"
+
+#: apps/courses/templates/courses/my_courses.html:63
+#: apps/exercises/templates/exercises/exercise_detail.html:44
+#: apps/quiz/templates/quiz/room_detail.html:24
+msgid "Delete"
+msgstr "Supprimer"
+
+#: apps/courses/templates/courses/my_courses.html:76
+msgid "No saved courses"
+msgstr "Aucun cours enregistré"
+
+#: apps/courses/templates/courses/my_courses.html:78
+msgid "Start by generating a course and save it to find it here."
+msgstr "Générez un premier cours et enregistrez-le pour le retrouver ici."
+
+#: apps/courses/templates/courses/my_courses.html:82
+msgid "Create my first course"
+msgstr "Créer mon premier cours"
+
+#: apps/courses/views.py:83
+msgid "Please enter a topic to generate the course."
+msgstr "Indiquez un sujet pour générer le cours."
+
+#: apps/courses/views.py:177
+#, python-format
+msgid "✨ Course \"%(titre)s\" saved successfully!"
+msgstr "✨ Cours « %(titre)s » enregistré."
+
+#: apps/courses/views.py:183
+#, python-format
+msgid "❌ Save error: %(erreur)s"
+msgstr "❌ Erreur à l'enregistrement : %(erreur)s"
+
+#: apps/courses/views.py:216 apps/courses/views.py:268
+msgid "❌ Course not found."
+msgstr "❌ Cours introuvable."
+
+#: apps/courses/views.py:265
+#, python-format
+msgid "🗑️ Course \"%(titre)s\" deleted successfully!"
+msgstr "🗑️ Cours « %(titre)s » supprimé."
+
+#: apps/courses/views.py:270
+#, python-format
+msgid "❌ Delete error: %(erreur)s"
+msgstr "❌ Erreur à la suppression : %(erreur)s"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:27
+#: apps/exercises/templates/exercises/exercise_list.html:65
+msgid "Beginner"
+msgstr "Débutant"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:29
+#: apps/exercises/templates/exercises/exercise_list.html:67
+msgid "Intermediate"
+msgstr "Intermédiaire"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:31
+#: apps/exercises/templates/exercises/exercise_list.html:69
+msgid "Advanced"
+msgstr "Avancé"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:37
+#: apps/quiz/templates/quiz/quiz_lobby.html:123
+msgid "Completed"
+msgstr "Terminé"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:65
+msgid "📋 Statement"
+msgstr "📋 Énoncé"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:71
+msgid "🧪 Tests to pass"
+msgstr "🧪 Tests à faire passer"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:82
+msgid "Expected:"
+msgstr "Attendu :"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:86
+msgid "Got:"
+msgstr "Obtenu :"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:95
+msgid "📊 Recent attempts"
+msgstr "📊 Tentatives récentes"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:102
+msgid "Success"
+msgstr "Réussite"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:105
+msgid "Failed"
+msgstr "Échec"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:125
+msgid "Python Editor"
+msgstr "Éditeur Python"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:126
+msgid "Write your solution here"
+msgstr "Écrivez votre solution ici"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:133
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:138
+msgid "Test Code"
+msgstr "Tester le code"
+
+#: apps/exercises/templates/exercises/exercise_detail.html:152
+msgid "Write your Python code here..."
+msgstr "Écrivez votre code Python ici…"
+
+#: apps/exercises/templates/exercises/exercise_list.html:11
+msgid "Exercices Python"
+msgstr "Exercices Python"
+
+#: apps/exercises/templates/exercises/exercise_list.html:17
+msgid "My Progress"
+msgstr "Ma progression"
+
+#: apps/exercises/templates/exercises/exercise_list.html:22
+msgid "Generate Exercise"
+msgstr "Générer un exercice"
+
+#: apps/exercises/templates/exercises/exercise_list.html:32
+msgid "Search an exercise..."
+msgstr "Rechercher un exercice…"
+
+#: apps/exercises/templates/exercises/exercise_list.html:37
+msgid "All difficulties"
+msgstr "Toutes les difficultés"
+
+#: apps/exercises/templates/exercises/exercise_list.html:44
+msgid "All topics"
+msgstr "Tous les sujets"
+
+#: apps/exercises/templates/exercises/exercise_list.html:51
+msgid "Filter"
+msgstr "Filtrer"
+
+#: apps/exercises/templates/exercises/exercise_list.html:111
+msgid "Start"
+msgstr "Commencer"
+
+#: apps/exercises/templates/exercises/exercise_list.html:127
+msgid "No exercises found"
+msgstr "Aucun exercice trouvé"
+
+#: apps/exercises/templates/exercises/exercise_list.html:128
+msgid "Try modifying your filters or generate a new exercise."
+msgstr "Modifiez vos filtres, ou générez un nouvel exercice."
+
+#: apps/exercises/templates/exercises/exercise_list.html:130
+#: apps/exercises/templates/exercises/exercise_list.html:164
+msgid "Generate an exercise"
+msgstr "Générer un exercice"
+
+#: apps/exercises/templates/exercises/exercise_list.html:142
+msgid "Previous"
+msgstr "Précédent"
+
+#: apps/exercises/templates/exercises/exercise_list.html:152
+msgid "Next"
+msgstr "Suivant"
+
+#: apps/exercises/templates/exercises/exercise_list.html:179
+msgid "Topic"
+msgstr "Sujet"
+
+#: apps/exercises/templates/exercises/exercise_list.html:181
+msgid "e.g.: Python functions, loops, classes..."
+msgstr "par exemple : fonctions, boucles, classes…"
+
+#: apps/exercises/templates/exercises/exercise_list.html:186
+msgid "Difficulty"
+msgstr "Difficulté"
+
+#: apps/exercises/templates/exercises/exercise_list.html:196
+#: apps/users/templates/users/profile.html:121
+#: apps/users/templates/users/profile.html:175
+msgid "Cancel"
+msgstr "Annuler"
+
+#: apps/exercises/templates/exercises/exercise_list.html:199
+msgid "Generate"
+msgstr "Générer"
+
+#: apps/exercises/templates/exercises/user_progress.html:10
+msgid "My Progress - Python Exercises"
+msgstr "Ma progression — exercices Python"
+
+#: apps/exercises/templates/exercises/user_progress.html:17
+msgid "Completed exercises"
+msgstr "Exercices terminés"
+
+#: apps/exercises/templates/exercises/user_progress.html:29
+#: apps/revision/templates/revision/flashcards.html:81
+#: apps/tracker/templates/tracker/dashboard.html:26
+msgid "Success rate"
+msgstr "Taux de réussite"
+
+#: apps/exercises/templates/exercises/user_progress.html:35
+msgid "First try"
+msgstr "Du premier coup"
+
+#: apps/exercises/templates/exercises/user_progress.html:40
+#: apps/users/templates/users/profile.html:234
+msgid "Current streak"
+msgstr "Série en cours"
+
+#: apps/exercises/templates/exercises/user_progress.html:44
+msgid "consecutive days"
+msgstr "jours consécutifs"
+
+#: apps/exercises/templates/exercises/user_progress.html:49
+msgid "XP earned"
+msgstr "XP gagnés"
+
+#: apps/exercises/templates/exercises/user_progress.html:53
+msgid "experience points"
+msgstr "points d'expérience"
+
+#: apps/exercises/templates/exercises/user_progress.html:61
+msgid "Progress by difficulty"
+msgstr "Progression par difficulté"
+
+#: apps/exercises/templates/exercises/user_progress.html:95
+msgid "Recent exercises"
+msgstr "Exercices récents"
+
+#: apps/exercises/templates/exercises/user_progress.html:117
+msgid "No exercises started"
+msgstr "Aucun exercice commencé"
+
+#: apps/exercises/templates/exercises/user_progress.html:119
+msgid "Start now"
+msgstr "Commencer maintenant"
+
+#: apps/exercises/templates/exercises/user_progress.html:130
+msgid "Recent submissions"
+msgstr "Soumissions récentes"
+
+#: apps/exercises/templates/exercises/user_progress.html:154
+msgid "No submissions"
+msgstr "Aucune soumission"
+
+#: apps/exercises/templates/exercises/user_progress.html:165
+msgid "Continue exercises"
+msgstr "Poursuivre les exercices"
+
+#: apps/exercises/templates/exercises/user_progress.html:170
+msgid "Generate a course"
+msgstr "Générer un cours"
+
+#: apps/exercises/views.py:221
+msgid "Please specify a topic for the exercise."
+msgstr "Indiquez un sujet pour l'exercice."
+
+#: apps/exercises/views.py:367 apps/exercises/views.py:438
+#, python-format
+msgid "Exercise \"%(titre)s\" generated successfully!"
+msgstr "Exercice « %(titre)s » généré."
+
+#: apps/exercises/views.py:458 apps/exercises/views.py:717
+#, python-format
+msgid ""
+"AI generated a malformed response. Basic exercise created on \"%(sujet)s\"."
+msgstr ""
+
+#: apps/exercises/views.py:462 apps/exercises/views.py:493
+#: apps/exercises/views.py:721 apps/exercises/views.py:751
+#, python-format
+msgid "Generation error: %(erreur)s"
+msgstr "Erreur de génération : %(erreur)s"
+
+#: apps/exercises/views.py:462 apps/exercises/views.py:721
+msgid "Unknown error"
+msgstr "Erreur inconnue"
+
+#: apps/exercises/views.py:490 apps/exercises/views.py:748
+#, python-format
+msgid "AI generation error. Basic exercise created on \"%(sujet)s\"."
+msgstr "Erreur du modèle. Un exercice simple a été créé sur « %(sujet)s »."
+
+#: apps/exercises/views.py:505
+msgid "No topic specified to generate the exercise."
+msgstr "Aucun sujet indiqué pour générer l'exercice."
+
+#: apps/exercises/views.py:628 apps/exercises/views.py:697
+#, python-format
+msgid "Exercise \"%(titre)s\" generated successfully from course!"
+msgstr "Exercice « %(titre)s » généré à partir du cours."
+
+#: apps/exercises/views.py:813
+msgid "You can only delete exercises you created."
+msgstr "Vous ne pouvez supprimer que les exercices que vous avez créés."
+
+#: apps/exercises/views.py:818
+#, python-format
+msgid "Exercise \"%(titre)s\" deleted successfully!"
+msgstr "Exercice « %(titre)s » supprimé."
+
+#: apps/exercises/views.py:821
+msgid "Exercise not found."
+msgstr "Exercice introuvable."
+
+#: apps/exercises/views.py:823
+#, python-format
+msgid "Error deleting exercise: %(erreur)s"
+msgstr "Erreur à la suppression de l'exercice : %(erreur)s"
+
+#: apps/quiz/templates/quiz/create_room.html:10
+msgid "Create Multiplayer Room"
+msgstr "Créer une salle multijoueur"
+
+#: apps/quiz/templates/quiz/create_room.html:20
+msgid "Quiz Topic"
+msgstr "Sujet du quiz"
+
+#: apps/quiz/templates/quiz/create_room.html:24
+msgid "e.g. Python Basics, Django, FastAPI..."
+msgstr "par exemple : bases de Python, Django, FastAPI…"
+
+#: apps/quiz/templates/quiz/create_room.html:33
+msgid "Number of Questions"
+msgstr "Nombre de questions"
+
+#: apps/quiz/templates/quiz/create_room.html:35
+#: apps/quiz/templates/quiz/quiz_lobby.html:36
+msgid "5 questions"
+msgstr "5 questions"
+
+#: apps/quiz/templates/quiz/create_room.html:36
+#: apps/quiz/templates/quiz/quiz_lobby.html:37
+msgid "10 questions"
+msgstr "10 questions"
+
+#: apps/quiz/templates/quiz/create_room.html:37
+#: apps/quiz/templates/quiz/quiz_lobby.html:38
+msgid "15 questions"
+msgstr "15 questions"
+
+#: apps/quiz/templates/quiz/create_room.html:38
+msgid "20 questions"
+msgstr "20 questions"
+
+#: apps/quiz/templates/quiz/create_room.html:43
+#: apps/quiz/templates/quiz/room_detail.html:43
+msgid "Max Players"
+msgstr "Joueurs au maximum"
+
+#: apps/quiz/templates/quiz/create_room.html:45
+msgid "5 players"
+msgstr "5 joueurs"
+
+#: apps/quiz/templates/quiz/create_room.html:46
+msgid "10 players"
+msgstr "10 joueurs"
+
+#: apps/quiz/templates/quiz/create_room.html:47
+msgid "15 players"
+msgstr "15 joueurs"
+
+#: apps/quiz/templates/quiz/create_room.html:48
+msgid "20 players"
+msgstr "20 joueurs"
+
+#: apps/quiz/templates/quiz/create_room.html:57
+#: apps/quiz/templates/quiz/room_detail.html:35
+msgid "Game Settings"
+msgstr "Réglages de la partie"
+
+#: apps/quiz/templates/quiz/create_room.html:60
+msgid "• 60 seconds per question (or until everyone answers)"
+msgstr "• 60 secondes par question, ou jusqu'à ce que tous aient répondu"
+
+#: apps/quiz/templates/quiz/create_room.html:61
+msgid "• Points based on speed and accuracy"
+msgstr "• Les points dépendent de la rapidité et de l'exactitude"
+
+#: apps/quiz/templates/quiz/create_room.html:62
+msgid "• Correct answer shown after each question"
+msgstr "• La bonne réponse est affichée après chaque question"
+
+#: apps/quiz/templates/quiz/create_room.html:63
+msgid "• XP bonus for top performers"
+msgstr "• Bonus d'XP pour les meilleurs scores"
+
+#: apps/quiz/templates/quiz/create_room.html:70
+#: apps/quiz/templates/quiz/join_room.html:48
+#: apps/quiz/templates/quiz/room_detail.html:120
+msgid "Back to Lobby"
+msgstr "Retour au salon"
+
+#: apps/quiz/templates/quiz/create_room.html:74
+#: apps/quiz/templates/quiz/quiz_lobby.html:61
+msgid "Create Room"
+msgstr "Créer la salle"
+
+#: apps/quiz/templates/quiz/join_room.html:10
+msgid "Join Multiplayer Room"
+msgstr "Rejoindre une salle multijoueur"
+
+#: apps/quiz/templates/quiz/join_room.html:30
+msgid "Enter Room Code"
+msgstr "Saisir le code de la salle"
+
+#: apps/quiz/templates/quiz/join_room.html:31
+msgid "Ask the host for the 6-character room code"
+msgstr "Demandez à l'hôte le code de salle à 6 caractères"
+
+#: apps/quiz/templates/quiz/join_room.html:38
+msgid "ABC123"
+msgstr "ABC123"
+
+#: apps/quiz/templates/quiz/join_room.html:52
+#: apps/quiz/templates/quiz/quiz_lobby.html:72
+msgid "Join Room"
+msgstr "Rejoindre la salle"
+
+#: apps/quiz/templates/quiz/join_room.html:62
+msgid "How to Join"
+msgstr "Comment rejoindre"
+
+#: apps/quiz/templates/quiz/join_room.html:65
+msgid "• Get the 6-character room code from the host"
+msgstr "• Obtenez le code à 6 caractères auprès de l'hôte"
+
+#: apps/quiz/templates/quiz/join_room.html:67
+msgid "• Wait in the lobby until the host starts the game"
+msgstr "• Patientez dans le salon jusqu'au lancement par l'hôte"
+
+#: apps/quiz/templates/quiz/join_room.html:68
+msgid "• Compete for the highest score!"
+msgstr "• Disputez-vous le meilleur score"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:34
+#: apps/quiz/templates/quiz/quiz_start.html:51
+msgid "Question"
+msgstr "Question"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:34
+#: apps/quiz/templates/quiz/quiz_start.html:51
+msgid "of"
+msgstr "sur"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:58
+msgid "Loading question..."
+msgstr "Chargement de la question…"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:59
+msgid "Please wait while we load the first question"
+msgstr "Patientez pendant le chargement de la première question"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:77
+msgid "Live Leaderboard"
+msgstr "Classement en direct"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:80
+msgid "Loading players..."
+msgstr "Chargement des joueurs…"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:88
+msgid "Back to Room"
+msgstr "Retour à la salle"
+
+#: apps/quiz/templates/quiz/multiplayer_game.html:91
+msgid "Your Score:"
+msgstr "Votre score :"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:10
+msgid "Quiz & MCQ"
+msgstr "Quiz et QCM"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:22
+msgid "Solo Mode"
+msgstr "Mode solo"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:23
+msgid "Train at your own pace with personalized quizzes"
+msgstr "Entraînez-vous à votre rythme avec des quiz adaptés"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:31
+msgid "e.g. Python functions, Django models..."
+msgstr "par exemple : fonctions Python, modèles Django…"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:41
+msgid "Start Solo Quiz"
+msgstr "Lancer un quiz solo"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:51
+msgid "Multiplayer Modes"
+msgstr "Modes multijoueur"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:62
+msgid "Host a multiplayer quiz for your friends"
+msgstr "Hébergez un quiz multijoueur pour vos camarades"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:73
+msgid "Enter a room code to join a multiplayer quiz"
+msgstr "Saisissez un code de salle pour rejoindre un quiz multijoueur"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:85
+msgid "Active Rooms"
+msgstr "Salles actives"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:99
+msgid "Join"
+msgstr "Rejoindre"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:118
+msgid "Your Statistics"
+msgstr "Vos statistiques"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:127
+msgid "Accuracy"
+msgstr "Exactitude"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:131
+msgid "Streak"
+msgstr "Série"
+
+#: apps/quiz/templates/quiz/quiz_lobby.html:135
+#: apps/revision/templates/revision/flashcards.html:91
+msgid "Total time"
+msgstr "Temps total"
+
+#: apps/quiz/templates/quiz/quiz_start.html:30
+msgid "Revenir au salon"
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:43
+msgid "Quiz in Progress"
+msgstr "Quiz en cours"
+
+#: apps/quiz/templates/quiz/quiz_start.html:76
+msgid "Score:"
+msgstr "Score :"
+
+#: apps/quiz/templates/quiz/room_detail.html:21
+msgid "Host"
+msgstr "Hôte"
+
+#: apps/quiz/templates/quiz/room_detail.html:39
+msgid "Questions"
+msgstr "Questions"
+
+#: apps/quiz/templates/quiz/room_detail.html:47
+msgid "Time per Question"
+msgstr "Temps par question"
+
+#: apps/quiz/templates/quiz/room_detail.html:48
+msgid "60 seconds"
+msgstr "60 secondes"
+
+#: apps/quiz/templates/quiz/room_detail.html:51
+msgid "Room Code"
+msgstr "Code de la salle"
+
+#: apps/quiz/templates/quiz/room_detail.html:60
+msgid "Copy Room Code"
+msgstr "Copier le code de la salle"
+
+#: apps/quiz/templates/quiz/room_detail.html:74
+msgid "Start Game"
+msgstr "Lancer la partie"
+
+#: apps/quiz/templates/quiz/room_detail.html:84
+#: apps/quiz/templates/quiz/room_detail.html:86
+#: apps/quiz/templates/quiz/room_detail.html:89 apps/users/models.py:58
+#: apps/users/templates/users/profile.html:190
+#: templates/components/sidebar.html:21 templates/components/sidebar.html:23
+#: templates/components/sidebar.html:26 templates/components/sidebar.html:42
+#: templates/components/sidebar.html:44 templates/components/sidebar.html:47
+msgid "Avatar"
+msgstr "Avatar"
+
+#: apps/quiz/templates/quiz/room_detail.html:110
+msgid "Perfect for testing! You can start the game solo."
+msgstr "Idéal pour un essai : la partie peut être lancée seul."
+
+#: apps/quiz/views.py:22
+msgid "Only the host can delete this room."
+msgstr "Seul l'hôte peut supprimer cette salle."
+
+#: apps/quiz/views.py:27
+#, python-format
+msgid "Room \"%(sujet)s\" deleted successfully!"
+msgstr "Salle « %(sujet)s » supprimée."
+
+#: apps/quiz/views.py:31
+msgid "Room not found."
+msgstr "Salle introuvable."
+
+#: apps/quiz/views.py:33
+#, python-format
+msgid "Error deleting room: %(erreur)s"
+msgstr "Erreur à la suppression de la salle : %(erreur)s"
+
+#: apps/quiz/views.py:71
+#, python-format
+msgid "Room created with code: %(code)s"
+msgstr "Salle créée, code : %(code)s"
+
+#: apps/quiz/views.py:84
+msgid "Only the host can start the game."
+msgstr "Seul l'hôte peut lancer la partie."
+
+#: apps/quiz/views.py:89
+msgid "Game already started or finished."
+msgstr "La partie est déjà lancée ou terminée."
+
+#: apps/quiz/views.py:114
+#, python-format
+msgid "Game started! %(nombre)s questions generated."
+msgstr "Partie lancée : %(nombre)s questions générées."
+
+#: apps/quiz/views.py:118
+msgid "Failed to generate questions. Please try again."
+msgstr "La génération des questions a échoué. Réessayez."
+
+#: apps/quiz/views.py:128
+#, python-format
+msgid "Error generating questions: %(erreur)s"
+msgstr "Erreur à la génération des questions : %(erreur)s"
+
+#: apps/quiz/views.py:143
+msgid "This room is full."
+msgstr "Cette salle est complète."
+
+#: apps/quiz/views.py:160
+msgid "Room not found or already finished."
+msgstr "Salle introuvable ou déjà terminée."
+
+#: apps/quiz/views.py:175
+msgid "You must join this room to access it."
+msgstr "Vous devez rejoindre cette salle pour y accéder."
+
+#: apps/quiz/views.py:373
+msgid "You are not authorized to access this game."
+msgstr "Vous n'êtes pas autorisé à accéder à cette partie."
+
+#: apps/revision/templates/revision/flashcards.html:10
+msgid "Intelligent Revision"
+msgstr "Révision guidée"
+
+#: apps/revision/templates/revision/flashcards.html:13
+msgid "Personalized revision system based on your learning progress"
+msgstr "Un système de révision fondé sur votre progression"
+
+#: apps/revision/templates/revision/flashcards.html:22
+msgid "Next Revision Session"
+msgstr "Prochaine séance de révision"
+
+#: apps/revision/templates/revision/flashcards.html:28
+msgid "Concept"
+msgstr "Notion"
+
+#: apps/revision/templates/revision/flashcards.html:29
+msgid "Python Decorators"
+msgstr "Décorateurs Python"
+
+#: apps/revision/templates/revision/flashcards.html:33
+msgid "Difficulty Level"
+msgstr "Niveau de difficulté"
+
+#: apps/revision/templates/revision/flashcards.html:35
+msgid "Medium"
+msgstr "Moyen"
+
+#: apps/revision/templates/revision/flashcards.html:47
+msgid "Cards to Review"
+msgstr "Cartes à revoir"
+
+#: apps/revision/templates/revision/flashcards.html:48
+msgid "8 flashcards"
+msgstr "8 cartes"
+
+#: apps/revision/templates/revision/flashcards.html:52
+msgid "Estimated Time"
+msgstr "Durée estimée"
+
+#: apps/revision/templates/revision/flashcards.html:53
+msgid "~5 minutes"
+msgstr "environ 5 minutes"
+
+#: apps/revision/templates/revision/flashcards.html:60
+msgid "Start Revision Session"
+msgstr "Commencer la séance"
+
+#: apps/revision/templates/revision/flashcards.html:70
+msgid "Revision Stats"
+msgstr "Statistiques de révision"
+
+#: apps/revision/templates/revision/flashcards.html:76
+msgid "Cards mastered"
+msgstr "Cartes maîtrisées"
+
+#: apps/revision/templates/revision/flashcards.html:86
+msgid "Day streak"
+msgstr "Jours d'affilée"
+
+#: apps/revision/templates/revision/flashcards.html:97
+msgid "Recent Progress"
+msgstr "Progression récente"
+
+#: apps/revision/templates/revision/flashcards.html:100
+msgid "Python Functions"
+msgstr "Fonctions Python"
+
+#: apps/revision/templates/revision/flashcards.html:101
+msgid "Mastered"
+msgstr "Maîtrisé"
+
+#: apps/revision/templates/revision/flashcards.html:104
+msgid "Django Models"
+msgstr "Modèles Django"
+
+#: apps/revision/templates/revision/flashcards.html:105
+msgid "In Progress"
+msgstr "En cours"
+
+#: apps/revision/templates/revision/flashcards.html:108
+#: apps/revision/templates/revision/flashcards.html:127
+msgid "SQL Joins"
+msgstr "Jointures SQL"
+
+#: apps/revision/templates/revision/flashcards.html:109
+msgid "Needs Review"
+msgstr "À revoir"
+
+#: apps/revision/templates/revision/flashcards.html:121
+msgid "Topics Needing Review"
+msgstr "Sujets à revoir"
+
+#: apps/revision/templates/revision/flashcards.html:128
+msgid "High Priority"
+msgstr "Priorité haute"
+
+#: apps/revision/templates/revision/flashcards.html:130
+msgid "3 mistakes in last quiz"
+msgstr "3 erreurs au dernier quiz"
+
+#: apps/revision/templates/revision/flashcards.html:132
+#: apps/revision/templates/revision/flashcards.html:143
+#: apps/revision/templates/revision/flashcards.html:154
+msgid "Review Now"
+msgstr "Revoir maintenant"
+
+#: apps/revision/templates/revision/flashcards.html:138
+msgid "Django Forms"
+msgstr "Formulaires Django"
+
+#: apps/revision/templates/revision/flashcards.html:139
+msgid "Medium Priority"
+msgstr "Priorité moyenne"
+
+#: apps/revision/templates/revision/flashcards.html:141
+msgid "2 mistakes in last quiz"
+msgstr "2 erreurs au dernier quiz"
+
+#: apps/revision/templates/revision/flashcards.html:149
+msgid "Python Classes"
+msgstr "Classes Python"
+
+#: apps/revision/templates/revision/flashcards.html:150
+msgid "Low Priority"
+msgstr "Priorité basse"
+
+#: apps/revision/templates/revision/flashcards.html:152
+msgid "1 mistake in last quiz"
+msgstr "1 erreur au dernier quiz"
+
+#: apps/tracker/templates/tracker/dashboard.html:10
+msgid "Performance Dashboard"
+msgstr "Tableau de bord"
+
+#: apps/tracker/templates/tracker/dashboard.html:17
+#: apps/users/templates/users/profile.html:226
+msgid "Completed courses"
+msgstr "Cours terminés"
+
+#: apps/tracker/templates/tracker/dashboard.html:35
+msgid "Study time"
+msgstr "Temps d'étude"
+
+#: apps/tracker/templates/tracker/dashboard.html:44
+msgid "Current level"
+msgstr "Niveau actuel"
+
+#: apps/tracker/templates/tracker/dashboard.html:56
+msgid "This week's progress"
+msgstr "Progression de la semaine"
+
+#: apps/tracker/templates/tracker/dashboard.html:78
+msgid "Studied topics"
+msgstr "Sujets étudiés"
+
+#: apps/tracker/templates/tracker/dashboard.html:96
+msgid "Goals"
+msgstr "Objectifs"
+
+#: apps/tracker/templates/tracker/dashboard.html:101
+msgid "Courses this week"
+msgstr "Cours cette semaine"
+
+#: apps/tracker/templates/tracker/dashboard.html:110
+#: apps/users/templates/users/profile.html:230
+msgid "Successful quizzes"
+msgstr "Quiz réussis"
+
+#: apps/tracker/templates/tracker/dashboard.html:119
+msgid "Daily time"
+msgstr "Temps quotidien"
+
+#: apps/users/admin.py:12
+#, fuzzy
+msgid "Profil utilisateur"
+msgstr "Email ou nom d'utilisateur"
+
+#: apps/users/admin.py:15 apps/users/templates/users/supprimer_compte.html:59
+msgid "Progression"
+msgstr "Progression"
+
+#: apps/users/admin.py:25 apps/users/templates/users/profile.html:209
+msgid "Level"
+msgstr "Niveau"
+
+#: apps/users/forms.py:43 apps/users/templates/users/profile.html:151
+#: apps/users/templates/users/register.html:95
+msgid "Email"
+msgstr "E-mail"
+
+#: apps/users/forms.py:44 apps/users/templates/users/profile.html:146
+#: apps/users/templates/users/register.html:101
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: apps/users/forms.py:52 apps/users/templates/users/login.html:95
+msgid "Email or username"
+msgstr "Adresse électronique ou identifiant"
+
+#: apps/users/forms.py:59 apps/users/templates/users/login.html:102
+#: apps/users/templates/users/register.html:110
+msgid "Password"
+msgstr "Mot de passe"
+
+#: apps/users/models.py:16
+msgid "User Progress"
+msgstr "Progression d'un apprenant"
+
+#: apps/users/models.py:17
+msgid "User Progresses"
+msgstr "Progressions des apprenants"
+
+#: apps/users/models.py:24
+msgid "Student"
+msgstr "Étudiant"
+
+#: apps/users/models.py:25
+msgid "Administrator"
+msgstr "Administrateur"
+
+#: apps/users/models.py:30
+msgid "Email address"
+msgstr "Adresse email"
+
+#: apps/users/models.py:32
+msgid "Required. Enter a valid email address."
+msgstr "Requis. Entrez une adresse email valide."
+
+#: apps/users/models.py:43
+msgid "Role"
+msgstr "Rôle"
+
+#: apps/users/models.py:49 apps/users/templates/users/profile.html:158
+msgid "Biography"
+msgstr "Biographie"
+
+#: apps/users/models.py:50
+msgid "A short biography of the user."
+msgstr "Une courte biographie de l'utilisateur."
+
+#: apps/users/models.py:69 apps/users/templates/users/profile.html:169
+msgid "English"
+msgstr "English"
+
+#: apps/users/models.py:70
+msgid "French"
+msgstr "Français"
+
+#: apps/users/models.py:77
+msgid "Preferred language"
+msgstr "Langue préférée"
+
+#: apps/users/models.py:82
+msgid "Experience Points"
+msgstr "Points d'expérience"
+
+#: apps/users/models.py:83
+msgid "Total experience points gained by the student."
+msgstr "Total des points d'expérience gagnés par l'étudiant."
+
+#: apps/users/templates/users/login.html:8
+msgid "Connexion - EduAI Tutor"
+msgstr ""
+
+#: apps/users/templates/users/login.html:52
+#: apps/users/templates/users/register.html:52
+#: apps/users/templates/users/register.html:144
+msgid "EduAI Tutor"
+msgstr ""
+
+#: apps/users/templates/users/login.html:55
+msgid "Bon retour !"
+msgstr ""
+
+#: apps/users/templates/users/login.html:57
+msgid "Continue your learning in seconds."
+msgstr "Reprenez votre apprentissage en quelques secondes."
+
+#: apps/users/templates/users/login.html:58
+msgid "Don't have an account yet?"
+msgstr "Pas encore de compte ?"
+
+#: apps/users/templates/users/login.html:60
+msgid "Sign up"
+msgstr "S'inscrire"
+
+#: apps/users/templates/users/login.html:72
+msgid "Login error"
+msgstr "Erreur de connexion"
+
+#: apps/users/templates/users/login.html:110
+msgid "Remember me"
+msgstr "Se souvenir de moi"
+
+#: apps/users/templates/users/login.html:113
+msgid "Forgot password?"
+msgstr "Mot de passe oublié ?"
+
+#: apps/users/templates/users/login.html:119
+#: apps/users/templates/users/register.html:59
+msgid "Sign in"
+msgstr "Se connecter"
+
+#: apps/users/templates/users/login.html:128
+msgid "or"
+msgstr "ou"
+
+#: apps/users/templates/users/login.html:134
+msgid "Continue with GitHub"
+msgstr "Continuer avec GitHub"
+
+#: apps/users/templates/users/login.html:139
+msgid "Continue with Google"
+msgstr "Continuer avec Google"
+
+#: apps/users/templates/users/login.html:150
+msgid "EduAI Tutor waving"
+msgstr "La mascotte d'EduAI Tutor qui salue"
+
+#: apps/users/templates/users/profile.html:11
+msgid "My Profile"
+msgstr "Mon profil"
+
+#: apps/users/templates/users/profile.html:18
+msgid "Personal Information"
+msgstr "Informations personnelles"
+
+#: apps/users/templates/users/profile.html:37
+msgid "Choose your avatar"
+msgstr "Choisir un avatar"
+
+#: apps/users/templates/users/profile.html:42
+#, fuzzy
+msgid "Avatar actuel"
+msgstr "Avatar"
+
+#: apps/users/templates/users/profile.html:44
+msgid "Current avatar"
+msgstr "Avatar actuel"
+
+#: apps/users/templates/users/profile.html:53
+#, fuzzy
+msgid "Koda Avatars"
+msgstr "Avatar"
+
+#: apps/users/templates/users/profile.html:58
+msgid "Upload Custom"
+msgstr "Téléverser une image"
+
+#: apps/users/templates/users/profile.html:89
+msgid "Click on a Koda avatar to select it"
+msgstr "Cliquez sur un avatar Koda pour le choisir"
+
+#: apps/users/templates/users/profile.html:98
+#: apps/users/templates/users/profile.html:188
+msgid "Preview"
+msgstr "Aperçu"
+
+#: apps/users/templates/users/profile.html:103
+msgid "Choose image"
+msgstr "Choisir une image"
+
+#: apps/users/templates/users/profile.html:105
+msgid "JPG, PNG (max 2MB)"
+msgstr "JPG ou PNG, 2 Mo au maximum"
+
+#: apps/users/templates/users/profile.html:115
+msgid "Adjust your avatar"
+msgstr "Ajuster votre avatar"
+
+#: apps/users/templates/users/profile.html:130
+msgid "Zoom:"
+msgstr "Zoom :"
+
+#: apps/users/templates/users/profile.html:161
+msgid "Tell us about yourself..."
+msgstr "Présentez-vous en quelques mots…"
+
+#: apps/users/templates/users/profile.html:165
+#, fuzzy
+msgid "Preferred Language"
+msgstr "Langue préférée"
+
+#: apps/users/templates/users/profile.html:168
+msgid "Français"
+msgstr ""
+
+#: apps/users/templates/users/profile.html:202
+msgid "Statistics"
+msgstr "Statistiques"
+
+#: apps/users/templates/users/profile.html:205
+msgid "Title"
+msgstr "Titre"
+
+#: apps/users/templates/users/profile.html:213
+msgid "XP"
+msgstr "XP"
+
+#: apps/users/templates/users/profile.html:238
+msgid "Member since"
+msgstr "Membre depuis"
+
+#: apps/users/templates/users/register.html:8
+msgid "Inscription - EduAI Tutor"
+msgstr ""
+
+#: apps/users/templates/users/register.html:55
+msgid "Créer un compte"
+msgstr ""
+
+#: apps/users/templates/users/register.html:57
+msgid "Start your learning journey now. Already have an account?"
+msgstr "Commencez votre apprentissage. Vous avez déjà un compte ?"
+
+#: apps/users/templates/users/register.html:71
+msgid "Form errors"
+msgstr "Erreurs du formulaire"
+
+#: apps/users/templates/users/register.html:116
+msgid "Confirm password"
+msgstr "Confirmer le mot de passe"
+
+#: apps/users/templates/users/register.html:125
+msgid "I accept the"
+msgstr "J'accepte les"
+
+#: apps/users/templates/users/register.html:126
+msgid "terms of service"
+msgstr "conditions d'utilisation"
+
+#: apps/users/templates/users/register.html:127
+msgid "and"
+msgstr "et la"
+
+#: apps/users/templates/users/register.html:128
+msgid "privacy policy"
+msgstr "politique de confidentialité"
+
+#: apps/users/templates/users/register.html:133
+msgid "Create my account"
+msgstr "Créer mon compte"
+
+#: apps/users/templates/users/supprimer_compte.html:24
+#: apps/users/templates/users/supprimer_compte.html:29
+msgid "Supprimer mon compte"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:34
+msgid "Attention : cette action est irréversible"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:37
+msgid ""
+"Une fois supprimées, ces données ne peuvent pas être\n"
+"      restaurées. Aucune sauvegarde n'en conserve de copie exploitable."
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:44
+msgid "Ce qui sera supprimé"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:49
+msgid "Décompte des données rattachées à votre compte"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:53
+msgid "Donnée"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:54
+msgid "Nombre"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:58
+msgid "Compte et profil"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:60
+msgid "Cours créés"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:61
+msgid "Exercices créés"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:62
+msgid "Soumissions de code"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:63
+msgid "Salles de quiz hébergées"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:64
+msgid "Participations à des quiz"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:65
+msgid "Sessions ouvertes"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:71
+msgid "À savoir :"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:72
+msgid ""
+"la suppression des salles de quiz que vous avez\n"
+"        hébergées retire aussi les réponses des autres participants à ces\n"
+"        parties."
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:81
+msgid "Confirmation"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:89
+#, python-format
+msgid ""
+"Pour confirmer, saisissez\n"
+"          votre adresse électronique : %(adresse)s"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:101
+msgid "La saisie doit correspondre exactement, à la casse près."
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:108
+msgid "Annuler et revenir au profil"
+msgstr ""
+
+#: apps/users/templates/users/supprimer_compte.html:112
+msgid "Supprimer définitivement mon compte"
+msgstr ""
+
+#: apps/users/views.py:75
+msgid "You have been logged out successfully."
+msgstr "Vous êtes déconnecté."
+
+#: apps/users/views.py:198
+msgid ""
+"La confirmation ne correspond pas à votre adresse électronique. Le compte "
+"n'a pas été supprimé."
+msgstr ""
+
+#: apps/users/views.py:213
+msgid "Votre compte et les données qui s'y rattachaient ont été supprimés."
+msgstr ""
+
+#: apps/users/views.py:224
+msgid ""
+"Votre compte a été supprimé, mais certaines données n'ont pas pu être "
+"effacées. L'incident est enregistré et sera traité ; vous pouvez nous "
+"contacter pour en suivre le traitement."
+msgstr ""
+
+#: templates/base.html:8
+msgid "EduAI Tutor — plateforme d'apprentissage intelligente"
+msgstr ""
+
+#: templates/base.html:50
+msgid "Base template works!"
+msgstr "Le gabarit de base fonctionne."
+
+#: templates/base.html:51
+msgid "If you see this message, the base template is loaded correctly."
+msgstr "Si ce message s'affiche, le gabarit de base est bien chargé."
+
+#: templates/components/sidebar.html:16
+msgid "Profile"
+msgstr "Profil"
+
+#: templates/components/sidebar.html:28 templates/components/sidebar.html:49
+msgid "Avatar par défaut"
+msgstr ""
+
+#: templates/components/sidebar.html:62
+msgid "Edit Profile"
+msgstr "Modifier le profil"
+
+#: templates/components/sidebar.html:70
+msgid "Sign Out"
+msgstr "Se déconnecter"
+
+#: templates/components/sidebar.html:78
+msgid "Courses"
+msgstr "Cours"
+
+#: templates/components/sidebar.html:84
+msgid "My Courses"
+msgstr "Mes cours"
+
+#: templates/components/sidebar.html:90
+msgid "Search"
+msgstr "Rechercher"
+
+#: templates/components/sidebar.html:96
+msgid "Python Exercises"
+msgstr "Exercices Python"
+
+#: templates/components/sidebar.html:108
+msgid "Revision"
+msgstr "Révision"
+
+#: templates/components/sidebar.html:114
+msgid "Performance"
+msgstr "Performances"
+
+#: templates/components/statusbar.html:7
+#, python-format
+msgid "Série : %(jours)s j"
+msgstr ""
+
+#: templates/components/statusbar.html:11
+#, python-format
+msgid "%(titre)s niv. %(niveau)s"
+msgstr ""
+
+#: templates/components/xp_notification.html:10
+msgid "+15 XP Earned!"
+msgstr "+15 XP gagnés"
+
+#: templates/components/xp_notification.html:11
+msgid "Course generation"
+msgstr "Génération de cours"
+
+#: templates/components/xp_notification.html:25
+msgid "Level Up!"
+msgstr "Niveau supérieur"
+
+#: templates/components/xp_notification.html:26
+msgid "You are now level 3"
+msgstr "Vous êtes maintenant au niveau 3"
+
+#: templates/quotas/_compteur_generations.html:35
+msgid "Génération suspendue pour aujourd'hui."
+msgstr ""
+
+#: templates/quotas/_compteur_generations.html:36
+#, python-format
+msgid ""
+"Le service a atteint son plafond quotidien (%(plafond)s générations). La "
+"consultation reste ouverte : vos cours, exercices et quiz déjà enregistrés "
+"restent accessibles. La génération reprendra demain."
+msgstr ""
+
+#: templates/quotas/_compteur_generations.html:40
+#, python-format
+msgid "Vous avez utilisé vos %(quota)s générations du jour."
+msgstr ""
+
+#: templates/quotas/_compteur_generations.html:41
+msgid ""
+"Le compteur repart à zéro à minuit. Vos cours, exercices et quiz déjà "
+"enregistrés restent accessibles."
+msgstr ""
+
+#: templates/quotas/_compteur_generations.html:56
+#, python-format
+msgid ""
+"\n"
+"            Il vous reste <strong>%(restantes)s</strong> génération sur "
+"%(quota)s aujourd'hui. Le compteur repart à zéro à minuit.\n"
+"            "
+msgid_plural ""
+"\n"
+"            Il vous reste <strong>%(restantes)s</strong> générations sur "
+"%(quota)s aujourd'hui. Le compteur repart à zéro à minuit.\n"
+"            "
+msgstr[0] "\n"
+"            Il vous reste <strong>%(restantes)s</strong> génération sur "
+"%(quota)s aujourd'hui. Le compteur repart à zéro à minuit.\n"
+"            "
+msgstr[1] "\n"
+"            Il vous reste <strong>%(restantes)s</strong> générations sur "
+"%(quota)s aujourd'hui. Le compteur repart à zéro à minuit.\n"
+"            "
+
+#: theme/templates/base.html:6
+msgid "Django Tailwind"
+msgstr "Django Tailwind"
+
+#: theme/templates/base.html:17
+msgid "Hello from daisyUi 👋"
+msgstr "Bonjour de la part de daisyUI 👋"
+
+#: theme/templates/base.html:23
+msgid "Django + Tailwind = ❤️"
+msgstr "Django + Tailwind = ❤️"
