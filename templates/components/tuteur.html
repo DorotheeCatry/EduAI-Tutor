@@ -15,9 +15,10 @@
 </button>
 
 {# --- Panneau --- #}
-<aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre" hidden
+<aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre"
+       style="display: none"
        class="tuteur-dock h-full w-[400px] max-w-[50vw] flex-shrink-0
-              bg-gray-800 border-l border-gray-700 flex flex-col
+              bg-gray-800 border-l border-gray-700 flex-col
               overflow-hidden">
 
     {# Barre de titre = poignée de glissement #}
@@ -412,8 +413,7 @@
 
     {# --- Ouverture / fermeture --- #}
     function ouvrirPanneau(donnerFocus) {
-        panneau.hidden = false;
-        panneau.style.display = '';
+        panneau.style.display = 'flex';
         ouvrir.setAttribute('aria-expanded', 'true');
         fermer.setAttribute('aria-expanded', 'true');
         ouvrir.hidden = true;
@@ -422,7 +422,6 @@
     }
 
     function fermerPanneau(donnerFocus) {
-        panneau.hidden = true;
         panneau.style.display = 'none';
         ouvrir.hidden = false;
         ouvrir.setAttribute('aria-expanded', 'false');
@@ -565,7 +564,7 @@
     document.addEventListener('keydown', function(e) {
         if (e.altKey && (e.key === 't' || e.key === 'T')) {
             e.preventDefault();
-            if (panneau.hidden) ouvrirPanneau(); else fermerPanneau();
+            if (panneau.style.display === 'none') ouvrirPanneau(); else fermerPanneau();
         }
     });
 
@@ -636,7 +635,10 @@
     try { etatMemorise = localStorage.getItem('tuteur-ouvert') || '0'; } catch (e) {}
 
     if (etatMemorise === '1' && !petitEcran()) {
-        ouvrirPanneau(false);
+        panneau.style.display = 'flex';
+        ouvrir.hidden = true;
+        ouvrir.setAttribute('aria-expanded', 'true');
+        fermer.setAttribute('aria-expanded', 'true');
         try {
             if (localStorage.getItem('tuteur-flottant') === '1') {
                 const x = parseFloat(localStorage.getItem('tuteur-x'));
@@ -653,7 +655,10 @@
             }
         } catch (e) {}
     } else {
-        fermerPanneau(false);
+        panneau.style.display = 'none';
+        ouvrir.hidden = false;
+        ouvrir.setAttribute('aria-expanded', 'false');
+        fermer.setAttribute('aria-expanded', 'false');
     }
 
     new MutationObserver(() => {
