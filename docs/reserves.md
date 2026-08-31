@@ -477,3 +477,80 @@ mesurer le taux d'analyse réussie avant et après, puis rattacher l'erreur à
 cette notion plutôt qu'au sujet. Les erreurs déjà enregistrées garderont le
 libellé du sujet : elles ne sont pas rattrapables, et ce paragraphe est leur
 explication.
+
+---
+
+## 12. ~~Quatre pages affichaient des chiffres inventés~~ — levée le 31/08/2026
+
+**Composants :** `apps/tracker/`, `apps/revision/`, `apps/quiz/`
+**Nature :** l'interface présentait comme mesuré ce qui était fabriqué
+**Statut :** **levée**, incident 011
+
+Le chantier de la page d'accueil signalait « Python Basics 85 % » sur le
+tableau de bord. La vérification demandée en a trouvé **quatre foyers**, et le
+tableau de bord n'était pas le pire.
+
+| Emplacement | Ce qui s'affichait |
+|---|---|
+| `tracker/views.py` | Temps d'étude = `total_courses * 25`, **taux de réussite = `60 + xp // 50`**, semaine d'activité dérivée du temps simulé, score des cours = `70 + xp // 30`, **trois sujets inventés ajoutés** quand l'apprenant n'en avait pas assez, objectifs hebdomadaires par modulo |
+| `revision/flashcards.html` | **Toute la page** : séance inventée, 24 cartes maîtrisées, 92 % de réussite, 7 jours de série. La vue ne passait aucune donnée |
+| `quiz/quiz_lobby.html` | 127 quiz terminés, 85 % d'exactitude, 12 jours, 3 h 42 — en dur, identiques sur tous les comptes |
+| `exercises/views.py` | Les exercices de **repli**, créés quand la génération échoue, étaient rattachés à une compétence. Leur solution attendue est `return 'Hello World'` : trois échecs de génération auraient donné un niveau 2 |
+
+### Ce qui distingue ce cas d'une maquette oubliée
+
+Une valeur en dur dans un gabarit se comprend. Mais
+`success_rate = min(95, 60 + (user.xp // 50))` est un **calcul**, écrit en
+Python, commenté « Between 60% and 95% ». Quelqu'un a voulu que le chiffre ait
+l'air vivant — et c'est précisément ce qui le rendait crédible. Un zéro se
+remarque ; un chiffre vraisemblable, non.
+
+C'est la forme **délibérée** du motif, et elle est plus grave que l'oubli : un
+nombre qui bouge avec l'usage est cru.
+
+### Ce qui a été fait
+
+Tout est remplacé par du mesuré, ou **annoncé comme non mesuré**. Le champ
+`total_study_time_minutes` n'est écrit par aucun code du projet : la page le dit
+au lieu de le simuler. Les exercices de repli ne sont plus rattachés — un
+exercice qui se réussit en secondes ne doit pas faire progresser une
+compétence.
+
+Un test échoue si l'une des valeurs inventées réapparaît sur l'une des quatre
+pages.
+
+### Ce qui reste ouvert
+
+`revision/review.html` n'a pas été examinée. Elle est atteignable, et le motif
+ne s'est encore jamais arrêté de lui-même dans ce projet.
+
+---
+
+## 13. `attempts_count` compte les soumissions, pas les tentatives avant réussite
+
+**Composant :** `apps/exercises/models.py`
+**Nature :** champ correct dont le nom induit en erreur
+**Statut :** **ouverte** — contournée partout, non renommée
+
+Ce compteur s'incrémente à **chaque** soumission, y compris après la réussite.
+Il dit le nombre total de soumissions ; son nom annonce les tentatives.
+
+L'écart a été supposé dans le mauvais sens par deux personnes le même jour, en
+concevant le bloc « à revoir ». Employé tel quel, il aurait classé comme
+difficile un exercice réussi du premier coup puis retravaillé par curiosité.
+
+**Aucune ligne de code n'est fausse** : le champ compte exactement ce qu'il
+compte. C'est la lecture qui l'était, et c'est ce qui rend ce cas plus discret
+que tous les autres — un nom est une promesse, et personne ne relit une
+promesse tenue.
+
+### Ce qui est fait, et ce qui ne l'est pas
+
+Tout code qui a besoin des tentatives avant réussite compte les **soumissions
+antérieures à la réussite**, avec le motif écrit sur place. Le champ n'est plus
+lu pour cet usage.
+
+Le renommer — en `soumissions_count`, ou en lui adjoignant une propriété
+`tentatives_avant_reussite` — touche une migration, un modèle, plusieurs vues
+et un gabarit. **À faire après le 14 septembre.** D'ici là, la réserve est ce
+qui empêche l'erreur de se refaire.

@@ -475,7 +475,10 @@ def generate_exercise(request):
                             {"input": "my_function()", "expected": "Hello World"}
                         ],
                         created_by=request.user,
-                        competence=competence,
+                        # Repli : voir le commentaire de l'autre point de
+                        # création. Un exercice qui se réussit en secondes ne
+                        # doit pas faire progresser une compétence.
+                        competence=None,
                     )
                     
                     messages.warning(request, _('AI generated a malformed response. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
@@ -508,7 +511,20 @@ def generate_exercise(request):
                         {"input": "my_function()", "expected": "Hello World"}
                     ],
                     created_by=request.user,
-                    competence=competence,
+                    # PAS de rattachement au référentiel, volontairement.
+                    #
+                    # Compétence visée : C17 (épreuve E4)
+                    #
+                    # Cet exercice est un repli : la génération a échoué, et
+                    # ce qui est créé est un gabarit vide dont la solution
+                    # attendue est `return 'Hello World'`. Il se réussit en
+                    # quelques secondes sans rien démontrer.
+                    #
+                    # Le rattacher ferait progresser une compétence par un
+                    # exercice qui ne la travaille pas : trois échecs de
+                    # génération suffiraient à obtenir un niveau 2. Il
+                    # s'affiche donc « hors référentiel », ce qui est exact.
+                    competence=None,
                 )
                 
                 messages.warning(request, _('AI generation error. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
@@ -753,7 +769,20 @@ def generate_exercise_from_course(request):
                         {"input": "my_function()", "expected": "Hello World"}
                     ],
                     created_by=request.user,
-                    competence=competence,
+                    # PAS de rattachement au référentiel, volontairement.
+                    #
+                    # Compétence visée : C17 (épreuve E4)
+                    #
+                    # Cet exercice est un repli : la génération a échoué, et
+                    # ce qui est créé est un gabarit vide dont la solution
+                    # attendue est `return 'Hello World'`. Il se réussit en
+                    # quelques secondes sans rien démontrer.
+                    #
+                    # Le rattacher ferait progresser une compétence par un
+                    # exercice qui ne la travaille pas : trois échecs de
+                    # génération suffiraient à obtenir un niveau 2. Il
+                    # s'affiche donc « hors référentiel », ce qui est exact.
+                    competence=None,
                 )
                 
                 messages.warning(request, _('AI generated a malformed response. Basic exercise created on "%(sujet)s".') % {"sujet": topic})
