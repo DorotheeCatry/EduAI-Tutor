@@ -137,6 +137,7 @@ INSTALLED_APPS = [
     # Quotas de génération : borne la dépense auprès du fournisseur de modèles
     # avant toute mise en ligne. Voir apps/quotas/service.py.
     'apps.quotas',
+    'apps.referentiel',
     'theme',
 
     # Third-party apps

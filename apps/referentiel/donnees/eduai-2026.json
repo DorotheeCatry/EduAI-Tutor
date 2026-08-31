@@ -1,0 +1,142 @@
+{
+  "code": "eduai-2026",
+  "intitule": "Référentiel EduAI Tutor — développement et données",
+  "version": "2026.1",
+  "source": "Établi à partir des modules du corpus documentaire du projet (Python, analyse de données, SQL, apprentissage automatique). Ce référentiel est celui du produit ; il ne reprend celui d'aucun organisme tiers.",
+  "niveaux": ["Imiter", "Adapter", "Transposer"],
+  "modules": [
+    {
+      "code": "python",
+      "intitule": "Python",
+      "ordre": 1,
+      "competences": [
+        {
+          "code": "types-et-variables",
+          "intitule": "Manipuler les types de base et les variables",
+          "description": "Nombres, chaînes, booléens, conversions, portée des noms."
+        },
+        {
+          "code": "collections",
+          "intitule": "Manipuler les listes, dictionnaires et ensembles",
+          "description": "Indexation, découpage, parcours, compréhensions, choix de la structure adaptée."
+        },
+        {
+          "code": "controle-du-flux",
+          "intitule": "Écrire des conditions et des boucles",
+          "description": "Branchements, itérations, interruption et poursuite, cas limites."
+        },
+        {
+          "code": "fonctions",
+          "intitule": "Écrire et appeler des fonctions",
+          "description": "Paramètres, valeurs de retour, arguments nommés, portée, fonctions comme valeurs."
+        },
+        {
+          "code": "erreurs-et-exceptions",
+          "intitule": "Gérer les erreurs et les exceptions",
+          "description": "Lever, intercepter, différencier les cas d'erreur plutôt que de tout capturer."
+        },
+        {
+          "code": "modules-et-paquets",
+          "intitule": "Organiser un programme en modules",
+          "description": "Imports, espaces de noms, découpage d'un programme en fichiers."
+        },
+        {
+          "code": "objets",
+          "intitule": "Écrire des classes et employer des objets",
+          "description": "Attributs, méthodes, initialisation, héritage simple."
+        }
+      ]
+    },
+    {
+      "code": "analyse-de-donnees",
+      "intitule": "Analyse de données",
+      "ordre": 2,
+      "competences": [
+        {
+          "code": "charger-des-donnees",
+          "intitule": "Charger des données depuis un fichier ou une API",
+          "description": "CSV, JSON, encodages, types de colonnes, valeurs manquantes à la lecture."
+        },
+        {
+          "code": "nettoyer",
+          "intitule": "Nettoyer un jeu de données",
+          "description": "Doublons, valeurs manquantes, formats hétérogènes, valeurs aberrantes."
+        },
+        {
+          "code": "transformer",
+          "intitule": "Transformer et agréger",
+          "description": "Sélection, filtrage, regroupement, jointures, colonnes calculées."
+        },
+        {
+          "code": "decrire",
+          "intitule": "Décrire un jeu de données",
+          "description": "Volumétrie, distributions, tendances centrales, dispersion."
+        },
+        {
+          "code": "representer",
+          "intitule": "Représenter des données graphiquement",
+          "description": "Choix de la représentation selon la question posée, lisibilité, légendes."
+        }
+      ]
+    },
+    {
+      "code": "sql",
+      "intitule": "SQL et bases relationnelles",
+      "ordre": 3,
+      "competences": [
+        {
+          "code": "interroger",
+          "intitule": "Interroger une table",
+          "description": "Sélection, filtrage, tri, limitation du nombre de lignes."
+        },
+        {
+          "code": "joindre",
+          "intitule": "Joindre plusieurs tables",
+          "description": "Jointures internes et externes, clés étrangères, cardinalités."
+        },
+        {
+          "code": "agreger",
+          "intitule": "Agréger et regrouper",
+          "description": "Fonctions d'agrégation, regroupement, filtrage sur agrégat."
+        },
+        {
+          "code": "modeliser",
+          "intitule": "Modéliser un schéma relationnel",
+          "description": "Entités, relations, clés, normalisation, contraintes d'intégrité."
+        },
+        {
+          "code": "optimiser",
+          "intitule": "Comprendre le coût d'une requête",
+          "description": "Index, plan d'exécution, lecture d'un temps de réponse."
+        }
+      ]
+    },
+    {
+      "code": "apprentissage-automatique",
+      "intitule": "Apprentissage automatique",
+      "ordre": 4,
+      "competences": [
+        {
+          "code": "preparer-un-jeu",
+          "intitule": "Préparer un jeu de données pour l'apprentissage",
+          "description": "Séparation apprentissage et test, encodage, mise à l'échelle, fuite de données."
+        },
+        {
+          "code": "entrainer",
+          "intitule": "Entraîner un modèle supervisé",
+          "description": "Choix d'un algorithme selon la tâche, apprentissage, prédiction."
+        },
+        {
+          "code": "evaluer",
+          "intitule": "Évaluer un modèle",
+          "description": "Métriques adaptées à la tâche, matrice de confusion, sur-apprentissage."
+        },
+        {
+          "code": "interpreter",
+          "intitule": "Interpréter les résultats d'un modèle",
+          "description": "Importance des variables, limites d'une prédiction, ce qu'un score ne dit pas."
+        }
+      ]
+    }
+  ]
+}

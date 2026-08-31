@@ -437,3 +437,43 @@ Porter la langue de chaque fragment dans ses métadonnées à l'indexation, et
 l'afficher à côté de l'attribution. Le champ n'existe pas aujourd'hui dans le
 corpus indexé — l'ajouter suppose de rejouer l'indexation, ce que la réserve 7
 a déjà écarté pour d'autres raisons.
+
+---
+
+## 11. Les erreurs de quiz sont rattachées au sujet, non à la notion
+
+**Composant :** `apps/agents/agent_coach.py` — invite de génération de quiz
+**Nature :** granularité du suivi, limite fonctionnelle
+**Statut :** **ouverte**, tenue en réserve le 31/08/2026
+
+Depuis l'incident 010, une erreur de quiz est enregistrée sous le sujet du quiz
+entier — « les listes en Python » — et non sous la notion de la question qui a
+échoué. Un quiz de dix questions couvrant l'indexation, le découpage et les
+compréhensions produit dix erreurs portant le même libellé.
+
+**Ce que cela permet quand même** : le bloc « à revoir » de la page d'accueil
+fonctionne. Il désigne un sujet à retravailler, ce qui est utile et honnête.
+
+**Ce que cela empêche** : distinguer deux notions à l'intérieur d'un même quiz,
+donc rattacher finement une erreur à une compétence du référentiel.
+
+### Pourquoi ce n'est pas corrigé maintenant
+
+Le corriger suppose de modifier l'invite du coach pour qu'il produise une
+notion par question. **Modifier une invite change le comportement de
+génération**, et à quatre jours du rendu il n'y aurait pas le temps de mesurer
+ce que ce changement fait par ailleurs : format de la réponse, taux d'échec de
+l'analyse JSON, qualité des questions. Un modèle qu'on réoriente sans mesurer
+est un modèle dont on ne sait plus ce qu'il fait.
+
+C'est l'arbitrage explicite du 31/08 : le sujet du quiz suffit à ce que la page
+doit montrer, et le gain de finesse ne vaut pas le risque de régression sur la
+génération.
+
+### À faire après le 14 septembre
+
+Ajouter un champ `notion` par question dans l'invite et dans le schéma attendu,
+mesurer le taux d'analyse réussie avant et après, puis rattacher l'erreur à
+cette notion plutôt qu'au sujet. Les erreurs déjà enregistrées garderont le
+libellé du sujet : elles ne sont pas rattrapables, et ce paragraphe est leur
+explication.
