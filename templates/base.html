@@ -76,7 +76,7 @@
     elle déclenche un appel facturé et décompte le quota du compte.
     {% endcomment %}
     {% if user.is_authenticated %}
-        <form style="display: none">{% csrf_token %}</form>
+        <form id="csrf-form" style="display: none">{% csrf_token %}</form>
         {% include 'components/tuteur.html' %}
     {% endif %}
 

@@ -117,6 +117,7 @@
 <style>
 #tuteur-panneau { transition: transform 200ms ease, left 200ms ease, top 200ms ease,
                    width 200ms ease, height 200ms ease, border-radius 200ms ease; }
+#tuteur-panneau[hidden] { display: none !important; }
 
 #tuteur-panneau.tuteur-flottant {
     position: fixed;
@@ -232,6 +233,7 @@
     }
 
     let messagesSauves = chargerMessages();
+    if (!Array.isArray(messagesSauves)) messagesSauves = [];
 
     function escapeHtml(text) {
         const d = document.createElement('div');
@@ -532,41 +534,46 @@
     };
 
     {# --- Restauration des messages précédents --- #}
-    messagesSauves.forEach(function(m) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-start gap-3 ' + (m.isUser ? 'flex-row-reverse' : '');
-        const avatar = document.createElement('div');
-        avatar.className = 'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 '
-            + (m.isUser ? 'bg-primary-green' : 'bg-primary-blue');
-        avatar.innerHTML = '<i data-lucide="' + (m.isUser ? 'user' : 'bot') + '" class="w-4 h-4 text-white"></i>';
-        const content = document.createElement('div');
-        content.className = 'flex-1 ' + (m.isUser ? 'flex flex-col items-end' : '');
-        const bubble = document.createElement('div');
-        bubble.className = 'msg-bubble rounded-lg px-4 py-3 border max-w-[85%] '
-            + (m.isUser ? 'bg-primary-green border-green-600 text-white' : 'bg-gray-800 border-gray-700 text-gray-100');
-        bubble.innerHTML = m.isUser
-            ? '<div class="text-sm leading-relaxed">' + escapeHtml(m.texte) + '</div>'
-            : '<div class="text-sm leading-relaxed">' + formatResponse(m.texte) + '</div>';
-        const time = document.createElement('p');
-        time.className = 'text-xs text-gray-500 mt-1';
-        time.textContent = m.heure;
-        content.appendChild(bubble);
-        content.appendChild(time);
-        wrapper.appendChild(avatar);
-        wrapper.appendChild(content);
-        messages.appendChild(wrapper);
-    });
+    try {
+        messagesSauves.forEach(function(m) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-start gap-3 ' + (m.isUser ? 'flex-row-reverse' : '');
+            const avatar = document.createElement('div');
+            avatar.className = 'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 '
+                + (m.isUser ? 'bg-primary-green' : 'bg-primary-blue');
+            avatar.innerHTML = '<i data-lucide="' + (m.isUser ? 'user' : 'bot') + '" class="w-4 h-4 text-white"></i>';
+            const content = document.createElement('div');
+            content.className = 'flex-1 ' + (m.isUser ? 'flex flex-col items-end' : '');
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble rounded-lg px-4 py-3 border max-w-[85%] '
+                + (m.isUser ? 'bg-primary-green border-green-600 text-white' : 'bg-gray-800 border-gray-700 text-gray-100');
+            bubble.innerHTML = m.isUser
+                ? '<div class="text-sm leading-relaxed">' + escapeHtml(m.texte) + '</div>'
+                : '<div class="text-sm leading-relaxed">' + formatResponse(m.texte) + '</div>';
+            const time = document.createElement('p');
+            time.className = 'text-xs text-gray-500 mt-1';
+            time.textContent = m.heure;
+            content.appendChild(bubble);
+            content.appendChild(time);
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(content);
+            messages.appendChild(wrapper);
+        });
 
-    for (let i = 0; i < messagesSauves.length; i++) {
-        if (messagesSauves[i].isUser) {
-            const reponse = (i + 1 < messagesSauves.length && !messagesSauves[i + 1].isUser)
-                ? messagesSauves[i + 1].texte : '';
-            historique.push({question: messagesSauves[i].texte, reponse: reponse});
+        for (let i = 0; i < messagesSauves.length; i++) {
+            if (messagesSauves[i].isUser) {
+                const reponse = (i + 1 < messagesSauves.length && !messagesSauves[i + 1].isUser)
+                    ? messagesSauves[i + 1].texte : '';
+                historique.push({question: messagesSauves[i].texte, reponse: reponse});
+            }
         }
+        if (messagesSauves.length > 0 && typeof lucide !== 'undefined') lucide.createIcons();
+        if (messagesSauves.length > 0 && window.Prism) Prism.highlightAll();
+        if (messagesSauves.length > 0) messages.scrollTop = messages.scrollHeight;
+    } catch (e) {
+        messagesSauves = [];
+        sauverMessages();
     }
-    if (messagesSauves.length > 0 && typeof lucide !== 'undefined') lucide.createIcons();
-    if (messagesSauves.length > 0 && window.Prism) Prism.highlightAll();
-    if (messagesSauves.length > 0) messages.scrollTop = messages.scrollHeight;
 
     try {
         const brouillon = localStorage.getItem(CLE_BROUILLON);
