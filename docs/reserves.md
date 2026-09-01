@@ -754,8 +754,17 @@ métadonnée le distingue. C'est une variante de la famille B appliquée à un
 outil de développement : le catalogue affiche seize traductions, il en contient
 seize de moins.
 
+### Une troisième occurrence, le jour même
+
+Dans la même session, `makemessages` a proposé « Joueurs au maximum » pour
+`Players`, deviné à partir de `Max Players`. Sans relecture, le salon d'attente
+aurait affiché « Joueurs au maximum (2/10) ». Le risque n'est donc pas
+théorique : **toute chaîne nouvelle qui ressemble à une chaîne existante repart
+avec une traduction fausse**, et c'est la relecture — pas l'outil — qui
+l'arrête.
+
 ### À faire après le 14 septembre
 
-Relire les seize entrées une à une, défiger celles qui sont justes, vider les
+Relire les entrées une à une, défiger celles qui sont justes, vider les
 autres. Et ajouter un test qui échoue si une entrée `fuzzy` porte un identifiant
 non français — le seul cas où l'inertie coûte quelque chose.
