@@ -67,7 +67,7 @@
         <div class="lg:col-span-2">
             <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-bold text-white">Players ({{ participants.count }}/{{ room.max_players }})</h3>
+                    <h3 id="titre-joueurs" class="text-lg font-bold text-white">{% trans "Players" %} ({{ participants.count }}/{{ room.max_players }})</h3>
                     {% if is_host and can_start %}
                         <button onclick="startGame()" id="start-game-btn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
                             <i data-lucide="play" class="w-4 h-4"></i>
@@ -122,6 +122,7 @@
     </div>
 </div>
 
+{% trans "Players" as t_joueurs %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof lucide !== 'undefined') {
@@ -144,10 +145,39 @@
                     return;
                 }
                 
-                // Mettre à jour le nombre de joueurs
-                const playersTitle = document.querySelector('h3');
-                if (playersTitle) {
-                    playersTitle.textContent = `Players (${data.player_count}/{{ room.max_players }})`;
+                // Le titre se désigne par son identifiant.
+                //
+                // Il était atteint par `document.querySelector('h3')`, qui rend
+                // le PREMIER h3 de la page — celui des réglages de la partie.
+                // Le sondage réécrivait donc « Réglages » toutes les deux
+                // secondes, pendant que le nombre de joueurs, lui, ne bougeait
+                // jamais.
+                const titreJoueurs = document.getElementById('titre-joueurs');
+                if (titreJoueurs) {
+                    titreJoueurs.textContent =
+                        `{{ t_joueurs|escapejs }} (${data.player_count}/{{ room.max_players }})`;
+                }
+
+                // La liste elle-même se reconstruit : un compteur qui monte
+                // sans que le nouveau venu apparaisse ne dit qu'à moitié ce
+                // qui s'est passé.
+                const liste = document.getElementById('players-list');
+                if (liste && data.participants) {
+                    liste.innerHTML = data.participants.map(p => `
+                        <div class="flex items-center space-x-6 p-6 bg-gray-900 rounded-lg border border-gray-600">
+                            <img src="${p.avatar_url}" alt="${p.username}"
+                                 class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg"
+                                 style="object-position: center top;">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xl font-bold text-white">${p.username}</span>
+                                    ${p.is_host ? '<i data-lucide="crown" class="w-6 h-6 text-yellow-500"></i>' : ''}
+                                </div>
+                            </div>
+                            <div class="text-green-400"><i data-lucide="wifi" class="w-6 h-6"></i></div>
+                        </div>
+                    `).join('');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                 }
                 
                 // Mettre à jour le bouton start si nécessaire
