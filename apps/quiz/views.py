@@ -230,6 +230,110 @@ def room_detail(request, room_code):
     
     return render(request, 'quiz/room_detail.html', context)
 
+def cloturer_les_sessions_de_la_partie(room):
+    """
+    Enregistre une session d'apprentissage close pour chaque participant.
+
+    Compétence visée : C20 (épreuve E5) — données du suivi
+    Compétences concernées : C17 (E4) ; C21 (E5)
+
+    Choix : une session par participant, ouverte et close dans le même geste,
+    plutôt que la clôture de celle qu'ouvre la génération du quiz. Motivation :
+    cette dernière n'existe que pour l'hôte — c'est lui qui a demandé la
+    génération. Les autres joueurs n'en ont aucune, et la page Référentiel
+    comptait donc zéro quiz terminé pour eux alors qu'ils venaient d'en
+    finir un. Le compteur annonçait « quiz terminés » et ne pouvait pas voir
+    ceux du multijoueur (incident 012).
+
+    Le score retenu est le pourcentage de bonnes réponses, pas les points :
+    les points récompensent la vitesse, et la page affiche une moyenne que
+    l'apprenant lira comme une réussite.
+    """
+    from apps.agents.agent_watcher import LearningSession
+
+    total = room.questions.count()
+    for participant in room.participants.all():
+        deja = LearningSession.objects.filter(
+            user=participant.user,
+            activity_type='quiz_multijoueur',
+            metadata__code_salle=room.code,
+        ).exists()
+        if deja:
+            # Idempotence : le sondage peut prononcer la fin plusieurs fois.
+            continue
+        pourcentage = (participant.correct_answers / total * 100) if total else 0.0
+        maintenant = timezone.now()
+        debut = room.started_at or room.created_at
+        LearningSession.objects.create(
+            user=participant.user,
+            topic=room.topic,
+            activity_type='quiz_multijoueur',
+            competence=room.competence,
+            score=round(pourcentage, 1),
+            start_time=debut,
+            end_time=maintenant,
+            duration_seconds=max(0, int((maintenant - debut).total_seconds())),
+            metadata={
+                'code_salle': room.code,
+                'points': participant.score,
+                'bonnes_reponses': participant.correct_answers,
+                'questions': total,
+            },
+        )
+
+
+def faire_avancer_la_partie(room):
+    """
+    Prononce le passage à la question suivante, ou la fin de la partie.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Choix : cet arbitrage est appelé par la soumission d'une réponse ET par le
+    sondage d'état, alors qu'il ne vivait que dans la première. Motivation : la
+    fin de partie ne pouvait être prononcée que par un joueur en train de
+    répondre. Si le dernier participant attendu ferme son navigateur, plus
+    aucune réponse n'arrive et la partie reste ouverte indéfiniment — personne
+    ne reste pour la conclure. Le sondage, lui, bat toutes les deux secondes
+    tant qu'une page est ouverte : c'est le seul signal encore disponible quand
+    plus personne ne joue.
+
+    Retourne True si tous les joueurs présents ont répondu à la question
+    courante.
+    """
+    if room.status != 'in_progress':
+        return room.status == 'finished'
+
+    question_courante = GameQuestion.objects.filter(
+        room=room, question_number=room.current_question
+    ).first()
+    if question_courante is None:
+        return False
+
+    # La partie attend les PRÉSENTS, pas les inscrits : la présence se déduit
+    # du dernier sondage, pas d'un drapeau que rien ne remet à faux.
+    joueurs_presents = sum(
+        1 for p in room.participants.filter(is_active=True) if p.est_present
+    )
+    ont_repondu = GameAnswer.objects.filter(question=question_courante).count()
+    tous_ont_repondu = ont_repondu >= max(1, joueurs_presents)
+
+    if not tous_ont_repondu:
+        return False
+
+    if room.current_question < room.num_questions:
+        room.current_question += 1
+        # Le chronomètre repart avec la question, côté serveur.
+        room.question_start_time = timezone.now()
+        room.save()
+    else:
+        room.status = 'finished'
+        room.finished_at = timezone.now()
+        room.save()
+        cloturer_les_sessions_de_la_partie(room)
+
+    return True
+
+
 @login_required
 def room_status_api(request, room_code):
     """API pour récupérer le statut de la room en temps réel"""
@@ -252,6 +356,14 @@ def room_status_api(request, room_code):
         # secondes tant que la page est ouverte.
         moi.derniere_activite = timezone.now()
         moi.save(update_fields=['is_active', 'derniere_activite'])
+
+        # Le sondage arbitre aussi. Sans cela, une partie dont le dernier
+        # joueur attendu a fermé son navigateur ne se termine jamais : seule
+        # une soumission pouvait prononcer la fin, et il n'en viendra plus.
+        # Le battement de cœur ci-dessus doit précéder cet appel, faute de
+        # quoi le joueur qui sonde ne se compterait pas lui-même comme
+        # présent.
+        faire_avancer_la_partie(room)
 
         participants = room.participants.filter(is_active=True).order_by('-score', 'joined_at')
         
@@ -424,38 +536,12 @@ def multiplayer_quiz_api(request, room_code):
                 )
             participant.save()
             
-            # La partie attend les PRÉSENTS, pas les inscrits.
-            #
-            # Compétence visée : C17 (épreuve E4)
-            #
-            # Elle comptait les participants marqués actifs — un drapeau que
-            # rien ne remettait à faux sur cette voie. Un joueur qui fermait
-            # son onglet bloquait donc la partie pour tous les autres,
-            # indéfiniment, en attendant une réponse qui ne viendrait jamais.
-            # La présence se déduit désormais du dernier sondage.
-            joueurs_presents = sum(
-                1 for p in room.participants.filter(is_active=True) if p.est_present
-            )
-            answered_players = GameAnswer.objects.filter(
-                question=current_question
-            ).count()
-
-            all_answered = answered_players >= max(1, joueurs_presents)
-            
-            print(f"📈 Updated participant score: {participant.score}")
-            print(f"👥 All answered: {all_answered} ({answered_players}/{joueurs_presents})")
-            
-            # Move to next question if all answered
-            if all_answered and room.current_question < room.num_questions:
-                room.current_question += 1
-                # Le chronomètre repart avec la question, côté serveur.
-                room.question_start_time = timezone.now()
-                room.save()
-                print(f"➡️ Moving to question {room.current_question}")
-            elif all_answered and room.current_question >= room.num_questions:
-                room.status = 'finished'
-                room.save()
-                print("🏁 Game finished!")
+            # L'arbitrage — qui attend qui, et quand la partie s'achève — vit
+            # dans `faire_avancer_la_partie`, appelée ici et par le sondage
+            # d'état. Voir sa docstring : une partie doit pouvoir se conclure
+            # même quand plus personne ne répond.
+            all_answered = faire_avancer_la_partie(room)
+            print(f"👥 All answered: {all_answered} (question {room.current_question}/{room.num_questions})")
             
             return JsonResponse({
                 'success': True,

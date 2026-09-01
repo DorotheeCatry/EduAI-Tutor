@@ -9,11 +9,23 @@ import json
 
 User = get_user_model()
 
+# Les deux formes de quiz : le solo et le multijoueur.
+#
+# Compétence visée : C20 (épreuve E5)
+# Choix : deux types distincts en base, lus ensemble partout où une lecture
+# annonce « quiz ». Motivation : le type dit d'où vient la session, ce qui
+# reste utile pour l'analyse ; mais un compteur intitulé « quiz terminés » qui
+# n'en voit qu'une forme sur deux annonce autre chose que ce qu'il mesure. Le
+# multijoueur était invisible sur la page Référentiel pour cette seule raison
+# (incident 012).
+TYPES_DE_QUIZ = ("quiz", "quiz_multijoueur")
+
+
 class LearningSession(models.Model):
     """Model for tracking learning sessions"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     topic = models.CharField(max_length=200)
-    activity_type = models.CharField(max_length=50)  # 'course', 'quiz', 'chat', 'revision'
+    activity_type = models.CharField(max_length=50)  # 'course', 'quiz', 'quiz_multijoueur', 'chat', 'revision'
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     duration_seconds = models.IntegerField(default=0)

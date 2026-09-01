@@ -15,6 +15,7 @@ emprunte depuis la suppression du consumer WebSocket (décision 031).
 import json
 from datetime import timedelta
 from io import StringIO
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -22,7 +23,7 @@ from django.core.management import call_command
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.agents.agent_watcher import UserMistake
+from apps.agents.agent_watcher import LearningSession, UserMistake
 from apps.quiz.models import (
     DELAI_DE_PRESENCE_SECONDES,
     GameAnswer,
@@ -30,6 +31,7 @@ from apps.quiz.models import (
     GameQuestion,
     GameRoom,
 )
+from apps.quiz.views import cloturer_les_sessions_de_la_partie
 from apps.referentiel.models import Competence
 
 FICHIER_LIVRE = "apps/referentiel/donnees/eduai-2026.json"
@@ -375,3 +377,186 @@ def test_le_consumer_websocket_n_existe_plus():
         assert identifiant not in asgi, (
             f"« {identifiant} » subsiste : le routage WebSocket est encore déclaré"
         )
+
+
+# --- La fin de partie appartient au serveur -------------------------------
+
+
+@pytest.mark.django_db
+def test_le_gabarit_n_annonce_pas_la_fin_de_partie_de_lui_meme():
+    """
+    Le client attend le verdict du serveur après sa dernière réponse.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    Le gabarit concluait la partie dès sa propre dernière réponse : le joueur
+    le plus rapide voyait « partie terminée » pendant que l'autre répondait
+    encore, sur un classement figé à un état intermédiaire. Il pouvait donc se
+    croire vainqueur sans l'être.
+    """
+    gabarit = (
+        Path("apps/quiz/templates/quiz/multiplayer_game.html")
+        .read_text(encoding="utf-8")
+    )
+    # Les quatre cents caractères qui suivent le test « reste-t-il des
+    # questions ? » portent les deux branches. On n'y compte pas les accolades
+    # — un découpage qui casse au premier reformatage — on y cherche le nom de
+    # ce qui est appelé.
+    branchement = gabarit.split(
+        "if (currentQuestionNumber < totalQuestions)")[1][:400]
+
+    assert "attendreLaFinDeLaPartie" in branchement, (
+        "après la dernière question, le client doit attendre le serveur"
+    )
+    assert "showFinalResults" not in branchement, (
+        "le client ne doit plus prononcer la fin de partie lui-même"
+    )
+    assert "data.status === 'finished'" in gabarit, (
+        "la fin de partie doit être lue sur l'état renvoyé par le serveur"
+    )
+
+
+@pytest.mark.django_db
+def test_le_sondage_conclut_une_partie_que_plus_personne_ne_joue(
+        client, hote, invitee, salle):
+    """
+    Une partie se termine même quand plus aucune réponse n'arrive.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    L'arbitrage ne vivait que dans la soumission d'une réponse. Faire attendre
+    le joueur qui a fini y aurait introduit un blocage : si le dernier
+    participant attendu ferme son navigateur, plus personne ne soumet, donc
+    personne ne prononce la fin. Le sondage d'état arbitre à son tour.
+    """
+    GameParticipant.objects.create(room=salle, user=hote,
+                                   derniere_activite=timezone.now())
+    parti = GameParticipant.objects.create(
+        room=salle, user=invitee,
+        derniere_activite=timezone.now() - timedelta(
+            seconds=DELAI_DE_PRESENCE_SECONDES + 10),
+    )
+
+    salle.current_question = salle.num_questions
+    salle.save()
+    derniere = GameQuestion.objects.get(room=salle,
+                                        question_number=salle.num_questions)
+    GameAnswer.objects.create(
+        participant=GameParticipant.objects.get(room=salle, user=hote),
+        question=derniere, selected_answer=2, response_time=4.0,
+    )
+    assert parti.est_present is False
+
+    client.force_login(hote)
+    reponse = client.get(
+        reverse("quiz:room_status_api", args=[salle.code]), secure=True)
+
+    assert reponse.json()["status"] == "finished", (
+        "le sondage doit pouvoir conclure la partie sans nouvelle réponse"
+    )
+
+
+# --- Le multijoueur compte comme un quiz terminé --------------------------
+
+
+@pytest.mark.django_db
+def test_une_partie_terminee_laisse_une_session_close_par_joueur(
+        client, hote, invitee, salle):
+    """
+    Chaque participant repart avec une session d'apprentissage close.
+
+    Compétence visée : C20 (épreuve E5), C17 (E4)
+
+    La génération du quiz ouvrait une session pour le seul hôte, que rien ne
+    clôturait en multijoueur. La page Référentiel filtre sur `end_time` et
+    `score` : elle comptait donc zéro quiz terminé pour des joueurs qui
+    venaient d'en finir un, et ignorait entièrement les invités (incident 012).
+    """
+    GameParticipant.objects.create(room=salle, user=hote,
+                                   derniere_activite=timezone.now(),
+                                   correct_answers=2)
+    GameParticipant.objects.create(room=salle, user=invitee,
+                                   derniere_activite=timezone.now(),
+                                   correct_answers=1)
+    salle.current_question = salle.num_questions
+    salle.save()
+
+    client.force_login(hote)
+    _repondre(client, salle, 2)
+    client.force_login(invitee)
+    _repondre(client, salle, 0)
+
+    salle.refresh_from_db()
+    assert salle.status == "finished"
+
+    sessions = LearningSession.objects.filter(activity_type="quiz_multijoueur")
+    assert sessions.count() == 2, "un joueur sans session est un joueur invisible"
+    for session in sessions:
+        assert session.end_time is not None
+        assert session.score is not None
+        assert session.competence == salle.competence, (
+            "la session doit nommer la compétence, comme le reste de la page"
+        )
+
+
+@pytest.mark.django_db
+def test_la_cloture_des_sessions_ne_double_pas_les_lignes(hote, invitee, salle):
+    """
+    Deux arbitrages successifs n'écrivent qu'une session par joueur.
+
+    Compétence visée : C20 (épreuve E5)
+
+    Le sondage arbitre toutes les deux secondes et plusieurs clients sondent en
+    parallèle : la clôture doit pouvoir être demandée plusieurs fois sans
+    gonfler les compteurs.
+    """
+    GameParticipant.objects.create(room=salle, user=hote, correct_answers=2)
+    GameParticipant.objects.create(room=salle, user=invitee, correct_answers=0)
+
+    cloturer_les_sessions_de_la_partie(salle)
+    cloturer_les_sessions_de_la_partie(salle)
+
+    assert LearningSession.objects.filter(
+        activity_type="quiz_multijoueur").count() == 2
+
+
+@pytest.mark.django_db
+def test_le_score_de_la_session_est_un_pourcentage_et_non_des_points(
+        hote, salle):
+    """
+    La session retient le pourcentage de bonnes réponses, pas les points.
+
+    Compétence visée : C20 (épreuve E5)
+
+    Les points récompensent la vitesse. La page Référentiel affiche une moyenne
+    que l'apprenant lira comme une réussite : y verser des points ferait dire à
+    ce chiffre autre chose que ce qu'il annonce.
+    """
+    GameParticipant.objects.create(room=salle, user=hote,
+                                   correct_answers=1, score=1730)
+
+    cloturer_les_sessions_de_la_partie(salle)
+
+    session = LearningSession.objects.get(activity_type="quiz_multijoueur")
+    assert session.score == 50.0, "1 bonne réponse sur 2 questions"
+    assert session.metadata["points"] == 1730, "les points restent, à leur place"
+
+
+@pytest.mark.django_db
+def test_la_page_referentiel_compte_les_parties_multijoueur(client, hote, salle):
+    """
+    Le compteur « quiz terminés » voit les deux formes de quiz.
+
+    Compétence visée : C20 (épreuve E5), C17 (E4)
+
+    Un compteur qui n'en voit qu'une forme sur deux annonce autre chose que ce
+    qu'il mesure — la famille B du registre des motifs.
+    """
+    GameParticipant.objects.create(room=salle, user=hote, correct_answers=2)
+    cloturer_les_sessions_de_la_partie(salle)
+
+    client.force_login(hote)
+    page = client.get(reverse("tracker:dashboard"), secure=True)
+
+    assert page.context["quiz_termines"] == 1
+    assert page.context["score_moyen"] == 100.0

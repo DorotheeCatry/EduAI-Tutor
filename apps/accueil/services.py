@@ -17,7 +17,7 @@ qu'il remplace, où un taux de réussite était déduit de l'expérience gagnée
 
 from django.db.models import Count, Max, OuterRef, Q, Subquery
 
-from apps.agents.agent_watcher import LearningSession, UserMistake
+from apps.agents.agent_watcher import TYPES_DE_QUIZ, LearningSession, UserMistake
 from apps.courses.models import Course
 from apps.exercises.models import ExerciseSubmission, UserExerciseProgress
 from apps.referentiel.progression import (
@@ -167,7 +167,7 @@ def derniere_activite(utilisateur):
 
     dernier_quiz = (
         LearningSession.objects
-        .filter(user=utilisateur, activity_type="quiz",
+        .filter(user=utilisateur, activity_type__in=TYPES_DE_QUIZ,
                 end_time__isnull=False, score__isnull=False)
         .select_related("competence")
         .order_by("-end_time")
