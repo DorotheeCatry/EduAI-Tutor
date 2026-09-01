@@ -1,5 +1,13 @@
 # 033 — La coquille est stylée avant l'arrivée du CDN
 
+> **Dépassée le jour même par la décision 034.** Le squelette supprimait le saut
+> du cadre et laissait celui du contenu : mesuré ensuite, 41 éléments sur 41
+> bougeaient encore sur la page du tableau de bord. La feuille est désormais
+> compilée et le CDN abandonné ; le squelette est retiré. Cette entrée est
+> conservée telle quelle : elle porte les mesures qui ont établi la cause, et
+> elle montre qu'un correctif qui traite le symptôme le plus voyant peut passer
+> pour une solution.
+
 **Date :** 1er septembre 2026
 **Compétence visée :** C17 (épreuve E4) — application web
 **Compétences concernées :** C13 (E3) — accessibilité et performance perçue ; C21 (E5)

@@ -240,6 +240,49 @@ redis-server
 
 ---
 
+## 🎨 Feuille de style (Tailwind)
+
+La feuille est **compilée hors ligne** et versionnée : `static/css/tailwind.css`.
+Les gabarits la lient par `{% static %}` ; aucune page ne charge plus
+`cdn.tailwindcss.com`.
+
+### Reconstruire après avoir ajouté une classe
+
+```bash
+bash theme/tailwind-v3/construire.sh
+```
+
+Le script télécharge au besoin le binaire autonome de Tailwind 3.4.17 (43 Mio,
+non versionné) et régénère la feuille depuis `theme/tailwind-v3/`.
+
+**À lancer après toute modification de gabarit introduisant une classe
+nouvelle.** Sans reconstruction, la classe ne produit aucun style et rien ne le
+signale : la page s'affiche, simplement de travers. Le test
+`tests/test_coquille_interface.py` échoue dans ce cas — il compare toutes les
+classes des gabarits au contenu de la feuille.
+
+### Ce qui est versionné
+
+La feuille compilée, comme les catalogues `.mo` : l'image de déploiement est
+bâtie sur le clone, et une feuille absente donnerait une application sans
+styles que personne ne verrait avant la démonstration.
+
+### Pourquoi pas `manage.py tailwind build`
+
+`django-tailwind` est bien installé, mais son nécessaire est en **Tailwind 4**
+alors que l'application a toujours été rendue en **3.4.17** ; et sa
+construction échoue sur le Node 12 de la machine. Le binaire autonome produit
+exactement la version que servait le CDN — équivalence vérifiée en comparant la
+géométrie de tous les éléments sur six pages (décision 034).
+
+### Où sont les classes
+
+Le champ `content` de `theme/tailwind-v3/tailwind.config.js` couvre les
+gabarits **et** `apps/**/*.py` : les widgets de formulaire déclarent leurs
+classes en Python. Un chemin oublié donne une page sans styles.
+
+---
+
 ## 🌍 Internationalisation (français / anglais)
 
 L'interface est servie en **français par défaut**, en anglais si le compte le

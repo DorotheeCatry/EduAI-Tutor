@@ -768,3 +768,42 @@ l'arrête.
 Relire les entrées une à une, défiger celles qui sont justes, vider les
 autres. Et ajouter un test qui échoue si une entrée `fuzzy` porte un identifiant
 non français — le seul cas où l'inertie coûte quelque chose.
+
+---
+
+## 18. Douze classes présentes dans les gabarits ne produisent aucun style
+
+**Compétence concernée :** C17 (épreuve E4) — application web
+**Statut :** consignée, non corrigée
+
+Le relevé exhaustif des classes des gabarits, fait pour vérifier la feuille
+compilée (décision 034), a montré que douze d'entre elles ne sont stylées nulle
+part — ni par Tailwind, ni par un `<style>` de gabarit, ni par
+`static/css/custom.css`, lequel n'est d'ailleurs chargé par aucune page.
+
+Elles se répartissent en trois familles :
+
+| Classes | Origine |
+|---|---|
+| `tab-button`, `tab-content`, `avatar-option`, `tuteur-dock`, `test-actual`, `test-result`, `test-status`, `question-scroll-container` | accroches de JavaScript — jamais destinées à styler |
+| `python`, `language-python` | posées pour Prism, la coloration syntaxique |
+| `prose`, `prose-invert` | greffon `@tailwindcss/typography`, **non installé** |
+
+Seules les deux dernières sont un vrai manque : `prose` et `prose-invert` sont
+écrites sur les zones de contenu généré dans l'intention d'en soigner la
+typographie, et elles n'ont jamais rien fait. Le rendu actuel est donc celui
+que l'on voit, pas celui qui était visé.
+
+### Pourquoi ce n'est pas corrigé
+
+Installer le greffon changerait l'apparence de toutes les zones de contenu
+généré — cours, réponses du tuteur, énoncés — trois jours avant le rendu, sans
+le temps de relire chaque page. Le rendu actuel est correct ; il est seulement
+plus sobre que prévu.
+
+### À faire après le 14 septembre
+
+Installer `@tailwindcss/typography`, l'ajouter aux greffons de
+`theme/tailwind-v3/tailwind.config.js`, reconstruire, et relire les pages de
+contenu généré. Retirer les accroches JavaScript de la liste d'exceptions du
+test le jour où elles porteraient un style.
