@@ -77,6 +77,16 @@ class KodaUser(AbstractUser):
         verbose_name=_("Preferred language")
     )
 
+    animation_koda = models.BooleanField(
+        default=True,
+        verbose_name=_("Animer Koda"),
+        help_text=_(
+            "Anime le personnage du tuteur. Décocher fige Koda sur une image. "
+            "Le réglage « mouvement réduit » du système est respecté quoi qu'il "
+            "arrive : ce champ permet de figer l'animation sans y toucher."
+        ),
+    )
+
     xp = models.PositiveIntegerField(
         default=0,
         verbose_name=_("Experience Points"),

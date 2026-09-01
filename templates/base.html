@@ -40,7 +40,13 @@
     
     {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen bg-gray-900 text-white">
+{% comment %}
+Le refus d'animation de l'apprenant est porté par le corps du
+document : les Koda créés en JavaScript après le chargement — celui
+de la fin de partie, par exemple — n'ont pas d'autre moyen de le
+connaître.
+{% endcomment %}
+<body class="min-h-screen bg-gray-900 text-white"{% if user.is_authenticated and not user.animation_koda %} data-animation-koda="desactivee"{% endif %}>
     <div class="flex h-screen">
         <!-- Sidebar -->
         {% if user.is_authenticated %}

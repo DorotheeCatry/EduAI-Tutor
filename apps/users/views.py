@@ -81,7 +81,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     Vue de modification du profil utilisateur.
     """
     model = KodaUser
-    fields = ['username', 'email', 'bio', 'language_preference', 'avatar']
+    fields = ['username', 'email', 'bio', 'language_preference', 'animation_koda', 'avatar']
     template_name = 'users/profile.html'
     success_url = reverse_lazy('users:profile')
 

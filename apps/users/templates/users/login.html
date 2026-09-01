@@ -138,9 +138,30 @@
         <div class="hidden lg:flex items-center justify-center relative">
             <!-- Koda géant -->
             <div class="floating-animation relative z-0 w-full h-full flex">
-                <img src="{% static 'koda-ia/SALUTE.gif' %}" 
-                    alt="{% trans "EduAI Tutor waving" %}" 
-                    class="w-[600px] h-[600px] object-contain" />
+                {% comment %}
+                Le salut d'accueil reste le GIF monté par l'illustratrice.
+
+                Compétence visée : C17 (épreuve E4)
+                Compétence concernée : C13 (E3) — accessibilité
+
+                Une version en planche de sprites a été essayée et retirée : le
+                salut y jouait une fois puis basculait sur la séquence du saut,
+                qui n'est pas recalée sur celle du salut — d'où un changement
+                de pose brutal, puis une boucle hachée. Le GIF, lui, boucle le
+                geste tel qu'il a été monté. **Le montage d'origine vaut mieux
+                qu'un remontage.**
+
+                Ce qui est conservé de l'essai : un GIF s'anime quoi qu'il
+                arrive, il ignore `prefers-reduced-motion`. Une image fixe le
+                remplace donc pour qui a demandé à réduire les animations —
+                c'est la première image que voit un visiteur.
+                {% endcomment %}
+                <img src="{% static 'img/koda/animations/SALUTE.gif' %}"
+                    alt="{% trans "EduAI Tutor waving" %}"
+                    class="koda-anime w-[600px] h-[600px] object-contain" />
+                <img src="{% static 'img/koda/animations/SALUTE-fixe.png' %}"
+                    alt="{% trans "EduAI Tutor waving" %}"
+                    class="koda-fixe w-[600px] h-[600px] object-contain" />
             </div>
                 
                 <!-- Éléments décoratifs -->

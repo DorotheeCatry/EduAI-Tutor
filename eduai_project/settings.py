@@ -214,6 +214,9 @@ TEMPLATES = [
                 # paresseusement : les pages qui ne l'affichent pas ne paient
                 # aucune requête.
                 'apps.quotas.context.quota_generation',
+                # Salutation de Koda (C17). Même paresse : les pages qui ne
+                # rendent pas le tuteur ne paient aucune requête.
+                'apps.chat.salutation.contexte_de_koda',
             ],
             'debug': DEBUG,
         },

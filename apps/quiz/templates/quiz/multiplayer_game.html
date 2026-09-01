@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load static i18n %}
 
 {% block title %}Multiplayer Quiz - Room {{ room.code }}{% endblock %}
 
@@ -14,7 +14,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="p-6 h-full flex flex-col overflow-hidden">
+{% comment %}
+La partie tient dans l'écran, et la question a la priorité sur le reste.
+
+Compétence visée : C17 (épreuve E4)
+Mesuré sur un portable de 625 px de haut : l'ossature — rembourrage, en-tête,
+pied — mangeait 132 px des 418 disponibles, et il ne restait que 120 px pour
+l'énoncé. Une question qu'il faut faire défiler pour lire n'est pas une
+question qu'on lit : c'est le point que l'autrice a signalé.
+{% endcomment %}
+<div class="p-3 h-full flex flex-col overflow-hidden">
     <!-- Game Header -->
     <div class="flex items-center justify-between mb-6 flex-shrink-0">
         <div class="flex items-center space-x-3">
@@ -37,11 +46,11 @@
     </div>
 
     <!-- Main Quiz Area -->
-    <div class="flex-1 flex flex-col min-h-0 space-y-6">
+    <div class="flex-1 flex flex-col min-h-0 space-y-3">
         <!-- Question Block -->
         <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col min-h-0">
             <!-- Progress bar -->
-            <div class="p-4 border-b border-gray-700 flex-shrink-0">
+            <div class="px-4 py-2 border-b border-gray-700 flex-shrink-0">
                 <div class="w-full bg-gray-700 rounded-full h-2">
                     <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
@@ -49,7 +58,7 @@
             
             <!-- Question content - scrollable if needed -->
             <div class="flex-1 overflow-y-auto min-h-0 question-scroll-container">
-                <div class="p-6">
+                <div class="p-4">
                     <div id="question-text" class="text-white space-y-4 text-base">
                         <div class="text-center py-12">
                             <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -120,6 +129,32 @@ erreur ne le signale.
 {% trans "Back to Lobby" as t_retour_salon %}
 {% trans "New Game" as t_nouvelle_partie %}
 
+{% comment %}
+Ce que Koda dit à la fin d'une partie.
+
+Compétence visée : C17 (épreuve E4)
+Compétence concernée : C13 (E3) — accessibilité
+
+Une liste fixe, tirée au hasard côté navigateur. **Pas engendrée par le
+modèle** : quinze générations par jour et par apprenant (décision 030), et une
+partie de quiz n'a pas à en dépenser une pour faire une blague.
+
+Les phrases du perdant ne portent jamais sur sa performance : Koda se plaint
+d'avoir perdu SON pari. C'est ce qui rend la séquence fâchée utilisable — elle
+montre un personnage qui crie, poings serrés, et la phrase décide de savoir
+contre qui (décision 037).
+{% endcomment %}
+{% trans "T'es le meilleur !" as t_gagne1 %}
+{% trans "Je le savais depuis le début." as t_gagne2 %}
+{% trans "Personne n'avait la moindre chance." as t_gagne3 %}
+{% trans "Là, j'applaudis. Fort." as t_gagne4 %}
+{% trans "On remet ça quand tu veux." as t_gagne5 %}
+{% trans "Mais j'avais parié avec les autres Koda que t'étais le best !!!" as t_perd1 %}
+{% trans "Bon. Je vais devoir leur rendre leurs cacahuètes." as t_perd2 %}
+{% trans "J'ai misé sur toi. J'assume. Mais j'ai mal." as t_perd3 %}
+{% trans "La prochaine fois je parie sur l'autre. Non, je rigole." as t_perd4 %}
+{% trans "Je conteste. Je demande un deuxième tour." as t_perd5 %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     lucide.createIcons();
@@ -134,6 +169,23 @@ document.addEventListener('DOMContentLoaded', function () {
     let pollInterval = null;
     let waitingForNextQuestion = false;
     let dernierClassement = [];
+    const MOI = "{{ request.user.username|escapejs }}";
+    const KODA = {
+        joie: {
+            image: "{% static 'img/koda/planches/koda-joie.png' %}",
+            jeu: "joie", etat: "fete", largeur: 240, hauteur: 267, lignes: 6,
+            phrases: ["{{ t_gagne1|escapejs }}", "{{ t_gagne2|escapejs }}",
+                      "{{ t_gagne3|escapejs }}", "{{ t_gagne4|escapejs }}",
+                      "{{ t_gagne5|escapejs }}"]
+        },
+        bouderie: {
+            image: "{% static 'img/koda/planches/koda-boude.png' %}",
+            jeu: "bouderie", etat: "boude", largeur: 240, hauteur: 201, lignes: 6,
+            phrases: ["{{ t_perd1|escapejs }}", "{{ t_perd2|escapejs }}",
+                      "{{ t_perd3|escapejs }}", "{{ t_perd4|escapejs }}",
+                      "{{ t_perd5|escapejs }}"]
+        }
+    };
 
     // Start the game loop
     loadCurrentQuestion();
@@ -625,12 +677,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const vainqueur = dernierClassement.length ? dernierClassement[0] : null;
 
+        /* Koda fête ou boude selon l'issue. Il n'est jamais le seul à le dire :
+         * le classement, le podium et la phrase sont du texte, lisibles sans
+         * lui. L'image est donc décorative — `aria-hidden`. */
+        const seul = dernierClassement.length < 2;
+        const gagne = !vainqueur || seul || vainqueur.username === MOI;
+        const koda = gagne ? KODA.joie : KODA.bouderie;
+        const mot = koda.phrases[Math.floor(Math.random() * koda.phrases.length)];
+
         document.getElementById('question-text').innerHTML = `
             <div class="text-center py-8">
-                <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="trophy" class="w-8 h-8 text-yellow-500"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white mb-2">{{ t_partie_terminee|escapejs }}</h2>
+                <div data-koda class="koda mx-auto mb-3"
+                     style="width:${koda.largeur}px;height:${koda.hauteur}px;
+                            background-image:url('${koda.image}');
+                            background-size:${koda.largeur * 8}px ${koda.hauteur * koda.lignes}px"
+                     data-jeu="${koda.jeu}" data-colonnes="8"
+                     data-largeur="${koda.largeur}" data-hauteur="${koda.hauteur}"
+                     data-etat-initial="${koda.etat}"
+                     ${document.body.dataset.animationKoda === 'desactivee' ? 'data-animation="desactivee"' : ''}
+                     aria-hidden="true"></div>
+                <h2 class="text-2xl font-bold text-white mb-1">{{ t_partie_terminee|escapejs }}</h2>
+                <p class="text-sm text-gray-300 italic mb-3">${mot}</p>
                 ${vainqueur
                     ? `<p class="text-yellow-300 font-semibold mb-8">${"{{ t_annonce_vainqueur|escapejs }}".replace('{joueur}', vainqueur.username)}</p>`
                     : `<p class="text-gray-400 mb-8">{{ t_voir_classement|escapejs }}</p>`}
@@ -650,6 +717,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('options-container').innerHTML = '';
         lucide.createIcons();
+        /* Cet élément vient d'être créé : l'animateur ne le connaît pas encore.
+         * `brancher` reprend tous les `[data-koda]` de la page. */
+        if (window.Koda) { Koda.brancher(); }
     }
     
     function showError(message) {

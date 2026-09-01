@@ -285,3 +285,9 @@ data_pipeline/data/monitorage/
 
 # Binaire autonome de Tailwind, téléchargé à la demande (43 Mio)
 theme/tailwind-v3/tailwindcss
+
+# Frames sources de Koda (44 Mio, 1920x1080) : hors du dépôt.
+# Seules les planches assemblées et les GIF d'origine sont versionnés — voir
+# docs/provenance-ressources.md et la décision 035.
+static/img/koda/frames/
+theme/SLEEPING_TALKING/

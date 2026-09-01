@@ -5,7 +5,7 @@
 {% block title %}Room {{ room.code }} - EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 h-full overflow-y-auto">
+<div class="p-4 space-y-4 h-full overflow-y-auto">
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
@@ -78,7 +78,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="players-list">
                     {% for participant in participants %}
-                    <div class="flex items-center space-x-6 p-6 bg-gray-900 rounded-lg border border-gray-600">
+                    <div class="flex items-center space-x-4 p-4 bg-gray-900 rounded-lg border border-gray-600">
                         {% if participant.user.avatar %}
                             {% if participant.user.avatar.url %}
                                 <img src="{{ participant.user.avatar.url }}" alt="{% trans "Avatar" %}" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
@@ -164,7 +164,7 @@
                 const liste = document.getElementById('players-list');
                 if (liste && data.participants) {
                     liste.innerHTML = data.participants.map(p => `
-                        <div class="flex items-center space-x-6 p-6 bg-gray-900 rounded-lg border border-gray-600">
+                        <div class="flex items-center space-x-4 p-4 bg-gray-900 rounded-lg border border-gray-600">
                             <img src="${p.avatar_url}" alt="${p.username}"
                                  class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg"
                                  style="object-position: center top;">

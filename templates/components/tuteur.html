@@ -1,17 +1,42 @@
-{% load i18n %}
+{% load static i18n %}
 
 {{ contexte_tuteur|default_if_none:""|json_script:"contexte-tuteur" }}
 
 {# --- Poignée flottante (panneau fermé) --- #}
+{% comment %}
+Quand le chat est fermé, c'est Koda qui attend en bas de l'écran — et c'est sur
+lui qu'on appuie pour ouvrir le tuteur.
+
+Compétence visée : C17 (épreuve E4)
+Choix : le personnage EST le bouton, il ne le décore pas. Motivation : une
+mascotte posée à côté d'une pastille verte est un ornement ; une mascotte sur
+laquelle on appuie est l'interlocuteur.
+
+L'accessibilité ne change pas pour autant : l'élément reste un `button`, il
+garde son nom accessible, son `aria-expanded` et son `aria-controls`. Koda
+lui-même est `aria-hidden` — il n'ajoute rien à ce que le bouton annonce déjà.
+Le libellé textuel reste affiché : le personnage seul ne dirait pas à quoi il
+sert.
+{% endcomment %}
 <button type="button" id="tuteur-ouvrir"
         aria-expanded="false" aria-controls="tuteur-panneau"
+        aria-label="{% trans "Ouvrir le tuteur (Alt+T)" %}"
         title="{% trans "Ouvrir le tuteur (Alt+T)" %}"
-        class="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full
-               bg-primary-green text-white shadow-lg hover:bg-green-600
-               focus:outline-none focus:ring-2 focus:ring-white transition-colors">
-    <i data-lucide="message-circle" class="w-5 h-5"></i>
-    <span class="text-sm font-medium">{% trans "Tuteur" %}</span>
-    <span id="tuteur-quotas-rapide" class="text-xs opacity-75"></span>
+        class="fixed bottom-4 right-4 z-40 flex flex-col items-center gap-1 p-2 rounded-2xl
+               hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary-green
+               transition-colors">
+    <div data-koda class="koda"
+         style="width:256px;height:209px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:2048px 1045px"
+         data-colonnes="8" data-largeur="256" data-hauteur="209"
+         data-etat-initial="repos" data-assoupissement="45000"
+         {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
+         aria-hidden="true"></div>
+    <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-green
+                 text-white text-xs font-medium shadow-lg">
+        <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+        {% trans "Tuteur" %}
+        <span id="tuteur-quotas-rapide" class="opacity-75"></span>
+    </span>
 </button>
 
 {# --- Panneau --- #}
@@ -25,9 +50,28 @@
          class="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700 cursor-grab select-none"
          role="toolbar" aria-label="{% trans "Barre du tuteur" %}">
         <div class="flex items-center gap-3 min-w-0">
-            <div class="w-9 h-9 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
-                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
-            </div>
+            {% comment %}
+            Koda occupe la place de l'ancienne pastille à icône.
+
+            Compétence visée : C17 (épreuve E4)
+            Les dimensions viennent de `static/img/koda/planches/planches.json` :
+            planche de 8 colonnes, images de 192x157. Affichées à 112x92, soit
+            un peu plus de la moitié — la planche sert donc aussi les écrans à forte densité.
+
+            `aria-hidden` est posé ici parce que l'état initial est le repos,
+            qui ne signifie rien. Le script le retire dès qu'un état porte un
+            sens, et repose l'alternative textuelle correspondante.
+            {% endcomment %}
+            <div data-koda
+                 class="koda"
+                 style="width:112px;height:92px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:896px 460px"
+                 data-colonnes="8" data-largeur="112" data-hauteur="92"
+                 data-etat-initial="repos" data-assoupissement="120000"
+                 data-alt-parle="{% trans "Koda parle" %}"
+                 data-alt-dort="{% trans "Koda dort" %}"
+                 data-alt-clin="{% trans "Koda fait un clin d'œil" %}"
+                 {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
+                 aria-hidden="true"></div>
             <div class="min-w-0">
                 <h2 id="tuteur-titre" class="text-sm font-semibold text-white truncate">{% trans "Tuteur IA" %}</h2>
                 <p class="text-xs text-primary-green flex items-center gap-1">
@@ -52,6 +96,35 @@
             </button>
         </div>
     </div>
+
+    {% comment %}
+    La salutation de Koda.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C20 (E5) — données du suivi
+
+    Elle est assemblée côté serveur à partir de ce que la base contient : le
+    pseudonyme, la dernière séance close, la notion laissée de côté. **Jamais
+    engendrée par le modèle** — pour deux raisons. Le quota d'abord : quinze
+    générations par jour, en dépenser une pour dire bonjour serait absurde. La
+    fiabilité ensuite : une phrase assemblée ne peut pas inventer une séance
+    qui n'a pas eu lieu.
+
+    `aria-live` est volontairement absent : la salutation est déjà lue à
+    l'ouverture du panneau, dans l'ordre du document. L'annoncer une seconde
+    fois serait du bruit.
+    {% endcomment %}
+    {% if salutation_koda %}
+    <div class="px-4 pt-3">
+        <p class="rounded-2xl rounded-tl-sm bg-primary-green/15 border border-primary-green/30
+                  px-3 py-2 text-sm text-white">
+            {{ salutation_koda.phrase }}
+            {% if salutation_koda.detail %}
+                <span class="block text-xs text-gray-300 mt-0.5">{{ salutation_koda.detail }}</span>
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
 
     {# Bannière de contexte #}
     <div class="px-4 py-2 bg-gray-800/50 border-b border-gray-700/50">
@@ -198,6 +271,7 @@
 }
 </style>
 
+<script src="{% static 'js/koda.js' %}" defer></script>
 <script>
 (function () {
     const ouvrir      = document.getElementById('tuteur-ouvrir');
@@ -364,6 +438,9 @@
     async function envoyer({message, action, libelle}) {
         ajouterMessage(libelle || message, true);
         chargement.hidden = false;
+        {% comment %} Koda accompagne le texte « Le tuteur réfléchit… », il ne le remplace
+           pas : le message reste affiché et lisible sans lui. {% endcomment %}
+        if (window.Koda) Koda.etat('reflechit');
         try {
             const reponse = await fetch("{% url 'chat:send_message' %}", {
                 method: 'POST',
@@ -382,8 +459,17 @@
             ajouterMessage(corps.reponse || corps.error, false, corps.horodatage);
             historique.push({question: libelle || message, reponse: corps.reponse || ''});
             if (corps.quota) afficherQuota(corps.quota);
+            {% comment %} La durée de la parole suit la longueur de la réponse, bornée à
+               six secondes : une réponse de trois pages ne justifie pas que
+               Koda parle une minute. {% endcomment %}
+            if (window.Koda) {
+                Koda.etat('parle');
+                const duree = Math.min(6000, 900 + (corps.reponse || '').length * 12);
+                setTimeout(() => Koda.etat('repos'), duree);
+            }
         } catch (e) {
             ajouterMessage(`{% trans "La réponse n'a pas pu être obtenue." %}`, false);
+            if (window.Koda) Koda.etat('repos');
         } finally {
             chargement.hidden = true;
         }
@@ -392,6 +478,12 @@
     {# --- Ouverture / fermeture --- #}
     function ouvrirPanneau(donnerFocus) {
         panneau.hidden = false;
+        if (window.Koda) {
+            Koda.reveiller();
+            {% if salutation_koda %}
+            setTimeout(function () { Koda.etat('{{ salutation_koda.humeur }}'); }, 400);
+            {% endif %}
+        }
         ouvrir.setAttribute('aria-expanded', 'true');
         fermer.setAttribute('aria-expanded', 'true');
         ouvrir.hidden = true;
@@ -495,7 +587,16 @@
         if (e.key === 'Escape') fermerPanneau();
     });
 
+    {% comment %} Koda écoute pendant la frappe, puis retourne au repos après un silence.
+       Le minuteur est remis à zéro à chaque touche : c'est le silence qui
+       compte, pas le temps écoulé depuis le premier caractère. {% endcomment %}
+    let silence = null;
     champ.addEventListener('input', () => {
+        if (window.Koda && Koda.instance && Koda.instance.etat() !== 'parle') {
+            Koda.etat('ecoute');
+            clearTimeout(silence);
+            silence = setTimeout(() => Koda.etat('repos'), 4000);
+        }
         champ.style.height = 'auto';
         champ.style.height = Math.min(champ.scrollHeight, 120) + 'px';
         try { localStorage.setItem(CLE_BROUILLON, champ.value); } catch (e) {}

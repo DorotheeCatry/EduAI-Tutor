@@ -4,7 +4,30 @@
 {% block title %}{% trans "Accueil" %} — EduAI Tutor{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 overflow-y-auto">
+{% comment %}
+Même correction que sur la page Référentiel : `overflow-y-auto` sans hauteur
+contrainte ne défile pas, il grandit — et `<main>`, en `overflow-hidden`, le
+coupe. `h-full` donne la hauteur qui manquait, et l'espacement resserré fait
+que ce défilement ne sert presque jamais.
+{% endcomment %}
+{% comment %}
+La page tient dans l'écran, quelle que soit sa taille.
+
+Compétence visée : C17 (épreuve E4)
+Compétence concernée : C13 (E3) — accessibilité
+
+Choix : hauteur fixée à celle de l'écran, et ce sont les CARTES qui défilent si
+elles débordent, jamais la page. Motivation : chasser les pixels un par un
+donne une mise en page qui tient sur l'écran où on l'a mesurée et déborde sur
+le suivant. Ici, sur un écran large rien ne défile du tout ; sur un portable,
+seule la carte trop haute défile, et l'ossature de la page — le bandeau
+d'action, les titres — reste toujours visible.
+
+`min-h-0` n'est pas décoratif : sans lui, un enfant de conteneur flexible
+refuse de rétrécir sous la taille de son contenu, et le débordement remonte à
+la page entière.
+{% endcomment %}
+<div class="h-full p-3 flex flex-col gap-3 overflow-hidden">
 
     {% comment %}
     ---------- 1. Ce que je fais maintenant ----------
@@ -13,13 +36,13 @@
     avant de savoir.
     {% endcomment %}
     <section aria-labelledby="titre-action"
-             class="p-6 rounded-lg border border-primary-green/40 bg-gray-800">
-        <h1 id="titre-action" class="text-2xl font-bold text-white mb-3">
+             class="p-4 rounded-lg border border-primary-green/40 bg-gray-800">
+        <h1 id="titre-action" class="text-xl font-bold text-white mb-2">
             {% trans "Ce que je fais maintenant" %}
         </h1>
 
         {% if prochaine %}
-            <p class="text-gray-200 text-lg mb-4">
+            <p class="text-gray-200 mb-3">
                 {% if prochaine.niveau_atteint == 0 %}
                     {% blocktrans with competence=prochaine.competence.intitule module=prochaine.module.intitule %}Prochaine compétence du parcours : <strong>{{ competence }}</strong>, dans {{ module }}.{% endblocktrans %}
                 {% else %}
@@ -27,23 +50,23 @@
                 {% endif %}
             </p>
             <a href="{% url 'exercises:list' %}"
-               class="inline-block px-5 py-3 rounded-lg bg-primary-green text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
+               class="inline-block px-4 py-2 rounded-lg bg-primary-green text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
                 {% trans "S'exercer sur cette compétence" %}
             </a>
         {% elif referentiel %}
-            <p class="text-gray-200 text-lg mb-4">
+            <p class="text-gray-200 mb-3">
                 {% trans "Toutes les compétences du référentiel sont au niveau 2. Le niveau 3 n'est pas mesuré par ce dispositif." %}
             </p>
             <a href="{% url 'courses:generator' %}"
-               class="inline-block px-5 py-3 rounded-lg bg-primary-blue text-white font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
+               class="inline-block px-4 py-2 rounded-lg bg-primary-blue text-white font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
                 {% trans "Explorer un nouveau sujet" %}
             </a>
         {% else %}
-            <p class="text-gray-200 text-lg mb-4">
+            <p class="text-gray-200 mb-3">
                 {% trans "Commencez par générer un cours sur le sujet de votre choix." %}
             </p>
             <a href="{% url 'courses:generator' %}"
-               class="inline-block px-5 py-3 rounded-lg bg-primary-green text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
+               class="inline-block px-4 py-2 rounded-lg bg-primary-green text-white font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white transition-colors">
                 {% trans "Générer un cours" %}
             </a>
         {% endif %}
@@ -55,15 +78,15 @@
     activité » se partagent la colonne de droite. L'œil se pose d'abord sur
     l'action, puis sur le chemin parcouru, puis sur le reste.
     {% endcomment %}
-    <div class="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
+    <div class="grid gap-3 lg:grid-cols-[1.35fr_1fr] flex-1 min-h-0">
 
         {% comment %}
         ---------- 2. Où j'en suis ----------
         {% endcomment %}
         <section aria-labelledby="titre-progression"
-                 class="p-5 rounded-lg border border-gray-700 bg-gray-800">
-            <div class="flex flex-wrap items-end justify-between gap-3 border-b border-gray-700 pb-3 mb-4">
-                <h2 id="titre-progression" class="text-lg font-bold text-white">
+                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
+            <div class="flex flex-wrap items-end justify-between gap-2 border-b border-gray-700 pb-2 mb-3">
+                <h2 id="titre-progression" class="text-base font-bold text-white">
                     {% trans "Où j'en suis" %}
                 </h2>
                 {% if referentiel and competences_entamees %}
@@ -74,7 +97,7 @@
             </div>
 
             {% if not referentiel %}
-                <div class="p-4 rounded-lg border border-gray-700 bg-gray-800/60">
+                <div class="p-3 rounded-lg border border-gray-700 bg-gray-800/60">
                     <p class="text-gray-300">
                         {% trans "Aucun référentiel de compétences n'est actif pour l'instant." %}
                     </p>
@@ -89,7 +112,7 @@
                 exact et décourageant ; dire ce qu'il y a à faire est aussi exact et
                 sert à quelque chose.
                 {% endcomment %}
-                <div class="p-4 rounded-lg border border-gray-600 bg-gray-900/40">
+                <div class="p-3 rounded-lg border border-gray-600 bg-gray-900/40">
                     <p class="text-gray-200 font-medium">
                         {% blocktrans with total=total_competences %}Aucune compétence entamée sur {{ total }}{% endblocktrans %}
                     </p>
@@ -114,7 +137,7 @@
                 </details>
 
             {% else %}
-                <ul class="space-y-3">
+                <ul class="space-y-2">
                     {% for ligne in modules %}
                         {% if ligne.au_niveau_1 %}
                             <li class="p-3 rounded-lg border border-gray-700 bg-gray-900/40">
@@ -189,14 +212,14 @@
         {% comment %}
         ---------- Colonne secondaire : À revoir + Dernière activité ----------
         {% endcomment %}
-        <div class="space-y-6">
+        <div class="space-y-3 overflow-y-auto min-h-0">
 
             {% comment %}
             ---------- 3. À revoir ----------
             {% endcomment %}
             <section aria-labelledby="titre-a-revoir"
-                     class="p-5 rounded-lg border border-gray-700 bg-gray-800">
-                <h2 id="titre-a-revoir" class="text-lg font-bold text-white mb-3">
+                     class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+                <h2 id="titre-a-revoir" class="text-base font-bold text-white mb-2">
                     {% trans "À revoir" %}
                 </h2>
 
@@ -238,7 +261,7 @@
                     État vide du bloc qui porte la valeur. Il ne constate pas une
                     absence : il dit ce qui produira la donnée, et propose de le faire.
                     {% endcomment %}
-                    <div class="p-4 rounded-lg border border-gray-700 bg-gray-800/60">
+                    <div class="p-3 rounded-lg border border-gray-700 bg-gray-800/60">
                         <p class="text-gray-300">{% trans "Rien à revoir pour l'instant." %}</p>
                         <p class="text-sm text-gray-400 mt-1">
                             {% trans "Cette liste se remplit toute seule : un exercice qui demande plusieurs tentatives, ou une réponse manquée dans un quiz, y apparaît avec sa date." %}
@@ -266,7 +289,7 @@
             {% endcomment %}
             <section aria-labelledby="titre-activite"
                      class="p-5 rounded-lg border border-gray-700 bg-gray-800/60">
-                <h2 id="titre-activite" class="text-base font-medium text-gray-300 mb-2">
+                <h2 id="titre-activite" class="text-sm font-medium text-gray-300 mb-1.5">
                     {% trans "Dernière activité" %}
                 </h2>
 

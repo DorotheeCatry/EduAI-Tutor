@@ -18,3 +18,34 @@ html { scrollbar-gutter: stable; }
    une icône déclarée `w-8 h-8` était ramenée à 20 px. Constaté en comparant la
    géométrie de quatre pages, feuille compilée contre CDN. */
 :where([data-lucide]) { display: inline-block; width: 1.25rem; height: 1.25rem; }
+
+/* --- Koda, le tuteur incarné -------------------------------------------
+ * Une planche de sprites déplacée par `background-position`. Les dimensions
+ * d'affichage viennent du gabarit, qui les tient de
+ * `static/img/koda/planches/planches.json`.
+ * Voir décision 035. */
+.koda {
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+    /* Le premier affichage montre déjà une image, avant même que le script
+       n'ait posé la position : sans cela, Koda apparaît en retard. */
+    background-position: 0 0;
+}
+
+/* Le refus du mouvement est appliqué DEUX fois : ici, pour que rien ne bouge
+   même si le script tarde ou échoue, et dans `koda.js`, qui cesse alors de
+   parcourir la planche. Une seule des deux protections suffirait en régime
+   normal ; c'est précisément pourquoi il en faut deux. */
+@media (prefers-reduced-motion: reduce) {
+    .koda { background-position: 0 0 !important; }
+}
+.koda[data-animation="desactivee"] { background-position: 0 0 !important; }
+
+/* Un GIF s'anime quoi qu'il arrive : il ignore `prefers-reduced-motion`. Là où
+   l'application en sert un, une image fixe prend sa place pour qui a demandé à
+   réduire les animations. Voir la page de connexion. */
+.koda-fixe { display: none; }
+@media (prefers-reduced-motion: reduce) {
+    .koda-anime { display: none; }
+    .koda-fixe { display: block; }
+}
