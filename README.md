@@ -298,6 +298,20 @@ messages.error(request, _("Erreur : %(motif)s") % {"motif": motif})
 **Substitution nommée, jamais positionnelle** : `%(motif)s` peut changer de
 place dans une traduction, `%s` non.
 
+**Le signe pour cent ne survit pas à `{% trans %}`.** Écrit dans un gabarit,
+`{% trans "%(joueur)s a gagné" %}` produit dans le catalogue l'identifiant
+`%%(joueur)s a gagné`, doublé, alors que l'exécution demandera la version
+simple. La traduction n'est jamais trouvée, et **rien ne le signale** : la
+chaîne source s'affiche, ce qui passe inaperçu tant que la langue source est
+celle qu'on regarde. Dans une chaîne de gabarit destinée à recevoir une valeur
+côté navigateur, employer un repère neutre — `{joueur}` — et le remplacer en
+JavaScript.
+
+**Les chaînes assemblées en JavaScript se déclarent en tête du gabarit**, avec
+`{% trans "…" as libelle %}`, puis se lisent avec `{{ libelle|escapejs }}`.
+Sans `escapejs`, une apostrophe française suffit à casser la chaîne JavaScript
+qui la porte.
+
 ### Ce qui n'est pas traduit, et pourquoi
 
 Les messages d'erreur des deux API, les journaux, la documentation et le corpus
