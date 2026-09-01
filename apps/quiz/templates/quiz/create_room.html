@@ -16,15 +16,52 @@
                 {% csrf_token %}
                 
                 <!-- Topic -->
+                {% if competences_par_module %}
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">{% trans "Quiz Topic" %}</label>
+                    {% comment %}
+                    Même sélecteur que le solo et les exercices (décision 027) :
+                    un choix explicite, jamais une déduction sur le sujet libre.
+
+                    Une partie ne fait progresser aucun niveau — un
+                    questionnaire mesure la reconnaissance, pas la production —
+                    mais la compétence choisie fait que les erreurs de chaque
+                    participant reviennent dans SON parcours, nommées comme le
+                    reste de la page.
+                    {% endcomment %}
+                    <label for="competence-salle" class="block text-sm font-medium text-gray-300 mb-2">
+                        {% trans "Compétence visée" %}
+                    </label>
+                    <select name="competence" id="competence-salle"
+                            aria-describedby="aide-competence-salle"
+                            class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">{% trans "Aucune — sujet libre, hors référentiel" %}</option>
+                        {% for module, competences in competences_par_module %}
+                            <optgroup label="{{ module.intitule }}">
+                                {% for competence in competences %}
+                                    <option value="{{ competence.code }}">{{ competence.intitule }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        {% endfor %}
+                    </select>
+                    <p id="aide-competence-salle" class="mt-1 text-xs text-gray-400">
+                        {% trans "Les erreurs de chaque participant reviendront dans son parcours sous cette compétence." %}
+                    </p>
+                </div>
+                {% endif %}
+
+                <div>
+                    <label for="sujet-salle" class="block text-sm font-medium text-gray-300 mb-2">{% trans "Quiz Topic" %}</label>
                     <input
                         type="text"
                         name="topic"
+                        id="sujet-salle"
                         placeholder="{% trans "e.g. Python Basics, Django, FastAPI..." %}"
+                        aria-describedby="aide-sujet-salle"
                         class="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        required
                     >
+                    <p id="aide-sujet-salle" class="mt-1 text-xs text-gray-400">
+                        {% trans "Ignoré si une compétence est choisie ci-dessus." %}
+                    </p>
                 </div>
 
                 <!-- Number of questions -->

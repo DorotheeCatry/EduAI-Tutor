@@ -26,14 +26,14 @@ def dashboard(request):
     référentiel : une donnée absente qui se dit vaut mieux qu'une donnée
     plausible qui ment.
     """
-    from apps.agents.agent_watcher import LearningSession
+    from apps.agents.agent_watcher import TYPES_DE_QUIZ, LearningSession
     from apps.exercises.models import UserExerciseProgress
     from apps.referentiel.progression import progression_par_competence
 
     utilisateur = request.user
 
     quiz_termines = LearningSession.objects.filter(
-        user=utilisateur, activity_type="quiz",
+        user=utilisateur, activity_type__in=TYPES_DE_QUIZ,
         end_time__isnull=False, score__isnull=False,
     )
     score_moyen = quiz_termines.aggregate(moyenne=Avg("score"))["moyenne"]

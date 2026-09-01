@@ -6,22 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Inscription - EduAI Tutor" %}</title>
-    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    {% comment %}
+    Ces deux pages n'héritent pas de `base.html` : elles portent leur propre
+    en-tête, et donc leur propre chargement de Tailwind. Elles suivent la même
+    bascule vers la feuille compilée (décision 034) — les oublier aurait laissé
+    le saut d'affichage sur les deux premières pages que voit un visiteur.
+    {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
     <script src="https://unpkg.com/lucide@1.37.0/dist/umd/lucide.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-rose': '#C586C0',
-                        'primary-blue': '#007ACC',
-                        'primary-green': '#4CAF50',
-                        'primary-gray': '#D4D4D4'
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         body {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);

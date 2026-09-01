@@ -7,22 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% trans "EduAI Tutor — plateforme d'apprentissage intelligente" %}{% endblock %}</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-rose': '#C586C0',
-                        'primary-blue': '#007ACC',
-                        'primary-green': '#4CAF50',
-                        'primary-gray': '#D4D4D4'
-                    }
-                }
-            }
-        }
-    </script>
+    {% comment %}
+    Feuille de style compilée, servie avec le document.
+
+    Compétence visée : C17 (épreuve E4) — application web
+    Compétences concernées : C13 (E3) — déploiement
+
+    Tailwind était chargé ici depuis `cdn.tailwindcss.com` : non pas une
+    feuille de style, mais un générateur de 407 Kio qui s'exécutait dans le
+    navigateur. Il lui fallait environ 180 ms — cache chaud — avant que la
+    moindre classe veuille dire quelque chose. Pendant ce temps la page
+    s'affichait sans style, puis se remettait en place d'un coup : c'est le
+    saut ressenti à chaque changement de page, chaque navigation étant un
+    chargement complet.
+
+    La feuille ci-dessous est produite hors ligne par le binaire autonome de
+    Tailwind 3.4.17 — la version même que servait le CDN — et pèse 34 Kio. Elle
+    bloque le rendu, donc le premier affichage est déjà le bon.
+
+    Équivalence vérifiée, et non supposée : géométrie de tous les éléments
+    comparée entre le CDN et cette feuille sur six pages, 0 écart, hors une
+    animation de la page de connexion et la gouttière de défilement ajoutée
+    volontairement (décision 034).
+
+    Reconstruire après toute modification de gabarit ajoutant une classe :
+    voir la section « Feuille de style » du README.
+    {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@1.37.0/dist/umd/lucide.js"></script>

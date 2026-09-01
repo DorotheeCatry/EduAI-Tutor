@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Le fond sombre ne dépend d'aucune classe utilitaire : servi avec la feuille,
+   il est en place au premier affichage. */
+html, body { background-color: #111827; color: #fff; }
+
+/* La barre de défilement ne naît pas d'une page à l'autre. */
+html { scrollbar-gutter: stable; }
+
+/* Les éléments `<i data-lucide>` sont vides jusqu'à ce que Lucide les remplace
+   par des SVG dimensionnés : sans réservation, leur apparition décale la mise
+   en page.
+   `:where()` annule la spécificité de la règle : elle ne sert que de valeur
+   par défaut. Écrite en `[data-lucide]` nu, elle a la même spécificité qu'une
+   classe utilitaire et, venant après elle dans la feuille, elle l'emportait —
+   une icône déclarée `w-8 h-8` était ramenée à 20 px. Constaté en comparant la
+   géométrie de quatre pages, feuille compilée contre CDN. */
+:where([data-lucide]) { display: inline-block; width: 1.25rem; height: 1.25rem; }

@@ -282,3 +282,6 @@ CLAUDE.md
 # relèvent de l'exploitation, pas du code. La commande d'analyse les lit sur
 # la machine ; le dépôt n'en conserve que l'outillage.
 data_pipeline/data/monitorage/
+
+# Binaire autonome de Tailwind, téléchargé à la demande (43 Mio)
+theme/tailwind-v3/tailwindcss

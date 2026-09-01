@@ -640,3 +640,170 @@ réécrit en silence.
 Aucun autre `@csrf_exempt` ne subsiste — vérifié **après** l'avoir écrit, cette
 fois, par `grep -rn "^@csrf_exempt" apps/`. La réserve est conservée pour que
 la quatrième occurrence, si elle vient, soit reconnue comme telle.
+
+---
+
+## 15. Supprimer un compte hôte efface les réponses de tous les participants
+
+**Composant :** `apps/quiz/models.py`, `GameRoom.host`
+**Nature :** effacement en cascade au-delà des données du compte supprimé
+**Statut :** **ouverte**, non corrigée à dessein
+
+```python
+host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_rooms')
+```
+
+Supprimer un compte efface ses salles ; effacer une salle efface ses
+participants, ses questions et ses réponses — **y compris celles des autres
+personnes**. Une partie à dix joueurs disparaît parce que son hôte a exercé son
+droit à l'effacement.
+
+### Ce que cela touche vraiment
+
+La route de suppression de compte, ouverte le 29/08 pour le RGPD, est un chemin
+d'exécution réel de cette cascade. Un apprenant qui supprime son compte détruit
+donc, sans le savoir, des données d'apprentissage appartenant à d'autres — dont
+les erreurs qui alimentaient leur bloc « à revoir ».
+
+L'écran de confirmation annonce ce qui sera supprimé, et il cite déjà « la
+suppression des salles de quiz que vous avez hébergées retire aussi les
+réponses des autres participants ». **La conséquence est donc annoncée, ce qui
+la rend loyale — pas souhaitable.**
+
+### Pourquoi ce n'est pas corrigé
+
+Rendre l'hôte nullable, ou basculer en `SET_NULL`, change le comportement du
+jeu : une salle sans hôte doit décider qui peut la lancer, la supprimer,
+l'arrêter. C'est une règle de jeu à écrire, pas un attribut à changer.
+
+**Même arbitrage que pour l'effacement de compte, et pour la même raison** :
+toucher au comportement à quelques jours du rendu, sans le temps d'en mesurer
+les effets, coûte plus que la réserve.
+
+### À faire après le 14 septembre
+
+Passer `host` en `SET_NULL`, et décider ce qu'est une salle sans hôte —
+probablement : consultable, non relançable, supprimable par n'importe quel
+participant après un délai. Les parties terminées n'ont de toute façon plus
+besoin d'un hôte.
+
+---
+
+## 16. Une session d'apprentissage reste ouverte après chaque génération de quiz multijoueur
+
+**Compétence concernée :** C20 (épreuve E5) — données du suivi
+**Statut :** consignée, non corrigée
+
+La génération d'un quiz ouvre une `LearningSession` de type `quiz` au nom de
+celui qui l'a demandée. En solo, `submit_quiz` la clôt. **En multijoueur, rien
+ne la clôt** : elle garde `end_time` et `score` à vide, indéfiniment.
+
+Elle ne fausse aucun compteur — tous filtrent sur ces deux champs, et la
+correction de l'incident 012 enregistre des sessions distinctes, de type
+`quiz_multijoueur`, pour chaque participant. C'est une ligne pendante, pas une
+mesure fausse.
+
+### Pourquoi ce n'est pas corrigé
+
+Le solo emprunte exactement le même chemin de génération et le clôt
+correctement. Toucher à ce point modifie les deux formes de quiz, dont celle
+dont la chaîne d'enregistrement vient tout juste d'être réparée (incident 010).
+À trois jours du rendu, le risque dépasse le gain : la ligne pendante ne se
+voit sur aucun écran.
+
+### À faire après le 14 septembre
+
+Décider ce que représente cette session. Deux lectures possibles, et le choix
+n'est pas évident : soit la génération est une activité en soi — auquel cas
+elle doit être close à la génération, avec une durée qui mesure l'attente du
+modèle — soit elle n'en est pas une, et elle ne devrait pas ouvrir de session
+du tout.
+
+---
+
+## 17. Seize traductions devinées par `makemessages`, inertes mais fausses
+
+**Compétence concernée :** C17 (épreuve E4) — internationalisation
+**Statut :** consignée, deux entrées corrigées
+
+`makemessages` propose une traduction lorsqu'une chaîne nouvelle ressemble à
+une chaîne connue, et marque sa proposition `#, fuzzy`. Le catalogue français
+en compte seize. Plusieurs sont franchement fausses :
+
+| Chaîne | Traduction devinée |
+|---|---|
+| `Compétence` | « Terminé » |
+| `Description` | « Question » |
+| `Version` | « Révision » |
+| `Votre question` | « 5 questions » |
+
+**Elles ne s'affichent pas.** `compilemessages` exclut les entrées `fuzzy`, et
+l'application sert alors la chaîne source — qui est déjà en français pour
+toutes celles-là. Le risque n'est donc pas à l'écran : il est qu'un relecteur
+défige une entrée par commodité, sans lire ce qu'elle propose.
+
+Deux entrées ont été corrigées parce qu'elles portaient un identifiant anglais,
+donc une vraie perte : `Preferred Language` et `Koda Avatars` s'affichaient en
+anglais dans l'interface française alors que leur traduction existait, défigée.
+
+### Ce que cette réserve dit du procédé
+
+Le `#, fuzzy` est une **suggestion d'outil présentée comme un résultat**. Il
+occupe la place d'une traduction, il en a la forme, et seule une ligne de
+métadonnée le distingue. C'est une variante de la famille B appliquée à un
+outil de développement : le catalogue affiche seize traductions, il en contient
+seize de moins.
+
+### Une troisième occurrence, le jour même
+
+Dans la même session, `makemessages` a proposé « Joueurs au maximum » pour
+`Players`, deviné à partir de `Max Players`. Sans relecture, le salon d'attente
+aurait affiché « Joueurs au maximum (2/10) ». Le risque n'est donc pas
+théorique : **toute chaîne nouvelle qui ressemble à une chaîne existante repart
+avec une traduction fausse**, et c'est la relecture — pas l'outil — qui
+l'arrête.
+
+### À faire après le 14 septembre
+
+Relire les entrées une à une, défiger celles qui sont justes, vider les
+autres. Et ajouter un test qui échoue si une entrée `fuzzy` porte un identifiant
+non français — le seul cas où l'inertie coûte quelque chose.
+
+---
+
+## 18. Douze classes présentes dans les gabarits ne produisent aucun style
+
+**Compétence concernée :** C17 (épreuve E4) — application web
+**Statut :** consignée, non corrigée
+
+Le relevé exhaustif des classes des gabarits, fait pour vérifier la feuille
+compilée (décision 034), a montré que douze d'entre elles ne sont stylées nulle
+part — ni par Tailwind, ni par un `<style>` de gabarit, ni par
+`static/css/custom.css`, lequel n'est d'ailleurs chargé par aucune page.
+
+Elles se répartissent en trois familles :
+
+| Classes | Origine |
+|---|---|
+| `tab-button`, `tab-content`, `avatar-option`, `tuteur-dock`, `test-actual`, `test-result`, `test-status`, `question-scroll-container` | accroches de JavaScript — jamais destinées à styler |
+| `python`, `language-python` | posées pour Prism, la coloration syntaxique |
+| `prose`, `prose-invert` | greffon `@tailwindcss/typography`, **non installé** |
+
+Seules les deux dernières sont un vrai manque : `prose` et `prose-invert` sont
+écrites sur les zones de contenu généré dans l'intention d'en soigner la
+typographie, et elles n'ont jamais rien fait. Le rendu actuel est donc celui
+que l'on voit, pas celui qui était visé.
+
+### Pourquoi ce n'est pas corrigé
+
+Installer le greffon changerait l'apparence de toutes les zones de contenu
+généré — cours, réponses du tuteur, énoncés — trois jours avant le rendu, sans
+le temps de relire chaque page. Le rendu actuel est correct ; il est seulement
+plus sobre que prévu.
+
+### À faire après le 14 septembre
+
+Installer `@tailwindcss/typography`, l'ajouter aux greffons de
+`theme/tailwind-v3/tailwind.config.js`, reconstruire, et relire les pages de
+contenu généré. Retirer les accroches JavaScript de la liste d'exceptions du
+test le jour où elles porteraient un style.

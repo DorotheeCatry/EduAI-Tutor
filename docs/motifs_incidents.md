@@ -183,18 +183,61 @@ contrôle dont l'alerte serait permanente est pire qu'un contrôle absent :
 l'absence se remarque, tandis qu'une alarme permanente s'apprend, et finit par
 être traitée comme le bruit de fond d'un système en bon état.
 
+### La variante où la mesure devient fausse sans qu'on y touche — 01/09
+
+L'incident 012 ajoute une forme que les précédentes n'avaient pas : **le
+compteur était juste, et il l'est resté**.
+
+Un compteur intitulé « quiz terminés » lisait les sessions closes de type
+`quiz`. Il était exact tant qu'une seule forme de quiz existait. Le quiz
+multijoueur en a ajouté une seconde, qui n'ouvrait de session que pour l'hôte
+et n'en clôturait aucune. Le compteur affichait alors zéro pour deux joueuses
+qui venaient de terminer une partie de cinq questions.
+
+Personne n'a modifié l'instrument. **C'est le monde qu'il mesurait qui s'est
+élargi sans lui**, et le chiffre zéro est un résultat parfaitement valide :
+rien n'échoue, rien ne se signale.
+
+### La quatrième question, ajoutée le 01/09
+
+Aux trois questions de la famille B s'en ajoute une, qui se pose au moment
+d'écrire une fonctionnalité et non au moment de vérifier un chiffre :
+
+> **Cette nouvelle voie mène-t-elle à une mesure existante — et cette mesure
+> sait-elle qu'elle existe ?**
+
+La parade tient en une ligne de code : lorsqu'une seconde forme d'une même
+chose apparaît, la liste des formes se nomme (`TYPES_DE_QUIZ`), vit auprès du
+modèle, et toute lecture qui annonce la chose s'y réfère. Aucune lecture ne peut
+alors n'en voir qu'une moitié sans l'avoir décidé.
+
+### La forme de question qui a révélé l'incident
+
+L'autrice n'a pas signalé un défaut. Elle a demandé :
+
+> le quizz multi n'est pas enregistré dans cet onglet performance /
+> référentiel, **est-ce un choix ?**
+
+Appliquée à une absence — un chiffre nul, un bloc vide, une ligne manquante —
+cette question sépare en une phrase la décision assumée de l'oubli silencieux.
+Elle n'accuse pas, donc elle n'appelle pas de justification : elle appelle une
+vérification. Ici, la réponse était « en partie » — l'exclusion des quiz de la
+progression était bien une décision consignée, l'invisibilité du compteur n'en
+était pas une.
+
 ---
 
 ## Famille C — Écrit, joignable, jamais appelé
 
 Ouverte à deux occurrences le 31/08 au matin, **déclarée le soir même** par la
-troisième.
+troisième, et élargie le 01/09 par une quatrième d'une autre nature.
 
 | # | Ce qui était écrit | Ce qui manquait |
 |---|---|---|
 | — , 31/08 | `language_preference`, choisi et enregistré | rien ne le lisait pour l'interface ; seul l'orchestrateur d'agents le consultait, pour la langue des quiz générés |
 | — , 31/08 | `LANGUAGE_CODE = 'en'` avec un unique catalogue `fr` | aucune traduction n'était jamais appliquée |
 | 010, 31/08 | route, vue, orchestrateur, agent — la chaîne entière d'enregistrement d'un quiz | **aucun appel depuis le navigateur** |
+| — , 01/09 | un consumer WebSocket de 465 lignes, boucle de jeu complète | **une seconde implémentation, par sondage HTTP, faisait déjà le travail** |
 
 ### Le mécanisme commun
 
@@ -207,11 +250,43 @@ ont révélé qu'elle aurait échoué de trois façons si elle avait été appel
 jour — dont une comparaison de dates qui n'a jamais pu aboutir depuis que la
 méthode existe.
 
+### La variante où le code mort ment sur le produit
+
+La quatrième occurrence est d'une autre nature, et elle mérite d'être
+distinguée.
+
+Les trois premières étaient des **chemins oubliés** : quelque chose d'écrit que
+personne n'appelait, et dont l'absence d'effet finissait par se constater. La
+quatrième est un **doublon** : le quiz multijoueur avait deux implémentations
+parallèles, un consumer WebSocket et un sondage HTTP. La seconde tournait ; la
+première dormait.
+
+Or c'est la première qui attirait le regard — un consumer moderne, une boucle
+de jeu complète, un routage déclaré dans `asgi.py`. **Un lecteur du dépôt en
+aurait conclu que le multijoueur fonctionne en temps réel.** Il fonctionne,
+mais autrement, et par le chemin le moins flatteur.
+
+C'est ce qui rend cette variante plus grave : **le code mort ne ment plus
+seulement sur ce que le dépôt contient, il ment sur ce que le produit fait.**
+Un chemin oublié laisse une fonctionnalité absente — on finit par s'en
+apercevoir en l'utilisant. Un doublon dormant laisse une fonctionnalité
+présente, décrite par le mauvais code, et rien dans l'usage ne le révèle : le
+jeu marche.
+
+Un jury lisant ce dépôt aurait été trompé sans qu'aucune ligne soit fausse.
+
+La parade est la même, appliquée dans l'autre sens : après avoir demandé qui
+appelle un code, demander **si quelque chose d'autre fait déjà ce travail**.
+
 ### La question à poser
 
 > **Qui appelle ce code, et par quel chemin l'utilisateur y arrive-t-il ?**
 
 Si la réponse est « la fonction est là », ce n'est pas une réponse.
+
+> **Et quelque chose d'autre fait-il déjà ce travail ?**
+
+Deux réponses à la première question valent pire qu'aucune.
 
 ### La parade
 

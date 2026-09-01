@@ -93,6 +93,33 @@
     </div>
 </div>
 
+{% comment %}
+Libellés du podium et de l'attente de fin de partie.
+
+Compétence visée : C17 (épreuve E4)
+Choix : déclarés en tête plutôt qu'écrits dans le script. Motivation : ces
+textes sont assemblés en JavaScript, où `{% trans %}` ne peut pas être relu par
+`makemessages` s'il est enfoui dans un gabarit de chaîne. Le filtre `escapejs`
+protège les apostrophes des traductions françaises, qui casseraient sinon la
+chaîne JavaScript qui les porte.
+{% endcomment %}
+{% trans "You're done!" as t_termine %}
+{% trans "Waiting for the other players to finish" as t_attente_fin %}
+{% trans "Podium" as t_podium %}
+{% trans "pts" as t_points %}
+{% trans "Game finished!" as t_partie_terminee %}
+{% comment %}
+Le repère du pseudo est écrit {joueur} et non %(joueur)s : `makemessages`
+double le signe pour cent des chaînes de gabarit, si bien que le catalogue
+contenait « %%(joueur)s wins! » quand l'exécution demandait
+« %(joueur)s wins! ». La traduction n'aurait jamais été trouvée, sans qu'aucune
+erreur ne le signale.
+{% endcomment %}
+{% trans "{joueur} wins!" as t_annonce_vainqueur %}
+{% trans "Check the final leaderboard below" as t_voir_classement %}
+{% trans "Back to Lobby" as t_retour_salon %}
+{% trans "New Game" as t_nouvelle_partie %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     lucide.createIcons();
@@ -106,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let myScore = 0;
     let pollInterval = null;
     let waitingForNextQuestion = false;
+    let dernierClassement = [];
 
     // Start the game loop
     loadCurrentQuestion();
@@ -210,6 +238,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showQuestion(question) {
+        // Rien ne s'affiche par-dessus un podium. Un sondage en vol peut
+        // encore rendre une question après la fin de la partie ; le podium
+        // resterait alors quelques secondes avant d'être remplacé, ce qui est
+        // exactement le défaut que l'attente serveur devait supprimer.
+        if (gameFinished) {
+            return;
+        }
+
         console.log('📝 Showing question:', question.number);
         
         currentQuestionNumber = question.number;
@@ -361,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     waitingForNextQuestion = false;
                     loadCurrentQuestion();
                 } else {
-                    showFinalResults();
+                    attendreLaFinDeLaPartie();
                 }
             }, 2000); // Reduced wait time
         })
@@ -464,6 +500,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.participants) {
+                    dernierClassement = data.participants;
                     const leaderboard = document.getElementById('leaderboard-content');
                     
                     leaderboard.innerHTML = data.participants.map((p, index) => `
@@ -495,30 +532,122 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(err => console.log('Leaderboard update error:', err));
     }
     
+    /*
+     * Dernière question répondue : on attend le verdict du serveur.
+     *
+     * Le client prononçait ici la fin de la partie lui-même, dès sa propre
+     * dernière réponse. Le joueur le plus rapide voyait « partie terminée »
+     * pendant que l'autre répondait encore, sur un classement figé à un état
+     * intermédiaire — il pouvait donc se croire vainqueur et ne pas l'être.
+     * La fin appartient au serveur : `updateLeaderboard` sonde toutes les
+     * deux secondes et appellera `showFinalResults` quand la salle passera à
+     * `finished`.
+     */
+    function attendreLaFinDeLaPartie() {
+        // La partie peut déjà être close : le sondage du classement tourne
+        // toutes les deux secondes, tandis que cette fonction est appelée deux
+        // secondes après la correction de la dernière question. Si l'autre
+        // joueur avait déjà répondu, le podium est affiché — et sans cette
+        // garde, l'attente le recouvrait aussitôt, sans que rien ne le
+        // ramène : le sondage ne rappelle `showFinalResults` que tant que la
+        // partie n'est pas marquée finie.
+        if (gameFinished) {
+            return;
+        }
+        if (pollInterval) clearInterval(pollInterval);
+        clearInterval(timer);
+
+        document.getElementById('question-text').innerHTML = `
+            <div class="text-center py-12" role="status" aria-live="polite">
+                <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <i data-lucide="hourglass" class="w-8 h-8 text-purple-400"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">{{ t_termine|escapejs }}</h2>
+                <p class="text-gray-400 mb-6">{{ t_attente_fin|escapejs }}</p>
+                <div class="flex justify-center space-x-1">
+                    <div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                    <div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                </div>
+            </div>
+        `;
+        document.getElementById('options-container').innerHTML = '';
+        lucide.createIcons();
+    }
+
+    /*
+     * Le podium.
+     *
+     * L'ordre du DOM suit le classement — 1er, 2e, 3e — et seule la classe
+     * `order-*` déplace le vainqueur au centre. Une synthèse vocale lit donc
+     * le classement dans le bon ordre, alors qu'un podium écrit « 2, 1, 3 »
+     * dans le document l'aurait lu de travers.
+     */
+    function construirePodium(classement) {
+        if (!classement.length) {
+            return '';
+        }
+        const marches = [
+            {anneau: 'ring-yellow-400', avatar: 'w-24 h-24', socle: 'h-24 bg-yellow-500/25 border-yellow-500/40', chiffre: 'text-yellow-300'},
+            {anneau: 'ring-gray-300',   avatar: 'w-16 h-16', socle: 'h-16 bg-gray-500/25 border-gray-400/40',    chiffre: 'text-gray-200'},
+            {anneau: 'ring-orange-400', avatar: 'w-16 h-16', socle: 'h-12 bg-orange-500/20 border-orange-500/40', chiffre: 'text-orange-300'}
+        ];
+        const trois = classement.slice(0, 3);
+        const ordres = trois.length >= 3
+            ? ['order-2', 'order-1', 'order-3']
+            : ['order-1', 'order-2'];
+
+        return `
+            <ol class="flex items-end justify-center gap-3 sm:gap-6 mb-8" aria-label="{{ t_podium|escapejs }}">
+                ${trois.map((p, rang) => {
+                    const m = marches[rang];
+                    return `
+                    <li class="flex flex-col items-center ${ordres[rang] || 'order-3'}">
+                        ${rang === 0 ? '<i data-lucide="crown" class="w-6 h-6 text-yellow-400 mb-1"></i>' : ''}
+                        <img src="${p.avatar_url || '/static/koda/koda_base.png'}"
+                             alt="${p.username}"
+                             class="${m.avatar} rounded-full object-cover ring-4 ${m.anneau} bg-gray-900">
+                        <span class="mt-2 font-bold text-white ${rang === 0 ? 'text-lg' : 'text-sm'}">${p.username}</span>
+                        <span class="text-xs text-gray-400">${p.score} {{ t_points|escapejs }}</span>
+                        <div class="mt-2 w-20 sm:w-24 ${m.socle} border rounded-t-lg flex items-start justify-center pt-1 font-bold text-2xl ${m.chiffre}">
+                            ${rang + 1}
+                        </div>
+                    </li>`;
+                }).join('')}
+            </ol>
+        `;
+    }
+
     function showFinalResults() {
         gameFinished = true;
         clearInterval(timer);
-        
+        if (pollInterval) clearInterval(pollInterval);
+
+        const vainqueur = dernierClassement.length ? dernierClassement[0] : null;
+
         document.getElementById('question-text').innerHTML = `
-            <div class="text-center py-12">
+            <div class="text-center py-8">
                 <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="trophy" class="w-8 h-8 text-yellow-500"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white mb-2">Game Finished!</h2>
-                <p class="text-gray-400 mb-6">Check the final leaderboard below</p>
+                <h2 class="text-2xl font-bold text-white mb-2">{{ t_partie_terminee|escapejs }}</h2>
+                ${vainqueur
+                    ? `<p class="text-yellow-300 font-semibold mb-8">${"{{ t_annonce_vainqueur|escapejs }}".replace('{joueur}', vainqueur.username)}</p>`
+                    : `<p class="text-gray-400 mb-8">{{ t_voir_classement|escapejs }}</p>`}
+                ${construirePodium(dernierClassement)}
                 <div class="space-x-4">
                     <a href="/quiz/lobby/" class="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors inline-flex items-center space-x-2">
                         <i data-lucide="home" class="w-4 h-4"></i>
-                        <span>Back to Lobby</span>
+                        <span>{{ t_retour_salon|escapejs }}</span>
                     </a>
                     <a href="/quiz/create/" class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors inline-flex items-center space-x-2">
                         <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span>New Game</span>
+                        <span>{{ t_nouvelle_partie|escapejs }}</span>
                     </a>
                 </div>
             </div>
         `;
-        
+
         document.getElementById('options-container').innerHTML = '';
         lucide.createIcons();
     }
