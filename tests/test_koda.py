@@ -22,6 +22,22 @@ DESCRIPTEUR = Path("static/img/koda/planches/planches.json")
 PANNEAU = Path("templates/components/tuteur.html")
 
 
+FICHIER_REFERENTIEL = "apps/referentiel/donnees/eduai-2026.json"
+
+
+@pytest.fixture
+def referentiel():
+    from io import StringIO
+
+    from django.core.management import call_command
+
+    from apps.referentiel.models import Competence
+
+    call_command("importer_referentiel", FICHIER_REFERENTIEL, "--activer",
+                 stdout=StringIO())
+    return Competence.objects.get(code="collections")
+
+
 @pytest.fixture
 def apprenante(django_user_model):
     return django_user_model.objects.create_user(
@@ -152,11 +168,118 @@ def test_la_planche_est_servie_en_une_seule_requete():
                      PANNEAU.read_text(encoding="utf-8"), flags=re.S)
     planches = json.loads(DESCRIPTEUR.read_text(encoding="utf-8"))
 
-    assert panneau.count("img/koda/planches/") == 1, (
-        "le panneau ne doit charger qu'une planche"
+    # Ce qui compte est le nombre de requêtes, pas le nombre de balises : deux
+    # Koda à l'écran — celui de la poignée et celui du panneau — désignent la
+    # même image, et le navigateur ne la télécharge qu'une fois.
+    citees = set(re.findall(r"img/koda/planches/[\w.-]+", panneau))
+    assert len(citees) == 1, (
+        "le panneau ne doit charger qu'une planche, il en cite %s" % sorted(citees)
     )
     poids = Path("static", planches["gros_plan"]["fichier"]).stat().st_size
     assert poids < 80 * 1024, (
         "la planche du panneau est servie sur toutes les pages : %d Kio"
         % (poids // 1024)
     )
+
+
+# --- Ce que Koda a le droit de dire ---------------------------------------
+
+
+SALUTATION = Path("apps/chat/salutation.py")
+
+
+@pytest.mark.django_db
+def test_koda_appelle_l_apprenant_par_son_pseudonyme(apprenante):
+    """
+    Le pseudonyme figure dans la salutation.
+
+    Compétence visée : C17 (épreuve E4)
+    """
+    from apps.chat.salutation import saluer
+
+    assert "apprenante" in saluer(apprenante)["phrase"]
+
+
+@pytest.mark.django_db
+def test_koda_n_invente_aucune_seance_a_qui_n_a_rien_fait(apprenante):
+    """
+    Un compte sans activité reçoit une salutation qui n'affirme rien.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    C'est ici que le faux s'introduit le plus facilement : une mascotte
+    chaleureuse appelle des phrases qui « sonnent bien » — « content de te
+    revoir », « tu progresses ». Adressées à quelqu'un qui vient de s'inscrire,
+    ce sont des affirmations fausses. Le projet a retiré sept foyers de données
+    fabriquées ; celui-ci n'en sera pas le huitième.
+    """
+    from apps.chat.salutation import saluer
+
+    salutation = saluer(apprenante)
+
+    assert "revoir" not in salutation["phrase"].lower(), (
+        "on ne revoit pas quelqu'un qu'on n'a jamais vu"
+    )
+    for interdit in ("jours", "série", "progress", "bravo"):
+        assert interdit not in salutation["detail"].lower(), (
+            "« %s » affirme quelque chose que la base ne dit pas" % interdit
+        )
+
+
+@pytest.mark.django_db
+def test_koda_nomme_la_notion_que_la_base_connait(apprenante, referentiel):
+    """
+    Le détail de la salutation vient d'une erreur réellement enregistrée.
+
+    Compétence visée : C17 (épreuve E4), C20 (E5)
+    """
+    from apps.agents.agent_watcher import UserMistake
+    from apps.chat.salutation import saluer
+
+    UserMistake.objects.create(
+        user=apprenante, topic="Manipuler les listes", mistake_type="quiz",
+        question="?", user_answer="faux", correct_answer="vrai",
+        competence=referentiel,
+    )
+
+    assert referentiel.intitule in saluer(apprenante)["detail"]
+
+
+def test_koda_n_emploie_pas_un_compteur_que_personne_ne_tient():
+    """
+    `current_streak` est interdit à la salutation.
+
+    Compétence visée : C21 (épreuve E5)
+
+    Le champ existe et il est lu ailleurs pour calculer un bonus d'expérience,
+    mais **rien ne l'écrit jamais** : il vaut zéro pour tout le monde
+    (réserve 19). Une phrase du genre « trois jours d'affilée ! » serait donc
+    fausse pour chaque apprenant, tout en paraissant la chose la plus naturelle
+    à dire.
+    """
+    source = SALUTATION.read_text(encoding="utf-8")
+    code = "\n".join(ligne for ligne in source.split("\n")
+                     if not ligne.strip().startswith("#"))
+    corps = code.split('"""', 2)[-1]
+
+    assert "current_streak" not in corps, (
+        "un compteur que rien ne met à jour ne peut pas être annoncé"
+    )
+
+
+def test_la_salutation_ne_depense_aucune_generation():
+    """
+    Dire bonjour ne consomme pas le quota du jour.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+
+    Quinze générations par jour et par apprenant (décision 030). En dépenser
+    une pour une phrase d'accueil serait absurde — et rendrait l'accueil
+    dépendant d'un service distant.
+    """
+    source = SALUTATION.read_text(encoding="utf-8")
+
+    for interdit in ("orchestrator", "get_orchestrator", "consommer", "generate"):
+        assert interdit not in source, (
+            "la salutation doit être assemblée localement, pas engendrée"
+        )

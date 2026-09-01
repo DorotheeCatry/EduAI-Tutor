@@ -36,6 +36,7 @@
         },
         reflechit: {
             base: 1,
+            clin: false,
             clignement: [2, 3, 2],
             cadence: 90,
             reposMin: 2500, reposMax: 4000
@@ -53,12 +54,21 @@
     /* Un état par défaut, affiché quand toute animation est refusée. */
     var IMAGE_FIXE = 0;
 
+    /* Un clignement sur cinq devient un clin d'œil : c'est peu de chose, et
+     * c'est ce qui sépare un personnage d'une image qui bat des paupières. */
+    var CHANCE_DE_CLIN = 0.2;
+
+    /* Les états depuis lesquels Koda peut s'assoupir. Il ne s'endort pas au
+     * milieu d'une phrase. */
+    var ETATS_EVEILLES = ["repos", "ecoute"];
+
     function animer(element) {
         var colonnes = parseInt(element.dataset.colonnes, 10);
         var largeur = parseInt(element.dataset.largeur, 10);
         var hauteur = parseInt(element.dataset.hauteur, 10);
         var etatCourant = null;
         var minuteur = null;
+        var assoupissement = null;
         var rang = 0;
 
         function poser(indice) {
@@ -83,6 +93,7 @@
 
         function arreter() {
             if (minuteur) { clearTimeout(minuteur); minuteur = null; }
+            if (assoupissement) { clearTimeout(assoupissement); assoupissement = null; }
         }
 
         function jouerSuite(images, cadence, apres) {
@@ -125,6 +136,10 @@
                 + Math.random() * (def.reposMax - def.reposMin);
             minuteur = setTimeout(function () {
                 if (invisible()) { tourner(); return; }
+                if (def.clin !== false && Math.random() < CHANCE_DE_CLIN) {
+                    jouerSuite(ETATS.clin.unique, ETATS.clin.cadence, tourner);
+                    return;
+                }
                 jouerSuite(def.clignement, def.cadence, tourner);
             }, attente);
         }
@@ -134,6 +149,13 @@
             etatCourant = nom;
             rang = 0;
             element.setAttribute("data-etat", nom);
+            clearTimeout(assoupissement);
+            var delai = parseInt(element.dataset.assoupissement, 10);
+            if (delai > 0 && ETATS_EVEILLES.indexOf(nom) !== -1) {
+                assoupissement = setTimeout(function () {
+                    basculer("somnole");
+                }, delai);
+            }
             /* L'alternative textuelle ne décrit que les états qui SIGNIFIENT
              * quelque chose. La boucle de repos est décorative : un lecteur
              * d'écran ne doit pas annoncer « Koda respire » toutes les deux
@@ -163,15 +185,28 @@
 
     window.Koda = {
         ETATS: ETATS,
+        instances: [],
+        /* Il y a DEUX Koda à l'écran : celui de la poignée, visible quand le
+         * chat est fermé, et celui du panneau. Un seul est visible à la fois,
+         * et l'animateur ne fait rien tant qu'un élément n'est pas affiché —
+         * les deux peuvent donc suivre le même état sans rien coûter. */
         brancher: function (selecteur) {
-            var element = document.querySelector(selecteur || "[data-koda]");
-            if (!element) { return null; }
-            window.Koda.instance = animer(element);
-            return window.Koda.instance;
+            var elements = document.querySelectorAll(selecteur || "[data-koda]");
+            window.Koda.instances = Array.prototype.map.call(elements, animer);
+            window.Koda.instance = window.Koda.instances[0] || null;
+            return window.Koda.instances;
         },
         /* Raccourci : `Koda.etat('parle')` depuis n'importe quel script. */
         etat: function (nom) {
-            if (window.Koda.instance) { window.Koda.instance.basculer(nom); }
+            window.Koda.instances.forEach(function (i) { i.basculer(nom); });
+        },
+        /* Réveille les Koda visibles — appelé à l'ouverture du panneau. */
+        reveiller: function () {
+            window.Koda.instances.forEach(function (i) {
+                if (i.etat() === "dort" || i.etat() === "somnole") {
+                    i.basculer("reveil");
+                }
+            });
         }
     };
 

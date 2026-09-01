@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 17:27+0000\n"
+"POT-Creation-Date: 2026-09-01 17:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -282,6 +282,41 @@ msgstr ""
 
 #: apps/chat/actions.py:78
 msgid "Que demande cette question ?"
+msgstr ""
+
+#: apps/chat/salutation.py:106
+#, python-format
+msgid "Salut %(pseudo)s !"
+msgstr ""
+
+#: apps/chat/salutation.py:107
+msgid "On commence quand tu veux."
+msgstr ""
+
+#: apps/chat/salutation.py:115
+#, python-format
+msgid "Te revoilà, %(pseudo)s !"
+msgstr ""
+
+#: apps/chat/salutation.py:116
+#, python-format
+msgid "Ça faisait %(jours)s jours."
+msgstr ""
+
+#: apps/chat/salutation.py:129 apps/chat/salutation.py:142
+#: apps/chat/salutation.py:149
+#, python-format
+msgid "Content de te revoir, %(pseudo)s !"
+msgstr ""
+
+#: apps/chat/salutation.py:130
+#, python-format
+msgid "On avait laissé « %(notion)s » de côté."
+msgstr ""
+
+#: apps/chat/salutation.py:143
+#, python-format
+msgid "« %(notion)s », ça reste à consolider."
 msgstr ""
 
 #: apps/chat/views.py:87
@@ -1383,7 +1418,7 @@ msgid "A short biography of the user."
 msgstr "Une courte biographie de l'utilisateur."
 
 #: apps/users/models.py:69 apps/users/templates/users/profile.html:178
-#: eduai_project/settings.py:365
+#: eduai_project/settings.py:368
 msgid "English"
 msgstr "English"
 
@@ -1535,7 +1570,7 @@ msgstr "Présentez-vous en quelques mots…"
 msgid "Preferred Language"
 msgstr "Langue préférée"
 
-#: apps/users/templates/users/profile.html:177 eduai_project/settings.py:366
+#: apps/users/templates/users/profile.html:177 eduai_project/settings.py:369
 msgid "Français"
 msgstr ""
 
@@ -1777,81 +1812,81 @@ msgstr ""
 msgid "● Online"
 msgstr "● En ligne"
 
-#: templates/components/tuteur.html:8
+#: templates/components/tuteur.html:23 templates/components/tuteur.html:24
 msgid "Ouvrir le tuteur (Alt+T)"
 msgstr ""
 
-#: templates/components/tuteur.html:13
+#: templates/components/tuteur.html:37
 msgid "Tuteur"
 msgstr ""
 
-#: templates/components/tuteur.html:26
+#: templates/components/tuteur.html:51
 msgid "Barre du tuteur"
 msgstr ""
 
-#: templates/components/tuteur.html:46
+#: templates/components/tuteur.html:71
 msgid "Koda parle"
 msgstr ""
 
-#: templates/components/tuteur.html:47
+#: templates/components/tuteur.html:72
 msgid "Koda dort"
 msgstr ""
 
-#: templates/components/tuteur.html:48
+#: templates/components/tuteur.html:73
 msgid "Koda fait un clin d'œil"
 msgstr ""
 
-#: templates/components/tuteur.html:52
+#: templates/components/tuteur.html:77
 msgid "Tuteur IA"
 msgstr ""
 
-#: templates/components/tuteur.html:55
+#: templates/components/tuteur.html:80
 msgid "En ligne"
 msgstr ""
 
-#: templates/components/tuteur.html:61
+#: templates/components/tuteur.html:86
 msgid "Redocker à droite"
 msgstr ""
 
-#: templates/components/tuteur.html:64
+#: templates/components/tuteur.html:89
 msgid "Redocker"
 msgstr ""
 
-#: templates/components/tuteur.html:68
+#: templates/components/tuteur.html:93
 msgid "Replier le tuteur (Échap)"
 msgstr ""
 
-#: templates/components/tuteur.html:71
+#: templates/components/tuteur.html:96
 msgid "Replier le tuteur"
 msgstr ""
 
-#: templates/components/tuteur.html:80
+#: templates/components/tuteur.html:135
 msgid "Le tuteur voit :"
 msgstr ""
 
-#: templates/components/tuteur.html:81 templates/components/tuteur.html:315
+#: templates/components/tuteur.html:136 templates/components/tuteur.html:370
 msgid "aucun contexte — question générale"
 msgstr ""
 
-#: templates/components/tuteur.html:105
+#: templates/components/tuteur.html:160
 msgid "Le tuteur réfléchit…"
 msgstr ""
 
-#: templates/components/tuteur.html:118
+#: templates/components/tuteur.html:173
 #, fuzzy
 #| msgid "5 questions"
 msgid "Votre question"
 msgstr "5 questions"
 
-#: templates/components/tuteur.html:120
+#: templates/components/tuteur.html:175
 msgid "Posez votre question…"
 msgstr ""
 
-#: templates/components/tuteur.html:380
+#: templates/components/tuteur.html:435
 msgid "restantes"
 msgstr ""
 
-#: templates/components/tuteur.html:420
+#: templates/components/tuteur.html:475
 msgid "La réponse n'a pas pu être obtenue."
 msgstr ""
 

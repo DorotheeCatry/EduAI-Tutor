@@ -807,3 +807,40 @@ Installer `@tailwindcss/typography`, l'ajouter aux greffons de
 `theme/tailwind-v3/tailwind.config.js`, reconstruire, et relire les pages de
 contenu généré. Retirer les accroches JavaScript de la liste d'exceptions du
 test le jour où elles porteraient un style.
+
+---
+
+## 19. `current_streak` est lu pour accorder un bonus, et n'est jamais écrit
+
+**Compétence concernée :** C20 (épreuve E5) — données du suivi
+**Statut :** consignée, non corrigée
+
+Le champ `current_streak` existe sur le compte et sur `UserProgress`. Il est
+**lu** dans `agent_orchestrator.py` pour calculer un bonus d'expérience :
+
+```python
+streak_bonus = min(self.user.current_streak * 2, 20)
+```
+
+**Aucun code ne l'écrit jamais.** Il vaut donc zéro pour tout le monde, et le
+bonus vaut zéro pour tout le monde.
+
+### Pourquoi cette réserve compte plus qu'il n'y paraît
+
+Le défaut est sans conséquence visible aujourd'hui : un bonus toujours nul ne
+se remarque pas. Il devient dangereux dès qu'on s'appuie sur ce champ pour
+**dire** quelque chose. En composant la salutation de Koda, « trois jours
+d'affilée, bravo ! » était la phrase la plus naturelle à écrire — et elle
+aurait été fausse pour chaque apprenant, sur toutes les pages, avec l'air
+d'être la marque d'attention la plus soignée du produit.
+
+C'est la famille B sous sa forme la plus coûteuse : **un compteur qui a l'air
+d'un compteur**. Un test interdit désormais son emploi dans la salutation.
+
+### À faire après le 14 septembre
+
+Soit tenir la série — la mettre à jour à chaque séance close, avec une règle
+explicite sur ce que « un jour » veut dire pour quelqu'un qui travaille à
+cheval sur minuit — soit retirer le champ et le bonus qui en dépend. La
+troisième voie, le laisser tel quel, est celle qui a failli produire un
+mensonge.
