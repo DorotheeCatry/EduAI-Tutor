@@ -10,8 +10,8 @@
     "fichier": "img/koda/planches/koda-corps-entier.png",
     "images": 48,
     "colonnes": 8,
-    "largeur": 288,
-    "hauteur": 320
+    "largeur": 384,
+    "hauteur": 427
   },
   "buste": {
     "fichier": "img/koda/planches/koda-buste.png",

@@ -21,7 +21,9 @@
 
     /* Les durées sont ici, en un seul endroit, et se règlent sans toucher au
      * reste du code — comme le demande le cahier du chantier. */
-    var ETATS = {
+    var JEUX = {};
+
+    JEUX.grosPlan = {
         repos: {
             base: 0,
             clignement: [1, 2, 3, 2, 1],
@@ -51,6 +53,23 @@
         reveil: { unique: [36, 35, 34, 33], cadence: 80, puis: "repos" }
     };
 
+    /* La planche en pied : le salut et la réjouissance. Les états portent
+     * d'autres noms que ceux du gros plan, pour qu'un `Koda.etat('parle')`
+     * adressé à tout le monde laisse simplement ce Koda-ci tranquille. */
+    JEUX.corps = {
+        salue: {
+            unique: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                     12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+            cadence: 40, puis: "debout"
+        },
+        rejouit: {
+            unique: [24, 25, 26, 27, 28, 29, 30, 31,
+                     32, 33, 34, 35, 36, 37, 38, 39],
+            cadence: 40, puis: "debout"
+        },
+        debout: { boucle: [40, 41, 42, 43, 44, 45, 46, 47], cadence: 120 }
+    };
+
     /* Un état par défaut, affiché quand toute animation est refusée. */
     var IMAGE_FIXE = 0;
 
@@ -63,6 +82,7 @@
     var ETATS_EVEILLES = ["repos", "ecoute"];
 
     function animer(element) {
+        var ETATS = JEUX[element.dataset.jeu || "grosPlan"] || JEUX.grosPlan;
         var colonnes = parseInt(element.dataset.colonnes, 10);
         var largeur = parseInt(element.dataset.largeur, 10);
         var hauteur = parseInt(element.dataset.hauteur, 10);
@@ -136,7 +156,8 @@
                 + Math.random() * (def.reposMax - def.reposMin);
             minuteur = setTimeout(function () {
                 if (invisible()) { tourner(); return; }
-                if (def.clin !== false && Math.random() < CHANCE_DE_CLIN) {
+                if (def.clin !== false && ETATS.clin
+                        && Math.random() < CHANCE_DE_CLIN) {
                     jouerSuite(ETATS.clin.unique, ETATS.clin.cadence, tourner);
                     return;
                 }
@@ -184,7 +205,7 @@
     }
 
     window.Koda = {
-        ETATS: ETATS,
+        JEUX: JEUX,
         instances: [],
         /* Il y a DEUX Koda à l'écran : celui de la poignée, visible quand le
          * chat est fermé, et celui du panneau. Un seul est visible à la fois,

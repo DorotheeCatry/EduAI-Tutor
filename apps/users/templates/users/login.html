@@ -138,9 +138,31 @@
         <div class="hidden lg:flex items-center justify-center relative">
             <!-- Koda géant -->
             <div class="floating-animation relative z-0 w-full h-full flex">
-                <img src="{% static 'koda-ia/SALUTE.gif' %}" 
-                    alt="{% trans "EduAI Tutor waving" %}" 
-                    class="w-[600px] h-[600px] object-contain" />
+                {% comment %}
+                Koda salue à l'arrivée, servi par la planche de sprites et non
+                par un GIF.
+
+                Compétence visée : C17 (épreuve E4)
+                Compétence concernée : C13 (E3) — accessibilité
+
+                Motivation : **un GIF s'anime quoi qu'il arrive.** Il ignore
+                `prefers-reduced-motion`, et c'est précisément la première
+                image que voit un visiteur — dont celui qui a demandé à son
+                système de réduire les animations. La planche, elle, se fige.
+
+                Elle est aussi plus légère : 261 Kio contre 470 pour le GIF
+                qu'elle remplace.
+
+                Aucun `data-animation` ici : à la connexion, personne n'est
+                identifié, donc son réglage de profil est inconnu. Le réglage
+                du système, lui, s'applique dans tous les cas.
+                {% endcomment %}
+                <div data-koda class="koda" data-jeu="corps"
+                     style="width:384px;height:427px;background-image:url('{% static 'img/koda/planches/koda-corps-entier.png' %}');background-size:3072px 2562px"
+                     data-colonnes="8" data-largeur="384" data-hauteur="427"
+                     data-etat-initial="salue"
+                     data-alt-salue="{% trans "EduAI Tutor waving" %}"
+                     role="img" aria-label="{% trans "EduAI Tutor waving" %}"></div>
             </div>
                 
                 <!-- Éléments décoratifs -->
@@ -169,5 +191,6 @@
             lucide.createIcons();
         });
     </script>
+<script src="{% static 'js/koda.js' %}" defer></script>
 </body>
 </html>

@@ -143,17 +143,19 @@ def test_aucun_etat_ne_designe_une_image_absente_de_la_planche():
     """
     script = SCRIPT.read_text(encoding="utf-8")
     planches = json.loads(DESCRIPTEUR.read_text(encoding="utf-8"))
-    disponibles = planches["gros_plan"]["images"]
 
-    table = script[script.index("var ETATS = {"):script.index("var IMAGE_FIXE")]
-    indices = [int(n) for n in re.findall(r"\b(\d+)\b", re.sub(
-        r"(cadence|reposMin|reposMax)\s*:\s*\d+", "", table))]
+    for jeu, planche in (("grosPlan", "gros_plan"), ("corps", "corps_entier")):
+        debut = script.index("JEUX.%s = {" % jeu)
+        table = script[debut:script.index("};", debut)]
+        indices = [int(n) for n in re.findall(r"\b(\d+)\b", re.sub(
+            r"(cadence|reposMin|reposMax)\s*:\s*\d+", "", table))]
+        disponibles = planches[planche]["images"]
 
-    assert indices, "la table d'états doit être lisible"
-    assert max(indices) < disponibles, (
-        "l'état le plus haut désigne l'image %d, la planche en compte %d"
-        % (max(indices), disponibles)
-    )
+        assert indices, "la table d'états de %s doit être lisible" % jeu
+        assert max(indices) < disponibles, (
+            "%s désigne l'image %d, la planche en compte %d"
+            % (jeu, max(indices), disponibles)
+        )
 
 
 def test_la_planche_est_servie_en_une_seule_requete():
