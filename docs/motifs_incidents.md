@@ -183,6 +183,48 @@ contrôle dont l'alerte serait permanente est pire qu'un contrôle absent :
 l'absence se remarque, tandis qu'une alarme permanente s'apprend, et finit par
 être traitée comme le bruit de fond d'un système en bon état.
 
+### La variante où la mesure devient fausse sans qu'on y touche — 01/09
+
+L'incident 012 ajoute une forme que les précédentes n'avaient pas : **le
+compteur était juste, et il l'est resté**.
+
+Un compteur intitulé « quiz terminés » lisait les sessions closes de type
+`quiz`. Il était exact tant qu'une seule forme de quiz existait. Le quiz
+multijoueur en a ajouté une seconde, qui n'ouvrait de session que pour l'hôte
+et n'en clôturait aucune. Le compteur affichait alors zéro pour deux joueuses
+qui venaient de terminer une partie de cinq questions.
+
+Personne n'a modifié l'instrument. **C'est le monde qu'il mesurait qui s'est
+élargi sans lui**, et le chiffre zéro est un résultat parfaitement valide :
+rien n'échoue, rien ne se signale.
+
+### La quatrième question, ajoutée le 01/09
+
+Aux trois questions de la famille B s'en ajoute une, qui se pose au moment
+d'écrire une fonctionnalité et non au moment de vérifier un chiffre :
+
+> **Cette nouvelle voie mène-t-elle à une mesure existante — et cette mesure
+> sait-elle qu'elle existe ?**
+
+La parade tient en une ligne de code : lorsqu'une seconde forme d'une même
+chose apparaît, la liste des formes se nomme (`TYPES_DE_QUIZ`), vit auprès du
+modèle, et toute lecture qui annonce la chose s'y réfère. Aucune lecture ne peut
+alors n'en voir qu'une moitié sans l'avoir décidé.
+
+### La forme de question qui a révélé l'incident
+
+L'autrice n'a pas signalé un défaut. Elle a demandé :
+
+> le quizz multi n'est pas enregistré dans cet onglet performance /
+> référentiel, **est-ce un choix ?**
+
+Appliquée à une absence — un chiffre nul, un bloc vide, une ligne manquante —
+cette question sépare en une phrase la décision assumée de l'oubli silencieux.
+Elle n'accuse pas, donc elle n'appelle pas de justification : elle appelle une
+vérification. Ici, la réponse était « en partie » — l'exclusion des quiz de la
+progression était bien une décision consignée, l'invisibilité du compteur n'en
+était pas une.
+
 ---
 
 ## Famille C — Écrit, joignable, jamais appelé

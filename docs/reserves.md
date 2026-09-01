@@ -686,3 +686,76 @@ Passer `host` en `SET_NULL`, et décider ce qu'est une salle sans hôte —
 probablement : consultable, non relançable, supprimable par n'importe quel
 participant après un délai. Les parties terminées n'ont de toute façon plus
 besoin d'un hôte.
+
+---
+
+## 16. Une session d'apprentissage reste ouverte après chaque génération de quiz multijoueur
+
+**Compétence concernée :** C20 (épreuve E5) — données du suivi
+**Statut :** consignée, non corrigée
+
+La génération d'un quiz ouvre une `LearningSession` de type `quiz` au nom de
+celui qui l'a demandée. En solo, `submit_quiz` la clôt. **En multijoueur, rien
+ne la clôt** : elle garde `end_time` et `score` à vide, indéfiniment.
+
+Elle ne fausse aucun compteur — tous filtrent sur ces deux champs, et la
+correction de l'incident 012 enregistre des sessions distinctes, de type
+`quiz_multijoueur`, pour chaque participant. C'est une ligne pendante, pas une
+mesure fausse.
+
+### Pourquoi ce n'est pas corrigé
+
+Le solo emprunte exactement le même chemin de génération et le clôt
+correctement. Toucher à ce point modifie les deux formes de quiz, dont celle
+dont la chaîne d'enregistrement vient tout juste d'être réparée (incident 010).
+À trois jours du rendu, le risque dépasse le gain : la ligne pendante ne se
+voit sur aucun écran.
+
+### À faire après le 14 septembre
+
+Décider ce que représente cette session. Deux lectures possibles, et le choix
+n'est pas évident : soit la génération est une activité en soi — auquel cas
+elle doit être close à la génération, avec une durée qui mesure l'attente du
+modèle — soit elle n'en est pas une, et elle ne devrait pas ouvrir de session
+du tout.
+
+---
+
+## 17. Seize traductions devinées par `makemessages`, inertes mais fausses
+
+**Compétence concernée :** C17 (épreuve E4) — internationalisation
+**Statut :** consignée, deux entrées corrigées
+
+`makemessages` propose une traduction lorsqu'une chaîne nouvelle ressemble à
+une chaîne connue, et marque sa proposition `#, fuzzy`. Le catalogue français
+en compte seize. Plusieurs sont franchement fausses :
+
+| Chaîne | Traduction devinée |
+|---|---|
+| `Compétence` | « Terminé » |
+| `Description` | « Question » |
+| `Version` | « Révision » |
+| `Votre question` | « 5 questions » |
+
+**Elles ne s'affichent pas.** `compilemessages` exclut les entrées `fuzzy`, et
+l'application sert alors la chaîne source — qui est déjà en français pour
+toutes celles-là. Le risque n'est donc pas à l'écran : il est qu'un relecteur
+défige une entrée par commodité, sans lire ce qu'elle propose.
+
+Deux entrées ont été corrigées parce qu'elles portaient un identifiant anglais,
+donc une vraie perte : `Preferred Language` et `Koda Avatars` s'affichaient en
+anglais dans l'interface française alors que leur traduction existait, défigée.
+
+### Ce que cette réserve dit du procédé
+
+Le `#, fuzzy` est une **suggestion d'outil présentée comme un résultat**. Il
+occupe la place d'une traduction, il en a la forme, et seule une ligne de
+métadonnée le distingue. C'est une variante de la famille B appliquée à un
+outil de développement : le catalogue affiche seize traductions, il en contient
+seize de moins.
+
+### À faire après le 14 septembre
+
+Relire les seize entrées une à une, défiger celles qui sont justes, vider les
+autres. Et ajouter un test qui échoue si une entrée `fuzzy` porte un identifiant
+non français — le seul cas où l'inertie coûte quelque chose.
