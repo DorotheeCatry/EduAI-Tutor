@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 18:21+0000\n"
+"POT-Creation-Date: 2026-09-01 20:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,85 +23,85 @@ msgstr ""
 msgid "Accueil"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:19
+#: apps/accueil/templates/accueil/accueil.html:42
 msgid "Ce que je fais maintenant"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:25
+#: apps/accueil/templates/accueil/accueil.html:48
 #, python-format
 msgid ""
 "Prochaine compétence du parcours : <strong>%(competence)s</strong>, dans "
 "%(module)s."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:27
+#: apps/accueil/templates/accueil/accueil.html:50
 #, python-format
 msgid ""
 "Encore %(restant)s exercice(s) réussi(s) sur <strong>%(competence)s</strong> "
 "pour atteindre le niveau 2."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:32
+#: apps/accueil/templates/accueil/accueil.html:55
 msgid "S'exercer sur cette compétence"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:36
+#: apps/accueil/templates/accueil/accueil.html:59
 msgid ""
 "Toutes les compétences du référentiel sont au niveau 2. Le niveau 3 n'est "
 "pas mesuré par ce dispositif."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:40
+#: apps/accueil/templates/accueil/accueil.html:63
 msgid "Explorer un nouveau sujet"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:44
+#: apps/accueil/templates/accueil/accueil.html:67
 msgid "Commencez par générer un cours sur le sujet de votre choix."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:48
+#: apps/accueil/templates/accueil/accueil.html:71
 #, fuzzy
 #| msgid "Generate a course"
 msgid "Générer un cours"
 msgstr "Générer un cours"
 
-#: apps/accueil/templates/accueil/accueil.html:70
+#: apps/accueil/templates/accueil/accueil.html:93
 msgid "Où j'en suis"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:74
+#: apps/accueil/templates/accueil/accueil.html:97
 #, python-format
 msgid "%(entamees)s compétences entamées sur %(total)s"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:82
+#: apps/accueil/templates/accueil/accueil.html:105
 msgid "Aucun référentiel de compétences n'est actif pour l'instant."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:85
+#: apps/accueil/templates/accueil/accueil.html:108
 msgid ""
 "Votre travail est enregistré ; la progression s'affichera dès qu'un "
 "référentiel sera chargé."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:98
+#: apps/accueil/templates/accueil/accueil.html:121
 #, python-format
 msgid "Aucune compétence entamée sur %(total)s"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:101
+#: apps/accueil/templates/accueil/accueil.html:124
 #, python-format
 msgid ""
 "C'est le début du parcours. La première étape vous attend dans le module "
 "%(module)s."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:106
+#: apps/accueil/templates/accueil/accueil.html:129
 msgid "Voir les modules du référentiel"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:113
-#: apps/accueil/templates/accueil/accueil.html:153
+#: apps/accueil/templates/accueil/accueil.html:136
+#: apps/accueil/templates/accueil/accueil.html:176
 #, fuzzy, python-format
 #| msgid "Completed"
 msgid "%(total)s compétence"
@@ -109,60 +109,60 @@ msgid_plural "%(total)s compétences"
 msgstr[0] "Terminé"
 msgstr[1] "Terminé"
 
-#: apps/accueil/templates/accueil/accueil.html:128
+#: apps/accueil/templates/accueil/accueil.html:151
 #, python-format
 msgid "%(atteintes)s sur %(total)s au niveau 1, %(niveau2)s au niveau 2"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:136
+#: apps/accueil/templates/accueil/accueil.html:159
 #, python-format
 msgid ""
 "Équivalent textuel : %(atteintes)s compétence sur %(total)s au niveau 1."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:145
+#: apps/accueil/templates/accueil/accueil.html:168
 #, python-format
 msgid "%(restants)s module non entamé"
 msgid_plural "%(restants)s modules non entamés"
 msgstr[0] ""
 msgstr[1] ""
 
-#: apps/accueil/templates/accueil/accueil.html:173
+#: apps/accueil/templates/accueil/accueil.html:196
 msgid "Comment se lisent les trois niveaux"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:177
-#: apps/tracker/templates/tracker/dashboard.html:109
+#: apps/accueil/templates/accueil/accueil.html:200
+#: apps/tracker/templates/tracker/dashboard.html:129
 msgid "Niveau 1"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:180
-#: apps/tracker/templates/tracker/dashboard.html:105
+#: apps/accueil/templates/accueil/accueil.html:203
+#: apps/tracker/templates/tracker/dashboard.html:125
 msgid "Niveau 2"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:183
+#: apps/accueil/templates/accueil/accueil.html:206
 msgid "Niveau 3"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:184
-#: apps/tracker/templates/tracker/dashboard.html:69
+#: apps/accueil/templates/accueil/accueil.html:207
+#: apps/tracker/templates/tracker/dashboard.html:83
 msgid "non mesuré"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:188
+#: apps/accueil/templates/accueil/accueil.html:211
 msgid ""
 "« Non mesuré » ne veut pas dire « non atteint » : ce niveau suppose "
 "d'appliquer une notion à un contexte nouveau, ce que le nombre d'exercices "
 "réussis ne permet pas de constater."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:207
+#: apps/accueil/templates/accueil/accueil.html:230
 #: apps/revision/templates/revision/flashcards.html:24
 msgid "À revoir"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:219
+#: apps/accueil/templates/accueil/accueil.html:242
 #: apps/revision/templates/revision/flashcards.html:44
 #, python-format
 msgid "%(tentatives)s tentative"
@@ -170,12 +170,12 @@ msgid_plural "%(tentatives)s tentatives"
 msgstr[0] ""
 msgstr[1] ""
 
-#: apps/accueil/templates/accueil/accueil.html:224
+#: apps/accueil/templates/accueil/accueil.html:247
 #: apps/revision/templates/revision/flashcards.html:40
 msgid "hors référentiel"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:236
+#: apps/accueil/templates/accueil/accueil.html:259
 #: apps/revision/templates/revision/flashcards.html:57
 #, python-format
 msgid "%(erreurs)s réponse manquée"
@@ -183,33 +183,33 @@ msgid_plural "%(erreurs)s réponses manquées"
 msgstr[0] ""
 msgstr[1] ""
 
-#: apps/accueil/templates/accueil/accueil.html:238
+#: apps/accueil/templates/accueil/accueil.html:261
 #: apps/revision/templates/revision/flashcards.html:54
 msgid "quiz"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:250
+#: apps/accueil/templates/accueil/accueil.html:273
 #: apps/revision/templates/revision/flashcards.html:66
 msgid "Rien à revoir pour l'instant."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:252
+#: apps/accueil/templates/accueil/accueil.html:275
 #: apps/revision/templates/revision/flashcards.html:68
 msgid ""
 "Cette liste se remplit toute seule : un exercice qui demande plusieurs "
 "tentatives, ou une réponse manquée dans un quiz, y apparaît avec sa date."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:256
+#: apps/accueil/templates/accueil/accueil.html:279
 #: apps/revision/templates/revision/flashcards.html:72
 msgid "Faire un quiz pour repérer mes lacunes"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:263
+#: apps/accueil/templates/accueil/accueil.html:286
 msgid "Comment cette liste est construite"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:266
+#: apps/accueil/templates/accueil/accueil.html:289
 msgid ""
 "Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt "
 "que ce qui est ancien. Un exercice réussi du premier coup il y a un mois est "
@@ -217,40 +217,40 @@ msgid ""
 "semaine dernière ne l'est pas."
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:279
+#: apps/accueil/templates/accueil/accueil.html:302
 msgid "Dernière activité"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:286
+#: apps/accueil/templates/accueil/accueil.html:309
 #, fuzzy
 #| msgid "Exercise"
 msgid "Exercice"
 msgstr "Exercice"
 
-#: apps/accueil/templates/accueil/accueil.html:290
+#: apps/accueil/templates/accueil/accueil.html:313
 msgid "réussi"
 msgstr ""
 
-#: apps/accueil/templates/accueil/accueil.html:292
+#: apps/accueil/templates/accueil/accueil.html:315
 #, fuzzy
 #| msgid "Generate a course"
 msgid "en cours"
 msgstr "Générer un cours"
 
-#: apps/accueil/templates/accueil/accueil.html:299
+#: apps/accueil/templates/accueil/accueil.html:322
 #: apps/courses/templates/courses/course_content.html:37
 #: apps/courses/templates/courses/my_courses.html:50
 #: templates/components/sidebar.html:103
 msgid "Quiz"
 msgstr "Quiz"
 
-#: apps/accueil/templates/accueil/accueil.html:308
+#: apps/accueil/templates/accueil/accueil.html:331
 #, fuzzy
 #| msgid "Courses"
 msgid "Cours"
 msgstr "Cours"
 
-#: apps/accueil/templates/accueil/accueil.html:318
+#: apps/accueil/templates/accueil/accueil.html:341
 msgid ""
 "Aucune activité pour l'instant. Votre premier cours, exercice ou quiz "
 "apparaîtra ici avec son résultat."
@@ -340,7 +340,7 @@ msgid "Exercise"
 msgstr "Exercice"
 
 #: apps/courses/templates/courses/course_content.html:47
-#: apps/quiz/templates/quiz/quiz_start.html:73
+#: apps/quiz/templates/quiz/quiz_start.html:87
 msgid "Back"
 msgstr "Retour"
 
@@ -830,7 +830,7 @@ msgstr "• Bonus d'XP pour les meilleurs scores"
 
 #: apps/quiz/templates/quiz/create_room.html:108
 #: apps/quiz/templates/quiz/join_room.html:48
-#: apps/quiz/templates/quiz/multiplayer_game.html:120
+#: apps/quiz/templates/quiz/multiplayer_game.html:129
 #: apps/quiz/templates/quiz/room_detail.html:120
 msgid "Back to Lobby"
 msgstr "Retour au salon"
@@ -877,110 +877,110 @@ msgstr "• Patientez dans le salon jusqu'au lancement par l'hôte"
 msgid "• Compete for the highest score!"
 msgstr "• Disputez-vous le meilleur score"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:34
-#: apps/quiz/templates/quiz/quiz_start.html:51
+#: apps/quiz/templates/quiz/multiplayer_game.html:43
+#: apps/quiz/templates/quiz/quiz_start.html:65
 msgid "Question"
 msgstr "Question"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:34
-#: apps/quiz/templates/quiz/quiz_start.html:51
+#: apps/quiz/templates/quiz/multiplayer_game.html:43
+#: apps/quiz/templates/quiz/quiz_start.html:65
 msgid "of"
 msgstr "sur"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:58
+#: apps/quiz/templates/quiz/multiplayer_game.html:67
 msgid "Loading question..."
 msgstr "Chargement de la question…"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:59
+#: apps/quiz/templates/quiz/multiplayer_game.html:68
 msgid "Please wait while we load the first question"
 msgstr "Patientez pendant le chargement de la première question"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:77
+#: apps/quiz/templates/quiz/multiplayer_game.html:86
 msgid "Live Leaderboard"
 msgstr "Classement en direct"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:80
+#: apps/quiz/templates/quiz/multiplayer_game.html:89
 msgid "Loading players..."
 msgstr "Chargement des joueurs…"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:88
+#: apps/quiz/templates/quiz/multiplayer_game.html:97
 msgid "Back to Room"
 msgstr "Retour à la salle"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:91
+#: apps/quiz/templates/quiz/multiplayer_game.html:100
 msgid "Your Score:"
 msgstr "Votre score :"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:106
+#: apps/quiz/templates/quiz/multiplayer_game.html:115
 msgid "You're done!"
 msgstr "Vous avez terminé"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:107
+#: apps/quiz/templates/quiz/multiplayer_game.html:116
 msgid "Waiting for the other players to finish"
 msgstr "En attente des autres joueurs"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:108
+#: apps/quiz/templates/quiz/multiplayer_game.html:117
 msgid "Podium"
 msgstr "Podium"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:109
+#: apps/quiz/templates/quiz/multiplayer_game.html:118
 msgid "pts"
 msgstr "pts"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:110
+#: apps/quiz/templates/quiz/multiplayer_game.html:119
 msgid "Game finished!"
 msgstr "Partie terminée !"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:118
+#: apps/quiz/templates/quiz/multiplayer_game.html:127
 #, python-brace-format
 msgid "{joueur} wins!"
 msgstr "{joueur} l'emporte !"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:119
+#: apps/quiz/templates/quiz/multiplayer_game.html:128
 msgid "Check the final leaderboard below"
 msgstr "Le classement final est ci-dessous"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:121
+#: apps/quiz/templates/quiz/multiplayer_game.html:130
 msgid "New Game"
 msgstr "Nouvelle partie"
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:138
+#: apps/quiz/templates/quiz/multiplayer_game.html:147
 msgid "T'es le meilleur !"
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:139
+#: apps/quiz/templates/quiz/multiplayer_game.html:148
 msgid "Je le savais depuis le début."
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:140
+#: apps/quiz/templates/quiz/multiplayer_game.html:149
 msgid "Personne n'avait la moindre chance."
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:141
+#: apps/quiz/templates/quiz/multiplayer_game.html:150
 msgid "Là, j'applaudis. Fort."
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:142
+#: apps/quiz/templates/quiz/multiplayer_game.html:151
 msgid "On remet ça quand tu veux."
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:143
+#: apps/quiz/templates/quiz/multiplayer_game.html:152
 msgid "Mais j'avais parié avec les autres Koda que t'étais le best !!!"
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:144
+#: apps/quiz/templates/quiz/multiplayer_game.html:153
 msgid "Bon. Je vais devoir leur rendre leurs cacahuètes."
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:145
+#: apps/quiz/templates/quiz/multiplayer_game.html:154
 msgid "J'ai misé sur toi. J'assume. Mais j'ai mal."
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:146
+#: apps/quiz/templates/quiz/multiplayer_game.html:155
 msgid "La prochaine fois je parie sur l'autre. Non, je rigole."
 msgstr ""
 
-#: apps/quiz/templates/quiz/multiplayer_game.html:147
+#: apps/quiz/templates/quiz/multiplayer_game.html:156
 msgid "Je conteste. Je demande un deuxième tour."
 msgstr ""
 
@@ -1034,7 +1034,7 @@ msgid "Your Statistics"
 msgstr "Vos statistiques"
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:162
-#: apps/tracker/templates/tracker/dashboard.html:45
+#: apps/tracker/templates/tracker/dashboard.html:57
 msgid "Quiz terminés"
 msgstr ""
 
@@ -1046,15 +1046,51 @@ msgstr ""
 msgid "Aucun quiz terminé"
 msgstr ""
 
-#: apps/quiz/templates/quiz/quiz_start.html:30
+#: apps/quiz/templates/quiz/quiz_start.html:8
+msgid "Quiz terminé !"
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:9
+msgid "Retour au salon"
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:10
+msgid "Refaire un quiz"
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:11
+msgid "Excellent ! Vous maîtrisez le sujet."
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:12
+msgid "Très bien ! Quelques points à revoir, mais c'est solide."
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:13
+msgid "Pas mal ! Il reste des choses à apprendre."
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:14
+msgid "Continuez : c'est en pratiquant qu'on progresse."
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:15
+msgid "J'avais dit aux autres Koda que ce quiz était trop facile pour toi."
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:16
+msgid "Je le savais. Je l'avais dit."
+msgstr ""
+
+#: apps/quiz/templates/quiz/quiz_start.html:44
 msgid "Revenir au salon"
 msgstr ""
 
-#: apps/quiz/templates/quiz/quiz_start.html:43
+#: apps/quiz/templates/quiz/quiz_start.html:57
 msgid "Quiz in Progress"
 msgstr "Quiz en cours"
 
-#: apps/quiz/templates/quiz/quiz_start.html:76
+#: apps/quiz/templates/quiz/quiz_start.html:90
 msgid "Score:"
 msgstr "Score :"
 
@@ -1303,87 +1339,77 @@ msgid "S'exercer"
 msgstr ""
 
 #: apps/tracker/templates/tracker/dashboard.html:20
-#: apps/tracker/templates/tracker/dashboard.html:25
+#: apps/tracker/templates/tracker/dashboard.html:37
 #: templates/components/sidebar.html:115
 msgid "Skills framework"
 msgstr "Référentiel"
 
-#: apps/tracker/templates/tracker/dashboard.html:27
+#: apps/tracker/templates/tracker/dashboard.html:39
 msgid ""
 "Ce que vous avez fait, tel que la base l'enregistre. Aucune valeur n'est "
 "estimée."
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:32
+#: apps/tracker/templates/tracker/dashboard.html:44
 msgid "Décomptes"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:35
+#: apps/tracker/templates/tracker/dashboard.html:47
 #: apps/users/templates/users/supprimer_compte.html:60
 msgid "Cours créés"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:40
+#: apps/tracker/templates/tracker/dashboard.html:52
 msgid "Exercices réussis"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:49
+#: apps/tracker/templates/tracker/dashboard.html:61
 #, python-format
 msgid "Score moyen : %(moyenne)s %%"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:52
+#: apps/tracker/templates/tracker/dashboard.html:64
 msgid "Aucun score enregistré"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:57
+#: apps/tracker/templates/tracker/dashboard.html:69
 msgid "Niveau"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:68
+#: apps/tracker/templates/tracker/dashboard.html:82
 msgid "Temps d'étude"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:72
-msgid ""
-"Le produit n'enregistre pas la durée des séances. Cette page affichait "
-"auparavant une estimation calculée à partir du nombre de cours ; elle a été "
-"retirée plutôt que présentée comme une mesure."
+#: apps/tracker/templates/tracker/dashboard.html:84
+msgid "Les durées de séance ne sont pas enregistrées."
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:80
+#: apps/tracker/templates/tracker/dashboard.html:93
 msgid "Progression par compétence"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:83
+#: apps/tracker/templates/tracker/dashboard.html:96
 msgid ""
 "Un exercice réussi donne le niveau 1, trois exercices distincts le niveau 2. "
 "Le niveau 3 n'est pas mesuré."
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:113
+#: apps/tracker/templates/tracker/dashboard.html:133
 msgid "Non entamée"
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:120
+#: apps/tracker/templates/tracker/dashboard.html:139
 #, python-format
-msgid "%(reussis)s exercice réussi"
-msgid_plural "%(reussis)s exercices réussis"
+msgid "%(reussis)s réussi"
+msgid_plural "%(reussis)s réussis"
 msgstr[0] ""
 msgstr[1] ""
 
-#: apps/tracker/templates/tracker/dashboard.html:120
-#, python-format
-msgid "dont %(premier)s du premier coup"
-msgid_plural "dont %(premier)s du premier coup"
-msgstr[0] ""
-msgstr[1] ""
-
-#: apps/tracker/templates/tracker/dashboard.html:128
+#: apps/tracker/templates/tracker/dashboard.html:147
 msgid "Aucun référentiel de compétences n'est actif."
 msgstr ""
 
-#: apps/tracker/templates/tracker/dashboard.html:131
+#: apps/tracker/templates/tracker/dashboard.html:150
 msgid ""
 "Vos cours, exercices et quiz restent enregistrés ; la progression par "
 "compétence s'affichera dès qu'un référentiel sera chargé."

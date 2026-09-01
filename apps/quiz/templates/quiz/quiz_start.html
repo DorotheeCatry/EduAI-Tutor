@@ -1,5 +1,19 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load static i18n %}
+{% comment %}
+Libellés de l'écran de fin. Ils étaient assemblés en JavaScript avec un
+`if (langue === 'fr')` et deux blocs de chaînes en dur : les catalogues ne les
+voyaient pas, et une troisième langue aurait demandé un troisième bloc.
+{% endcomment %}
+{% trans "Quiz terminé !" as t_fini %}
+{% trans "Retour au salon" as t_retour %}
+{% trans "Refaire un quiz" as t_refaire %}
+{% trans "Excellent ! Vous maîtrisez le sujet." as t_palier90 %}
+{% trans "Très bien ! Quelques points à revoir, mais c'est solide." as t_palier70 %}
+{% trans "Pas mal ! Il reste des choses à apprendre." as t_palier50 %}
+{% trans "Continuez : c'est en pratiquant qu'on progresse." as t_palier0 %}
+{% trans "J'avais dit aux autres Koda que ce quiz était trop facile pour toi." as t_koda_bas %}
+{% trans "Je le savais. Je l'avais dit." as t_koda_haut %}
 {% block extra_head %}
 <!-- Prism.js for syntax highlighting -->
 <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
@@ -254,50 +268,76 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     function showFinalResults() {
-        const percentage = Math.round((score / questions.length) * 100);
-        
-        // Get quiz language from data
-        const quizLanguage = quizData.language || 'en';
-        
-        let message;
-        if (quizLanguage === 'fr') {
-            message = `Quiz terminé !\n\nScore : ${score}/${questions.length} (${percentage}%)\n\n`;
-            
-            if (percentage >= 90) {
-                message += "🏆 Excellent ! Vous maîtrisez parfaitement le sujet !";
-            } else if (percentage >= 70) {
-                message += "👍 Très bien ! Quelques points à revoir mais c'est solide !";
-            } else if (percentage >= 50) {
-                message += "📚 Pas mal ! Il reste encore des choses à apprendre.";
-            } else {
-                message += "💪 Continuez vos efforts ! C'est en pratiquant qu'on progresse.";
-            }
-        } else {
-            message = `Quiz completed!\n\nScore: ${score}/${questions.length} (${percentage}%)\n\n`;
-            
-            if (percentage >= 90) {
-                message += "🏆 Excellent! You have perfect mastery of the subject!";
-            } else if (percentage >= 70) {
-                message += "👍 Very good! A few points to review but it's solid!";
-            } else if (percentage >= 50) {
-                message += "📚 Not bad! There are still things to learn.";
-            } else {
-                message += "💪 Keep up your efforts! Practice makes perfect.";
-            }
-        }
-        
-        // Le résultat part au serveur AVANT la redirection.
+        const pourcentage = Math.round((score / questions.length) * 100);
+
+        {% comment %}
+        Un écran de fin dans la page, et non plus une boîte de dialogue native.
+
+        Compétence visée : C17 (épreuve E4)
+        Le résultat s'affichait dans une boîte native : impossible à mettre en
+        forme, invisible pour les catalogues de traduction — les deux jeux de
+        phrases étaient écrits en dur, un par langue — et elle disparaissait au
+        clic, l'apprenant n'ayant alors plus rien sous les yeux au moment où la
+        page se rechargeait sur le salon.
+
+        Koda accompagne le résultat, il ne le porte pas : le score et la phrase
+        sont du texte, et l'image est `aria-hidden`.
+        {% endcomment %}
+        let palier;
+        if (pourcentage >= 90) { palier = "{{ t_palier90|escapejs }}"; }
+        else if (pourcentage >= 70) { palier = "{{ t_palier70|escapejs }}"; }
+        else if (pourcentage >= 50) { palier = "{{ t_palier50|escapejs }}"; }
+        else { palier = "{{ t_palier0|escapejs }}"; }
+
+        const koda = pourcentage >= 50
+            ? {image: "{% static 'img/koda/planches/koda-joie.png' %}", jeu: "joie",
+               etat: "fete", l: 200, h: 223, lignes: 6, mot: "{{ t_koda_haut|escapejs }}"}
+            : {image: "{% static 'img/koda/planches/koda-boude.png' %}", jeu: "bouderie",
+               etat: "boude", l: 200, h: 168, lignes: 6, mot: "{{ t_koda_bas|escapejs }}"};
+
+        const ecran = document.createElement("div");
+        ecran.className = "fixed inset-0 z-50 flex items-center justify-center bg-gray-900/90 p-4";
+        ecran.setAttribute("role", "dialog");
+        ecran.setAttribute("aria-modal", "true");
+        ecran.setAttribute("aria-labelledby", "titre-resultat");
+        ecran.innerHTML = `
+            <div class="w-full max-w-md text-center bg-gray-800 border border-gray-700 rounded-2xl p-6">
+                <div data-koda class="koda mx-auto mb-3"
+                     style="width:${koda.l}px;height:${koda.h}px;
+                            background-image:url('${koda.image}');
+                            background-size:${koda.l * 8}px ${koda.h * koda.lignes}px"
+                     data-jeu="${koda.jeu}" data-colonnes="8"
+                     data-largeur="${koda.l}" data-hauteur="${koda.h}"
+                     data-etat-initial="${koda.etat}"
+                     ${document.body.dataset.animationKoda === 'desactivee' ? 'data-animation="desactivee"' : ''}
+                     aria-hidden="true"></div>
+                <h2 id="titre-resultat" class="text-xl font-bold text-white">{{ t_fini|escapejs }}</h2>
+                <p class="text-3xl font-bold text-primary-green my-2">
+                    ${score} / ${questions.length}
+                    <span class="text-base text-gray-400">(${pourcentage} %)</span>
+                </p>
+                <p class="text-sm text-gray-200">${palier}</p>
+                <p class="text-sm text-gray-400 italic mt-1">${koda.mot}</p>
+                <div class="flex gap-3 justify-center mt-5">
+                    <a href="{% url 'quiz:lobby' %}"
+                       class="px-4 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                        {{ t_retour|escapejs }}
+                    </a>
+                    <a href="{% url 'quiz:start' %}"
+                       class="px-4 py-2 rounded-lg bg-gray-700 text-white text-sm font-medium hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+                        {{ t_refaire|escapejs }}
+                    </a>
+                </div>
+            </div>`;
+
+        // Le résultat part au serveur AVANT tout affichage.
         //
         // Sans cet envoi, la vue `quiz:submit` et tout ce qu'elle déclenche —
         // clôture de la session, enregistrement des erreurs, compteur de quiz
         // terminés — n'étaient jamais appelés : du code écrit, joignable, et
-        // que rien n'exécutait (incident 010). Le score s'affichait dans une
-        // boîte de dialogue et disparaissait avec elle.
+        // que rien n'exécutait (incident 010).
         //
-        // `keepalive` : la requête doit survivre à la navigation qui suit.
-        // Sans lui, le navigateur est en droit d'abandonner un appel en cours
-        // au moment où la page change — et le résultat serait perdu une fois
-        // sur deux, de façon intermittente, donc difficile à diagnostiquer.
+        // `keepalive` : la requête doit survivre à une navigation éventuelle.
         fetch("{% url 'quiz:submit' %}", {
             method: "POST",
             headers: {
@@ -311,12 +351,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }),
             keepalive: true,
         }).catch(() => {
-            // Un échec d'enregistrement ne doit pas retenir l'apprenant sur la
-            // page : il a fini son quiz. La perte est signalée côté serveur
-            // par l'absence de clôture de session, visible au monitorage.
+            // Un échec d'enregistrement ne retient pas l'apprenant : il a fini
+            // son quiz. La perte est visible au monitorage, par l'absence de
+            // clôture de session.
         }).finally(() => {
-            alert(message);
-            window.location.href = "{% url 'quiz:lobby' %}";
+            document.body.appendChild(ecran);
+            ecran.querySelector("a").focus();
+            if (window.Koda) { Koda.brancher(); }
         });
     }
 
