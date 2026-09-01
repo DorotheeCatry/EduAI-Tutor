@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 16:06+0000\n"
+"POT-Creation-Date: 2026-09-01 17:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -296,7 +296,7 @@ msgstr "unknown error"
 
 #: apps/courses/templates/courses/course_content.html:30
 #: apps/users/templates/users/profile.html:118
-#: apps/users/templates/users/profile.html:187
+#: apps/users/templates/users/profile.html:213
 msgid "Save"
 msgstr ""
 
@@ -360,7 +360,7 @@ msgid "Today"
 msgstr ""
 
 #: apps/courses/templates/courses/generate.html:114
-#: apps/users/templates/users/profile.html:227
+#: apps/users/templates/users/profile.html:253
 msgid "Progress"
 msgstr ""
 
@@ -581,7 +581,7 @@ msgstr ""
 
 #: apps/exercises/templates/exercises/exercise_list.html:256
 #: apps/users/templates/users/profile.html:121
-#: apps/users/templates/users/profile.html:184
+#: apps/users/templates/users/profile.html:210
 msgid "Cancel"
 msgstr ""
 
@@ -606,7 +606,7 @@ msgid "First try"
 msgstr ""
 
 #: apps/exercises/templates/exercises/user_progress.html:40
-#: apps/users/templates/users/profile.html:243
+#: apps/users/templates/users/profile.html:269
 msgid "Current streak"
 msgstr ""
 
@@ -1020,7 +1020,7 @@ msgstr ""
 #: apps/quiz/templates/quiz/room_detail.html:84
 #: apps/quiz/templates/quiz/room_detail.html:86
 #: apps/quiz/templates/quiz/room_detail.html:89 apps/users/models.py:58
-#: apps/users/templates/users/profile.html:199
+#: apps/users/templates/users/profile.html:225
 #: templates/components/sidebar.html:21 templates/components/sidebar.html:23
 #: templates/components/sidebar.html:26 templates/components/sidebar.html:42
 #: templates/components/sidebar.html:44 templates/components/sidebar.html:47
@@ -1315,26 +1315,26 @@ msgstr ""
 msgid "Progression"
 msgstr ""
 
-#: apps/users/admin.py:25 apps/users/templates/users/profile.html:218
+#: apps/users/admin.py:25 apps/users/templates/users/profile.html:244
 msgid "Level"
 msgstr ""
 
 #: apps/users/forms.py:43 apps/users/templates/users/profile.html:151
-#: apps/users/templates/users/register.html:95
+#: apps/users/templates/users/register.html:88
 msgid "Email"
 msgstr ""
 
 #: apps/users/forms.py:44 apps/users/templates/users/profile.html:146
-#: apps/users/templates/users/register.html:101
+#: apps/users/templates/users/register.html:94
 msgid "Username"
 msgstr ""
 
-#: apps/users/forms.py:52 apps/users/templates/users/login.html:95
+#: apps/users/forms.py:52 apps/users/templates/users/login.html:88
 msgid "Email or username"
 msgstr ""
 
-#: apps/users/forms.py:59 apps/users/templates/users/login.html:102
-#: apps/users/templates/users/register.html:110
+#: apps/users/forms.py:59 apps/users/templates/users/login.html:95
+#: apps/users/templates/users/register.html:103
 msgid "Password"
 msgstr ""
 
@@ -1387,11 +1387,22 @@ msgstr ""
 msgid "Preferred language"
 msgstr ""
 
-#: apps/users/models.py:82
+#: apps/users/models.py:82 apps/users/templates/users/profile.html:200
+msgid "Animer Koda"
+msgstr "Animate Koda"
+
+#: apps/users/models.py:84
+msgid ""
+"Anime le personnage du tuteur. Décocher fige Koda sur une image. Le réglage "
+"« mouvement réduit » du système est respecté quoi qu'il arrive : ce champ "
+"permet de figer l'animation sans y toucher."
+msgstr ""
+
+#: apps/users/models.py:92
 msgid "Experience Points"
 msgstr ""
 
-#: apps/users/models.py:83
+#: apps/users/models.py:93
 msgid "Total experience points gained by the student."
 msgstr ""
 
@@ -1399,58 +1410,58 @@ msgstr ""
 msgid "Connexion - EduAI Tutor"
 msgstr "Sign in — EduAI Tutor"
 
-#: apps/users/templates/users/login.html:52
-#: apps/users/templates/users/register.html:52
-#: apps/users/templates/users/register.html:144
+#: apps/users/templates/users/login.html:45
+#: apps/users/templates/users/register.html:45
+#: apps/users/templates/users/register.html:137
 msgid "EduAI Tutor"
 msgstr "EduAI Tutor"
 
-#: apps/users/templates/users/login.html:55
+#: apps/users/templates/users/login.html:48
 msgid "Bon retour !"
 msgstr "Welcome back!"
 
-#: apps/users/templates/users/login.html:57
+#: apps/users/templates/users/login.html:50
 msgid "Continue your learning in seconds."
 msgstr ""
 
-#: apps/users/templates/users/login.html:58
+#: apps/users/templates/users/login.html:51
 msgid "Don't have an account yet?"
 msgstr ""
 
-#: apps/users/templates/users/login.html:60
+#: apps/users/templates/users/login.html:53
 msgid "Sign up"
 msgstr ""
 
-#: apps/users/templates/users/login.html:72
+#: apps/users/templates/users/login.html:65
 msgid "Login error"
 msgstr ""
 
-#: apps/users/templates/users/login.html:110
+#: apps/users/templates/users/login.html:103
 msgid "Remember me"
 msgstr ""
 
-#: apps/users/templates/users/login.html:113
+#: apps/users/templates/users/login.html:106
 msgid "Forgot password?"
 msgstr ""
 
-#: apps/users/templates/users/login.html:119
-#: apps/users/templates/users/register.html:59
+#: apps/users/templates/users/login.html:112
+#: apps/users/templates/users/register.html:52
 msgid "Sign in"
 msgstr ""
 
-#: apps/users/templates/users/login.html:128
+#: apps/users/templates/users/login.html:121
 msgid "or"
 msgstr ""
 
-#: apps/users/templates/users/login.html:134
+#: apps/users/templates/users/login.html:127
 msgid "Continue with GitHub"
 msgstr ""
 
-#: apps/users/templates/users/login.html:139
+#: apps/users/templates/users/login.html:132
 msgid "Continue with Google"
 msgstr ""
 
-#: apps/users/templates/users/login.html:150
+#: apps/users/templates/users/login.html:143
 msgid "EduAI Tutor waving"
 msgstr ""
 
@@ -1487,7 +1498,7 @@ msgid "Click on a Koda avatar to select it"
 msgstr ""
 
 #: apps/users/templates/users/profile.html:98
-#: apps/users/templates/users/profile.html:197
+#: apps/users/templates/users/profile.html:223
 msgid "Preview"
 msgstr ""
 
@@ -1519,27 +1530,33 @@ msgstr ""
 msgid "Français"
 msgstr "Français"
 
-#: apps/users/templates/users/profile.html:211
+#: apps/users/templates/users/profile.html:202
+msgid ""
+"Décocher fige le personnage du tuteur sur une image. Le réglage « mouvement "
+"réduit » de votre système est respecté dans tous les cas."
+msgstr ""
+
+#: apps/users/templates/users/profile.html:237
 msgid "Statistics"
 msgstr ""
 
-#: apps/users/templates/users/profile.html:214
+#: apps/users/templates/users/profile.html:240
 msgid "Title"
 msgstr ""
 
-#: apps/users/templates/users/profile.html:222
+#: apps/users/templates/users/profile.html:248
 msgid "XP"
 msgstr ""
 
-#: apps/users/templates/users/profile.html:235
+#: apps/users/templates/users/profile.html:261
 msgid "Completed courses"
 msgstr ""
 
-#: apps/users/templates/users/profile.html:239
+#: apps/users/templates/users/profile.html:265
 msgid "Successful quizzes"
 msgstr ""
 
-#: apps/users/templates/users/profile.html:247
+#: apps/users/templates/users/profile.html:273
 msgid "Member since"
 msgstr ""
 
@@ -1547,39 +1564,39 @@ msgstr ""
 msgid "Inscription - EduAI Tutor"
 msgstr "Sign up — EduAI Tutor"
 
-#: apps/users/templates/users/register.html:55
+#: apps/users/templates/users/register.html:48
 msgid "Créer un compte"
 msgstr "Create an account"
 
-#: apps/users/templates/users/register.html:57
+#: apps/users/templates/users/register.html:50
 msgid "Start your learning journey now. Already have an account?"
 msgstr ""
 
-#: apps/users/templates/users/register.html:71
+#: apps/users/templates/users/register.html:64
 msgid "Form errors"
 msgstr ""
 
-#: apps/users/templates/users/register.html:116
+#: apps/users/templates/users/register.html:109
 msgid "Confirm password"
 msgstr ""
 
-#: apps/users/templates/users/register.html:125
+#: apps/users/templates/users/register.html:118
 msgid "I accept the"
 msgstr ""
 
-#: apps/users/templates/users/register.html:126
+#: apps/users/templates/users/register.html:119
 msgid "terms of service"
 msgstr ""
 
-#: apps/users/templates/users/register.html:127
+#: apps/users/templates/users/register.html:120
 msgid "and"
 msgstr ""
 
-#: apps/users/templates/users/register.html:128
+#: apps/users/templates/users/register.html:121
 msgid "privacy policy"
 msgstr ""
 
-#: apps/users/templates/users/register.html:133
+#: apps/users/templates/users/register.html:126
 msgid "Create my account"
 msgstr ""
 
@@ -1697,11 +1714,11 @@ msgstr ""
 msgid "EduAI Tutor — plateforme d'apprentissage intelligente"
 msgstr "EduAI Tutor — intelligent learning platform"
 
-#: templates/base.html:99
+#: templates/base.html:62
 msgid "Base template works!"
 msgstr ""
 
-#: templates/base.html:100
+#: templates/base.html:63
 msgid "If you see this message, the base template is loaded correctly."
 msgstr ""
 
@@ -1763,61 +1780,73 @@ msgstr "Tutor"
 msgid "Barre du tuteur"
 msgstr ""
 
-#: templates/components/tuteur.html:32
+#: templates/components/tuteur.html:46
+msgid "Koda parle"
+msgstr "Koda is speaking"
+
+#: templates/components/tuteur.html:47
+msgid "Koda dort"
+msgstr "Koda is asleep"
+
+#: templates/components/tuteur.html:48
+msgid "Koda fait un clin d'œil"
+msgstr "Koda winks"
+
+#: templates/components/tuteur.html:52
 #, fuzzy
 #| msgid "Tuteur"
 msgid "Tuteur IA"
 msgstr "Tutor"
 
-#: templates/components/tuteur.html:35
+#: templates/components/tuteur.html:55
 msgid "En ligne"
 msgstr ""
 
-#: templates/components/tuteur.html:41
+#: templates/components/tuteur.html:61
 msgid "Redocker à droite"
 msgstr ""
 
-#: templates/components/tuteur.html:44
+#: templates/components/tuteur.html:64
 msgid "Redocker"
 msgstr ""
 
-#: templates/components/tuteur.html:48
+#: templates/components/tuteur.html:68
 #, fuzzy
 #| msgid "Fermer le tuteur"
 msgid "Replier le tuteur (Échap)"
 msgstr "Close the tutor"
 
-#: templates/components/tuteur.html:51
+#: templates/components/tuteur.html:71
 #, fuzzy
 #| msgid "Fermer le tuteur"
 msgid "Replier le tuteur"
 msgstr "Close the tutor"
 
-#: templates/components/tuteur.html:60
+#: templates/components/tuteur.html:80
 msgid "Le tuteur voit :"
 msgstr "The tutor sees:"
 
-#: templates/components/tuteur.html:61 templates/components/tuteur.html:294
+#: templates/components/tuteur.html:81 templates/components/tuteur.html:315
 msgid "aucun contexte — question générale"
 msgstr "no context — general question"
 
-#: templates/components/tuteur.html:85
+#: templates/components/tuteur.html:105
 msgid "Le tuteur réfléchit…"
 msgstr "The tutor is thinking…"
 
-#: templates/components/tuteur.html:98
+#: templates/components/tuteur.html:118
 msgid "Votre question"
 msgstr "Your question"
 
-#: templates/components/tuteur.html:100
+#: templates/components/tuteur.html:120
 msgid "Posez votre question…"
 msgstr "Ask your question…"
 
-#: templates/components/tuteur.html:359
+#: templates/components/tuteur.html:380
 msgid "restantes"
 msgstr ""
 
-#: templates/components/tuteur.html:386
+#: templates/components/tuteur.html:420
 #, fuzzy
 #| msgid "La réponse n’a pas pu être obtenue."
 msgid "La réponse n'a pas pu être obtenue."

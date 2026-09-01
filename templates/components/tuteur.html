@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load static i18n %}
 
 {{ contexte_tuteur|default_if_none:""|json_script:"contexte-tuteur" }}
 
@@ -25,9 +25,28 @@
          class="flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700 cursor-grab select-none"
          role="toolbar" aria-label="{% trans "Barre du tuteur" %}">
         <div class="flex items-center gap-3 min-w-0">
-            <div class="w-9 h-9 rounded-full bg-primary-blue flex items-center justify-center flex-shrink-0">
-                <i data-lucide="bot" class="w-5 h-5 text-white"></i>
-            </div>
+            {% comment %}
+            Koda occupe la place de l'ancienne pastille à icône.
+
+            Compétence visée : C17 (épreuve E4)
+            Les dimensions viennent de `static/img/koda/planches/planches.json` :
+            planche de 8 colonnes, images de 192x157. Affichées à 56x46, soit
+            un tiers — la planche sert donc aussi les écrans à forte densité.
+
+            `aria-hidden` est posé ici parce que l'état initial est le repos,
+            qui ne signifie rien. Le script le retire dès qu'un état porte un
+            sens, et repose l'alternative textuelle correspondante.
+            {% endcomment %}
+            <div data-koda
+                 class="koda"
+                 style="width:56px;height:46px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:448px 230px"
+                 data-colonnes="8" data-largeur="56" data-hauteur="46"
+                 data-etat-initial="repos"
+                 data-alt-parle="{% trans "Koda parle" %}"
+                 data-alt-dort="{% trans "Koda dort" %}"
+                 data-alt-clin="{% trans "Koda fait un clin d'œil" %}"
+                 {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
+                 aria-hidden="true"></div>
             <div class="min-w-0">
                 <h2 id="tuteur-titre" class="text-sm font-semibold text-white truncate">{% trans "Tuteur IA" %}</h2>
                 <p class="text-xs text-primary-green flex items-center gap-1">
@@ -198,6 +217,7 @@
 }
 </style>
 
+<script src="{% static 'js/koda.js' %}" defer></script>
 <script>
 (function () {
     const ouvrir      = document.getElementById('tuteur-ouvrir');
@@ -364,6 +384,9 @@
     async function envoyer({message, action, libelle}) {
         ajouterMessage(libelle || message, true);
         chargement.hidden = false;
+        {% comment %} Koda accompagne le texte « Le tuteur réfléchit… », il ne le remplace
+           pas : le message reste affiché et lisible sans lui. {% endcomment %}
+        if (window.Koda) Koda.etat('reflechit');
         try {
             const reponse = await fetch("{% url 'chat:send_message' %}", {
                 method: 'POST',
@@ -382,8 +405,17 @@
             ajouterMessage(corps.reponse || corps.error, false, corps.horodatage);
             historique.push({question: libelle || message, reponse: corps.reponse || ''});
             if (corps.quota) afficherQuota(corps.quota);
+            {% comment %} La durée de la parole suit la longueur de la réponse, bornée à
+               six secondes : une réponse de trois pages ne justifie pas que
+               Koda parle une minute. {% endcomment %}
+            if (window.Koda) {
+                Koda.etat('parle');
+                const duree = Math.min(6000, 900 + (corps.reponse || '').length * 12);
+                setTimeout(() => Koda.etat('repos'), duree);
+            }
         } catch (e) {
             ajouterMessage(`{% trans "La réponse n'a pas pu être obtenue." %}`, false);
+            if (window.Koda) Koda.etat('repos');
         } finally {
             chargement.hidden = true;
         }
@@ -495,7 +527,16 @@
         if (e.key === 'Escape') fermerPanneau();
     });
 
+    {% comment %} Koda écoute pendant la frappe, puis retourne au repos après un silence.
+       Le minuteur est remis à zéro à chaque touche : c'est le silence qui
+       compte, pas le temps écoulé depuis le premier caractère. {% endcomment %}
+    let silence = null;
     champ.addEventListener('input', () => {
+        if (window.Koda && Koda.instance && Koda.instance.etat() !== 'parle') {
+            Koda.etat('ecoute');
+            clearTimeout(silence);
+            silence = setTimeout(() => Koda.etat('repos'), 4000);
+        }
         champ.style.height = 'auto';
         champ.style.height = Math.min(champ.scrollHeight, 120) + 'px';
         try { localStorage.setItem(CLE_BROUILLON, champ.value); } catch (e) {}

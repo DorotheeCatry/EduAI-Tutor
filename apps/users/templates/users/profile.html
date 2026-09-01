@@ -178,6 +178,31 @@
                         </select>
                     </div>
 
+                    {% comment %}
+                    Réglage d'animation, indépendant de celui du système.
+
+                    Compétence visée : C17 (épreuve E4) — accessibilité
+                    Choix : un réglage propre à l'application EN PLUS du
+                    « mouvement réduit » du système, jamais à sa place. Ce
+                    dernier est respecté quoi qu'il arrive ; celui-ci permet de
+                    figer Koda sans changer un réglage qui vaut pour tout
+                    l'ordinateur, ou de le figer pour une autre raison — une
+                    animation dans le champ de vision peut simplement distraire.
+                    {% endcomment %}
+                    <div>
+                        <label for="animation-koda" class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="animation_koda" id="animation-koda" value="on"
+                                   {% if user.animation_koda %}checked{% endif %}
+                                   class="mt-1 w-4 h-4 rounded border-gray-600 bg-gray-900 text-primary-green focus:ring-1 focus:ring-primary-green">
+                            <span>
+                                <span class="block text-sm font-medium text-gray-300">{% trans "Animer Koda" %}</span>
+                                <span class="block text-xs text-gray-400 mt-1">
+                                    {% trans "Décocher fige le personnage du tuteur sur une image. Le réglage « mouvement réduit » de votre système est respecté dans tous les cas." %}
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+
                     <div class="flex justify-end space-x-4">
                         <a href="{% url 'courses:generator' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
                             {% trans "Cancel" %}
