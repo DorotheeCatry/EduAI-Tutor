@@ -188,13 +188,14 @@ l'absence se remarque, tandis qu'une alarme permanente s'apprend, et finit par
 ## Famille C — Écrit, joignable, jamais appelé
 
 Ouverte à deux occurrences le 31/08 au matin, **déclarée le soir même** par la
-troisième.
+troisième, et élargie le 01/09 par une quatrième d'une autre nature.
 
 | # | Ce qui était écrit | Ce qui manquait |
 |---|---|---|
 | — , 31/08 | `language_preference`, choisi et enregistré | rien ne le lisait pour l'interface ; seul l'orchestrateur d'agents le consultait, pour la langue des quiz générés |
 | — , 31/08 | `LANGUAGE_CODE = 'en'` avec un unique catalogue `fr` | aucune traduction n'était jamais appliquée |
 | 010, 31/08 | route, vue, orchestrateur, agent — la chaîne entière d'enregistrement d'un quiz | **aucun appel depuis le navigateur** |
+| — , 01/09 | un consumer WebSocket de 465 lignes, boucle de jeu complète | **une seconde implémentation, par sondage HTTP, faisait déjà le travail** |
 
 ### Le mécanisme commun
 
@@ -207,11 +208,43 @@ ont révélé qu'elle aurait échoué de trois façons si elle avait été appel
 jour — dont une comparaison de dates qui n'a jamais pu aboutir depuis que la
 méthode existe.
 
+### La variante où le code mort ment sur le produit
+
+La quatrième occurrence est d'une autre nature, et elle mérite d'être
+distinguée.
+
+Les trois premières étaient des **chemins oubliés** : quelque chose d'écrit que
+personne n'appelait, et dont l'absence d'effet finissait par se constater. La
+quatrième est un **doublon** : le quiz multijoueur avait deux implémentations
+parallèles, un consumer WebSocket et un sondage HTTP. La seconde tournait ; la
+première dormait.
+
+Or c'est la première qui attirait le regard — un consumer moderne, une boucle
+de jeu complète, un routage déclaré dans `asgi.py`. **Un lecteur du dépôt en
+aurait conclu que le multijoueur fonctionne en temps réel.** Il fonctionne,
+mais autrement, et par le chemin le moins flatteur.
+
+C'est ce qui rend cette variante plus grave : **le code mort ne ment plus
+seulement sur ce que le dépôt contient, il ment sur ce que le produit fait.**
+Un chemin oublié laisse une fonctionnalité absente — on finit par s'en
+apercevoir en l'utilisant. Un doublon dormant laisse une fonctionnalité
+présente, décrite par le mauvais code, et rien dans l'usage ne le révèle : le
+jeu marche.
+
+Un jury lisant ce dépôt aurait été trompé sans qu'aucune ligne soit fausse.
+
+La parade est la même, appliquée dans l'autre sens : après avoir demandé qui
+appelle un code, demander **si quelque chose d'autre fait déjà ce travail**.
+
 ### La question à poser
 
 > **Qui appelle ce code, et par quel chemin l'utilisateur y arrive-t-il ?**
 
 Si la réponse est « la fonction est là », ce n'est pas une réponse.
+
+> **Et quelque chose d'autre fait-il déjà ce travail ?**
+
+Deux réponses à la première question valent pire qu'aucune.
 
 ### La parade
 
