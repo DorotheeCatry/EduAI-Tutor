@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 15:45+0000\n"
+"POT-Creation-Date: 2026-09-01 16:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1007,6 +1007,11 @@ msgstr "Code de la salle"
 msgid "Copy Room Code"
 msgstr "Copier le code de la salle"
 
+#: apps/quiz/templates/quiz/room_detail.html:70
+#: apps/quiz/templates/quiz/room_detail.html:125
+msgid "Players"
+msgstr "Joueurs"
+
 #: apps/quiz/templates/quiz/room_detail.html:74
 msgid "Start Game"
 msgstr "Lancer la partie"
@@ -1701,11 +1706,11 @@ msgstr ""
 msgid "EduAI Tutor — plateforme d'apprentissage intelligente"
 msgstr ""
 
-#: templates/base.html:50
+#: templates/base.html:99
 msgid "Base template works!"
 msgstr "Le gabarit de base fonctionne."
 
-#: templates/base.html:51
+#: templates/base.html:100
 msgid "If you see this message, the base template is loaded correctly."
 msgstr "Si ce message s'affiche, le gabarit de base est bien chargé."
 
