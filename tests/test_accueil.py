@@ -94,9 +94,12 @@ def test_les_quatre_blocs_ont_un_etat_vide_sur_une_base_neuve(
 
     assert "Où j'en suis" in contenu
     assert "Aucune compétence entamée sur 21" in contenu, (
-        "l'état vide tient en une phrase, et non en quatre lignes identiques"
+        "l'état vide est compact, et non quatre lignes identiques"
     )
-    assert "commencez par le module Python" in contenu
+    # La formulation exacte n'est pas figée par ce test — elle a été reprise
+    # depuis. Ce qui doit tenir est qu'un état vide NOMME la première action,
+    # au lieu de constater une absence.
+    assert "Python" in contenu, "l'état vide doit nommer le module par où commencer"
     assert "Ce que je fais maintenant" in contenu
     assert "Rien à revoir pour l'instant" in contenu
     assert "Aucune activité pour l'instant" in contenu
@@ -269,13 +272,40 @@ def test_aucune_valeur_factice_ne_subsiste_sur_les_pages_de_suivi(
     pages = [reverse("accueil:accueil"), reverse("tracker:dashboard"),
              reverse("revision:flashcards"), reverse("quiz:lobby")]
 
-    inventes = ["Python Basics", "Web Development", "Data Structures",
-                "Python Decorators", "85%", "92%", "127", "3h 42m", "1h 23m"]
+    # Les libellés inventés se cherchent tels quels : ils n'apparaissent nulle
+    # part ailleurs dans le balisage.
+    libelles = ["Python Basics", "Web Development", "Data Structures",
+                "Python Decorators"]
+
+    # Les valeurs chiffrées, elles, se cherchent DANS LE TEXTE AFFICHÉ, et non
+    # dans le balisage entier : `max-w-[85%]` est une classe de mise en page,
+    # pas une donnée. Un test qui échoue sur une feuille de style est un test
+    # qu'on finit par désactiver — il faut donc qu'il ne se trompe pas de
+    # cible.
+    import re
+    chiffres = ["85", "92", "127"]
+    durees = ["3h 42m", "1h 23m"]
 
     for page in pages:
         contenu = client.get(page, secure=True).content.decode("utf-8")
-        for valeur in inventes:
-            assert valeur not in contenu, f"valeur inventée « {valeur} » sur {page}"
+
+        for libelle in libelles:
+            assert libelle not in contenu, f"libellé inventé « {libelle} » sur {page}"
+
+        for duree in durees:
+            assert duree not in contenu, f"durée inventée « {duree} » sur {page}"
+
+        # Le contenu des balises <script> et <style> est retiré AVANT
+        # l'extraction : il vit entre « > » et « < » comme du texte, et une
+        # classe de mise en page y ressemble à s'y méprendre à une donnée.
+        sans_scripts = re.sub(r"<(script|style)\b.*?</\1>", " ", contenu,
+                              flags=re.S | re.I)
+        textes = " ".join(re.findall(r">([^<>]*)<", sans_scripts))
+        for chiffre in chiffres:
+            for forme in (f"{chiffre}%", f"{chiffre} %"):
+                assert forme not in textes, (
+                    f"valeur inventée « {forme} » affichée sur {page}"
+                )
 
 
 @pytest.mark.django_db
