@@ -144,7 +144,7 @@ def test_aucun_etat_ne_designe_une_image_absente_de_la_planche():
     script = SCRIPT.read_text(encoding="utf-8")
     planches = json.loads(DESCRIPTEUR.read_text(encoding="utf-8"))
 
-    for jeu, planche in (("grosPlan", "gros_plan"), ("corps", "corps_entier")):
+    for jeu, planche in (("grosPlan", "gros_plan"),):
         debut = script.index("JEUX.%s = {" % jeu)
         table = script[debut:script.index("};", debut)]
         indices = [int(n) for n in re.findall(r"\b(\d+)\b", re.sub(

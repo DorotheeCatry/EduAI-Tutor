@@ -139,30 +139,29 @@
             <!-- Koda géant -->
             <div class="floating-animation relative z-0 w-full h-full flex">
                 {% comment %}
-                Koda salue à l'arrivée, servi par la planche de sprites et non
-                par un GIF.
+                Le salut d'accueil reste le GIF monté par l'illustratrice.
 
                 Compétence visée : C17 (épreuve E4)
                 Compétence concernée : C13 (E3) — accessibilité
 
-                Motivation : **un GIF s'anime quoi qu'il arrive.** Il ignore
-                `prefers-reduced-motion`, et c'est précisément la première
-                image que voit un visiteur — dont celui qui a demandé à son
-                système de réduire les animations. La planche, elle, se fige.
+                Une version en planche de sprites a été essayée et retirée : le
+                salut y jouait une fois puis basculait sur la séquence du saut,
+                qui n'est pas recalée sur celle du salut — d'où un changement
+                de pose brutal, puis une boucle hachée. Le GIF, lui, boucle le
+                geste tel qu'il a été monté. **Le montage d'origine vaut mieux
+                qu'un remontage.**
 
-                Elle est aussi plus légère : 261 Kio contre 470 pour le GIF
-                qu'elle remplace.
-
-                Aucun `data-animation` ici : à la connexion, personne n'est
-                identifié, donc son réglage de profil est inconnu. Le réglage
-                du système, lui, s'applique dans tous les cas.
+                Ce qui est conservé de l'essai : un GIF s'anime quoi qu'il
+                arrive, il ignore `prefers-reduced-motion`. Une image fixe le
+                remplace donc pour qui a demandé à réduire les animations —
+                c'est la première image que voit un visiteur.
                 {% endcomment %}
-                <div data-koda class="koda" data-jeu="corps"
-                     style="width:384px;height:427px;background-image:url('{% static 'img/koda/planches/koda-corps-entier.png' %}');background-size:3072px 2562px"
-                     data-colonnes="8" data-largeur="384" data-hauteur="427"
-                     data-etat-initial="salue"
-                     data-alt-salue="{% trans "EduAI Tutor waving" %}"
-                     role="img" aria-label="{% trans "EduAI Tutor waving" %}"></div>
+                <img src="{% static 'img/koda/animations/SALUTE.gif' %}"
+                    alt="{% trans "EduAI Tutor waving" %}"
+                    class="koda-anime w-[600px] h-[600px] object-contain" />
+                <img src="{% static 'img/koda/animations/SALUTE-fixe.png' %}"
+                    alt="{% trans "EduAI Tutor waving" %}"
+                    class="koda-fixe w-[600px] h-[600px] object-contain" />
             </div>
                 
                 <!-- Éléments décoratifs -->
@@ -191,6 +190,5 @@
             lucide.createIcons();
         });
     </script>
-<script src="{% static 'js/koda.js' %}" defer></script>
 </body>
 </html>

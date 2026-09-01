@@ -43,6 +43,7 @@ Lancement :
 """
 
 import json
+import sys
 from pathlib import Path
 
 from PIL import Image
@@ -185,14 +186,30 @@ def main():
 
     Compétence visée : C17 (épreuve E4)
     """
+    # Seule la planche que l'application sert est produite par défaut, et
+    # c'est la seule versionnée.
+    #
+    # Compétence visée : C21 (épreuve E5)
+    # Choix : ne pas livrer une planche que rien n'affiche. Motivation : ce
+    # projet a déjà payé le prix d'une ressource complète et inemployée — 465
+    # lignes de consumer WebSocket qui laissaient croire à une fonctionnalité
+    # (décision 031). Deux cent soixante Kio d'images qu'aucune page ne charge
+    # racontent la même histoire, en plus discret.
+    #
+    # `--tout` reconstruit les autres le jour où elles seront branchées.
+    a_produire = [("gros_plan", images_du_gros_plan, CADRE_GROS_PLAN,
+                   LARGEUR_GROS_PLAN, "koda-gros-plan.png")]
+    if "--tout" in sys.argv:
+        a_produire += [
+            ("corps_entier", images_du_corps_entier, CADRE_CORPS,
+             LARGEUR_CORPS, "koda-corps-entier.png"),
+            ("buste", images_du_buste, CADRE_BUSTE,
+             LARGEUR_BUSTE, "koda-buste.png"),
+        ]
     try:
         planches = {
-            "gros_plan": assembler(images_du_gros_plan(), CADRE_GROS_PLAN,
-                                   LARGEUR_GROS_PLAN, "koda-gros-plan.png"),
-            "corps_entier": assembler(images_du_corps_entier(), CADRE_CORPS,
-                                      LARGEUR_CORPS, "koda-corps-entier.png"),
-            "buste": assembler(images_du_buste(), CADRE_BUSTE,
-                               LARGEUR_BUSTE, "koda-buste.png"),
+            cle: assembler(images(), cadre, largeur, nom)
+            for cle, images, cadre, largeur, nom in a_produire
         }
     except FileNotFoundError as erreur:
         raise SystemExit("Assemblage impossible : %s" % erreur)

@@ -118,6 +118,53 @@ Elle est donc assemblée et disponible, écourtée à vingt images, **mais n'est
 branchée sur aucun événement** : elle est réservée au refus technique et au
 quota atteint, et l'y brancher reste une décision à prendre.
 
+## La règle enfreinte le jour même où elle a été écrite
+
+Cette décision énonce plus haut : *deux séquences ne peuvent pas se succéder
+dans un même emplacement sans un saut visible.* La planche en pied a pourtant
+été assemblée en enchaînant `SALUTE` puis le repos de `JUMPING`, et posée sur la
+page de connexion à la place du GIF.
+
+Retour de l'autrice : « on dirait qu'il fait une crise d'épilepsie ».
+
+Mesure faite après coup, avec le procédé qui avait servi à écrire la règle :
+
+| Comparaison | Écart résiduel |
+|---|---|
+| Deux frames voisines du salut | **0,0 %** |
+| Fin du salut → repos de `JUMPING`, au meilleur décalage | **30,2 %** |
+
+Et ce meilleur décalage déplace le personnage de 60 px à droite et 70 px vers
+le haut. Le saut n'était donc pas une impression : le geste se terminait par un
+changement de pose **et** de position, suivi d'une boucle hachée.
+
+**Le montage d'origine valait mieux qu'un remontage.** Le GIF est rétabli sur
+la page de connexion. Ce qui est conservé de l'essai : un GIF s'anime quoi
+qu'il arrive, il ignore `prefers-reduced-motion` — une image fixe de 18 Kio le
+remplace donc pour qui a demandé à réduire les animations.
+
+**Deux enseignements, et le second est le plus utile.** Écrire une règle ne
+protège pas de l'enfreindre : elle était dans le même document, à trois
+paragraphes de distance, et rédigée par la même main. Ce qui a rattrapé
+l'erreur n'est pas la règle mais l'œil de quelqu'un devant l'écran — et la
+mesure n'est venue qu'après, pour confirmer ce que le regard avait vu tout de
+suite.
+
+## Les planches inemployées ne sont plus livrées
+
+Le corps entier et le buste sont retirés du dépôt : rien ne les affiche.
+
+Ce projet a déjà payé le prix d'une ressource complète et inemployée — 465
+lignes de consumer WebSocket qui laissaient croire à une fonctionnalité
+existante (décision 031). Deux cent quatre-vingt-quinze kilooctets d'images
+qu'aucune page ne charge racontent la même histoire, en plus discret. La table
+d'états JavaScript qui les pilotait est retirée avec elles.
+
+`python theme/koda/composer_planches.py --tout` les reconstruit le jour où
+elles seront branchées — et il faudra alors **une planche par séquence**, pas
+une par famille de cadrage : `SALUTE` et `JUMPING` ne sont pas plus recalées
+entre elles que `NEUTRAL` et `SLEEPING`.
+
 ## Ce que ce choix laisse ouvert
 
 **Le bras levé disparaît** en passant du gros plan `NEUTRAL` à `SLEEPING` : les

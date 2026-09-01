@@ -40,3 +40,12 @@ html { scrollbar-gutter: stable; }
     .koda { background-position: 0 0 !important; }
 }
 .koda[data-animation="desactivee"] { background-position: 0 0 !important; }
+
+/* Un GIF s'anime quoi qu'il arrive : il ignore `prefers-reduced-motion`. Là où
+   l'application en sert un, une image fixe prend sa place pour qui a demandé à
+   réduire les animations. Voir la page de connexion. */
+.koda-fixe { display: none; }
+@media (prefers-reduced-motion: reduce) {
+    .koda-anime { display: none; }
+    .koda-fixe { display: block; }
+}
