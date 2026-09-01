@@ -7,6 +7,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% trans "EduAI Tutor — plateforme d'apprentissage intelligente" %}{% endblock %}</title>
     
+    {% comment %}
+    Squelette de la coquille, écrit en clair et servi avec le document.
+
+    Compétence visée : C17 (épreuve E4) — application web
+    Choix : dupliquer une dizaine de règles que Tailwind fournit déjà, plutôt
+    que de laisser la page sans style le temps que le CDN s'exécute.
+
+    Motivation, mesurée : le CDN de Tailwind n'est pas une feuille de style,
+    c'est un générateur qui tourne dans le navigateur. Il pèse 407 Kio, et il
+    lui faut environ 180 ms — cache chaud — avant que la moindre règle
+    s'applique. Pendant ce temps, `bg-gray-900` ne veut rien dire : le fond est
+    transparent donc peint en blanc, la coquille s'affiche en bloc au lieu
+    d'être en colonnes, et la barre latérale occupe 764 px au lieu de 64. Puis
+    tout se remet en place d'un coup. C'est le saut ressenti à chaque
+    changement de page — et il se produit à chaque page, puisque chaque
+    navigation est un chargement complet.
+
+    Ces règles-ci arrivent avec le document, donc avant le premier affichage.
+    Elles portent les mêmes noms et les mêmes valeurs que celles de Tailwind :
+    quand le générateur prend la main, il ne change rien à ce qui est déjà à
+    l'écran. Toute modification de la coquille doit être répercutée ici, faute
+    de quoi le saut revient — c'est le prix de cette duplication, et la raison
+    pour laquelle elle est limitée à la coquille.
+    {% endcomment %}
+    <style>
+        html, body { background: #111827; color: #fff; margin: 0; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-1 { flex: 1 1 0%; }
+        .flex-shrink-0 { flex-shrink: 0; }
+        .items-center { align-items: center; }
+        .h-screen { height: 100vh; }
+        .min-h-screen { min-height: 100vh; }
+        .min-w-0 { min-width: 0; }
+        .overflow-hidden { overflow: hidden; }
+        .w-16 { width: 4rem; }
+        .h-10 { height: 2.5rem; }
+        .h-6 { height: 1.5rem; }
+        .bg-gray-900 { background-color: #111827; }
+        .bg-gray-800 { background-color: #1f2937; }
+        /* Les icônes n'existent qu'une fois Lucide passé : sans réservation,
+           leur apparition décale la mise en page une seconde fois. */
+        [data-lucide] { display: inline-block; width: 1.25rem; height: 1.25rem; }
+        /* La barre de défilement ne doit pas naître et mourir d'une page à
+           l'autre : sa place est réservée en permanence. */
+        html { scrollbar-gutter: stable; }
+    </style>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
