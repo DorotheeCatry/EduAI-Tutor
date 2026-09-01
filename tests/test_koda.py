@@ -367,3 +367,35 @@ def test_les_boucles_de_fin_tiennent_dans_leurs_planches():
             "la planche %s compte %d images, la boucle en parcourt %d"
             % (planche, planches[planche]["images"], bornes)
         )
+
+
+def test_aucune_constante_du_script_n_est_employee_sans_etre_declaree():
+    """
+    Toute constante employée par `koda.js` y est déclarée.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    Trois constantes ont disparu du script en retirant un bloc voisin, et leurs
+    emplois sont restés. `Koda.brancher()` levait alors
+    `ETATS_EVEILLES is not defined` **au chargement de chaque page** : plus
+    aucun Koda n'était animé — ni la parole, ni l'assoupissement. Rien ne le
+    signalait, parce qu'une planche de sprites qui ne bouge pas affiche
+    simplement sa première image. Le personnage avait l'air en place.
+
+    `node --check` ne voit pas ce défaut : la syntaxe est valide. Seule
+    l'exécution le révèle, et ce test la remplace par une lecture.
+    """
+    source = SCRIPT.read_text(encoding="utf-8")
+    code = "\n".join(ligne for ligne in source.split("\n")
+                     if not ligne.strip().startswith(("*", "/*", "//")))
+
+    declarees = set(re.findall(r"var ([A-Z][A-Z_]+)\s*=", code))
+    employees = set(re.findall(r"\b([A-Z][A-Z_]{3,})\b", code))
+    # Les objets globaux du navigateur ne sont pas des constantes du script.
+    employees -= {"JSON", "Math", "Array"}
+
+    manquantes = sorted(employees - declarees)
+    assert manquantes == [], (
+        "employées sans être déclarées, le script lèvera au chargement : %s"
+        % manquantes
+    )

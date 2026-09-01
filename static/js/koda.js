@@ -64,6 +64,17 @@
         JEUX.bouderie.boude.boucle.push(i);
     }
 
+    /* Image affichée quand toute animation est refusée. */
+    var IMAGE_FIXE = 0;
+
+    /* Un clignement sur cinq devient un clin d'œil : c'est peu de chose, et
+     * c'est ce qui sépare un personnage d'une image qui bat des paupières. */
+    var CHANCE_DE_CLIN = 0.2;
+
+    /* Les états depuis lesquels Koda peut s'assoupir. Il ne s'endort pas au
+     * milieu d'une phrase. */
+    var ETATS_EVEILLES = ["repos", "ecoute"];
+
     function animer(element) {
         /* Un seul jeu d'images aujourd'hui. Le choix reste explicite : le jour
          * où une seconde planche est branchée, ses indices n'auront aucun sens
@@ -97,8 +108,21 @@
             return document.hidden || element.offsetParent === null;
         }
 
-        function arreter() {
+        /* Deux minuteurs, et il ne faut surtout pas les confondre.
+         *
+         * `minuteur` porte le battement de l'état courant : il est relancé à
+         * chaque image, donc annulé à chaque tour.
+         *
+         * `assoupissement` porte le compte à rebours vers le sommeil, qui doit
+         * traverser des dizaines de battements. Les annuler ensemble — ce que
+         * faisait ce code — remettait le compte à rebours à zéro à chaque
+         * clignement : Koda ne s'endormait jamais. */
+        function arreterLeBattement() {
             if (minuteur) { clearTimeout(minuteur); minuteur = null; }
+        }
+
+        function arreter() {
+            arreterLeBattement();
             if (assoupissement) { clearTimeout(assoupissement); assoupissement = null; }
         }
 
@@ -113,7 +137,7 @@
         }
 
         function tourner() {
-            arreter();
+            arreterLeBattement();
             var def = ETATS[etatCourant];
             if (!def) { return; }
 
@@ -121,7 +145,15 @@
                 poser(def.base !== undefined ? def.base : IMAGE_FIXE);
                 return;
             }
-            if (invisible()) { return; }
+            if (invisible()) {
+                /* Ni animation ni abandon : on repasse dans une seconde.
+                 * Sans cela, un Koda rendu invisible — panneau replié au
+                 * chargement, onglet en arrière-plan — ne repartait jamais,
+                 * puisque rien ne le rappelait quand il réapparaissait. Une
+                 * vérification par seconde ne peint rien et ne coûte rien. */
+                minuteur = setTimeout(tourner, 1000);
+                return;
+            }
 
             if (def.boucle) {
                 rang = (rang + 1) % def.boucle.length;
