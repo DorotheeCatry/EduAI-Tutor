@@ -560,3 +560,87 @@ def test_la_page_referentiel_compte_les_parties_multijoueur(client, hote, salle)
 
     assert page.context["quiz_termines"] == 1
     assert page.context["score_moyen"] == 100.0
+
+
+# --- Le salon d'attente ---------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_le_sondage_annonce_un_joueur_qui_vient_de_rejoindre(
+        client, hote, invitee, salle):
+    """
+    L'arrivée d'un joueur se voit sans recharger la page.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    Le compteur du salon ne bougeait pas, et le nouveau venu n'apparaissait
+    pas : le sondage n'actualisait que du texte, et le visait mal.
+    """
+    salle.status = "waiting"
+    salle.save()
+    GameParticipant.objects.create(room=salle, user=hote)
+    client.force_login(hote)
+    url = reverse("quiz:room_status_api", args=[salle.code])
+
+    avant = client.get(url, secure=True).json()
+    assert avant["player_count"] == 1
+
+    GameParticipant.objects.create(room=salle, user=invitee)
+    apres = client.get(url, secure=True).json()
+
+    assert apres["player_count"] == 2
+    assert [p["username"] for p in apres["participants"]] == ["hote", "invitee"], (
+        "le sondage doit nommer les joueurs, pas seulement les compter"
+    )
+
+
+def test_le_salon_ne_designe_pas_son_titre_par_sa_position():
+    """
+    Le titre des joueurs est atteint par identifiant, jamais par position.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    `document.querySelector('h3')` rend le PREMIER h3 de la page — celui des
+    réglages de la partie. Le sondage réécrivait donc « Réglages » toutes les
+    deux secondes, pendant que le nombre de joueurs ne bougeait jamais.
+    """
+    gabarit = (
+        Path("apps/quiz/templates/quiz/room_detail.html")
+        .read_text(encoding="utf-8")
+    )
+
+    # Les lignes de commentaire sont écartées : celle qui décrit le défaut le
+    # cite forcément, et un test qui s'y déclenche interdit d'expliquer ce
+    # qu'on a corrigé.
+    code = [ligne for ligne in gabarit.split("\n")
+            if not ligne.strip().startswith("//")]
+
+    assert "querySelector('h3')" not in "\n".join(code), (
+        "un sélecteur de balise nue désigne le premier élément venu"
+    )
+    assert 'id="titre-joueurs"' in gabarit
+    assert 'getElementById(\'titre-joueurs\')' in gabarit
+
+
+def test_le_podium_ne_peut_etre_recouvert_par_aucun_affichage_tardif():
+    """
+    Rien ne s'affiche par-dessus le podium une fois la partie close.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    Le podium apparaissait puis disparaissait au bout de deux secondes : le
+    sondage du classement prononçait la fin pendant que l'affichage de la
+    correction attendait encore son délai, et l'attente venait recouvrir le
+    podium — que plus rien ne ramenait, la partie étant déjà marquée finie.
+    """
+    gabarit = (
+        Path("apps/quiz/templates/quiz/multiplayer_game.html")
+        .read_text(encoding="utf-8")
+    )
+
+    for fonction in ("attendreLaFinDeLaPartie", "showQuestion"):
+        debut = gabarit.index("function %s(" % fonction)
+        entete = gabarit[debut:debut + 700]
+        assert "if (gameFinished)" in entete, (
+            "%s doit renoncer si la partie est déjà close" % fonction
+        )

@@ -238,6 +238,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showQuestion(question) {
+        // Rien ne s'affiche par-dessus un podium. Un sondage en vol peut
+        // encore rendre une question après la fin de la partie ; le podium
+        // resterait alors quelques secondes avant d'être remplacé, ce qui est
+        // exactement le défaut que l'attente serveur devait supprimer.
+        if (gameFinished) {
+            return;
+        }
+
         console.log('📝 Showing question:', question.number);
         
         currentQuestionNumber = question.number;
@@ -536,6 +544,16 @@ document.addEventListener('DOMContentLoaded', function () {
      * `finished`.
      */
     function attendreLaFinDeLaPartie() {
+        // La partie peut déjà être close : le sondage du classement tourne
+        // toutes les deux secondes, tandis que cette fonction est appelée deux
+        // secondes après la correction de la dernière question. Si l'autre
+        // joueur avait déjà répondu, le podium est affiché — et sans cette
+        // garde, l'attente le recouvrait aussitôt, sans que rien ne le
+        // ramène : le sondage ne rappelle `showFinalResults` que tant que la
+        // partie n'est pas marquée finie.
+        if (gameFinished) {
+            return;
+        }
         if (pollInterval) clearInterval(pollInterval);
         clearInterval(timer);
 
