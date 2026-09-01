@@ -53,6 +53,17 @@
         reveil: { unique: [36, 35, 34, 33], cadence: 80, puis: "repos" }
     };
 
+    /* Fin de partie. Une planche par séquence, jouée en boucle entière : ni
+     * l'une ni l'autre n'enchaîne quoi que ce soit, et c'est délibéré — deux
+     * séquences ne sont pas recalées entre elles (décision 035). Les deux
+     * bouclent d'elles-mêmes, leur dernière image rejoignant la première. */
+    JEUX.joie = { fete: { boucle: [], cadence: 40 } };
+    JEUX.bouderie = { boude: { boucle: [], cadence: 40 } };
+    for (var i = 0; i < 48; i += 1) {
+        JEUX.joie.fete.boucle.push(i);
+        JEUX.bouderie.boude.boucle.push(i);
+    }
+
     function animer(element) {
         /* Un seul jeu d'images aujourd'hui. Le choix reste explicite : le jour
          * où une seconde planche est branchée, ses indices n'auront aucun sens

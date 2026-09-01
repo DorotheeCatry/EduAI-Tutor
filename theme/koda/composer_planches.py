@@ -43,7 +43,6 @@ Lancement :
 """
 
 import json
-import sys
 from pathlib import Path
 
 from PIL import Image
@@ -59,8 +58,8 @@ SORTIE = RACINE / "static" / "img" / "koda" / "planches"
 # échantillonnées coupait les têtes et les bras levés du salut : c'est le
 # mouvement qui déborde, pas la pose de départ.
 CADRE_GROS_PLAN = (410, 140, 1410, 960)
-CADRE_BUSTE = (409, 43, 1476, 938)
-CADRE_CORPS = (537, 0, 1481, 1050)
+CADRE_BOUDERIE = (409, 43, 1476, 938)
+CADRE_JOIE = (537, 0, 1481, 1050)
 
 # Zone des yeux, obtenue par différence entre une frame aux yeux ouverts et une
 # frame aux yeux fermés, puis élargie de quelques pixels.
@@ -68,8 +67,8 @@ YEUX = (730, 350, 1150, 570)
 YEUX_GAUCHE = (730, 350, 945, 570)
 
 LARGEUR_GROS_PLAN = 192
-LARGEUR_BUSTE = 192
-LARGEUR_CORPS = 384
+LARGEUR_BOUDERIE = 240
+LARGEUR_JOIE = 240
 COULEURS = 64
 COLONNES = 8
 
@@ -136,25 +135,35 @@ def images_du_gros_plan():
     return images
 
 
-def images_du_corps_entier():
-    """Salut et réjouissance : les deux séquences en pied."""
-    salut = [frame("SALUTE_GIF", i) for i in range(1, 25)]
-    joie = [frame("JUMPING_GIF", i) for i in range(1, 32, 2)]
-    repos = [frame("JUMPING_GIF", i) for i in range(33, 49, 2)]
-    return salut + joie + repos
-
-
-def images_du_buste():
+def images_de_la_joie():
     """
-    La contrariété, écourtée.
+    La réjouissance : la séquence du saut, entière.
 
     Compétence visée : C17 (épreuve E4)
-    Choix : vingt frames sur quarante-huit, et réservée au refus technique.
-    Motivation : la séquence montre un personnage qui crie, poings serrés. La
-    servir quand un apprenant se trompe ferait dire au tuteur qu'il est en
-    colère contre lui — voir décision 035.
+    Choix : la séquence complète, en boucle, et rien d'autre dans la planche.
+    Motivation : une première version enchaînait le salut puis le repos du
+    saut — deux séquences dont les silhouettes diffèrent de 30 % au meilleur
+    recalage, avec un déplacement de 60 px. Le personnage sautait d'une pose à
+    l'autre (décision 035). `JUMPING` revient exactement à sa pose de départ
+    entre sa première et sa dernière image : elle boucle d'elle-même.
     """
-    return [frame("ANGRY_TALKING_GIF", i) for i in range(1, 21)]
+    return [frame("JUMPING_GIF", i) for i in range(1, 49)]
+
+
+def images_de_la_bouderie():
+    """
+    La contrariété, entière et bouclée.
+
+    Compétence visée : C17 (épreuve E4)
+    Choix : employée à la fin d'une partie perdue, accompagnée d'une phrase où
+    Koda se plaint d'avoir perdu SON pari — jamais de la performance de
+    l'apprenant. Motivation : la séquence montre un personnage qui crie, poings
+    serrés. Servie seule, elle fait dire au tuteur qu'il est en colère contre
+    l'apprenant ; servie avec « j'avais parié avec les autres Koda que t'étais
+    le meilleur », elle dit exactement l'inverse. C'est la phrase qui décide de
+    ce que montre l'image (décision 037).
+    """
+    return [frame("ANGRY_TALKING_GIF", i) for i in range(1, 49)]
 
 
 # --- 3. Assemblage et sauvegarde ------------------------------------------
@@ -186,8 +195,7 @@ def main():
 
     Compétence visée : C17 (épreuve E4)
     """
-    # Seule la planche que l'application sert est produite par défaut, et
-    # c'est la seule versionnée.
+    # Une planche par séquence, et seulement celles que l'application sert.
     #
     # Compétence visée : C21 (épreuve E5)
     # Choix : ne pas livrer une planche que rien n'affiche. Motivation : ce
@@ -196,16 +204,14 @@ def main():
     # (décision 031). Deux cent soixante Kio d'images qu'aucune page ne charge
     # racontent la même histoire, en plus discret.
     #
-    # `--tout` reconstruit les autres le jour où elles seront branchées.
-    a_produire = [("gros_plan", images_du_gros_plan, CADRE_GROS_PLAN,
-                   LARGEUR_GROS_PLAN, "koda-gros-plan.png")]
-    if "--tout" in sys.argv:
-        a_produire += [
-            ("corps_entier", images_du_corps_entier, CADRE_CORPS,
-             LARGEUR_CORPS, "koda-corps-entier.png"),
-            ("buste", images_du_buste, CADRE_BUSTE,
-             LARGEUR_BUSTE, "koda-buste.png"),
-        ]
+    a_produire = [
+        ("gros_plan", images_du_gros_plan, CADRE_GROS_PLAN,
+         LARGEUR_GROS_PLAN, "koda-gros-plan.png"),
+        ("joie", images_de_la_joie, CADRE_JOIE,
+         LARGEUR_JOIE, "koda-joie.png"),
+        ("bouderie", images_de_la_bouderie, CADRE_BOUDERIE,
+         LARGEUR_BOUDERIE, "koda-boude.png"),
+    ]
     try:
         planches = {
             cle: assembler(images(), cadre, largeur, nom)

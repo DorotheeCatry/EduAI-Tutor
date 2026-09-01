@@ -285,3 +285,85 @@ def test_la_salutation_ne_depense_aucune_generation():
         assert interdit not in source, (
             "la salutation doit être assemblée localement, pas engendrée"
         )
+
+
+# --- Ce que Koda dit à la fin d'une partie --------------------------------
+
+
+JEU = Path("apps/quiz/templates/quiz/multiplayer_game.html")
+
+
+def test_les_deux_issues_ont_plusieurs_phrases_traduisibles():
+    """
+    Ce que Koda dit varie, et passe par les catalogues.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Une seule phrase par issue serait vue deux fois et cesserait d'amuser.
+    Un texte écrit en dur dans le script ne serait jamais traduit.
+    """
+    gabarit = JEU.read_text(encoding="utf-8")
+
+    for prefixe, issue in (("t_gagne", "vainqueur"), ("t_perd", "perdant")):
+        declarees = re.findall(r"\{%\s*trans\s+\"[^\"]+\"\s+as\s+" + prefixe + r"\d+\s*%\}",
+                               gabarit)
+        assert len(declarees) >= 3, (
+            "il faut plusieurs phrases pour le %s, il y en a %d"
+            % (issue, len(declarees))
+        )
+
+
+def test_koda_ne_reproche_rien_au_perdant():
+    """
+    Les phrases de défaite portent sur le pari de Koda, pas sur l'apprenant.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+
+    La séquence employée montre un personnage qui crie, poings serrés. Servie
+    seule, elle dit au perdant que le tuteur est en colère contre lui. C'est la
+    phrase qui décide contre qui — et aucune ne doit désigner sa performance.
+    """
+    gabarit = JEU.read_text(encoding="utf-8")
+    phrases = re.findall(r"\{%\s*trans\s+\"([^\"]+)\"\s+as\s+t_perd\d+\s*%\}", gabarit)
+
+    assert phrases, "les phrases de défaite doivent être déclarées"
+    for phrase in phrases:
+        minuscule = phrase.lower()
+        for reproche in ("nul", "mauvais", "raté", "déçu", "révise", "concentre"):
+            assert reproche not in minuscule, (
+                "« %s » reproche quelque chose au perdant" % phrase
+            )
+
+
+def test_le_koda_de_fin_de_partie_est_decoratif():
+    """
+    L'issue de la partie est lisible sans l'image.
+
+    Compétence visée : C13 (épreuve E3) — accessibilité
+    """
+    gabarit = JEU.read_text(encoding="utf-8")
+    fin = gabarit[gabarit.index("function showFinalResults"):]
+
+    assert 'aria-hidden="true"' in fin, "le personnage de fin est décoratif"
+    assert "${mot}" in fin, "la phrase doit être du texte, pas seulement une image"
+    assert "construirePodium" in fin, "le classement reste affiché"
+
+
+def test_les_boucles_de_fin_tiennent_dans_leurs_planches():
+    """
+    Les deux séquences de fin sont parcourues jusqu'à leur dernière image, pas au-delà.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+    """
+    script = SCRIPT.read_text(encoding="utf-8")
+    planches = json.loads(DESCRIPTEUR.read_text(encoding="utf-8"))
+
+    borne = re.search(r"for \(var i = 0; i < (\d+); i \+= 1\)", script)
+    assert borne, "la boucle de remplissage doit être lisible"
+    bornes = int(borne.group(1))
+
+    for planche in ("joie", "bouderie"):
+        assert planches[planche]["images"] == bornes, (
+            "la planche %s compte %d images, la boucle en parcourt %d"
+            % (planche, planches[planche]["images"], bornes)
+        )
