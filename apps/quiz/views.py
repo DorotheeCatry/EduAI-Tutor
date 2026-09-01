@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import JsonResponse
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.agents.agent_watcher import UserMistake
 from apps.chat.actions import actions_pour
 from apps.referentiel.services import (
     competence_par_code,
@@ -70,12 +72,19 @@ def quiz_lobby(request):
 def create_room(request):
     """Create a new game room"""
     if request.method == 'POST':
-        topic = request.POST.get('topic', 'General Python')
+        # Rattachement au référentiel par choix explicite, comme en solo et
+        # pour les exercices (décision 027). Quand une compétence est choisie,
+        # son intitulé devient le sujet de la partie : les deux désignent alors
+        # la même chose par construction.
+        competence = competence_par_code(request.POST.get('competence', '').strip())
+        topic = (competence.intitule if competence
+                 else request.POST.get('topic', 'General Python'))
         num_questions = int(request.POST.get('num_questions', 10))
         max_players = int(request.POST.get('max_players', 20))
         
         # Create room
         room = GameRoom.objects.create(
+            competence=competence,
             code=GameRoom.generate_code(),
             host=request.user,
             topic=topic,
@@ -93,7 +102,9 @@ def create_room(request):
                               % {"code": room.code})
         return redirect('quiz:room_detail', room_code=room.code)
     
-    return render(request, 'quiz/create_room.html')
+    return render(request, 'quiz/create_room.html', {
+        'competences_par_module': competences_du_referentiel_actif(),
+    })
 
 @login_required
 def start_multiplayer_game(request, room_code):
@@ -130,6 +141,18 @@ def start_multiplayer_game(request, room_code):
             # Update room status
             room.status = 'in_progress'
             room.current_question = 1
+            # Départ du chronomètre, côté serveur.
+            #
+            # Compétence visée : C17 (épreuve E4)
+            #
+            # Le temps de réponse était fourni par le navigateur —
+            # `data.get('response_time', 60)`. Il mesurait donc la latence du
+            # réseau et la vitesse de la machine autant que la rapidité de la
+            # personne, et n'importe qui pouvait annoncer 0,1 seconde depuis
+            # une console. Un classement falsifiable en une ligne n'est pas un
+            # classement, et l'écart ne portait pas seulement sur l'exactitude :
+            # sur l'équité entre participants.
+            room.question_start_time = timezone.now()
             room.save()
             
             messages.success(request, _("Game started! %(nombre)s questions generated.")
@@ -213,10 +236,23 @@ def room_status_api(request, room_code):
     try:
         room = get_object_or_404(GameRoom, code=room_code)
         
-        # Vérifier que l'utilisateur est dans la room
-        # Garde d'accès, comme ci-dessus.
-        GameParticipant.objects.get(room=room, user=request.user, is_active=True)
-        
+        # Garde d'accès — SANS exiger `is_active`.
+        #
+        # Compétence visée : C17 (épreuve E4)
+        #
+        # Exiger un participant actif refusait l'entrée à quiconque revenait
+        # après une coupure : la page de jeu répondait « vous n'êtes pas
+        # autorisé » à sa propre partie. Le retour est ici la règle, pas
+        # l'exception — un onglet fermé, un portable en veille, un réseau qui
+        # saute.
+        moi = GameParticipant.objects.get(room=room, user=request.user)
+        if not moi.is_active:
+            moi.is_active = True
+        # Ce sondage EST le battement de cœur : il a lieu toutes les deux
+        # secondes tant que la page est ouverte.
+        moi.derniere_activite = timezone.now()
+        moi.save(update_fields=['is_active', 'derniere_activite'])
+
         participants = room.participants.filter(is_active=True).order_by('-score', 'joined_at')
         
         participants_data = []
@@ -257,9 +293,16 @@ def multiplayer_quiz_api(request, room_code):
     room = get_object_or_404(GameRoom, code=room_code)
     
     try:
-        participant = GameParticipant.objects.get(room=room, user=request.user, is_active=True)
+        # `is_active` n'est pas exigé : un participant qui revient doit
+        # retrouver sa partie, à la question en cours.
+        participant = GameParticipant.objects.get(room=room, user=request.user)
     except GameParticipant.DoesNotExist:
         return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    if not participant.is_active:
+        participant.is_active = True
+    participant.derniere_activite = timezone.now()
+    participant.save(update_fields=['is_active', 'derniere_activite'])
     
     if request.method == 'GET':
         # Récupérer la question actuelle
@@ -301,9 +344,20 @@ def multiplayer_quiz_api(request, room_code):
         
         data = json.loads(request.body)
         answer_index = data.get('answer')
-        response_time = data.get('response_time', 60)
-        
-        print(f"📊 Answer: {answer_index}, Response time: {response_time}s")
+
+        # Le temps de réponse est CALCULÉ ICI, à partir de l'horodatage posé
+        # par le serveur au moment où la question a été servie. La valeur
+        # envoyée par le navigateur, s'il en envoie une, n'est pas lue.
+        #
+        # Repli sur la durée maximale quand l'horodatage manque — parties
+        # lancées avant ce correctif. Un repli haut plutôt que bas : il ne
+        # donne aucun point immérité, là où un repli à zéro en donnerait le
+        # maximum.
+        if room.question_start_time:
+            ecoule = (timezone.now() - room.question_start_time).total_seconds()
+            response_time = max(0.0, min(ecoule, 60.0))
+        else:
+            response_time = 60.0
         
         try:
             current_question = GameQuestion.objects.get(
@@ -340,22 +394,62 @@ def multiplayer_quiz_api(request, room_code):
             participant.score += points
             if game_answer.is_correct:
                 participant.correct_answers += 1
+            else:
+                # Une mauvaise réponse alimente le bloc « à revoir », comme en
+                # solo (décision 028).
+                #
+                # Compétence visée : C17 (épreuve E4), C20 (E5)
+                #
+                # Sans cela, une partie multijoueur ne laissait AUCUNE trace
+                # dans le parcours : ni progression — c'est voulu, un quiz ne
+                # certifie pas une production — ni lacune signalée, ce qui
+                # l'était moins. Une partie se terminait sans que rien n'en
+                # subsiste pour l'apprenant.
+                options = current_question.options or []
+                donnee = (options[answer_index]
+                          if isinstance(answer_index, int)
+                          and 0 <= answer_index < len(options)
+                          else 'Sans réponse')
+                attendue = (options[current_question.correct_answer]
+                            if 0 <= current_question.correct_answer < len(options)
+                            else '')
+                UserMistake.objects.create(
+                    user=request.user,
+                    topic=room.topic,
+                    competence=room.competence,
+                    mistake_type='quiz_multijoueur',
+                    question=current_question.question_text,
+                    user_answer=donnee,
+                    correct_answer=attendue,
+                )
             participant.save()
             
-            # Vérifier si tous les joueurs ont répondu
-            active_players = room.participants.filter(is_active=True).count()
+            # La partie attend les PRÉSENTS, pas les inscrits.
+            #
+            # Compétence visée : C17 (épreuve E4)
+            #
+            # Elle comptait les participants marqués actifs — un drapeau que
+            # rien ne remettait à faux sur cette voie. Un joueur qui fermait
+            # son onglet bloquait donc la partie pour tous les autres,
+            # indéfiniment, en attendant une réponse qui ne viendrait jamais.
+            # La présence se déduit désormais du dernier sondage.
+            joueurs_presents = sum(
+                1 for p in room.participants.filter(is_active=True) if p.est_present
+            )
             answered_players = GameAnswer.objects.filter(
                 question=current_question
             ).count()
-            
-            all_answered = answered_players >= active_players
+
+            all_answered = answered_players >= max(1, joueurs_presents)
             
             print(f"📈 Updated participant score: {participant.score}")
-            print(f"👥 All answered: {all_answered} ({answered_players}/{active_players})")
+            print(f"👥 All answered: {all_answered} ({answered_players}/{joueurs_presents})")
             
             # Move to next question if all answered
             if all_answered and room.current_question < room.num_questions:
                 room.current_question += 1
+                # Le chronomètre repart avec la question, côté serveur.
+                room.question_start_time = timezone.now()
                 room.save()
                 print(f"➡️ Moving to question {room.current_question}")
             elif all_answered and room.current_question >= room.num_questions:
@@ -387,12 +481,17 @@ def multiplayer_game(request, room_code):
     """Multiplayer game interface"""
     room = get_object_or_404(GameRoom, code=room_code)
     
-    # Check that user is participant
+    # Le retour d'un participant est la règle, pas l'exception : exiger
+    # `is_active` renvoyait vers le salon quiconque revenait après une coupure.
     try:
-        participant = GameParticipant.objects.get(room=room, user=request.user, is_active=True)
+        participant = GameParticipant.objects.get(room=room, user=request.user)
     except GameParticipant.DoesNotExist:
         messages.error(request, _('You are not authorized to access this game.'))
         return redirect('quiz:lobby')
+
+    if not participant.is_active:
+        participant.is_active = True
+        participant.save(update_fields=['is_active'])
     
     context = {
         'room': room,

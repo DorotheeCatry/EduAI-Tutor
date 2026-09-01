@@ -640,3 +640,49 @@ réécrit en silence.
 Aucun autre `@csrf_exempt` ne subsiste — vérifié **après** l'avoir écrit, cette
 fois, par `grep -rn "^@csrf_exempt" apps/`. La réserve est conservée pour que
 la quatrième occurrence, si elle vient, soit reconnue comme telle.
+
+---
+
+## 15. Supprimer un compte hôte efface les réponses de tous les participants
+
+**Composant :** `apps/quiz/models.py`, `GameRoom.host`
+**Nature :** effacement en cascade au-delà des données du compte supprimé
+**Statut :** **ouverte**, non corrigée à dessein
+
+```python
+host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hosted_rooms')
+```
+
+Supprimer un compte efface ses salles ; effacer une salle efface ses
+participants, ses questions et ses réponses — **y compris celles des autres
+personnes**. Une partie à dix joueurs disparaît parce que son hôte a exercé son
+droit à l'effacement.
+
+### Ce que cela touche vraiment
+
+La route de suppression de compte, ouverte le 29/08 pour le RGPD, est un chemin
+d'exécution réel de cette cascade. Un apprenant qui supprime son compte détruit
+donc, sans le savoir, des données d'apprentissage appartenant à d'autres — dont
+les erreurs qui alimentaient leur bloc « à revoir ».
+
+L'écran de confirmation annonce ce qui sera supprimé, et il cite déjà « la
+suppression des salles de quiz que vous avez hébergées retire aussi les
+réponses des autres participants ». **La conséquence est donc annoncée, ce qui
+la rend loyale — pas souhaitable.**
+
+### Pourquoi ce n'est pas corrigé
+
+Rendre l'hôte nullable, ou basculer en `SET_NULL`, change le comportement du
+jeu : une salle sans hôte doit décider qui peut la lancer, la supprimer,
+l'arrêter. C'est une règle de jeu à écrire, pas un attribut à changer.
+
+**Même arbitrage que pour l'effacement de compte, et pour la même raison** :
+toucher au comportement à quelques jours du rendu, sans le temps d'en mesurer
+les effets, coûte plus que la réserve.
+
+### À faire après le 14 septembre
+
+Passer `host` en `SET_NULL`, et décider ce qu'est une salle sans hôte —
+probablement : consultable, non relançable, supprimable par n'importe quel
+participant après un délai. Les parties terminées n'ont de toute façon plus
+besoin d'un hôte.
