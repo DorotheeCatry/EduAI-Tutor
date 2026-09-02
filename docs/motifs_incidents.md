@@ -225,6 +225,39 @@ vérification. Ici, la réponse était « en partie » — l'exclusion des quiz 
 progression était bien une décision consignée, l'invisibilité du compteur n'en
 était pas une.
 
+### La variante où l'outil de mesure mesure autre chose — 02/09
+
+Avant de collecter la sixième source, chaque cible a été vérifiée :
+`robots.txt` accessible, accès autorisé pour notre agent. Deux cibles sont
+ressorties **interdites** — `fastapi.tiangolo.com` et `git-scm.com`. Elles
+allaient être écartées sur ce constat.
+
+Le constat était faux. `urllib.robotparser` télécharge le `robots.txt` **avec
+son propre agent**, `Python-urllib/3.x`, que ces sites refusent. Le refus
+portait donc sur *le téléchargement du fichier de règles*, jamais sur les pages
+que ces règles autorisent. Refait en récupérant le fichier avec l'agent du
+projet, puis en le passant à `parse()` : les deux cibles sont autorisées.
+
+**L'instrument ne mesurait pas ce qu'il annonçait.** Il annonçait « ce site
+interdit-il notre agent ? » et répondait en réalité « ce site répond-il à
+l'agent d'urllib ? ». Rien n'échouait : la fonction rendait `False`, une valeur
+parfaitement valide, et `False` veut dire « n'y allez pas ».
+
+Ce qui rend cette variante particulière : **le défaut poussait à la prudence.**
+Une mesure fausse qui aurait poussé à collecter sans droit se serait vue tôt ou
+tard ; celle-ci aurait fait renoncer à deux sources licites, et personne
+n'aurait rien remarqué — un périmètre plus petit ne se signale pas.
+
+### La cinquième question, ajoutée le 02/09
+
+> **Quand un contrôle interdit quelque chose, l'outil a-t-il posé la question
+> que je crois ?**
+
+Un contrôle qui autorise se vérifie tout seul : on s'en aperçoit si l'accès
+échoue. Un contrôle qui interdit ne se vérifie jamais, parce qu'on renonce.
+**Un refus doit donc être vérifié aussi soigneusement qu'une autorisation** —
+ici, en refaisant la mesure par un autre chemin.
+
 ---
 
 ## Famille C — Écrit, joignable, jamais appelé

@@ -844,3 +844,33 @@ explicite sur ce que « un jour » veut dire pour quelqu'un qui travaille à
 cheval sur minuit — soit retirer le champ et le bonus qui en dépend. La
 troisième voie, le laisser tel quel, est celle qui a failli produire un
 mensonge.
+
+---
+
+## 20. Le périmètre de S6 épingle PyTorch 2.13 dans un corpus qui ne se périme pas
+
+**Compétence concernée :** C1 (épreuve E1) — collecte ; C21 (E5)
+**Statut :** consignée, assumée
+
+`pytorch.org/docs/stable/` ne sert pas de documentation : c'est une page de
+redirection en JavaScript, **quarante-cinq caractères de texte**, qui renvoie
+vers une URL versionnée. La collecte vise donc `docs.pytorch.org/docs/2.13/`.
+
+Le corpus, lui, ne porte aucune notion de version. Les fragments collectés
+diront « PyTorch » sans dire « 2.13 », et **rien ne signalera leur péremption**
+quand la bibliothèque évoluera. Un apprenant recevra en 2027 une signature de
+fonction exacte pour 2026.
+
+### Pourquoi ce n'est pas corrigé
+
+Versionner le corpus demande de décider ce qu'on fait des fragments périmés :
+les supprimer, les marquer, les laisser en les datant. C'est une question de
+conception, pas un champ à ajouter — et elle vaut pour les six cibles, pas pour
+la seule qui rend le problème visible.
+
+### À faire après le 14 septembre
+
+Porter la version de la source dans les métadonnées du fragment, au même titre
+que la licence et l'attribution qui y voyagent déjà. Puis décider d'une règle
+de péremption. La date de collecte, elle, est déjà enregistrée : c'est un point
+de départ.
