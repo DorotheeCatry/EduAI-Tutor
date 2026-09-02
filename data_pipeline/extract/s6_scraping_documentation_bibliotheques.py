@@ -117,7 +117,14 @@ CIBLES: tuple[Cible, ...] = (
         pages=("tutorial-select.html", "tutorial-join.html", "tutorial-agg.html",
                "tutorial-update.html", "ddl-constraints.html", "indexes-intro.html",
                "queries-table-expressions.html", "functions-aggregate.html",
-               "transaction-iso.html", "performance-tips.html"),
+               "transaction-iso.html",
+               # `performance-tips.html` a d'abord été retenue, puis écartée :
+               # c'est le sommaire du chapitre 14, 884 caractères dont 603 de
+               # table des matières. Le contrôle de périmètre avait vérifié
+               # qu'elle répondait, pas qu'elle contenait quelque chose.
+               # `using-explain.html` la remplace — lire un plan d'exécution
+               # relève directement de C2, les optimisations documentées.
+               "using-explain.html"),
     ),
     Cible(
         cle="scikit-learn",

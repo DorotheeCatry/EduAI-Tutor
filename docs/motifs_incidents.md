@@ -225,6 +225,37 @@ vérification. Ici, la réponse était « en partie » — l'exclusion des quiz 
 progression était bien une décision consignée, l'invisibilité du compteur n'en
 était pas une.
 
+### Un 200 ne dit rien de ce qu'il y a derrière — 02/09
+
+Avant de soumettre le périmètre de la sixième source, les 58 pages proposées ont
+été vérifiées une à une. Résultat annoncé : « 58 pages sur 58 répondent ». Le
+périmètre a été validé sur cette base.
+
+À la collecte, une page n'a rien produit. `performance-tips.html` est le
+**sommaire du chapitre 14** de la documentation PostgreSQL : 884 caractères,
+dont 603 de table des matières. Elle répondait parfaitement — elle ne contenait
+rien.
+
+**Le contrôle mesurait la disponibilité quand la question était la présence de
+contenu.** Un code 200 dit qu'une adresse existe ; il ne dit pas qu'il y a
+quelque chose derrière. La vérification était juste et la conclusion ne l'était
+pas, parce que la conclusion portait sur autre chose que la mesure.
+
+Ce qui a sauvé le cas : **l'extracteur a signalé la page au moment où elle a
+échoué** — « aucune section trouvée sur … » — au lieu de la sauter en silence.
+Sans cette ligne de journal, il aurait manqué une page sur quatre-vingt-onze,
+et rien n'aurait attiré l'œil sur un total de 1 004 documents.
+
+### La septième question, ajoutée le 02/09
+
+> **Ce contrôle mesure-t-il l'existence, ou la substance ?**
+
+Elle se pose partout où l'on vérifie une ressource avant de s'en servir : une
+page, un fichier, une table, un point de terminaison. Répondre n'est pas
+contenir. Le remède est de mesurer la même grandeur que celle sur laquelle on
+va décider — ici, le volume de texte utile, qu'il aurait suffi de relever en
+même temps que le code de retour.
+
 ### Deux grandeurs qui portent le même nom — 02/09
 
 Le dimensionnement de la sixième source demandait d'estimer combien de
