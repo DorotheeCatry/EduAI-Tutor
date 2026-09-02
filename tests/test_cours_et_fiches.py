@@ -527,9 +527,7 @@ def test_la_page_offre_le_chat_et_la_cellule_pas_des_boutons(
     page = client.get(reverse("courses:page_de_cours", args=[competence.code]),
                       secure=True).content.decode()
 
-    # Le chat est le composant du tuteur, ancré dans la colonne : c'est son
-    # fil de messages qu'on cherche, pas celui d'un chat écrit pour la page.
-    assert 'id="tuteur-messages"' in page, "le chat de Koda"
+    assert 'id="koda-echanges"' in page, "le chat de Koda"
     assert 'id="cellule-code"' in page, "la cellule d'essai"
     assert "action-enrichir" not in page, "les trois boutons sont retirés"
     assert 'role="log"' in page and 'aria-live="polite"' in page, (

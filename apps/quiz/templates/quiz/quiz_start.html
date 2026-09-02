@@ -9,6 +9,10 @@
 {% trans "Continuez : c'est en pratiquant qu'on progresse." as t_palier0 %}
 {% trans "J'avais dit aux autres Koda que ce quiz était trop facile pour toi." as t_koda_bas %}
 {% trans "Je le savais. Je l'avais dit." as t_koda_haut %}
+{% trans "Correct" as t_correct %}
+{% trans "Sans réponse" as t_sans_reponse %}
+{% trans "Incorrect" as t_incorrect %}
+{% trans "Explication" as t_explication %}
 {% block extra_head %}
 <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
@@ -338,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         <div class="flex-1">
                             <div class="text-sm font-bold ${isCorrect ? 'text-green-400' : 'text-red-400'} mb-1">
-                                ${isCorrect ? '{% trans "Correct" %}' : wasUnanswered ? '{% trans "Sans réponse" %}' : '{% trans "Incorrect" %}'}
+                                ${isCorrect ? "{{ t_correct|escapejs }}" : wasUnanswered ? "{{ t_sans_reponse|escapejs }}" : "{{ t_incorrect|escapejs }}"}
                             </div>
                             <div class="text-white text-sm space-y-2">${formatted}</div>
                         </div>
@@ -349,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <div class="flex items-start gap-3">
                                 <i data-lucide="lightbulb" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
                                 <div>
-                                    <h4 class="text-sm font-bold text-blue-400 mb-1">{% trans "Explication" %}</h4>
+                                    <h4 class="text-sm font-bold text-blue-400 mb-1">{{ t_explication|escapejs }}</h4>
                                     <p class="text-sm text-blue-200">${q.explanation}</p>
                                 </div>
                             </div>

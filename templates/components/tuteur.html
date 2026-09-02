@@ -18,12 +18,6 @@ lui-même est `aria-hidden` — il n'ajoute rien à ce que le bouton annonce dé
 Le libellé textuel reste affiché : le personnage seul ne dirait pas à quoi il
 sert.
 {% endcomment %}
-{% comment %}
-La poignée flottante n'a de sens que si le panneau est flottant. Ancré
-dans une page — la page de cours — il est déjà là, et une poignée pour
-l'ouvrir désignerait un second endroit où poser la même question.
-{% endcomment %}
-{% if not tuteur_ancre %}
 <button type="button" id="tuteur-ouvrir"
         aria-expanded="false" aria-controls="tuteur-panneau"
         aria-label="{% trans "Ouvrir Koda (Alt+T)" %}"
@@ -44,28 +38,12 @@ l'ouvrir désignerait un second endroit où poser la même question.
         <span id="tuteur-quotas-rapide" class="opacity-75"></span>
     </span>
 </button>
-{% endif %}
 
 {# --- Panneau --- #}
-{% comment %}
-Deux présentations, un seul composant.
-
-Compétence visée : C17 (épreuve E4)
-Choix : le même panneau, avec deux jeux de classes, plutôt qu'un second chat
-écrit pour la page de cours. Motivation : un deuxième chat, c'est un deuxième
-comportement à tenir — quotas, historique, brouillon, états de Koda, sources.
-La page de cours en avait un, réduit, et il divergeait déjà.
-
-Ancré, le panneau remplit la place que son conteneur lui donne, n'est ni
-déplaçable ni refermable, et n'est pas masqué au départ.
-{% endcomment %}
-<aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre"
-       {% if not tuteur_ancre %}hidden{% endif %}
-       {% if tuteur_ancre %}data-ancre="oui"{% endif %}
-       class="{% if tuteur_ancre %}relative h-full w-full rounded-lg border border-gray-700
-              {% else %}tuteur-dock fixed top-0 right-0 z-50 h-full w-full sm:w-[400px]
-              border-l border-gray-700 shadow-2xl rounded-l-xl{% endif %}
-              bg-gray-800 flex flex-col overflow-hidden">
+<aside id="tuteur-panneau" role="complementary" aria-labelledby="tuteur-titre" hidden
+       class="tuteur-dock fixed top-0 right-0 z-50 h-full w-full sm:w-[400px]
+              bg-gray-800 border-l border-gray-700 flex flex-col shadow-2xl
+              rounded-l-xl overflow-hidden">
 
     {# Barre de titre = poignée de glissement #}
     <div id="tuteur-poignee"
@@ -102,11 +80,7 @@ déplaçable ni refermable, et n'est pas masqué au départ.
                 </p>
             </div>
         </div>
-        {% comment %}
-        Replier ou redocker un panneau qui occupe une colonne de la page
-        laisserait un trou à sa place. Ancré, il n'a ni l'un ni l'autre.
-        {% endcomment %}
-        <div class="flex items-center gap-1 flex-shrink-0" {% if tuteur_ancre %}hidden{% endif %}>
+        <div class="flex items-center gap-1 flex-shrink-0">
             <button type="button" id="tuteur-redock"
                     title="{% trans "Redocker à droite" %}"
                     class="text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white rounded p-1.5 transition-colors">
@@ -297,24 +271,18 @@ déplaçable ni refermable, et n'est pas masqué au départ.
 }
 </style>
 
+{% comment %}
+Les libellés qui entrent dans du JavaScript passent par `escapejs`. Une
+apostrophe française — il y en a partout dans le catalogue — refermerait
+sinon la chaîne et rendrait le script entier inanalysable, sans que rien ne
+le signale ailleurs que dans une console.
+{% endcomment %}
+{% trans "aucun contexte — question générale" as msg_sans_contexte %}
+{% trans "restantes" as msg_restantes %}
+{% trans "La réponse n'a pas pu être obtenue." as msg_sans_reponse %}
 <script src="{% static 'js/koda.js' %}" defer></script>
 <script>
 (function () {
-    {% comment %}
-    Ancré dans une page, ou flottant au-dessus d'elle. Le reste du script est
-    le même : c'est le même chat, avec les mêmes quotas et le même historique.
-    {% endcomment %}
-    const ancre = {% if tuteur_ancre %}true{% else %}false{% endif %};
-
-    {% comment %}
-    L'adresse d'envoi peut être imposée par la page qui accueille le panneau.
-    La page de cours l'envoie vers l'enrichissement de la fiche : la réponse y
-    est conservée avec la question qui l'a produite (décision 040). Les deux
-    points d'entrée rendent les mêmes champs `reponse` et `horodatage`, donc
-    ce script n'a pas à savoir auquel il parle.
-    {% endcomment %}
-    const adresseEnvoi = "{{ tuteur_url|default:'' }}" || "{% url 'chat:send_message' %}";
-
     const ouvrir      = document.getElementById('tuteur-ouvrir');
     const panneau     = document.getElementById('tuteur-panneau');
     const fermer      = document.getElementById('tuteur-fermer');
@@ -406,7 +374,7 @@ déplaçable ni refermable, et n'est pas masqué au départ.
 
     function decrireContexte() {
         if (!contexte.elements || contexte.elements.length === 0) {
-            detailCtx.textContent = "{% trans 'aucun contexte — question générale' %}";
+            detailCtx.textContent = "{{ msg_sans_contexte|escapejs }}";
             return;
         }
         detailCtx.textContent = contexte.elements
@@ -471,7 +439,7 @@ déplaçable ni refermable, et n'est pas masqué au départ.
 
     function afficherQuota(etatQuota) {
         if (!etatQuota) return;
-        const txt = "{% trans 'restantes' %}" + " " + etatQuota.restantes + "/" + etatQuota.quota;
+        const txt = "{{ msg_restantes|escapejs }}" + " " + etatQuota.restantes + "/" + etatQuota.quota;
         quota.textContent = txt;
         quotaRapide.textContent = "· " + etatQuota.restantes + "/" + etatQuota.quota;
     }
@@ -483,7 +451,7 @@ déplaçable ni refermable, et n'est pas masqué au départ.
            pas : le message reste affiché et lisible sans lui. {% endcomment %}
         if (window.Koda) Koda.etat('reflechit');
         try {
-            const reponse = await fetch(adresseEnvoi, {
+            const reponse = await fetch("{% url 'chat:send_message' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -509,7 +477,7 @@ déplaçable ni refermable, et n'est pas masqué au départ.
                 setTimeout(() => Koda.etat('repos'), duree);
             }
         } catch (e) {
-            ajouterMessage(`{% trans "La réponse n'a pas pu être obtenue." %}`, false);
+            ajouterMessage("{{ msg_sans_reponse|escapejs }}", false);
             if (window.Koda) Koda.etat('repos');
         } finally {
             chargement.hidden = true;
@@ -620,27 +588,18 @@ déplaçable ni refermable, et n'est pas masqué au départ.
         panneau.classList.remove('tuteur-glissement');
     }
 
-    {% comment %}
-    Ancré, le panneau ne se déplace pas : le glissement et le redock n'ont plus
-    d'objet, et la poignée redevient une simple barre de titre.
-    {% endcomment %}
-    if (!ancre) {
-        poignee.addEventListener('mousedown', demarrerGlissement);
-        poignee.addEventListener('touchstart', demarrerGlissement, {passive: false});
-        document.addEventListener('mousemove', pendantGlissement);
-        document.addEventListener('touchmove', pendantGlissement, {passive: false});
-        document.addEventListener('mouseup', finirGlissement);
-        document.addEventListener('touchend', finirGlissement);
-        redock.addEventListener('click', redocker);
-    }
+    poignee.addEventListener('mousedown', demarrerGlissement);
+    poignee.addEventListener('touchstart', demarrerGlissement, {passive: false});
+    document.addEventListener('mousemove', pendantGlissement);
+    document.addEventListener('touchmove', pendantGlissement, {passive: false});
+    document.addEventListener('mouseup', finirGlissement);
+    document.addEventListener('touchend', finirGlissement);
+    redock.addEventListener('click', redocker);
 
     {# --- Raccourci clavier --- #}
     document.addEventListener('keydown', function(e) {
         if (e.altKey && (e.key === 't' || e.key === 'T')) {
             e.preventDefault();
-            // Ancré, le panneau est toujours là : le raccourci amène le
-            // curseur dans le champ au lieu d'ouvrir ce qui est déjà ouvert.
-            if (ancre) { champ.focus(); return; }
             if (panneau.hidden) ouvrirPanneau(); else fermerPanneau();
         }
     });
@@ -655,21 +614,17 @@ déplaçable ni refermable, et n'est pas masqué au départ.
     d'ouvrir — mais seulement si Koda dormait vraiment, sinon le clic
     paraîtrait lent sans raison.
     {% endcomment %}
-    if (ouvrir) {
-        ouvrir.addEventListener('click', function () {
-            const dort = window.Koda && Koda.instances.some(
-                i => i.etat() === 'dort' || i.etat() === 'somnole');
-            if (!dort) { ouvrirPanneau(); return; }
-            const duree = Koda.reveiller();
-            setTimeout(ouvrirPanneau, duree);
-        });
-    }
-    if (!ancre) {
-        fermer.addEventListener('click', fermerPanneau);
-        panneau.addEventListener('keydown', e => {
-            if (e.key === 'Escape') fermerPanneau();
-        });
-    }
+    ouvrir.addEventListener('click', function () {
+        const dort = window.Koda && Koda.instances.some(
+            i => i.etat() === 'dort' || i.etat() === 'somnole');
+        if (!dort) { ouvrirPanneau(); return; }
+        const duree = Koda.reveiller();
+        setTimeout(ouvrirPanneau, duree);
+    });
+    fermer.addEventListener('click', fermerPanneau);
+    panneau.addEventListener('keydown', e => {
+        if (e.key === 'Escape') fermerPanneau();
+    });
 
     {% comment %} Koda écoute pendant la frappe, puis retourne au repos après un silence.
        Le minuteur est remis à zéro à chaque touche : c'est le silence qui

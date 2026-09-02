@@ -128,21 +128,72 @@ avant de lire, pas après.
         {% endcomment %}
         <div class="flex flex-col gap-3 min-h-0 overflow-hidden">
 
-            {% comment %}
-            Le panneau de Koda, le vrai, ancré dans la colonne.
+            <section aria-labelledby="titre-koda"
+                     class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
+                {% comment %}
+                Koda lui-même, et non une icône de bulle.
 
-            Compétence visée : C17 (épreuve E4)
-            Cette page portait un chat réduit, écrit pour elle : pas de quotas
-            affichés, pas d'historique, pas de brouillon conservé, pas de
-            sources, pas d'actions. Deux chats, donc deux comportements à
-            tenir — et ils avaient déjà divergé.
+                Compétence visée : C17 (épreuve E4)
+                Choix : reprendre exactement la planche et les dimensions du
+                panneau flottant. Motivation : c'est le même interlocuteur ;
+                le voir changer d'apparence selon la page laisserait croire à
+                deux assistants différents.
 
-            C'est désormais le même composant que la poignée flottante, avec la
-            même conversation et les mêmes garde-fous. Seule l'adresse d'envoi
-            change : ici la réponse va dans la fiche de l'apprenant, comme la
-            décision 040 le prévoit.
-            {% endcomment %}
-            {% include 'components/tuteur.html' with tuteur_ancre=True tuteur_url=url_enrichissement %}
+                Le script de la page pilotait déjà ses états — « réfléchit »
+                pendant l'attente, « parle » à la réponse — mais aucun élément
+                `data-koda` n'existait ici et `koda.js` n'y était pas chargé :
+                les appels tombaient dans le vide. Écrit, atteignable, jamais
+                exécuté : le troisième motif d'incident du projet.
+
+                `aria-hidden` : le titre voisin annonce déjà de qui il s'agit.
+                {% endcomment %}
+                <div class="flex items-center gap-2">
+                    <div data-koda class="koda flex-shrink-0"
+                         style="width:112px;height:92px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:896px 644px"
+                         data-colonnes="8" data-largeur="112" data-hauteur="92"
+                         data-etat-initial="repos" data-assoupissement="120000"
+                         data-alt-parle="{% trans "Koda parle" %}"
+                         data-alt-dort="{% trans "Koda dort" %}"
+                         data-alt-clin="{% trans "Koda fait un clin d'œil" %}"
+                         {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
+                         aria-hidden="true"></div>
+                    <div class="min-w-0">
+                        <h2 id="titre-koda" class="text-base font-bold text-white">
+                            {% trans "Demander à Koda" %}
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
+                        </p>
+                    </div>
+                </div>
+
+                {% comment %}
+                Le fil des échanges est un carré plus sombre que le panneau —
+                le même fond que les blocs de code du cours (#0D1117).
+
+                Compétence visée : C17 (épreuve E4)
+                Choix : démarquer la conversation par le fond plutôt que par un
+                trait de couleur. Motivation : la zone où l'on lit doit se
+                distinguer de la zone où l'on agit, et un aplat sombre le dit
+                sans ajouter de bordure de plus dans une interface qui en a
+                déjà beaucoup.
+                {% endcomment %}
+                <div id="koda-echanges"
+                     class="flex-1 min-h-0 overflow-y-auto p-3 rounded-lg border border-gray-700 space-y-3 text-sm defilement-vert"
+                     style="background:#0D1117"
+                     role="log" aria-live="polite" aria-labelledby="titre-koda"></div>
+
+                <form id="koda-formulaire" class="mt-2 flex gap-2 flex-shrink-0">
+                    <label for="koda-question" class="sr-only">{% trans "Votre question" %}</label>
+                    <input type="text" id="koda-question" autocomplete="off"
+                           placeholder="{% trans "Posez votre question…" %}"
+                           class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green">
+                    <button type="submit"
+                            class="px-3 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white flex-shrink-0">
+                        {% trans "Envoyer" %}
+                    </button>
+                </form>
+            </section>
 
             <section aria-labelledby="titre-cellule"
                      class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
@@ -246,17 +297,95 @@ même éditeur dans une seule application seraient deux comportements à tenir.
 })();
 </script>
 
+{% trans "Koda rédige…" as msg_redige %}
+{% trans "La réponse n'a pas pu être obtenue." as msg_koda_echec %}
+<script>
+const MESSAGES_KODA = {
+    redige: "{{ msg_redige|escapejs }}",
+    echec: "{{ msg_koda_echec|escapejs }}"
+};
+</script>
+
 <script>
 (function () {
     const jeton = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const echanges = document.getElementById('koda-echanges');
+
+    {% comment %}
+    Une bulle. Celles de Koda peuvent porter du HTML mis en forme, celles de
+    l'apprenant jamais.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C9 (E2) — sécurisation
+
+    Choix : la réponse de Koda est du Markdown, rendu EN HTML PAR LE SERVEUR
+    (`markdown2`, `safe_mode="escape"`), et affichée avec la feuille du cours.
+    Motivation : elle contient des titres, des listes et des blocs de code, qui
+    s'affichaient jusqu'ici en texte brut avec leurs dièses et leurs accents
+    graves. La question de l'apprenant, elle, reste posée par `textContent` :
+    c'est une saisie, elle ne doit jamais être interprétée.
+    {% endcomment %}
+    function bulle(texte, deKoda, html) {
+        const p = document.createElement('div');
+        p.className = deKoda
+            ? 'cours-rendu px-3 py-2 rounded-2xl rounded-tl-sm bg-primary-green/10 border border-primary-green/30 text-gray-100'
+            : 'px-3 py-2 rounded-2xl rounded-tr-sm bg-gray-800 border border-gray-700 text-gray-300 ml-6';
+        if (deKoda && html) { p.innerHTML = html; } else { p.textContent = texte; }
+        echanges.appendChild(p);
+        echanges.scrollTop = echanges.scrollHeight;
+        return p;
+    }
+
+    {% comment %}
+    La question part vers l'enrichissement de la fiche : la réponse de Koda y
+    est enregistrée avec la question qui l'a produite et ses sources. Le quota
+    est décompté au goulot de l'orchestrateur, pas ici (décision 040).
+    {% endcomment %}
+    document.getElementById('koda-formulaire').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const champ = document.getElementById('koda-question');
+        const question = champ.value.trim();
+        if (!question) { return; }
+        bulle(question, false);
+        champ.value = '';
+        const attente = bulle(MESSAGES_KODA.redige, true);
+        if (window.Koda) Koda.etat('reflechit');
+        try {
+            const r = await fetch("{% url 'courses:enrichir' competence.code %}", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded',
+                          'X-CSRFToken': jeton()},
+                body: new URLSearchParams({question: question}),
+            });
+            const corps = await r.json();
+            if (r.ok && corps.contenu_html) {
+                attente.className = 'cours-rendu px-3 py-2 rounded-2xl rounded-tl-sm '
+                                  + 'bg-primary-green/10 border border-primary-green/30 text-gray-100';
+                attente.innerHTML = corps.contenu_html;
+                // Les blocs de code de la réponse reçoivent le même traitement
+                // que ceux du cours : cellule, en-tête, coloration.
+                if (window.decorateCodeBlocks) window.decorateCodeBlocks();
+            } else {
+                attente.textContent = r.ok
+                    ? corps.contenu
+                    : (corps.error || MESSAGES_KODA.echec);
+            }
+            if (r.ok && window.Koda) Koda.etat('parle');
+        } catch (err) {
+            attente.textContent = MESSAGES_KODA.echec;
+        } finally {
+            if (window.Koda) setTimeout(() => Koda.etat('repos'), 2500);
+        }
+    });
+
     const sortie = document.getElementById('cellule-sortie');
     document.getElementById('cellule-executer').addEventListener('click', async () => {
         // Monaco fait foi quand il a pris la main ; sinon la zone de texte.
         const code = window.editeurCellule
             ? window.editeurCellule.getValue()
             : document.getElementById('cellule-code').value;
-        if (!code.trim()) { sortie.textContent = "{% trans "Écrivez du code, puis exécutez." %}"; return; }
-        sortie.textContent = "{% trans "Exécution…" %}";
+        if (!code.trim()) { sortie.textContent = MESSAGES.vide; return; }
+        sortie.textContent = MESSAGES.attente;
         try {
             const r = await fetch("{% url 'courses:executer' competence.code %}", {
                 method: 'POST',
@@ -266,18 +395,53 @@ même éditeur dans une seule application seraient deux comportements à tenir.
             });
             const corps = await r.json();
             if (corps.expire) {
-                sortie.textContent = "{% trans "Le code a été interrompu : il tournait trop longtemps." %}";
+                sortie.textContent = MESSAGES.interrompu;
             } else if (corps.erreur) {
                 sortie.textContent = corps.erreur;
             } else {
-                sortie.textContent = corps.sortie
-                    || "{% trans "Exécuté sans rien afficher — pensez à print()." %}";
+                sortie.textContent = corps.sortie || MESSAGES.muet;
             }
         } catch (err) {
-            sortie.textContent = "{% trans "Le code n'a pas pu être exécuté." %}";
+            sortie.textContent = MESSAGES.echec;
         }
     });
 })();
+</script>
+
+{% comment %}
+Les libellés traversent `escapejs`, et ne sont plus écrits en clair dans le
+code.
+
+Compétence visée : C17 (épreuve E4)
+Compétence concernée : C21 (E5)
+« Le code n'a pas pu être exécuté. » était inséré tel quel dans une chaîne
+JavaScript à guillemets simples. L'apostrophe française refermait la chaîne :
+le script entier cessait d'être analysable, et TOUT ce qu'il contenait
+disparaissait — dont la mise en cellules des blocs de code du cours. Prism
+coloriait quand même, puisqu'il est chargé à part : le texte paraissait
+coloré mais nu, sans cadre ni en-tête, et rien dans la page ne disait
+pourquoi.
+{% endcomment %}
+{% comment %}
+L'animateur de Koda. Il n'était chargé que par le panneau flottant, que cette
+page écarte pour ne pas afficher deux Koda : sans cette ligne, `window.Koda`
+est indéfini et les changements d'état de la page ne font rien.
+{% endcomment %}
+<script src="{% static 'js/koda.js' %}" defer></script>
+
+{% trans "Exécution…" as msg_attente %}
+{% trans "Écrivez du code, puis exécutez." as msg_vide %}
+{% trans "Le code a été interrompu : il tournait trop longtemps." as msg_interrompu %}
+{% trans "Exécuté sans rien afficher — pensez à print()." as msg_muet %}
+{% trans "Le code n'a pas pu être exécuté." as msg_echec %}
+<script>
+const MESSAGES = {
+    attente: "{{ msg_attente|escapejs }}",
+    vide: "{{ msg_vide|escapejs }}",
+    interrompu: "{{ msg_interrompu|escapejs }}",
+    muet: "{{ msg_muet|escapejs }}",
+    echec: "{{ msg_echec|escapejs }}"
+};
 </script>
 
 <script>
@@ -362,7 +526,7 @@ même éditeur dans une seule application seraient deux comportements à tenir.
             sortie.setAttribute('role', 'status');
             container.appendChild(sortie);
         }
-        sortie.textContent = '{% trans "Exécution…" %}';
+        sortie.textContent = MESSAGES.attente;
         const jeton = document.querySelector('[name=csrfmiddlewaretoken]').value;
         fetch('{% url "courses:executer" competence.code %}', {
             method: 'POST',
@@ -371,11 +535,11 @@ même éditeur dans une seule application seraient deux comportements à tenir.
         })
         .then(r => r.json())
         .then(corps => {
-            if (corps.expire) sortie.textContent = '{% trans "Le code a été interrompu : il tournait trop longtemps." %}';
+            if (corps.expire) sortie.textContent = MESSAGES.interrompu;
             else if (corps.erreur) sortie.textContent = corps.erreur;
-            else sortie.textContent = corps.sortie || '{% trans "Exécuté sans rien afficher — pensez à print()." %}';
+            else sortie.textContent = corps.sortie || MESSAGES.muet;
         })
-        .catch(() => { sortie.textContent = '{% trans "Le code n'a pas pu être exécuté." %}'; });
+        .catch(() => { sortie.textContent = MESSAGES.echec; });
     }
 
     function copyCode(button) {
@@ -398,6 +562,12 @@ même éditeur dans une seule application seraient deux comportements à tenir.
         });
     }
 
+    {% comment %}
+    Exposée : la réponse de Koda contient elle aussi des blocs de code, et
+    arrive après le chargement. Le chat la rappelle pour que ces blocs
+    reçoivent la même cellule et la même coloration que ceux du cours.
+    {% endcomment %}
+    window.decorateCodeBlocks = decorateCodeBlocks;
     document.addEventListener('DOMContentLoaded', decorateCodeBlocks);
 })();
 </script>
