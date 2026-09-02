@@ -132,3 +132,43 @@ def test_le_referentiel_amorce_deux_fois_ne_se_duplique_pas():
 
     assert Referentiel.objects.filter(est_actif=True).count() == 1
     assert Competence.objects.count() == 21
+
+
+def test_le_demarrage_controle_le_volume_des_medias():
+    """
+    Le script vérifie que MEDIA_ROOT est accessible en écriture.
+
+    Compétence visée : C13 (épreuve E3)
+
+    Les photos de profil sont les seuls fichiers déposés par les apprenants.
+    Un volume monté par l'hébergeur peut appartenir à `root` alors que le
+    conteneur tourne sans privilège : sans ce contrôle, la panne n'apparaîtrait
+    qu'au premier envoi, sous forme d'erreur 500.
+
+    Le contrôle doit écrire réellement un fichier, et non lire des bits de
+    permission — ceux-ci diraient « accessible » là où l'écriture échoue.
+    """
+    script = ENTREE.read_text(encoding="utf-8")
+
+    assert "EDUAI_MEDIA_REPERTOIRE" in script, "le chemin doit rester réglable"
+    assert "touch " in script, "le contrôle doit tenter une écriture réelle"
+    assert "AVERTISSEMENT" in script, "un échec doit être annoncé dans le journal"
+
+
+def test_le_point_de_montage_des_medias_existe_dans_l_image():
+    """
+    L'image crée le répertoire des médias, vide et sans privilège.
+
+    Compétence visée : C13 (épreuve E3)
+
+    Un volume monté sur un chemin ABSENT de l'image appartient à `root`. C'est
+    la raison pour laquelle le point de montage du corpus est déjà créé ainsi ;
+    celui des médias suit la même règle.
+    """
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+
+    assert "mkdir -p /app/media" in dockerfile
+    # Créé avant de basculer sur le compte de service ? Non : le Dockerfile
+    # bascule tôt sur `eduai`, et c'est justement ce qui donne au répertoire le
+    # bon propriétaire. On vérifie donc que la création suit bien ce basculement.
+    assert dockerfile.index("USER eduai") < dockerfile.index("mkdir -p /app/media")
