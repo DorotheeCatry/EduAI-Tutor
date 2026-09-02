@@ -459,3 +459,41 @@ def enrichir_la_fiche(request, code):
         "sources": ajout.sources,
         "cree_le": ajout.cree_le.isoformat(),
     })
+
+
+@login_required
+@require_POST
+def executer_du_code(request, code):
+    """
+    Exécute un extrait Python et rend sa sortie, sans rien enregistrer.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétences concernées : C13 (E3) — sécurité ; C10 (E3)
+
+    Choix : réemployer `SecurePythonExecutor`, celui des exercices, plutôt
+    qu'un `exec` de circonstance. Motivation : il valide le code avant de le
+    compiler, restreint les fonctions accessibles, borne la durée et capture
+    les sorties. Écrire un second chemin d'exécution reviendrait à écrire une
+    seconde surface d'attaque, et à devoir la maintenir aussi bien.
+
+    Choix : rien n'est enregistré. Motivation : cette cellule sert à essayer,
+    pas à rendre un travail. Les exercices, eux, passent par leur propre vue,
+    qui enregistre la soumission et la rattache à sa compétence.
+
+    Choix : aucun quota. Motivation : l'exécution est locale, elle n'appelle
+    aucun service facturé. Le quota compte des générations, pas des essais.
+    """
+    from apps.exercises.security import SecurePythonExecutor
+
+    extrait = (request.POST.get("code") or "").strip()
+    if not extrait:
+        return JsonResponse({"error": _("Aucun code à exécuter.")}, status=400)
+
+    resultat = SecurePythonExecutor().execute_code(extrait)
+    return JsonResponse({
+        "succes": bool(resultat.get("success")),
+        "sortie": resultat.get("output") or "",
+        "erreur": resultat.get("error") or "",
+        "expire": bool(resultat.get("timeout")),
+        "duree": round(resultat.get("execution_time") or 0, 3),
+    })

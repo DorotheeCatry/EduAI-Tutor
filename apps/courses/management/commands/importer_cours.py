@@ -27,6 +27,7 @@ Idempotente : relancer remplace le cours actif de chaque compétence touchée.
 """
 
 import json
+import re
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
@@ -145,22 +146,91 @@ class Command(BaseCommand):
     @staticmethod
     def _lire(chemin: Path) -> tuple[str, str]:
         """
-        Rend le titre et le corps d'un support.
+        Rend le titre et le corps d'un support, débarrassé de son emballage.
 
         Compétence visée : C17 (épreuve E4)
-        Choix : le titre est le premier `# ` du fichier, retiré du corps.
-        Motivation : il devient le titre de la partie, donc une entrée du
-        sommaire ; le laisser dans le contenu le ferait apparaître deux fois.
+
+        Ces supports viennent d'un site bâti avec VitePress : ils portent un
+        **frontmatter YAML** et des **composants Vue** — `<base-title>`,
+        `<base-disclaimer>`, `<base-warning>` — que markdown2 laisse passer tels
+        quels. À l'écran, l'apprenant lisait donc « title: … », « description: … »
+        et des balises en clair au milieu du cours.
+
+        Choix : le titre vient du frontmatter, pas du premier `# `. Motivation :
+        la recherche du premier `# ` attrapait des lignes situées **dans un bloc
+        de code** — des commentaires Python — et le sommaire du cours affichait
+        « {'size': 'fat', …} » ou « <class 'dict'> ». Le frontmatter, lui,
+        déclare le titre sans ambiguïté.
+
+        Choix : les encarts sont convertis en citations markdown plutôt que
+        supprimés. Motivation : ils portent du contenu — un avertissement, un
+        extrait de la documentation officielle — et le jeter appauvrirait le
+        cours pour une raison purement technique.
         """
-        texte = chemin.read_text(encoding="utf-8").strip()
-        lignes = texte.split("\n")
+        texte = chemin.read_text(encoding="utf-8")
+        titre, corps = Command._separer_le_frontmatter(texte, chemin)
+        return titre, Command._convertir_les_encarts(corps).strip()
+
+    @staticmethod
+    def _separer_le_frontmatter(texte: str, chemin: Path) -> tuple[str, str]:
+        """Retire le frontmatter YAML et en tire le titre."""
         titre = chemin.stem.replace("-", " ").capitalize()
-        for rang, ligne in enumerate(lignes):
-            if ligne.startswith("# "):
-                titre = ligne[2:].strip()
-                lignes = lignes[:rang] + lignes[rang + 1:]
+        if not texte.lstrip().startswith("---"):
+            return titre, texte
+        fin = texte.index("---", texte.index("---") + 3)
+        entete, corps = texte[:fin], texte[fin + 3:]
+        for ligne in entete.split("\n"):
+            if ligne.startswith("title:"):
+                # Les titres du site sont suffixés « - Python Cheatsheet » :
+                # cette mention n'a rien à faire dans un sommaire de cours.
+                titre = ligne[6:].strip().strip("\"'")
+                titre = re.sub(r"\s*-\s*Python Cheatsheet\s*$", "", titre)
                 break
-        return titre, "\n".join(lignes).strip()
+        return titre, corps
+
+    @staticmethod
+    def _convertir_les_encarts(corps: str) -> str:
+        """
+        Convertit les composants Vue en markdown, sans perdre leur contenu.
+
+        Compétence visée : C17 (épreuve E4)
+        """
+        # Les blocs qui ne portent que de la configuration de site s'en vont
+        # entièrement. `<route lang="yaml">` déclare la mise en page de l'article
+        # et contient du YAML — `title:`, `layout:` — que markdown2 affichait en
+        # clair au milieu du cours. `<base-title>` et `<blog-title-header>`
+        # répètent le titre du frontmatter.
+        for balise in ("route", "base-title", "blog-title-header"):
+            corps = re.sub(r"<%s\b.*?</%s>" % (balise, balise), "", corps, flags=re.S)
+            # Variante auto-fermante, employée par `<blog-title-header />`.
+            corps = re.sub(r"<%s\b[^>]*/>" % balise, "", corps)
+
+        # `<router-link>` pointe vers les pages du site d'origine — `/cheatsheet/…`,
+        # `/blog/…` — qui n'existent pas ici. On garde le texte et on jette le
+        # lien : une phrase amputée de ses mots serait pire qu'un lien absent,
+        # et un lien mort pire que les deux.
+        corps = re.sub(r"<router-link[^>]*>(.*?)</router-link>", r"\1", corps, flags=re.S)
+
+        for balise, prefixe in (("base-disclaimer", "ℹ️"), ("base-warning", "⚠️")):
+            def remplacer(m, prefixe=prefixe):
+                bloc = m.group(1)
+                titre = re.search(r"<%s-title>(.*?)</%s-title>" % (balise, balise),
+                                  bloc, re.S)
+                contenu = re.search(r"<%s-content>(.*?)</%s-content>" % (balise, balise),
+                                    bloc, re.S)
+                lignes = []
+                if titre:
+                    lignes.append(f"**{prefixe} {titre.group(1).strip()}**")
+                if contenu:
+                    lignes.append(contenu.group(1).strip())
+                texte = "\n\n".join(lignes)
+                # Une citation markdown : chaque ligne préfixée de « > ».
+                return "\n" + "\n".join(
+                    "> " + ligne if ligne.strip() else ">"
+                    for ligne in texte.split("\n")) + "\n"
+            corps = re.sub(r"<%s>(.*?)</%s>" % (balise, balise), remplacer,
+                           corps, flags=re.S)
+        return corps
 
     # --- 3. Publication ----------------------------------------------------
 

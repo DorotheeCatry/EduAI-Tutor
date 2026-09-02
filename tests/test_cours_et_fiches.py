@@ -433,3 +433,103 @@ def test_le_cours_est_rendu_en_html_et_non_en_markdown_brut(
 
     assert "<h2" in page, "les titres doivent être rendus"
     assert "cours-rendu" in page, "le conteneur qui porte les styles du rendu"
+
+
+# --- La page de cours : ce qu'on lit, ce qu'on demande, ce qu'on essaie ----
+
+
+@pytest.mark.django_db
+def test_le_cours_ne_montre_plus_l_emballage_du_site_d_origine(competence):
+    """
+    Frontmatter et composants Vue ne doivent pas atteindre l'apprenant.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    Ces supports viennent d'un site bâti avec VitePress : ils portent un
+    frontmatter YAML et des composants — `<base-disclaimer>`, `<route>`,
+    `<router-link>` — que markdown2 laisse passer tels quels. L'apprenant
+    lisait « title: … » et des balises en clair au milieu du cours.
+    """
+    call_command("importer_cours", stdout=StringIO())
+    cours = CoursDeReference.objects.get(
+        competence=competence, remplace_le__isnull=True)
+
+    for partie in cours.parties.all():
+        for reste in ("<base-", "<route", "<blog-title", "title:", "layout:"):
+            assert reste not in partie.contenu, (
+                "« %s » subsiste dans %s" % (reste, partie.fichier_source)
+            )
+
+
+@pytest.mark.django_db
+def test_le_titre_d_une_partie_ne_vient_pas_d_un_bloc_de_code(competence):
+    """
+    Le titre vient du frontmatter, jamais du premier `# ` rencontré.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    La recherche du premier `# ` attrapait des lignes situées **dans un bloc de
+    code** — des commentaires Python — et le sommaire affichait
+    « {'size': 'fat', …} » ou « <class 'dict'> ».
+    """
+    call_command("importer_cours", stdout=StringIO())
+    cours = CoursDeReference.objects.get(
+        competence=competence, remplace_le__isnull=True)
+
+    for _ancre, titre in cours.sommaire:
+        assert not titre.startswith(("{", "<", "'")), (
+            "« %s » ressemble à une sortie de code, pas à un titre" % titre
+        )
+        assert "Python Cheatsheet" not in titre, (
+            "le suffixe du site d'origine n'a rien à faire dans un sommaire"
+        )
+
+
+@pytest.mark.django_db
+def test_la_cellule_execute_du_code_et_refuse_les_imports(client, competence, apprenante):
+    """
+    La cellule Python exécute, et l'exécuteur restreint tient.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3) — sécurité
+
+    Choix : réemployer `SecurePythonExecutor`, celui des exercices. Motivation :
+    un second chemin d'exécution serait une seconde surface d'attaque, à
+    maintenir aussi bien que la première.
+    """
+    import json as _json
+
+    client.force_login(apprenante)
+    url = reverse("courses:executer", args=[competence.code])
+
+    reponse = client.post(url, {"code": "print(sorted({'a': 1}))"}, secure=True)
+    corps = _json.loads(reponse.content)
+    assert corps["succes"] is True
+    assert "['a']" in corps["sortie"]
+
+    reponse = client.post(url, {"code": "import os"}, secure=True)
+    corps = _json.loads(reponse.content)
+    assert corps["succes"] is False
+    assert "os" in corps["erreur"]
+
+
+@pytest.mark.django_db
+def test_la_page_offre_le_chat_et_la_cellule_pas_des_boutons(
+        client, competence, apprenante):
+    """
+    La colonne de droite propose de demander et d'essayer.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+
+    Elle proposait trois boutons d'enrichissement, qui supposaient qu'un
+    apprenant sait avant de lire ce qu'il ne comprendra pas.
+    """
+    client.force_login(apprenante)
+    page = client.get(reverse("courses:page_de_cours", args=[competence.code]),
+                      secure=True).content.decode()
+
+    assert 'id="koda-echanges"' in page, "le chat de Koda"
+    assert 'id="cellule-code"' in page, "la cellule d'essai"
+    assert "action-enrichir" not in page, "les trois boutons sont retirés"
+    assert 'role="log"' in page and 'aria-live="polite"' in page, (
+        "un échange qui arrive après le chargement doit être annoncé"
+    )
