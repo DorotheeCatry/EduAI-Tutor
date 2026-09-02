@@ -12,99 +12,98 @@
 
     <!-- Scrollable content area -->
     <div class="flex-1 overflow-y-auto space-y-6" id="lobby-content">
-        <!-- Game modes -->
-        <!-- Solo Mode -->
-        <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:border-green-500 transition-colors duration-300">
-            <div class="text-center space-y-4">
-                <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-                    <i data-lucide="play" class="w-8 h-8 text-green-500"></i>
+        <!-- Game modes : Solo à gauche, Multijoueur à droite -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Solo Mode -->
+            <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:border-green-500 transition-colors duration-300">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="play" class="w-6 h-6 text-green-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">{% trans "Solo Mode" %}</h3>
+                            <p class="text-sm text-gray-400">{% trans "Train at your own pace with personalized quizzes" %}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Integrated solo form -->
+                    <form action="{% url 'quiz:start' %}" method="get" class="space-y-3">
+                        <input type="hidden" name="mode" value="solo">
+                        {% if competences_par_module %}
+                        <label for="competence-quiz" class="sr-only">{% trans "Compétence visée" %}</label>
+                        <select name="competence" id="competence-quiz"
+                                aria-describedby="aide-competence-quiz"
+                                class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+                            <option value="">{% trans "Aucune — sujet libre, hors référentiel" %}</option>
+                            {% for module, competences in competences_par_module %}
+                                <optgroup label="{{ module.intitule }}">
+                                    {% for competence in competences %}
+                                        <option value="{{ competence.code }}">{{ competence.intitule }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
+                        </select>
+                        <p id="aide-competence-quiz" class="text-xs text-gray-400">
+                            {% trans "Un quiz ne fait pas progresser de niveau : il signale ce qui reste à revoir." %}
+                        </p>
+                        {% endif %}
+                        <label for="sujet-quiz" class="sr-only">{% trans "Topic" %}</label>
+                        <input
+                            type="text"
+                            name="topic"
+                            id="sujet-quiz"
+                            placeholder="{% trans "e.g. Python functions, Django models..." %}"
+                            class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                        >
+                        <select name="num_questions" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
+                            <option value="5">{% trans "5 questions" %}</option>
+                            <option value="10" selected>{% trans "10 questions" %}</option>
+                            <option value="15">{% trans "15 questions" %}</option>
+                        </select>
+                        <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
+                            {% trans "Start Solo Quiz" %}
+                        </button>
+                    </form>
                 </div>
-                <h3 class="text-lg font-bold text-white">{% trans "Solo Mode" %}</h3>
-                <p class="text-sm text-gray-400 leading-relaxed">{% trans "Train at your own pace with personalized quizzes" %}</p>
-                
-                <!-- Integrated solo form -->
-                <form action="{% url 'quiz:start' %}" method="get" class="space-y-3 mt-4">
-                    <input type="hidden" name="mode" value="solo">
-                    {% if competences_par_module %}
-                    {% comment %}
-                    Même menu, même mécanique que pour les exercices
-                    (décision 027) : un choix explicite, jamais une déduction.
+            </div>
 
-                    Un quiz ne fait progresser aucun niveau — c'est une
-                    reconnaissance, pas une production (décision 028) — mais la
-                    compétence choisie fait que le bloc « à revoir » nommera
-                    « Manipuler les listes » et non « les listes en python »,
-                    là où le reste de la page parle en compétences.
-                    {% endcomment %}
-                    <label for="competence-quiz" class="sr-only">{% trans "Compétence visée" %}</label>
-                    <select name="competence" id="competence-quiz"
-                            aria-describedby="aide-competence-quiz"
-                            class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
-                        <option value="">{% trans "Aucune — sujet libre, hors référentiel" %}</option>
-                        {% for module, competences in competences_par_module %}
-                            <optgroup label="{{ module.intitule }}">
-                                {% for competence in competences %}
-                                    <option value="{{ competence.code }}">{{ competence.intitule }}</option>
-                                {% endfor %}
-                            </optgroup>
-                        {% endfor %}
-                    </select>
-                    <p id="aide-competence-quiz" class="text-xs text-gray-400">
-                        {% trans "Un quiz ne fait pas progresser de niveau : il signale ce qui reste à revoir." %}
-                    </p>
-                    {% endif %}
-                    <label for="sujet-quiz" class="sr-only">{% trans "Topic" %}</label>
-                    <input
-                        type="text"
-                        name="topic"
-                        id="sujet-quiz"
-                        placeholder="{% trans "e.g. Python functions, Django models..." %}"
-                        class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                    >
-                    <select name="num_questions" class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-green-500">
-                        <option value="5">{% trans "5 questions" %}</option>
-                        <option value="10" selected>{% trans "10 questions" %}</option>
-                        <option value="15">{% trans "15 questions" %}</option>
-                    </select>
-                    <button type="submit" class="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
-                        {% trans "Start Solo Quiz" %}
-                    </button>
-                </form>
+            <!-- Multiplayer modes -->
+            <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:border-blue-500 transition-colors duration-300">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="users" class="w-6 h-6 text-blue-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">{% trans "Multiplayer" %}</h3>
+                            <p class="text-sm text-gray-400">{% trans "Compete with friends in real-time" %}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <a href="{% url 'quiz:create_room' %}" class="flex items-center gap-3 p-4 bg-gray-900 rounded-lg border border-gray-600 hover:border-blue-500 transition-colors block">
+                            <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-white">{% trans "Create Room" %}</div>
+                                <div class="text-xs text-gray-400">{% trans "Host a multiplayer quiz" %}</div>
+                            </div>
+                        </a>
+                        <a href="{% url 'quiz:join_room' %}" class="flex items-center gap-3 p-4 bg-gray-900 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors block">
+                            <div class="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="hash" class="w-5 h-5 text-purple-500"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-white">{% trans "Join Room" %}</div>
+                                <div class="text-xs text-gray-400">{% trans "Enter a room code" %}</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Multiplayer modes -->
-        <div>
-            <h3 class="text-lg font-bold text-white mb-4 flex items-center justify-center space-x-2">
-                <i data-lucide="users" class="w-5 h-5 text-blue-500"></i>
-                <span>{% trans "Multiplayer Modes" %}</span>
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Create Room -->
-                <a href="{% url 'quiz:create_room' %}" class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-blue-500 transition-colors duration-300 block">
-                    <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto">
-                            <i data-lucide="plus-circle" class="w-8 h-8 text-blue-500"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">{% trans "Create Room" %}</h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">{% trans "Host a multiplayer quiz for your friends" %}</p>
-                    </div>
-                </a>
-
-                <!-- Join Room -->
-                <a href="{% url 'quiz:join_room' %}" class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-purple-500 transition-colors duration-300 block">
-                    <div class="text-center space-y-4">
-                        <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto">
-                            <i data-lucide="hash" class="w-8 h-8 text-purple-500"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-white">{% trans "Join Room" %}</h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">{% trans "Enter a room code to join a multiplayer quiz" %}</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- Active rooms -->
     {% if active_rooms %}

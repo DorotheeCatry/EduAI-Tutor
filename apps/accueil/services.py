@@ -203,11 +203,14 @@ def resume_de_l_accueil(utilisateur):
     modules = resume_par_module(utilisateur)
     entames = [ligne for ligne in modules if ligne["au_niveau_1"]]
 
+    # Stats du compte pour le bloc de profil
+    total_exercices = UserExerciseProgress.objects.filter(
+        user=utilisateur, is_completed=True
+    ).count()
+
     return {
         "referentiel": referentiel_actif(),
         "modules": modules,
-        # De quoi replier l'affichage quand rien n'est entamé : le bloc
-        # occupait la moitié de l'écran pour dire qu'il n'y avait rien.
         "competences_entamees": bool(entames),
         "competences_entamees_nombre": sum(ligne["au_niveau_1"] for ligne in modules),
         "modules_non_entames": len(modules) - len(entames),
@@ -218,4 +221,19 @@ def resume_de_l_accueil(utilisateur):
         "a_revoir": notions_a_revoir(utilisateur),
         "erreurs_de_quiz": erreurs_de_quiz(utilisateur),
         "activite": derniere_activite(utilisateur),
+        "profil": {
+            "username": utilisateur.username,
+            "email": utilisateur.email,
+            "avatar_url": (
+                utilisateur.avatar.url if utilisateur.avatar
+                else f"/static/koda/{utilisateur.koda_avatar}"
+                if utilisateur.koda_avatar
+                else "/static/koda/koda_base.png"
+            ),
+            "xp": utilisateur.xp,
+            "level": utilisateur.level,
+            "total_quizzes": utilisateur.total_quizzes_completed,
+            "total_exercices": total_exercices,
+            "current_streak": utilisateur.current_streak,
+        },
     }

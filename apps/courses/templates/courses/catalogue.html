@@ -97,33 +97,33 @@ L'ossature de la page est figée, les cartes défilent (décision 038).
             Le module vient d'abord, la compétence ensuite : c'est l'ordre du
             programme, et celui dans lequel un apprenant cherche son cours.
             {% endcomment %}
-            <div class="space-y-2">
+            <div class="space-y-3">
                 {% for groupe in modules %}
                     <details class="rounded-lg border border-gray-700 bg-gray-800" {% if forloop.first %}open{% endif %}>
-                        <summary class="px-3 py-2 cursor-pointer select-none flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-white rounded-lg">
+                        <summary class="px-4 py-3 cursor-pointer select-none flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-white rounded-lg">
                             <span class="text-sm font-semibold text-white truncate">{{ groupe.module.intitule }}</span>
                             <span class="text-[11px] text-gray-400 flex-shrink-0">
                                 {% blocktrans count n=groupe.entrees|length %}{{ n }} compétence{% plural %}{{ n }} compétences{% endblocktrans %}
                                 {% if groupe.avec_cours %}· {% blocktrans count c=groupe.avec_cours %}{{ c }} cours{% plural %}{{ c }} cours{% endblocktrans %}{% else %}· {% trans "aucun cours" %}{% endif %}
                             </span>
                         </summary>
-                        <ul class="px-3 pb-3 pt-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                        <ul class="px-3 pb-3 pt-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                             {% for entree in groupe.entrees %}
-                                <li class="px-2.5 py-1.5 rounded-lg border border-gray-700 bg-gray-900">
+                                <li class="p-4 rounded-lg border border-gray-700 bg-gray-900 hover:border-primary-green/60 transition-colors">
                                     <a href="{% url 'courses:page_de_cours' entree.competence.code %}"
-                                       class="text-sm text-white hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded block truncate">
+                                       class="text-sm font-medium text-white hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded block">
                                         {{ entree.competence.intitule }}
                                     </a>
-                                    <p class="text-[11px] mt-1">
+                                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
                                         {% if entree.cours and entree.cours.statut == 'publie' %}
-                                            <span class="px-1.5 py-0.5 rounded border border-green-600 bg-green-600/15 text-green-300">{% trans "Cours publié" %}</span>
+                                            <span class="px-2 py-0.5 rounded text-[11px] border border-green-600 bg-green-600/15 text-green-300">{% trans "Cours publié" %}</span>
                                         {% elif entree.cours %}
-                                            <span class="px-1.5 py-0.5 rounded border border-amber-500 bg-amber-500/15 text-amber-300">{% trans "Cours provisoire" %}</span>
+                                            <span class="px-2 py-0.5 rounded text-[11px] border border-amber-500 bg-amber-500/15 text-amber-300">{% trans "Cours provisoire" %}</span>
                                         {% else %}
-                                            <span class="px-1.5 py-0.5 rounded border border-gray-600 bg-gray-900 text-gray-400">{% trans "Aucun cours" %}</span>
+                                            <span class="px-2 py-0.5 rounded text-[11px] border border-gray-600 bg-gray-900 text-gray-400">{% trans "Aucun cours" %}</span>
                                         {% endif %}
-                                        {% if entree.fiche %}<span class="text-gray-400">· {% trans "fiche commencée" %}</span>{% endif %}
-                                    </p>
+                                        {% if entree.fiche %}<span class="text-[11px] text-gray-400">· {% trans "fiche commencée" %}</span>{% endif %}
+                                    </div>
                                 </li>
                             {% endfor %}
                         </ul>
