@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load static i18n %}
 
 {% block title %}{{ exercise.title }} - Exercices Python{% endblock %}
 
@@ -252,6 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     showResults(data.success ? 'success' : 'failed', data);
 
                     if (data.success) {
+                        feterLaReussite();
                         const badgeContainer = document.querySelector('.flex.items-center.space-x-2');
                         const badgeExist = badgeContainer.querySelector('.text-primary-green');
                         if (!badgeExist) {
@@ -450,6 +451,41 @@ document.addEventListener('DOMContentLoaded', function () {
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 });
+    {% comment %}
+    Koda fête un exercice réussi.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C13 (E3) — accessibilité
+
+    Choix : une apparition brève dans un coin, et non une fenêtre modale.
+    Motivation : l'apprenant vient de faire passer ses tests ; l'interrompre
+    pour lui faire fermer une boîte le sort de ce qu'il était en train de
+    faire. Koda passe, félicite, s'en va.
+
+    `aria-hidden` : la réussite est déjà annoncée par le panneau de résultats,
+    qui est du texte. Le personnage n'ajoute rien qu'un lecteur d'écran doive
+    entendre — et il ne remplace rien.
+    {% endcomment %}
+    function feterLaReussite() {
+        if (document.getElementById('koda-fete')) { return; }
+        const boite = document.createElement('div');
+        boite.id = 'koda-fete';
+        boite.className = 'fixed bottom-4 left-4 z-40 pointer-events-none';
+        boite.innerHTML = `
+            <div data-koda class="koda"
+                 style="width:160px;height:178px;
+                        background-image:url('{% static 'img/koda/planches/koda-joie.png' %}');
+                        background-size:1280px 1068px"
+                 data-jeu="joie" data-colonnes="8"
+                 data-largeur="160" data-hauteur="178"
+                 data-etat-initial="fete"
+                 ${document.body.dataset.animationKoda === 'desactivee' ? 'data-animation="desactivee"' : ''}
+                 aria-hidden="true"></div>`;
+        document.body.appendChild(boite);
+        if (window.Koda) { Koda.brancher(); }
+        setTimeout(() => boite.remove(), 4500);
+    }
+
 </script>
 
 <style>

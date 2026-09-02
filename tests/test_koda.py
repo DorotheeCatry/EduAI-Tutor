@@ -399,3 +399,88 @@ def test_aucune_constante_du_script_n_est_employee_sans_etre_declaree():
         "employées sans être déclarées, le script lèvera au chargement : %s"
         % manquantes
     )
+
+
+# --- Les réactions du quiz solo et de l'exercice --------------------------
+
+
+SOLO = Path("apps/quiz/templates/quiz/quiz_start.html")
+EXERCICE = Path("apps/exercises/templates/exercises/exercise_detail.html")
+
+
+def test_le_quiz_solo_n_annonce_plus_son_resultat_par_une_boite_native():
+    """
+    Le résultat s'affiche dans la page, pas dans un `alert()`.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+
+    Une boîte de dialogue native ne se met pas en forme, échappe aux catalogues
+    de traduction, et disparaît au clic : l'apprenant n'avait plus rien sous
+    les yeux au moment où la page se rechargeait.
+    """
+    gabarit = SOLO.read_text(encoding="utf-8")
+    fin = gabarit[gabarit.index("function showFinalResults"):]
+
+    assert "alert(" not in fin, "le résultat ne doit plus passer par une boîte native"
+    # Les attributs sont posés par `setAttribute`, pas écrits dans le gabarit
+    # de chaîne : c'est la valeur qui compte, pas la forme.
+    assert '"role", "dialog"' in fin and 'aria-modal' in fin, (
+        "l'écran de fin est une fenêtre : elle doit se déclarer comme telle"
+    )
+    assert ".focus()" in fin, "le clavier doit arriver dans la fenêtre ouverte"
+
+
+def test_le_score_reste_du_texte_dans_l_ecran_de_fin_solo():
+    """
+    Koda accompagne le résultat, il ne le porte pas.
+
+    Compétence visée : C13 (épreuve E3) — accessibilité
+    """
+    gabarit = SOLO.read_text(encoding="utf-8")
+    fin = gabarit[gabarit.index("function showFinalResults"):]
+
+    assert "${score} / ${questions.length}" in fin, "le score doit être écrit"
+    assert "${palier}" in fin, "le commentaire de palier doit être écrit"
+    assert 'aria-hidden="true"' in fin, "le personnage est décoratif"
+
+
+def test_le_resultat_part_au_serveur_avant_tout_affichage():
+    """
+    L'enregistrement précède l'écran de fin, et lui survit.
+
+    Compétence visée : C20 (épreuve E5), C21 (E5)
+
+    La chaîne d'enregistrement du quiz solo était écrite, joignable, et rien ne
+    l'appelait (incident 010). Refaire l'écran de fin est exactement l'occasion
+    de la débrancher à nouveau sans s'en apercevoir.
+    """
+    gabarit = SOLO.read_text(encoding="utf-8")
+    fin = gabarit[gabarit.index("function showFinalResults"):]
+
+    assert "quiz:submit" in fin, "le résultat doit être envoyé au serveur"
+    assert "keepalive: true" in fin, (
+        "la requête doit survivre à une navigation"
+    )
+    assert fin.index("fetch(") < fin.index("appendChild(ecran)"), (
+        "l'envoi doit précéder l'affichage"
+    )
+
+
+def test_l_exercice_reussi_fete_sans_interrompre():
+    """
+    Koda félicite en passant, et ne demande rien à personne.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+
+    Une fenêtre modale sortirait l'apprenant de ce qu'il vient de faire.
+    `pointer-events-none` garantit que le personnage n'intercepte aucun clic.
+    """
+    gabarit = EXERCICE.read_text(encoding="utf-8")
+
+    assert "feterLaReussite();" in gabarit, "la réussite doit déclencher la fête"
+    fete = gabarit[gabarit.index("function feterLaReussite"):]
+    assert "pointer-events-none" in fete, (
+        "le personnage ne doit intercepter aucun clic"
+    )
+    assert 'aria-hidden="true"' in fete
+    assert "boite.remove()" in fete, "il passe, il ne s'installe pas"
