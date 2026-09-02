@@ -85,6 +85,8 @@
                             {% else %}
                                 <img src="{% static 'koda/' %}{{ participant.user.avatar }}" alt="{% trans "Avatar" %}" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
                             {% endif %}
+                        {% elif participant.user.koda_avatar %}
+                            <img src="{% static 'koda/' %}{{ participant.user.koda_avatar }}" alt="{% trans "Avatar" %}" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
                         {% else %}
                             <img src="{% static 'koda/koda_base.png' %}" alt="{% trans "Avatar" %}" class="w-20 h-20 rounded-full object-cover border-4 border-gray-400 shadow-lg" style="object-position: center top;">
                         {% endif %}

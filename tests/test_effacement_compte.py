@@ -34,8 +34,16 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
-def apprenant(django_user_model):
-    """Un compte apprenant avec un avatar qui lui est propre."""
+def apprenant(django_user_model, settings, tmp_path):
+    """
+    Un compte apprenant avec un avatar qui lui est propre.
+
+    Les fichiers écrits par ces tests atterrissent dans un dossier temporaire,
+    et non dans le `media/` du projet. Sans cette isolation, chaque exécution y
+    laissait un avatar de plus : cent quatre-vingt-dix y avaient été relevés le
+    02/09/2026. Un test ne doit rien déposer dans le dépôt.
+    """
+    settings.MEDIA_ROOT = tmp_path
     utilisateur = django_user_model.objects.create_user(
         username="apprenant_effacement",
         email="apprenant.effacement@exemple.test",

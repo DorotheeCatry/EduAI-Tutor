@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from apps.monitoring.vues import metriques as vue_metriques
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -26,6 +26,7 @@ from django.views.i18n import set_language
 from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve as django_serve
 
 def redirect_to_login(request):
     """Redirects to default login page"""
@@ -94,3 +95,36 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    # Les fichiers statiques sont servis par WhiteNoise, qui ne connaît que
+    # STATIC_ROOT. Les médias — les seuls fichiers déposés par les apprenants,
+    # c'est-à-dire les photos de profil — n'étaient servis par personne : ils
+    # étaient bien enregistrés, et toute requête vers /media/ rendait 404.
+    # L'avatar semblait donc « ne pas se mettre » alors qu'il était en base.
+    #
+    # Choix : la vue `serve` de Django plutôt qu'un serveur web devant
+    # l'application. Motivation : le projet tient sur un seul conteneur et le
+    # volume concerné est de quelques dizaines d'images. Ajouter un serveur
+    # web pour cela coûterait plus en pièces mobiles que ce qu'il rapporte.
+    # La documentation de Django déconseille cette vue à grande échelle : la
+    # limite est connue et assumée, elle est écrite dans les réserves.
+    #
+    # Ce chemin ne sert QUE MEDIA_ROOT : `serve` refuse toute cible hors du
+    # `document_root`, remontées de répertoire comprises.
+    def servir_un_media(requete, path):
+        """
+        Sert un fichier de MEDIA_ROOT.
+
+        Compétence visée : C17 (épreuve E4)
+
+        Choix : relire `settings.MEDIA_ROOT` à chaque requête plutôt que de le
+        figer dans la table des routes. Motivation : figé, il resterait le
+        dossier réel du projet même quand un test le déplace ailleurs — les
+        tests écriraient alors dans les médias du dépôt, et ne prouveraient
+        rien sur le réglage qu'ils croient vérifier.
+        """
+        return django_serve(requete, path, document_root=settings.MEDIA_ROOT)
+
+    urlpatterns += [
+        re_path(r"^media/(?P<path>.*)$", servir_un_media, name="media"),
+    ]
