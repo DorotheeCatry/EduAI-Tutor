@@ -12,6 +12,11 @@ import markdown2
 from django.utils.translation import gettext as _
 from apps.chat.actions import actions_pour
 from apps.chat.contexte import contexte_de_cours
+from django.db.models import Count
+from django.views.decorators.http import require_POST
+
+from apps.courses.models import FicheDApprenant
+
 
 
 # Extras markdown2 retenus pour le rendu des cours. Regroupés ici plutôt que
@@ -283,3 +288,164 @@ def delete_course(request, course_id):
                             % {"erreur": delete_error})
     
     return redirect('courses:my_courses')
+
+
+# ===========================================================================
+# L'onglet à trois entrées : mes fiches, catalogue, sujet libre
+# ===========================================================================
+#
+# Compétence visée : C17 (épreuve E4)
+#
+# L'entrée naturelle vers un cours reste le parcours, depuis « ce que je fais
+# maintenant » sur l'accueil. Cet onglet est le catalogue, pas la porte
+# principale — c'est pourquoi il ne remplace pas le générateur mais l'accueille
+# comme une entrée parmi trois.
+
+
+@login_required
+def catalogue(request):
+    """
+    Les compétences du référentiel, avec l'état de leur cours et de la fiche.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Choix : trois états affichés en toutes lettres — cours publié, cours
+    provisoire, aucun cours. Motivation : la distinction entre un contenu relu
+    par un formateur et une production automatique décide de la confiance que
+    l'apprenant lui accorde ; elle ne peut pas reposer sur une nuance de
+    couleur.
+    """
+    from apps.courses.services import cours_actif
+    from apps.referentiel.models import Competence
+    from apps.referentiel.services import referentiel_actif
+
+    referentiel = referentiel_actif()
+    competences = (
+        Competence.objects
+        .filter(module__referentiel=referentiel)
+        .select_related("module")
+        .order_by("module__ordre", "module__code", "code")
+        if referentiel else Competence.objects.none()
+    )
+
+    fiches = {f.competence_id: f for f in
+              FicheDApprenant.objects.filter(apprenant=request.user)
+              .annotate(nombre_ajouts=Count("ajouts"))}
+
+    entrees = []
+    for competence in competences:
+        cours = cours_actif(competence)
+        entrees.append({
+            "competence": competence,
+            "cours": cours,
+            "fiche": fiches.get(competence.id),
+        })
+
+    return render(request, "courses/catalogue.html", {
+        "referentiel": referentiel,
+        "entrees": entrees,
+        "mes_fiches": [f for f in fiches.values() if f.nombre_ajouts],
+    })
+
+
+@login_required
+def page_de_cours(request, code):
+    """
+    Le cours de référence d'une compétence, et les actions qui l'enrichissent.
+
+    Compétence visée : C17 (épreuve E4)
+    """
+    from apps.courses.services import cours_actif, fiche_de
+    from apps.referentiel.models import Competence
+
+    competence = get_object_or_404(Competence, code=code)
+    cours = cours_actif(competence)
+    fiche = fiche_de(request.user, competence)
+
+    return render(request, "courses/page_de_cours.html", {
+        "competence": competence,
+        "cours": cours,
+        "fiche": fiche,
+        "ajouts": fiche.ajouts.all(),
+        "actions": ACTIONS_D_ENRICHISSEMENT,
+    })
+
+
+@login_required
+def ma_fiche(request, code):
+    """
+    La fiche de l'apprenant pour une compétence : sommaire, ajouts, exercices.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Choix : les exercices réalisés sont affichés ici, sans rien enregistrer de
+    nouveau. Motivation : leur rattachement à la compétence existe déjà
+    (décision 027) ; il suffisait de les montrer au bon endroit.
+    """
+    from apps.courses.services import cours_actif, fiche_de
+    from apps.exercises.models import UserExerciseProgress
+    from apps.referentiel.models import Competence
+
+    competence = get_object_or_404(Competence, code=code)
+    fiche = fiche_de(request.user, competence)
+
+    exercices = (
+        UserExerciseProgress.objects
+        .filter(user=request.user, exercise__competence=competence)
+        .select_related("exercise")
+        .order_by("-completed_at", "-first_attempt_at")
+    )
+
+    return render(request, "courses/fiche.html", {
+        "competence": competence,
+        "fiche": fiche,
+        "ajouts": fiche.ajouts.all(),
+        "cours": cours_actif(competence),
+        "exercices": exercices,
+    })
+
+
+#: Les actions proposées sur une page de cours. Elles reprennent celles du
+#: tuteur (`apps/chat/actions.py`) : ce sont les mêmes gestes, au même moment.
+ACTIONS_D_ENRICHISSEMENT = (
+    {"cle": "developper", "libelle": _("Développe cette partie")},
+    {"cle": "cas_complexe", "libelle": _("Un cas plus complexe")},
+    {"cle": "incompris", "libelle": _("Je ne comprends pas")},
+)
+
+
+@login_required
+@require_POST
+def enrichir_la_fiche(request, code):
+    """
+    Produit un enrichissement et l'ajoute à la fiche.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+
+    Choix : le refus de quota est rendu tel quel à l'appelant, jamais converti
+    en panne. Motivation : un apprenant qui a épuisé ses quinze générations doit
+    lire qu'il les a épuisées, pas « une erreur est survenue ».
+    """
+    from apps.courses.models import AjoutDeFiche
+    from apps.courses.services import enrichir
+    from apps.quotas.service import QuotaDepasse
+    from apps.referentiel.models import Competence
+
+    competence = get_object_or_404(Competence, code=code)
+    question = (request.POST.get("question") or "").strip()
+    section = (request.POST.get("section") or "").strip()
+    if not question:
+        return JsonResponse({"error": _("Question absente.")}, status=400)
+
+    try:
+        ajout = enrichir(request.user, competence, question,
+                         origine=AjoutDeFiche.A_LA_DEMANDE, section_visee=section)
+    except QuotaDepasse as refus:
+        return JsonResponse({"error": str(refus), "quota": True}, status=429)
+
+    return JsonResponse({
+        "contenu": ajout.contenu,
+        "question": ajout.question,
+        "sources": ajout.sources,
+        "cree_le": ajout.cree_le.isoformat(),
+    })

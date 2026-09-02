@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% comment %}
+La page de cours d'une compétence.
+
+Compétence visée : C17 (épreuve E4)
+Compétence concernée : C13 (E3) — accessibilité ; C4 (E1) — attribution
+
+Le statut du cours est annoncé en tête, en toutes lettres. Un cours provisoire
+porte un bandeau, pas une note grise en pied de page : l'apprenant doit savoir
+avant de lire, pas après.
+{% endcomment %}
+
+{% block title %}{{ competence.intitule }} — EduAI Tutor{% endblock %}
+
+{% block content %}
+<div class="h-full p-4 flex flex-col gap-3 overflow-hidden">
+
+    <div class="flex items-start justify-between gap-3 flex-shrink-0">
+        <div class="min-w-0">
+            <h1 class="text-xl font-bold text-white truncate">{{ competence.intitule }}</h1>
+            <p class="text-xs text-gray-400">{{ competence.module.intitule }}</p>
+        </div>
+        <a href="{% url 'courses:ma_fiche' competence.code %}"
+           class="px-3 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white flex-shrink-0">
+            {% trans "Ma fiche" %}
+        </a>
+    </div>
+
+    {% if cours and cours.statut == 'provisoire' %}
+        {% comment %}
+        Le bandeau du cours provisoire. Il porte une icône ET un texte : la
+        distinction ne repose pas sur la couleur, qui ne dit rien à qui ne la
+        perçoit pas.
+        {% endcomment %}
+        <div class="flex items-start gap-2 p-3 rounded-lg border border-amber-500 bg-amber-500/10 flex-shrink-0">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-300 mt-0.5 flex-shrink-0" aria-hidden="true"></i>
+            <p class="text-sm text-amber-100">
+                <strong>{% trans "Cours provisoire" %}</strong> —
+                {% trans "engendré par le modèle en attendant celui de votre formateur. Il n'a été relu par personne. Vos ajouts, eux, seront conservés quand le cours publié arrivera." %}
+            </p>
+        </div>
+    {% endif %}
+
+    <div class="flex-1 min-h-0 grid gap-3 lg:grid-cols-[1.6fr_1fr] overflow-hidden">
+
+        <section aria-labelledby="titre-cours"
+                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
+            <h2 id="titre-cours" class="sr-only">{% trans "Cours de référence" %}</h2>
+            {% if cours %}
+                <article class="text-gray-200 text-sm leading-relaxed space-y-3">{{ cours.contenu|linebreaks }}</article>
+
+                {% if cours.sources %}
+                    <h3 class="text-sm font-semibold text-white mt-4">{% trans "Sources" %}</h3>
+                    <ul class="mt-1 space-y-1 text-xs">
+                        {% for source in cours.sources %}
+                            <li>
+                                <a href="{{ source.url_source }}" rel="noopener"
+                                   class="text-primary-blue hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded">{{ source.titre }}</a>
+                                <span class="text-gray-500">— {{ source.code_licence }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% else %}
+                <div class="p-4 rounded-lg border border-dashed border-gray-600">
+                    <p class="text-gray-200">{% trans "Aucun cours pour cette compétence." %}</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                        {% trans "Votre formateur n'a pas encore publié le sien. Vous pouvez commencer sans attendre : demandez un enrichissement ci-contre, il ira dans votre fiche et y restera." %}
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section aria-labelledby="titre-actions"
+                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
+            <h2 id="titre-actions" class="text-base font-bold text-white mb-2">
+                {% trans "Enrichir ma fiche" %}
+            </h2>
+            <p class="text-xs text-gray-400 mb-3">
+                {% trans "Chaque ajout va dans votre fiche, avec la question qui l'a produit et les sources employées." %}
+            </p>
+
+            <div class="space-y-2">
+                {% for action in actions %}
+                    <button type="button" data-question="{{ action.libelle }}"
+                            class="action-enrichir w-full text-left px-3 py-2 rounded-lg border border-gray-600 bg-gray-900 text-sm text-gray-200 hover:border-primary-green focus:outline-none focus:ring-2 focus:ring-white">
+                        {{ action.libelle }}
+                    </button>
+                {% endfor %}
+            </div>
+
+            {% comment %}
+            L'arrivée d'un ajout est annoncée aux technologies d'assistance :
+            sans `aria-live`, un contenu inséré après le chargement passe
+            inaperçu pour qui ne voit pas l'écran.
+            {% endcomment %}
+            <p id="etat-enrichissement" role="status" aria-live="polite"
+               class="mt-3 text-xs text-gray-400"></p>
+        </section>
+    </div>
+</div>
+
+{% csrf_token %}
+<script>
+document.querySelectorAll('.action-enrichir').forEach(bouton => {
+    bouton.addEventListener('click', async () => {
+        const etat = document.getElementById('etat-enrichissement');
+        etat.textContent = "{% trans "Koda rédige votre ajout…" %}";
+        document.querySelectorAll('.action-enrichir').forEach(b => b.disabled = true);
+        try {
+            const reponse = await fetch("{% url 'courses:enrichir' competence.code %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: new URLSearchParams({question: bouton.dataset.question}),
+            });
+            const corps = await reponse.json();
+            if (!reponse.ok) {
+                etat.textContent = corps.error || "{% trans "L'ajout n'a pas pu être produit." %}";
+                return;
+            }
+            etat.textContent = "{% trans "Ajout enregistré dans votre fiche." %}";
+            if (window.Koda) Koda.etat('parle');
+        } catch (e) {
+            etat.textContent = "{% trans "L'ajout n'a pas pu être produit." %}";
+        } finally {
+            document.querySelectorAll('.action-enrichir').forEach(b => b.disabled = false);
+        }
+    });
+});
+</script>
+{% endblock %}

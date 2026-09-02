@@ -140,16 +140,24 @@ class AIOrchestrator:
             }
     
     @sous_agent("researcher")
-    def answer_question(self, question):
+    def answer_question(self, question, sans_quota=False):
         """
         Answers a question using the RAG system
 
         Compétence visée : C13 (épreuve E3) — le quota est décompté ici.
+
+        Choix : `sans_quota` est faux par défaut, et le seul appelant qui le
+        lève est l'enrichissement proposé par le parcours. Motivation :
+        l'apprenant ne l'a pas demandé, et voir son compteur baisser sans geste
+        de sa part ne se comprend qu'après l'avoir subi deux fois
+        (décision 040). Le défaut reste le décompte : une dépense non imputée
+        doit être un cas déclaré, jamais un oubli.
         """
         # Voir generate_course : le décompte précède le `try` pour la même
         # raison. Cette méthode sert aussi bien le chat que la génération
         # d'exercices, qui la sollicitent avec des invites différentes.
-        self._decompter()
+        if not sans_quota:
+            self._decompter()
 
         try:
             print(f"🔍 Searching for: {question}")

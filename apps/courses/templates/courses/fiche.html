@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% comment %}
+La fiche de l'apprenant : un document unique par compétence, qui s'étoffe.
+
+Compétence visée : C17 (épreuve E4)
+Compétences concernées : C13 (E3) — accessibilité ; C4 (E1) — attribution
+
+Un sommaire, parce que c'est ce qui rend un document long utilisable. Il est
+fait de liens vers des ancres : navigable au clavier sans une ligne de script.
+
+Chaque ajout porte la question qui l'a produit, sa date, la section visée et ses
+sources. La question est ce qui le rend encore compréhensible le jour où le
+cours de référence aura changé.
+{% endcomment %}
+
+{% block title %}{% trans "Ma fiche" %} — {{ competence.intitule }}{% endblock %}
+
+{% block content %}
+<div class="h-full p-4 flex flex-col gap-3 overflow-hidden">
+
+    <div class="flex items-start justify-between gap-3 flex-shrink-0">
+        <div class="min-w-0">
+            <h1 class="text-xl font-bold text-white truncate">
+                {% trans "Ma fiche" %} — {{ competence.intitule }}
+            </h1>
+            <p class="text-xs text-gray-400">
+                {{ competence.module.intitule }}
+                {% if ajouts %}· {% blocktrans count n=ajouts|length %}{{ n }} ajout{% plural %}{{ n }} ajouts{% endblocktrans %}{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'courses:page_de_cours' competence.code %}"
+           class="px-3 py-2 rounded-lg bg-gray-700 text-white text-sm font-medium hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white flex-shrink-0">
+            {% trans "Le cours" %}
+        </a>
+    </div>
+
+    <div class="flex-1 min-h-0 grid gap-3 lg:grid-cols-[1fr_2.2fr] overflow-hidden">
+
+        <nav aria-labelledby="titre-sommaire"
+             class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
+            <h2 id="titre-sommaire" class="text-base font-bold text-white mb-2">
+                {% trans "Sommaire" %}
+            </h2>
+            {% if ajouts %}
+                <ol class="space-y-1 text-sm">
+                    {% for ajout in ajouts %}
+                        <li>
+                            <a href="#ajout-{{ ajout.id }}"
+                               class="text-gray-300 hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded block truncate">
+                                {{ ajout.question }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p class="text-sm text-gray-400">{% trans "Le sommaire se remplira avec vos ajouts." %}</p>
+            {% endif %}
+
+            {% if exercices %}
+                <h2 class="text-base font-bold text-white mt-4 mb-2">{% trans "Mes exercices" %}</h2>
+                <ul class="space-y-1 text-sm">
+                    {% for progression in exercices %}
+                        <li class="flex items-baseline gap-1.5">
+                            <span class="text-gray-300 truncate">{{ progression.exercise.title }}</span>
+                            {% if progression.is_completed %}
+                                <span class="text-[11px] text-green-300 flex-shrink-0">{% trans "réussi" %}</span>
+                            {% else %}
+                                <span class="text-[11px] text-gray-500 flex-shrink-0">{% trans "en cours" %}</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </nav>
+
+        <section aria-labelledby="titre-ajouts"
+                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
+            <h2 id="titre-ajouts" class="sr-only">{% trans "Mes ajouts" %}</h2>
+
+            {% if ajouts %}
+                {% for ajout in ajouts %}
+                    <article id="ajout-{{ ajout.id }}" class="mb-5 scroll-mt-2">
+                        <h3 class="text-base font-semibold text-white">{{ ajout.question }}</h3>
+                        <p class="text-[11px] text-gray-500 mb-2">
+                            {{ ajout.cree_le|date:"d/m/Y" }}
+                            {% if ajout.section_visee %}· {% blocktrans with section=ajout.section_visee %}sur « {{ section }} »{% endblocktrans %}{% endif %}
+                            {% if ajout.origine == 'parcours' %}
+                                · <span class="text-primary-blue">{% trans "proposé par votre parcours, offert" %}</span>
+                            {% endif %}
+                            {% if ajout.niveau_vise %}· {% blocktrans with n=ajout.niveau_vise %}niveau {{ n }}{% endblocktrans %}{% endif %}
+                        </p>
+                        <div class="text-sm text-gray-200">{{ ajout.contenu|linebreaks }}</div>
+
+                        {% if ajout.sources %}
+                            <p class="text-[11px] text-gray-400 mt-2">
+                                {% trans "Sources :" %}
+                                {% for source in ajout.sources %}
+                                    <a href="{{ source.url_source }}" rel="noopener"
+                                       class="text-primary-blue hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded">{{ source.titre|truncatechars:48 }}</a><span class="text-gray-500">
+                                    ({{ source.code_licence }})</span>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            {% else %}
+                <div class="p-4 rounded-lg border border-dashed border-gray-600">
+                    <p class="text-gray-200">{% trans "Votre fiche est encore vide." %}</p>
+                    <p class="text-sm text-gray-400 mt-1">
+                        {% trans "Ouvrez le cours et demandez à Koda de développer un passage, un cas plus complexe, ou d'expliquer autrement. Chaque réponse viendra ici, avec la question qui l'a produite." %}
+                    </p>
+                    <a href="{% url 'courses:page_de_cours' competence.code %}"
+                       class="inline-block mt-3 px-4 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                        {% trans "Ouvrir le cours" %}
+                    </a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

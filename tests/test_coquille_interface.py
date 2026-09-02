@@ -35,7 +35,7 @@ PAGES_AUTONOMES = (
 #   - `prose` et `prose-invert`, qui viennent du greffon typography — non
 #     installé : ces deux-là ne produisent aucun style aujourd'hui (réserve 18).
 HORS_TAILWIND = {
-    "avatar-option", "language-python", "prose", "prose-invert", "python",
+    "action-enrichir", "avatar-option", "language-python", "prose", "prose-invert", "python",
     "question-scroll-container", "tab-button", "tab-content",
     "test-actual", "test-result", "test-status", "tuteur-dock",
 }

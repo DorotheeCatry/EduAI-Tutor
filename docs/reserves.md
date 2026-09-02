@@ -921,3 +921,57 @@ Porter la version de la source dans les métadonnées du fragment, au même titr
 que la licence et l'attribution qui y voyagent déjà. Puis décider d'une règle
 de péremption. La date de collecte, elle, est déjà enregistrée : c'est un point
 de départ.
+
+---
+
+## 21. La montée de niveau et l'enrichissement par le parcours ne sont pas livrés
+
+**Compétence concernée :** C17 (épreuve E4) — application web
+**Statut :** consignée, non livrée, et le modèle est prêt à les recevoir
+
+Le chantier des cours prévoyait six points. **Les quatre premiers sont livrés**
+— modèle de données, page de cours, fiche, onglet à trois entrées. Les deux
+derniers ne le sont pas.
+
+### La montée de niveau
+
+Le référentiel définit trois niveaux : imiter, adapter, transposer. Un cours de
+niveau 2 **ne doit pas reformuler le niveau 1 en plus long** — ce qu'un modèle
+produira spontanément si on lui demande « la version niveau 2 ».
+
+Deux moyens de le contraindre, et ils vont ensemble : l'invite, qui dit que le
+niveau 2 traite *quand ça casse et quels choix se posent* plutôt que *ce que
+c'est* ; et **la mesure du recouvrement** avec le niveau précédent, qui refuse
+la production si elle recopie.
+
+**Sans la mesure, l'invite ne tient pas.** Ce projet a documenté assez de cas où
+une intention non vérifiée ne produisait rien — c'est la famille B en entier. La
+fonctionnalité n'est donc pas livrée à moitié : elle n'est pas livrée.
+
+Le seuil ne sera pas fixé au jugé. Même méthode que pour le seuil de latence
+(décision 024) : engendrer quelques niveaux 2, relever leur recouvrement réel
+avec le niveau 1, et fixer le seuil sur ces valeurs.
+
+### L'enrichissement déclenché par le parcours
+
+Une erreur commise ailleurs sur une notion devrait faire apparaître une section
+dans la fiche. **Le modèle le prévoit** : `AjoutDeFiche.origine` porte déjà la
+valeur `parcours`, la règle de quota est tranchée et implémentée — cet ajout ne
+décompte rien et l'affiche —, et la fiche sait rendre la mention « proposé par
+votre parcours, offert ».
+
+Ce qui manque est le déclencheur : le point du parcours qui décide qu'une erreur
+mérite un enrichissement, et à quelle fréquence. C'est une règle pédagogique
+avant d'être du code.
+
+### Pourquoi maintenant
+
+Deux jours avant le rendu des livrables écrits. Les points 1 à 4 forment un
+ensemble cohérent et démontrable ; le point 5 exige une campagne de mesure avant
+même d'être écrit. Livrer une montée de niveau qui reformule serait pire que ne
+pas la livrer : elle donnerait l'illusion d'une progression.
+
+### À faire après le 14 septembre
+
+Mesurer le recouvrement, fixer le seuil, écrire l'invite de niveau, brancher le
+déclencheur du parcours. Le modèle de données n'aura pas à changer.
