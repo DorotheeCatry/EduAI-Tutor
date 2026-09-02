@@ -62,9 +62,19 @@ de référence. Il rend aussi visible un état qui ne l'était pas :
 | Les neuf autres | **aucun** |
 
 **Sept compétences sur vingt et une ont un cours ; quatorze n'en ont pas.**
+
+**Ce n'est pas un manque du dispositif, c'est un arbitrage de délai.** Les
+supports des dix autres modules n'ont pas été écrits, et le pipeline les
+ingérerait sans la moindre modification : le rattachement se déclare dans le
+fichier de correspondance, l'import est idempotent, et rien dans le code ne
+suppose que seul le module Python existe. Ce qui manque est du contenu
+pédagogique, pas un mécanisme.
+
 C'est précisément la situation que le double statut de la décision 041 prévoit :
 un cours provisoire donne de quoi commencer, en disant clairement ce qu'il est,
-en attendant que le formateur publie le sien.
+en attendant que le formateur publie le sien. Les quatorze compétences sans
+support ne sont donc pas des impasses — elles sont l'état d'attente que ce
+mécanisme a été conçu pour couvrir.
 
 Le versionnement ne crée pas ce manque — il le rend constatable depuis le
 dépôt, au lieu de dépendre de ce qu'il y a sur une machine.
