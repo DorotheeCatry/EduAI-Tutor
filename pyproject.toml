@@ -84,6 +84,12 @@ target-version = "py313"
 extend-exclude = [
     ".venv", "**/migrations", "theme/static_src", "staticfiles",
     "data_pipeline/data",
+    # Supports de cours et carnets Jupyter : du matériau pédagogique, pas du
+    # code du projet. Le linter y voit des espaces en fin de ligne dans des
+    # cellules d'exemple ; les corriger modifierait un document dont le contenu
+    # est la preuve, et dont la provenance fait l'objet d'une réserve écrite.
+    # On ne met pas au format ce qu'on n'a pas écrit.
+    "data/contents",
 ]
 
 [tool.ruff.lint.per-file-ignores]
