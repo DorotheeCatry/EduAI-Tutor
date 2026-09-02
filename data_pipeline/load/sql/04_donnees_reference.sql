@@ -52,7 +52,30 @@ INSERT INTO licence (code_licence, libelle, url_texte,
 
     -- Ajoutée après coup : la couche de transformation a révélé que 1 663
     -- documents du corpus la portent, sans qu'aucun code ne leur corresponde.
-    -- CC BY-SA 3.0 et 4.0 sont deux licences distinctes ; les confondre
+    -- CC BY-SA 3.0 et 4.0 sont deux licences distinctes ,
+
+    -- Licences de la sixième source (documentation des bibliothèques).
+    -- Chacune a été relevée sur le dépôt du projet concerné, jamais reprise
+    -- d'un tableau de synthèse (décision 039).
+    ('BSD-3-CLAUSE',
+     'BSD 3-Clause « New » or « Revised » License',
+     'https://opensource.org/license/bsd-3-clause',
+     TRUE, TRUE, 'Conserver la notice de copyright et la liste des conditions'),
+
+    ('POSTGRESQL',
+     'PostgreSQL License',
+     'https://www.postgresql.org/about/licence/',
+     TRUE, TRUE, 'Conserver la notice de copyright et le paragraphe d''autorisation'),
+
+    ('APACHE-2.0',
+     'Apache License 2.0',
+     'https://www.apache.org/licenses/LICENSE-2.0',
+     TRUE, TRUE, 'Conserver les notices de copyright, de licence et de modification'),
+
+    ('MIT',
+     'MIT License',
+     'https://opensource.org/license/mit',
+     TRUE, TRUE, 'Conserver la notice de copyright et la permission'); les confondre
     -- ferait redistribuer ces documents sous des conditions qui ne sont pas
     -- les leurs. Les posts Stack Exchange antérieurs à mai 2018 relèvent de
     -- la 3.0, ceux publiés ensuite de la 4.0 — l'attribut ContentLicense de
@@ -118,7 +141,19 @@ INSERT INTO source (code_source, nom, code_type_source, url_racine,
 
     ('s2', 'Documentation Python officielle', 'scraping',
      'https://docs.python.org/3/',
-     'robots.txt lu par urllib.robotparser et interrogé avant chaque URL ; '
+     'robots.txt lu par urllib.robotparser et interrogé avant chaque URL ,
+
+    ('s6', 'Documentation officielle des bibliothèques', 'scraping',
+     'https://docs.opencv.org/4.x/',
+     'Six documentations : pandas, PostgreSQL, scikit-learn, PyTorch 2.13, '
+     'OpenCV, Django REST framework et FastAPI. robots.txt téléchargé avec le '
+     'User-Agent du projet — celui d''urllib est refusé par plusieurs de ces '
+     'sites, ce qui produisait un faux interdit — puis analysé par '
+     'robotparser ; extraction annulée si le fichier n''est pas exploitable. '
+     'Pause de deux secondes entre requêtes. Périmètre de 91 pages choisies, '
+     'jamais un parcours du site. Licences BSD 3-Clause, PostgreSQL, Apache '
+     '2.0 et MIT, toutes vérifiées à la source.',
+     365); '
      'extraction annulée si le fichier est inaccessible. User-Agent '
      'identifiant le projet. Pause de deux secondes entre requêtes. Contenu '
      'sous licence PSF, qui autorise explicitement la redistribution.',
