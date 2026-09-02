@@ -160,7 +160,7 @@ reste à reprendre après le 14 septembre.
 
 ---
 
-## 7. La latence d'embarquement en production — mesurée, arbitrée, assumée
+## 7. La latence d'embarquement en production — mesurée, arbitrée, puis corrigée
 
 **Composant :** serveur d'embarquement déployé (`docker/ollama/Dockerfile`)
 **Nature :** performance en conditions réelles ; peut rendre le RAG non
@@ -205,6 +205,53 @@ Trois enseignements, tous issus des chiffres :
 
 La mémoire, elle, n'est plus un sujet : 800 Mo mesurés contre 2 Go estimés.
 C'est la latence qui coûte, pas l'empreinte.
+
+### Correction du 31/08, au soir : la mesure d'hier était fausse, et ma conclusion avec
+
+**Médiane passée de 28 secondes à 4,6.**
+
+| Relevé | n | min | médiane | max |
+|---|---|---|---|---|
+| 31/08 matin | 9 | 14,0 s | **28,4 s** | 58,9 s |
+| 31/08 soir | 7 | 3,5 s | **4,6 s** | 14,5 s |
+
+Rien n'a changé du modèle, du processeur ni du corpus. Ce qui a changé est
+`OLLAMA_KEEP_ALIVE=24h`, posé le soir même — **pour borner la mémoire**, sans
+penser à la latence.
+
+**Ollama décharge son modèle après cinq minutes d'inactivité.** Les neuf
+mesures du matin étaient espacées : chacune rechargeait un modèle de 670 Mio
+avant d'embarquer la requête. Ce que je mesurais n'était pas le coût de
+l'inférence, c'était le coût du rechargement.
+
+### Ce que cela dit de ma conclusion précédente
+
+J'avais écarté le préchauffage en écrivant : « les neuf tirs sont **à chaud**,
+le modèle déjà chargé ». **Je ne l'avais pas vérifié.** Je l'avais supposé, et
+la supposition était fausse.
+
+Le préchauffage n'était donc pas l'option écartée par la mesure : c'était la
+réponse, et elle est arrivée par accident, en réglant autre chose.
+
+C'est une occurrence de plus du motif que ce projet documente — affirmer un
+état sans l'avoir constaté — dans le document même qui recommandait de mesurer
+plutôt que de supposer. Le paragraphe fautif est conservé ci-dessous, non
+réécrit.
+
+### Ce que cela change pour la soutenance
+
+Une recherche à 4,6 secondes de médiane est **démontrable en direct**. Le
+maximum observé, 14,5 s, reste long mais tenable ; il correspond
+vraisemblablement aux appels qui suivent une période creuse.
+
+Le premier appel après un déploiement reste à ~90 s : le modèle se charge. À
+prévoir avant la démonstration — une recherche à blanc suffit.
+
+**Le seuil d'alerte de latence, réglé à 75 s hier sur la dispersion d'alors,
+est désormais très au-dessus du régime réel.** Il ne se déclenchera plus
+jamais, ce qui est le défaut inverse de celui qu'il corrigeait. À ré-dériver
+sur le nouvel échantillon quand il sera plus fourni — et pas avant, faute de
+refaire la même erreur dans l'autre sens.
 
 ### L'arbitrage, si la mesure est de l'ordre de quarante secondes
 
