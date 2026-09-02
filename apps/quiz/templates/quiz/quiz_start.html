@@ -199,9 +199,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (reponses[i] === q.correct) score++;
             });
 
-            showResults(score, questions, reponses);
+            {% comment %}
+            L'envoi PRÉCÈDE l'affichage, et ce n'est pas un détail de style.
 
-            // Send to server
+            Compétence visée : C20 (épreuve E5), C21 (E5)
+            L'incident 010 est exactement celui-ci : des quiz vus comme faits,
+            dont la base ne portait aucune trace. Un apprenant qui quitte la
+            page à la seconde où son score s'affiche doit avoir déjà été
+            enregistré. `keepalive` fait survivre la requête à la navigation ;
+            encore faut-il qu'elle soit partie.
+            {% endcomment %}
             fetch("{% url 'quiz:submit' %}", {
                 method: "POST",
                 headers: {
@@ -215,6 +222,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }),
                 keepalive: true,
             }).catch(() => {});
+
+            showResults(score, questions, reponses);
         });
 
         function showResults(score, questions, reponses) {
@@ -248,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
                      data-etat-initial="${koda.etat}"
                      ${document.body.dataset.animationKoda === 'desactivee' ? 'data-animation="desactivee"' : ''}
                      aria-hidden="true"></div>
-                <h2 class="text-xl font-bold text-white">{{ t_fini|escapejs }}</h2>
+                <h2 id="titre-resultats" tabindex="-1" class="text-xl font-bold text-white">{{ t_fini|escapejs }}</h2>
                 <p class="text-3xl font-bold text-primary-green my-2">
                     ${score} / ${questions.length}
                     <span class="text-base text-gray-400">(${pourcentage} %)</span>
@@ -267,6 +276,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             `;
             section.appendChild(summary);
+
+            {% comment %}
+            Le clavier suit le contenu.
+
+            Compétence visée : C13 (épreuve E3) — accessibilité
+            L'écran de fin remplace le quiz DANS la page. Sans ce déplacement,
+            qui navigue au clavier ou par lecteur d'écran reste posé sur un
+            contenu qui n'existe plus, et rien n'annonce le résultat. Ce n'est
+            plus une fenêtre modale : le geste juste n'est pas de piéger le
+            focus, mais de l'amener au titre du résultat.
+            {% endcomment %}
+            const titre = summary.querySelector('#titre-resultats');
+            if (titre) titre.focus();
 
             // Per-question review
             questions.forEach((q, i) => {

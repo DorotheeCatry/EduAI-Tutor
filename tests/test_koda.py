@@ -417,17 +417,37 @@ def test_le_quiz_solo_n_annonce_plus_son_resultat_par_une_boite_native():
     Une boîte de dialogue native ne se met pas en forme, échappe aux catalogues
     de traduction, et disparaît au clic : l'apprenant n'avait plus rien sous
     les yeux au moment où la page se rechargeait.
+
+    L'écran de fin a été refait le 02/09/2026 : il n'est plus une fenêtre
+    modale mais une section qui remplace le quiz dans la page. Les assertions
+    qui décrivaient la fenêtre — `role="dialog"`, `aria-modal` — ont donc été
+    retirées : elles décrivaient une conception, non une garantie. Ce qui reste
+    ici est ce qui vaut quelle que soit la forme retenue.
     """
     gabarit = SOLO.read_text(encoding="utf-8")
-    fin = gabarit[gabarit.index("function showFinalResults"):]
+    fin = gabarit[gabarit.index("function showResults"):]
 
     assert "alert(" not in fin, "le résultat ne doit plus passer par une boîte native"
-    # Les attributs sont posés par `setAttribute`, pas écrits dans le gabarit
-    # de chaîne : c'est la valeur qui compte, pas la forme.
-    assert '"role", "dialog"' in fin and 'aria-modal' in fin, (
-        "l'écran de fin est une fenêtre : elle doit se déclarer comme telle"
+
+
+def test_le_clavier_suit_le_resultat_affiche():
+    """
+    Le focus est amené au titre du résultat.
+
+    Compétence visée : C13 (épreuve E3) — accessibilité
+
+    L'écran de fin remplace le quiz DANS la page. Sans déplacement du focus,
+    qui navigue au clavier ou par lecteur d'écran reste posé sur un contenu qui
+    n'existe plus, et rien n'annonce le résultat. Ce n'est plus une fenêtre :
+    on n'y piège pas le focus, on l'y amène.
+    """
+    gabarit = SOLO.read_text(encoding="utf-8")
+
+    assert 'id="titre-resultats" tabindex="-1"' in gabarit, (
+        "le titre du résultat doit pouvoir recevoir le focus"
     )
-    assert ".focus()" in fin, "le clavier doit arriver dans la fenêtre ouverte"
+    fin = gabarit[gabarit.index("function showResults"):]
+    assert ".focus()" in fin, "le clavier doit être amené au résultat"
 
 
 def test_le_score_reste_du_texte_dans_l_ecran_de_fin_solo():
@@ -437,7 +457,7 @@ def test_le_score_reste_du_texte_dans_l_ecran_de_fin_solo():
     Compétence visée : C13 (épreuve E3) — accessibilité
     """
     gabarit = SOLO.read_text(encoding="utf-8")
-    fin = gabarit[gabarit.index("function showFinalResults"):]
+    fin = gabarit[gabarit.index("function showResults"):]
 
     assert "${score} / ${questions.length}" in fin, "le score doit être écrit"
     assert "${palier}" in fin, "le commentaire de palier doit être écrit"
@@ -452,16 +472,19 @@ def test_le_resultat_part_au_serveur_avant_tout_affichage():
 
     La chaîne d'enregistrement du quiz solo était écrite, joignable, et rien ne
     l'appelait (incident 010). Refaire l'écran de fin est exactement l'occasion
-    de la débrancher à nouveau sans s'en apercevoir.
+    de la débrancher à nouveau sans s'en apercevoir — et la réécriture du
+    02/09/2026 avait en effet inversé l'ordre : l'affichage partait d'abord.
+
+    Ce test lit l'ordre dans le code appelant, pas dans `showResults` : c'est
+    là que la décision se prend.
     """
     gabarit = SOLO.read_text(encoding="utf-8")
-    fin = gabarit[gabarit.index("function showFinalResults"):]
 
-    assert "quiz:submit" in fin, "le résultat doit être envoyé au serveur"
-    assert "keepalive: true" in fin, (
+    assert "quiz:submit" in gabarit, "le résultat doit être envoyé au serveur"
+    assert "keepalive: true" in gabarit, (
         "la requête doit survivre à une navigation"
     )
-    assert fin.index("fetch(") < fin.index("appendChild(ecran)"), (
+    assert gabarit.index("quiz:submit") < gabarit.index("showResults(score"), (
         "l'envoi doit précéder l'affichage"
     )
 
@@ -491,30 +514,52 @@ def test_l_exercice_reussi_fete_sans_interrompre():
 COURS = Path("apps/courses/templates/courses/page_de_cours.html")
 
 
-def test_toute_page_qui_pilote_koda_le_charge_et_l_affiche():
+def test_la_page_de_cours_accueille_le_vrai_panneau_de_koda():
     """
-    Piloter les états de Koda suppose son animateur et un élément à animer.
+    La page de cours embarque le composant du tuteur, ancré.
 
     Compétence visée : C17 (épreuve E4)
     Compétence concernée : C21 (E5)
 
-    La page de cours appelait `Koda.etat('reflechit')` puis `Koda.etat('parle')`
-    depuis le 02/09/2026, sans qu'aucun `[data-koda]` n'existe dans la page et
-    sans que `koda.js` y soit chargé : `window.Koda` était indéfini et chaque
-    appel tombait dans le vide. Le code était écrit, atteignable, et n'a jamais
-    rien fait — le troisième motif d'incident du projet.
+    Cette page a porté un chat écrit pour elle : un champ, une liste de
+    bulles, et des appels à `Koda.etat()` alors que ni `koda.js` ni aucun
+    élément `data-koda` n'existaient dans la page — du code écrit, atteignable,
+    qui n'a jamais rien fait. Un second chat, c'est un second comportement à
+    tenir : quotas, historique, brouillon, sources. Ils avaient divergé.
 
-    `koda.js` n'était chargé que par le panneau flottant, que cette page écarte
-    volontairement. Retirer un composant a donc emporté une dépendance que rien
-    ne rendait visible.
+    Le composant apporte avec lui l'animateur et l'élément animé : ce test
+    vérifie qu'on passe bien par lui, et non qu'on a recopié ses morceaux.
     """
     gabarit = COURS.read_text(encoding="utf-8")
 
-    if "Koda.etat(" not in gabarit:
-        pytest.skip("cette page ne pilote plus Koda")
+    assert "components/tuteur.html" in gabarit, (
+        "la page doit inclure le composant du tuteur, pas en réécrire un"
+    )
+    assert "tuteur_ancre=True" in gabarit, "il doit être ancré, pas flottant"
+    assert "koda-formulaire" not in gabarit, (
+        "le chat maison doit avoir disparu, sinon il y en a deux"
+    )
 
-    assert "js/koda.js" in gabarit, "l'animateur doit être chargé par la page"
-    assert "data-koda" in gabarit, "il faut un élément à animer"
-    # L'animateur ne peut animer que ce qu'il sait dimensionner.
-    for attribut in ("data-colonnes", "data-largeur", "data-hauteur"):
-        assert attribut in gabarit, f"{attribut} manque à l'élément animé"
+    composant = Path("templates/components/tuteur.html").read_text(encoding="utf-8")
+    assert "js/koda.js" in composant, "le composant charge l'animateur"
+    assert "data-koda" in composant, "le composant porte l'élément animé"
+
+
+def test_le_panneau_ancre_ne_se_referme_pas():
+    """
+    Ancré dans une colonne, le panneau n'a ni repli ni glissement.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Replier un panneau qui occupe une colonne de la page laisserait un trou à
+    sa place, sans rien pour le rouvrir : la poignée flottante, elle, n'est pas
+    rendue dans ce mode.
+    """
+    composant = Path("templates/components/tuteur.html").read_text(encoding="utf-8")
+
+    assert "{% if not tuteur_ancre %}" in composant, (
+        "la poignée flottante ne doit pas être rendue quand le panneau est ancré"
+    )
+    assert "if (!ancre) {" in composant, (
+        "glissement et repli doivent être réservés au mode flottant"
+    )
