@@ -123,8 +123,16 @@ CREATE TABLE source (
     -- qui rend l'exclusivité de la partition déclarative.
     CONSTRAINT source_type_uk   UNIQUE (code_source, code_type_source),
 
+    -- Le motif admettait « s1 » à « s5 », c'est-à-dire exactement le nombre de
+    -- TYPES de source qu'exige C1. Il confondait deux comptes : cinq types
+    -- exigés, et le nombre de sources effectivement collectées. La sixième
+    -- source est un second scraping — un type déjà couvert — et le schéma la
+    -- refusait (décision 039).
+    --
+    -- Le motif reste borné à un chiffre plutôt qu'ouvert à n'importe quelle
+    -- chaîne : une contrainte qui n'exclut plus rien ne contraint plus rien.
     CONSTRAINT source_code_valide
-        CHECK (code_source ~ '^s[1-5]$'),
+        CHECK (code_source ~ '^s[1-9]$'),
     CONSTRAINT source_conservation_positive
         CHECK (duree_conservation_jours IS NULL OR duree_conservation_jours > 0)
 );
