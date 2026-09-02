@@ -365,6 +365,10 @@ def page_de_cours(request, code):
     return render(request, "courses/page_de_cours.html", {
         "competence": competence,
         "cours": cours,
+        # Le markdown est rendu ici, côté serveur, comme pour les cours générés
+        # (décision 002). Sans cela, un support importé s'affichait avec ses
+        # dièses et ses astérisques — « disponible » mais illisible.
+        "contenu_rendu": render_markdown(cours.contenu) if cours else "",
         "fiche": fiche,
         "ajouts": fiche.ajouts.all(),
         "actions": ACTIONS_D_ENRICHISSEMENT,

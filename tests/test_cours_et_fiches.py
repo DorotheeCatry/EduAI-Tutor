@@ -9,6 +9,7 @@ survit au remplacement du cours de référence**, et chaque enrichissement reste
 compréhensible et attribuable après ce remplacement.
 """
 
+import json
 from io import StringIO
 from pathlib import Path
 
@@ -320,3 +321,92 @@ def test_la_fiche_est_unique_par_apprenant_et_par_competence(competence, apprena
     seconde = fiche_de(apprenante, competence)
     assert premiere.pk == seconde.pk
     assert FicheDApprenant.objects.filter(apprenant=apprenante).count() == 1
+
+
+# --- L'import des supports de l'organisme ---------------------------------
+
+
+@pytest.mark.django_db
+def test_les_supports_de_l_organisme_deviennent_des_cours_publies(competence):
+    """
+    Les fichiers markdown du répertoire deviennent lisibles dans l'application.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    Les 41 supports de `data/contents/courses/` servaient de contexte au RAG et
+    remplissaient une liste déroulante de sujets. **Aucune page n'affichait leur
+    contenu**, et `CoursDeReference` comptait zéro ligne : la couche existait,
+    rien ne l'alimentait.
+    """
+    call_command("importer_cours", stdout=StringIO())
+
+    cours = CoursDeReference.objects.filter(
+        competence=competence, remplace_le__isnull=True).first()
+    assert cours is not None, "la compétence doit porter un cours"
+    assert cours.statut == CoursDeReference.PUBLIE, (
+        "un support écrit par l'organisme est publié, pas provisoire"
+    )
+    assert len(cours.contenu) > 1000
+    assert "\n## " in cours.contenu, "les supports deviennent des sections"
+
+
+@pytest.mark.django_db
+def test_l_import_est_idempotent(competence):
+    """
+    Relancer l'import ne laisse qu'un cours actif par compétence.
+
+    Compétence visée : C4 (épreuve E1) — intégrité
+    """
+    call_command("importer_cours", stdout=StringIO())
+    call_command("importer_cours", stdout=StringIO())
+
+    actifs = CoursDeReference.objects.filter(
+        competence=competence, remplace_le__isnull=True)
+    assert actifs.count() == 1
+    assert CoursDeReference.objects.filter(competence=competence).count() == 2, (
+        "le cours remplacé est conservé, jamais supprimé"
+    )
+
+
+def test_le_rattachement_des_supports_est_une_donnee_pas_du_code():
+    """
+    Aucun nom de fichier n'est écrit dans le code de l'import.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Le rattachement d'un support à une compétence est choisi, jamais déduit
+    (décision 027). Il vit dans un fichier de données qu'on corrige sans
+    toucher au code, et l'import est idempotent.
+    """
+    source = Path("apps/courses/management/commands/importer_cours.py").read_text(
+        encoding="utf-8")
+    corps = source.split('"""', 2)[-1]
+
+    assert ".md" not in corps, "aucun nom de support dans le code"
+    assert "rattachement-cours.json" in source
+
+    carte = json.loads(
+        Path("apps/courses/donnees/rattachement-cours.json").read_text(encoding="utf-8"))
+    assert carte["rattachements"], "le fichier de rattachement doit être renseigné"
+    assert "_non_rattaches" in carte, (
+        "les supports écartés sont nommés, avec leur motif : un fichier absent "
+        "de la liste ne doit pas ressembler à un oubli"
+    )
+
+
+@pytest.mark.django_db
+def test_le_cours_est_rendu_en_html_et_non_en_markdown_brut(
+        client, competence, apprenante):
+    """
+    « Disponible » ne suffit pas : le cours doit être lisible.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+    """
+    call_command("importer_cours", stdout=StringIO())
+    client.force_login(apprenante)
+
+    page = client.get(reverse("courses:page_de_cours", args=[competence.code]),
+                      secure=True).content.decode()
+
+    assert "<h2" in page, "les titres doivent être rendus"
+    assert "cours-rendu" in page, "le conteneur qui porte les styles du rendu"

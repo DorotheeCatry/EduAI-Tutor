@@ -12,7 +12,7 @@ porte un bandeau, pas une note grise en pied de page : l'apprenant doit savoir
 avant de lire, pas après.
 {% endcomment %}
 
-{% block title %}{{ competence.intitule }} — EduAI Tutor{% endblock %}
+{% block title %}{{ competence.intitule }} — Koda{% endblock %}
 
 {% block content %}
 <div class="h-full p-4 flex flex-col gap-3 overflow-hidden">
@@ -49,7 +49,13 @@ avant de lire, pas après.
                  class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
             <h2 id="titre-cours" class="sr-only">{% trans "Cours de référence" %}</h2>
             {% if cours %}
-                <article class="text-gray-200 text-sm leading-relaxed space-y-3">{{ cours.contenu|linebreaks }}</article>
+                {% comment %}
+                Le markdown est rendu côté serveur (décision 002) : `|safe` est
+                donc appliqué à une sortie produite par `markdown2`, pas à une
+                saisie d'apprenant. Le contenu d'un cours de référence vient de
+                l'organisme ou du modèle, jamais d'un champ de formulaire.
+                {% endcomment %}
+                <article class="cours-rendu text-gray-200 text-sm leading-relaxed">{{ contenu_rendu|safe }}</article>
 
                 {% if cours.sources %}
                     <h3 class="text-sm font-semibold text-white mt-4">{% trans "Sources" %}</h3>

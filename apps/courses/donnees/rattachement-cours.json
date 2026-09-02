@@ -1,0 +1,64 @@
+{
+  "_lisez_moi": [
+    "Rattachement des supports de cours aux compétences du référentiel.",
+    "",
+    "Compétence visée : C17 (épreuve E4)",
+    "Ce fichier est une DONNÉE, pas du code : le rattachement d'un support à une",
+    "compétence est choisi, jamais déduit d'un nom de fichier (décision 027).",
+    "Corriger ce fichier et relancer `importer_cours` suffit — l'import est",
+    "idempotent et remplace le cours publié de chaque compétence touchée.",
+    "",
+    "Les fichiers non listés ici ne sont pas importés. C'est délibéré : un",
+    "support sans compétence n'a pas d'endroit où s'afficher."
+  ],
+  "repertoire": "data/contents/courses/01_python",
+  "rattachements": {
+    "types-et-variables": {
+      "titre": "Les types de base et les variables",
+      "fichiers": ["basics.md", "manipulating-strings.md", "string-formatting.md",
+                   "datetime-module.md", "random-module.md"]
+    },
+    "controle-du-flux": {
+      "titre": "Conditions, boucles et compréhensions",
+      "fichiers": ["control-flow.md", "comprehensions.md"]
+    },
+    "collections": {
+      "titre": "Listes, dictionnaires et ensembles",
+      "fichiers": ["lists-and-tuples.md", "dictionaries.md", "sets.md",
+                   "python-sets-what-why-how.md", "itertools-module.md"]
+    },
+    "fonctions": {
+      "titre": "Écrire et appeler des fonctions",
+      "fichiers": ["functions.md", "args-and-kwargs.md", "python-easy-args-kwargs.md",
+                   "decorators.md", "built-in-functions.md"]
+    },
+    "erreurs-et-exceptions": {
+      "titre": "Gérer les erreurs et déboguer",
+      "fichiers": ["exception-handling.md", "debugging.md"]
+    },
+    "objets": {
+      "titre": "Classes, objets et gestionnaires de contexte",
+      "fichiers": ["oop-basics.md", "dataclasses.md", "context-manager.md"]
+    },
+    "modules-et-paquets": {
+      "titre": "Organiser un programme : modules, fichiers et outils",
+      "fichiers": ["os-module.md", "pathlib-module.md", "file-directory-path.md",
+                   "reading-and-writing-files.md", "json-module.md", "json-yaml.md",
+                   "copy-module.md", "shelve-module.md", "regular-expressions.md",
+                   "virtual-environments.md", "setup-py.md",
+                   "python-uv-package-manager.md",
+                   "python-projects-with-poetry-and-vscode-part-1.md",
+                   "python-projects-with-poetry-and-vscode-part-2.md",
+                   "python-projects-with-poetry-and-vscode-part-3.md"]
+    }
+  },
+  "_non_rattaches": {
+    "commentaire": "Relevés dans le répertoire, volontairement laissés de côté.",
+    "fichiers": {
+      "main.md": "sommaire du module, pas un cours",
+      "perspectives.md": "note d'orientation, hors compétence",
+      "1-introduction.ipynb": "carnet Jupyter, pas du markdown",
+      "python-3-14-breaking-free-from-gil.md": "article d'actualité, hors référentiel"
+    }
+  }
+}

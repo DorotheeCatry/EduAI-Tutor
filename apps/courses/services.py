@@ -73,16 +73,25 @@ def publier_le_cours(competence, contenu: str, titre: str, redige_par):
 
     Compétence visée : C17 (épreuve E4)
 
-    Choix : le provisoire est daté, jamais supprimé. Motivation : il cède la
-    place, l'historique reste — un apprenant doit pouvoir comprendre d'où
-    venait ce qu'il lisait la semaine précédente.
+    Choix : le cours remplacé est daté, jamais supprimé. Motivation : il cède
+    la place, l'historique reste — un apprenant doit pouvoir comprendre d'où
+    venait ce qu'il lisait la semaine précédente. Cela vaut aussi bien pour un
+    provisoire que pour une version antérieure du cours publié.
 
     **La fiche de l'apprenant n'est pas touchée** : elle est rattachée à la
     compétence, pas au cours. C'est tout l'objet de ce découpage.
     """
+    # Tout cours actif cède la place, quel que soit son statut — pas seulement
+    # le provisoire.
+    #
+    # Compétence visée : C4 (épreuve E1)
+    # Ce filtre ne visait que `PROVISOIRE`, ce qui suffisait au cas décrit par
+    # la décision 041 — un formateur publie, le provisoire s'efface. Mais
+    # republier un support corrigé se heurtait alors à la contrainte d'unicité,
+    # et l'import des cours n'était pas rejouable. Trouvé par le test
+    # d'idempotence, pas à la relecture.
     (CoursDeReference.objects
-     .filter(competence=competence, statut=CoursDeReference.PROVISOIRE,
-             remplace_le__isnull=True)
+     .filter(competence=competence, remplace_le__isnull=True)
      .update(remplace_le=timezone.now()))
 
     return CoursDeReference.objects.create(

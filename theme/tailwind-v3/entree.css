@@ -49,3 +49,46 @@ html { scrollbar-gutter: stable; }
     .koda-anime { display: none; }
     .koda-fixe { display: block; }
 }
+
+/* --- Contenu de cours rendu depuis du markdown ---------------------------
+ * Compétence visée : C17 (épreuve E4)
+ * Compétence concernée : C13 (E3) — accessibilité
+ *
+ * Les classes utilitaires ne peuvent pas atteindre du HTML produit par
+ * `markdown2` : il n'y a pas d'endroit où les écrire. Ces règles-ci stylent
+ * donc les balises elles-mêmes, dans la portée d'un seul conteneur.
+ *
+ * Les blocs de code restent lisibles sans coloration syntaxique : fond
+ * contrasté, police à chasse fixe, débordement horizontal confié au bloc et
+ * jamais à la page. */
+.cours-rendu > * + * { margin-top: 0.85rem; }
+.cours-rendu h2 {
+    font-size: 1.05rem; font-weight: 700; color: #fff;
+    margin-top: 1.6rem; padding-bottom: 0.25rem;
+    border-bottom: 1px solid #374151;
+}
+.cours-rendu h3 { font-size: 0.95rem; font-weight: 600; color: #e5e7eb; margin-top: 1.1rem; }
+.cours-rendu h4 { font-size: 0.9rem; font-weight: 600; color: #d1d5db; }
+.cours-rendu p, .cours-rendu li { line-height: 1.65; }
+.cours-rendu ul, .cours-rendu ol { padding-left: 1.25rem; }
+.cours-rendu ul { list-style: disc; }
+.cours-rendu ol { list-style: decimal; }
+.cours-rendu li + li { margin-top: 0.3rem; }
+.cours-rendu a { color: #7cc4ff; text-decoration: underline; }
+.cours-rendu code {
+    background: #0d1117; color: #79c0ff; padding: 0.1rem 0.3rem;
+    border-radius: 0.25rem; font-size: 0.85em;
+}
+.cours-rendu pre {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 0.5rem;
+    padding: 0.75rem; overflow-x: auto; font-size: 0.8rem; line-height: 1.5;
+}
+.cours-rendu pre code { background: none; padding: 0; color: #c9d1d9; }
+.cours-rendu blockquote {
+    border-left: 3px solid #4b5563; padding-left: 0.75rem; color: #9ca3af;
+}
+.cours-rendu table { display: block; overflow-x: auto; width: 100%; }
+.cours-rendu th, .cours-rendu td {
+    border: 1px solid #374151; padding: 0.35rem 0.6rem; text-align: left;
+}
+.cours-rendu th { background: #1f2937; color: #fff; font-weight: 600; }
