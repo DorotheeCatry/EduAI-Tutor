@@ -1013,3 +1013,33 @@ effet visible contre un risque inconnu.
 Sortir l'invite dans `apps/agents/prompts/`, comme les quatre autres, et la
 charger par `load_prompt`. C'est le geste qui rapporte le plus : il supprime
 les trois copies d'un coup, sans toucher à la logique des vues.
+
+---
+
+## 23. Les médias sont servis par Django, pas par un serveur web
+
+**Compétence concernée :** C13 (épreuve E3) — livraison et exécution
+**Statut :** consignée, **arbitrage assumé**
+
+Les photos de profil déposées par les apprenants sont servies par la vue
+`serve` de Django, activée hors `DEBUG` dans `eduai_project/urls.py`. La
+documentation de Django déconseille explicitement cette vue en production : elle
+n'est ni optimisée ni durcie, et occupe un fil du serveur d'application le temps
+de lire le fichier.
+
+### Pourquoi elle est là quand même
+
+L'alternative est un serveur web devant l'application, ou un stockage objet
+externe. Les deux ajoutent une pièce à déployer, à configurer et à surveiller,
+pour un volume qui se compte en dizaines d'images de profil.
+
+Sans elle, la fonction ne marche pas du tout : jusqu'au 02/09/2026, `/media/`
+n'était routé qu'en développement, et toute photo enregistrée rendait 404 en
+production. Entre une fonction absente et une fonction servie modestement, le
+projet retient la seconde et l'écrit.
+
+### Ce qu'il faudrait faire pour lever la réserve
+
+Servir `/media/` depuis le proxy de l'hébergeur, ou déposer les fichiers sur un
+stockage objet et n'en garder que l'URL en base. Le second geste supprime aussi
+le besoin de volume persistant.

@@ -85,6 +85,35 @@ else
     echo "[demarrage] cours deja en base"
 fi
 
+# --- Contrôle du volume des médias ---
+#
+# Les photos de profil sont les seuls fichiers déposés par les apprenants. Elles
+# vivent dans MEDIA_ROOT, qui doit être un volume persistant : le système de
+# fichiers du conteneur est éphémère, et une photo écrite ailleurs disparaît au
+# redéploiement suivant.
+#
+# Choix : constater par une écriture réelle, et non par un test de permission.
+# Motivation : un volume monté par l'hébergeur peut appartenir à root alors que
+# le conteneur tourne sans privilège. Les bits de permission diraient alors
+# « accessible » là où l'écriture échoue — le projet documente cinq incidents
+# où l'instrument mesurait autre chose que ce qu'on croyait.
+#
+# Choix : ne pas arrêter le démarrage. Motivation : un envoi de photo
+# impossible n'empêche ni de se connecter, ni de suivre un cours. Mais le
+# message doit être explicite dans les journaux, sinon la panne n'apparaîtra
+# qu'au premier apprenant qui essaie, sous la forme d'une erreur 500.
+REPERTOIRE_MEDIAS="${EDUAI_MEDIA_REPERTOIRE:-/app/media}"
+mkdir -p "${REPERTOIRE_MEDIAS}" 2>/dev/null || true
+TEMOIN="${REPERTOIRE_MEDIAS}/.temoin-ecriture"
+if touch "${TEMOIN}" 2>/dev/null; then
+    rm -f "${TEMOIN}"
+    echo "[demarrage] medias : ${REPERTOIRE_MEDIAS} accessible en ecriture"
+else
+    echo "[demarrage] AVERTISSEMENT : ${REPERTOIRE_MEDIAS} n'est pas accessible" >&2
+    echo "[demarrage] en ecriture. Les photos de profil ne pourront pas etre" >&2
+    echo "[demarrage] enregistrees. Verifier le volume et son proprietaire." >&2
+fi
+
 # Le port est imposé par l'hébergeur via $PORT. La valeur de repli sert au
 # lancement local de l'image, hors de la plateforme.
 PORT_ECOUTE="${PORT:-8000}"

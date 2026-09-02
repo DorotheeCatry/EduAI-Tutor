@@ -630,6 +630,7 @@ démarrage, il ne bascule pas sur une valeur permissive.
 | `EDUAI_QUOTA_GENERATIONS_PAR_JOUR` | `5` | Valeur par défaut prudente |
 | `EDUAI_PLAFOND_GENERATIONS_PAR_JOUR` | `200` | Valeur par défaut prudente |
 | `MONITORAGE_REPERTOIRE` | chemin sur volume persistant | Les traces disparaîtraient à chaque redéploiement |
+| `EDUAI_MEDIA_REPERTOIRE` | `/app/media`, sur volume persistant | Les photos de profil disparaîtraient à chaque redéploiement |
 | `PORT` | **fournie par l'hébergeur**, à ne pas définir soi-même | Repli sur 8000 (web) ou 8100 (service IA) — le service écoute alors un port que la plateforme n'interroge pas, et répond « Application failed to respond » (incident 008) |
 
 **`DJANGO_DERRIERE_PROXY=True` n'est pas un réglage de confort.** L'hébergeur
@@ -772,6 +773,40 @@ Sans effet sur les deux services, qui se connectent en superutilisateur — ce
 qui est en soi une réserve, la huitième.
 
 ### 7.4 Transférer le corpus vectoriel
+
+### Le volume des médias
+
+Les photos de profil déposées par les apprenants sont les **seuls** fichiers que
+l'application écrit sur disque. `media/` est exclu de l'image : au démarrage, le
+répertoire est vide, et le système de fichiers d'un conteneur est éphémère.
+**Sans volume, une photo envoyée disparaît au redéploiement suivant** — sans
+erreur, sans trace, l'apprenant retrouvant simplement son avatar par défaut.
+
+```bash
+railway volume add -m /app/media        # sur le service de l'application web
+railway volume list                     # vérifier le point de montage
+```
+
+Le chemin par défaut est `/app/media`. Pour en monter un autre, renseigner
+`EDUAI_MEDIA_REPERTOIRE` : le réglage lit cette variable, il n'est pas figé
+dans le code.
+
+**Le point de montage existe déjà dans l'image**, créé vide et appartenant au
+compte sans privilège, pour la même raison que celui du corpus : un volume
+monté sur un chemin absent de l'image appartiendrait à `root`, et le conteneur,
+qui ne tourne pas en `root`, ne pourrait rien y écrire.
+
+Le démarrage le vérifie en écrivant réellement un fichier témoin, et non en
+lisant des bits de permission — qui diraient « accessible » là où l'écriture
+échoue. En cas d'échec, le service démarre quand même : ne pas pouvoir déposer
+une photo n'empêche ni de se connecter ni de suivre un cours. Le journal porte
+alors trois lignes d'avertissement explicites. Sans ce contrôle, la panne
+n'apparaîtrait qu'au premier apprenant qui essaie, sous forme d'erreur 500.
+
+Les avatars Koda, eux, ne demandent aucun volume : ce sont des fichiers
+statiques livrés dans l'image.
+
+### Le volume du corpus vectoriel
 
 Le corpus **n'est pas dans les images** (décision 023) : il est dans
 `.gitignore`, donc absent de tout clone, et la chaîne ne peut pas embarquer ce

@@ -423,8 +423,21 @@ STATICFILES_FINDERS = [
 ]
 
 # Media files (User-uploaded content)
+#
+# Compétence visée : C13 (épreuve E3) — livraison et exécution
+#
+# `media/` porte les SEULS fichiers déposés par les apprenants : leurs photos
+# de profil. Il est exclu de l'image, donc vide au démarrage, et le système de
+# fichiers d'un conteneur est éphémère : sans volume persistant monté sur ce
+# chemin, une photo envoyée disparaît au redéploiement suivant.
+#
+# Choix : le chemin est réglable par variable d'environnement, comme celui du
+# journal de monitorage. Motivation : le point de montage dépend de
+# l'hébergeur, et un chemin figé dans le code obligerait à modifier le code
+# pour déplacer un volume. Le défaut reste le dossier du projet, ce qui laisse
+# le développement inchangé.
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(os.environ.get("EDUAI_MEDIA_REPERTOIRE", BASE_DIR / "media"))
 
 
 # Default primary key field type

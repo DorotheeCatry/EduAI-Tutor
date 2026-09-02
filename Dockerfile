@@ -77,6 +77,16 @@ RUN uv sync --frozen --no-install-project --no-default-groups
 # journal WAL — ce que la décision 018 impose.
 RUN mkdir -p /app/apps/rag/chroma
 
+# Point de montage du volume des médias, créé vide et pour la même raison que
+# celui du corpus : un volume monté sur un chemin absent de l'image
+# appartiendrait à root, et le compte sans privilège ne pourrait pas y écrire.
+#
+# Ce que ce répertoire contient : les seuls fichiers déposés par les apprenants
+# — leurs photos de profil. `media/` est exclu de l'image (voir .dockerignore) :
+# sans volume, ces photos vivraient dans le système de fichiers éphémère du
+# conteneur et disparaîtraient à chaque redéploiement.
+RUN mkdir -p /app/media
+
 COPY --chown=eduai:eduai . .
 RUN uv sync --frozen --no-default-groups
 
