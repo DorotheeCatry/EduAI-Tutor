@@ -50,11 +50,17 @@ class KodaUser(AbstractUser):
         help_text=_("A short biography of the user.")
     )
 
+    # Choix : aucune valeur par défaut. Motivation mesurée : le défaut
+    # `koda_base.png` désignait un fichier de `media/` qui n'y a jamais existé
+    # — les avatars Koda sont des fichiers statiques. Tout compte neuf portait
+    # donc un avatar « rempli » pointant vers une image absente, ce qui rendait
+    # vraie partout la condition « cet apprenant a envoyé une photo » et
+    # empêchait l'affichage de retomber sur son avatar Koda. Un champ vide dit
+    # la vérité : aucune photo n'a été envoyée.
     avatar = models.ImageField(
         upload_to="avatars/",
         null=True,
         blank=True,
-        default="koda_base.png",
         verbose_name=_("Avatar")
     )
 

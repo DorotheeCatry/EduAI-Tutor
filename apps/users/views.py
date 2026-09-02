@@ -76,6 +76,59 @@ class CustomLogoutView(LogoutView):
         return response
     
 
+#: Avatar servi quand l'apprenant n'a rien choisi.
+AVATAR_PAR_DEFAUT = "koda_base.png"
+
+#: Extensions retenues pour la liste des avatars Koda.
+EXTENSIONS_D_AVATAR = (".png", ".jpg", ".jpeg")
+
+
+def url_d_avatar_koda(nom_de_fichier):
+    """
+    Rend l'URL statique d'un avatar Koda.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Choix : une URL statique, et non une URL de `media/`. Motivation : les
+    avatars Koda sont livrés dans l'image, versionnés avec le reste. Les
+    médias, eux, ne sont ni versionnés ni persistants chez l'hébergeur.
+    """
+    return f"/static/koda/{nom_de_fichier}"
+
+
+def avatars_koda_disponibles():
+    """
+    Liste les avatars Koda proposés au choix, lus dans le dossier source.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Choix : lire `static/koda`, et jamais `STATIC_ROOT`. Motivation mesurée :
+    après `collectstatic`, `STATIC_ROOT` porte chaque avatar DEUX fois —
+    l'original et sa copie empreintée, soit 40 entrées pour 20 avatars. La
+    liste affichait donc des doublons, et la moitié des noms proposés
+    n'existait pas dans le dossier que l'enregistrement va lire : les choisir
+    provoquait une erreur 500.
+
+    La règle est celle que le projet applique déjà à l'import des cours : ce
+    qu'on propose et ce qu'on sait ouvrir doivent venir de la même source.
+    """
+    racine = os.path.join(settings.BASE_DIR, "static", "koda")
+    avatars = []
+    if os.path.isdir(racine):
+        for nom_de_fichier in os.listdir(racine):
+            if not nom_de_fichier.lower().endswith(EXTENSIONS_D_AVATAR):
+                continue
+            libelle = (nom_de_fichier.rsplit(".", 1)[0]
+                       .replace("koda_", "").replace("_", " ").title())
+            avatars.append({
+                "filename": nom_de_fichier,
+                "display_name": libelle,
+                "url": url_d_avatar_koda(nom_de_fichier),
+            })
+    avatars.sort(key=lambda avatar: avatar["display_name"])
+    return avatars
+
+
 class ProfileView(LoginRequiredMixin, UpdateView):
     """
     Vue de modification du profil utilisateur.
@@ -90,34 +143,22 @@ class ProfileView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Get all available avatars
-        koda_path = os.path.join(settings.STATIC_ROOT or 'static', 'koda')
-        if not os.path.exists(koda_path):
-            koda_path = os.path.join('static', 'koda')
+        context['available_avatars'] = avatars_koda_disponibles()
 
-        available_avatars = []
-        if os.path.exists(koda_path):
-            for filename in os.listdir(koda_path):
-                if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    display_name = filename.replace('koda_', '').replace('.png', '').replace('_', ' ').title()
-                    available_avatars.append({
-                        'filename': filename,
-                        'display_name': display_name,
-                        'url': f'/static/koda/{filename}'
-                    })
-
-        available_avatars.sort(key=lambda x: x['display_name'])
-        context['available_avatars'] = available_avatars
-
-        current_avatar = self.request.user.avatar
-        if current_avatar and hasattr(current_avatar, 'name'):
-            context['current_avatar_url'] = current_avatar.url
+        # L'avatar envoyé par l'apprenant l'emporte sur l'avatar Koda ; à
+        # défaut, on affiche le Koda choisi. Le test portait auparavant sur
+        # `hasattr(avatar, 'name')`, vrai pour tout ImageField même vide : la
+        # branche Koda n'était donc jamais atteinte, et aucune vignette
+        # n'apparaissait jamais comme sélectionnée.
+        televerse = self.request.user.avatar
+        if televerse:
+            context['current_avatar_url'] = televerse.url
             context['current_avatar_type'] = 'uploaded'
         else:
-            avatar_name = current_avatar or 'koda_base.png'
-            context['current_avatar_url'] = f'/static/koda/{avatar_name}'
+            nom = self.request.user.koda_avatar or AVATAR_PAR_DEFAUT
+            context['current_avatar_url'] = url_d_avatar_koda(nom)
             context['current_avatar_type'] = 'koda'
-            context['current_avatar_name'] = avatar_name
+            context['current_avatar_name'] = nom
 
         return context
 
@@ -126,12 +167,31 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         cropped_avatar = self.request.POST.get('cropped_avatar')
 
         if selected_koda_avatar:
-            if form.instance.avatar and hasattr(form.instance.avatar, 'delete'):
+            # Le nom est refusé s'il ne figure pas dans la liste proposée.
+            # Motivation : il arrive de la requête, donc de l'extérieur. Sans
+            # ce contrôle, un nom inattendu remontait en erreur 500 — c'est
+            # exactement ce qui se produisait avec les noms empreintés par
+            # `collectstatic`, que l'ancienne liste proposait alors que le
+            # dossier source ne les porte pas.
+            connus = {avatar['filename'] for avatar in avatars_koda_disponibles()}
+            if selected_koda_avatar not in connus:
+                messages.error(
+                    self.request,
+                    _("Cet avatar n'existe pas. Choisissez-en un dans la liste."),
+                )
+                return self.form_invalid(form)
+
+            # L'avatar Koda est écrit comme un NOM DE FICHIER, servi depuis
+            # les fichiers statiques, et non recopié dans `media/`. Motivation
+            # mesurée : l'ancienne version recopiait le PNG dans `media/`, dont
+            # rien ne sert le contenu quand DEBUG vaut False. L'avatar était
+            # bien enregistré et n'apparaissait jamais. Il est déjà livré dans
+            # l'image comme fichier statique : le copier ailleurs n'ajoutait
+            # qu'un chemin de plus par lequel se perdre.
+            if form.instance.avatar:
                 form.instance.avatar.delete(save=False)
-            from django.core.files.base import File
-            koda_path = os.path.join(settings.BASE_DIR, 'static', 'koda', selected_koda_avatar)
-            with open(koda_path, 'rb') as f:
-                form.instance.avatar.save(selected_koda_avatar, File(f), save=False)
+            form.instance.avatar = None
+            form.instance.koda_avatar = selected_koda_avatar
 
         elif cropped_avatar:
             try:
