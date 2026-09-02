@@ -119,6 +119,7 @@ class Chargeur:
         #: Nomenclatures lues en base : elles font foi, pas le code.
         self.attribution_par_licence: dict[str, bool] = {}
         self.source_par_type: dict[str, str] = {}
+        self.sources_connues: set[str] = set()
 
         #: Bilans d'extraction lus sur disque, indexés par code de source.
         self.bilans: dict[str, dict[str, Any]] = {}
@@ -251,18 +252,29 @@ class Chargeur:
             curseur.execute("SELECT code_type_source, code_source FROM source")
             lignes = curseur.fetchall()
 
-        # Le modèle actuel associe un seul code de source à chaque type. Si
-        # deux sources partageaient un type, le rattachement d'un document
-        # deviendrait ambigu : mieux vaut le refuser que de choisir au hasard.
+        # Le rattachement d'un document à sa source passe par le `code_source`
+        # que le document porte. `source_par_type` n'est plus qu'un repli, pour
+        # les corpus transformés avant que ce champ n'existe.
+        #
+        # Compétence visée : C4 (épreuve E1)
+        # Ce chargeur refusait de démarrer si deux sources partageaient un type,
+        # et il avait raison tant qu'il déduisait la source du type : la
+        # sixième source est un second scraping, et le rattachement devenait
+        # ambigu. Plutôt que de lever la garde, on a supprimé la déduction
+        # qu'elle protégeait.
+        self.sources_connues = {ligne[1].strip() for ligne in lignes}
+        self.source_par_type = {ligne[0]: ligne[1].strip() for ligne in lignes}
+
         types = [ligne[0] for ligne in lignes]
         doublons = {t for t in types if types.count(t) > 1}
         if doublons:
-            raise RuntimeError(
-                f"Plusieurs sources déclarent le même type : {sorted(doublons)}. "
-                "Le rattachement d'un document à sa source devient ambigu ; "
-                "le chargeur doit être adapté avant de continuer."
+            logger.warning(
+                "Plusieurs sources déclarent le type %s. Les documents portant "
+                "leur `code_source` sont rattachés sans ambiguïté ; ceux qui "
+                "n'en portent pas — corpus transformé avant ce champ — seraient "
+                "rattachés au hasard et seront rejetés.",
+                sorted(doublons),
             )
-        self.source_par_type = {ligne[0]: ligne[1].strip() for ligne in lignes}
 
         # Ces SELECT ont ouvert une transaction implicite : psycopg n'est pas
         # en autocommit. La clore ici est indispensable, et non cosmétique —
@@ -354,7 +366,14 @@ class Chargeur:
         connues = set()
         with self.connexion.cursor() as curseur:
             for code, bilan in sorted(self.bilans.items()):
-                if code not in self.source_par_type.values():
+                # `sources_connues` et non `source_par_type.values()` : ce
+                # dictionnaire est indexé par TYPE, et depuis que deux sources
+                # partagent « scraping », la seconde écrase la première — le
+                # bilan de S2 était rejeté au motif que sa source n'existait
+                # pas, alors qu'elle était déclarée. Sa campagne d'extraction
+                # manquait, et ses documents échappaient au marquage des
+                # disparus.
+                if code not in self.sources_connues:
                     self._rejeter(
                         f"bilan {code}",
                         f"la source « {code} » n'est pas déclarée dans la table source",
@@ -440,11 +459,31 @@ class Chargeur:
         Compétence visée : C4 (épreuve E1)
         """
         type_source = document["code_type_source"]
-        code_source = self.source_par_type.get(type_source)
+        # Le code porté par le document prime sur la déduction par le type.
+        #
+        # Compétence visée : C4 (épreuve E1)
+        # Choix : `code_source` d'abord, `source_par_type` en repli. Motivation :
+        # la déduction par le type supposait une source par type, ce qui a cessé
+        # d'être vrai avec la sixième source — un second scraping. Le repli est
+        # conservé pour les corpus transformés avant ce changement, qui ne
+        # portent pas le champ.
+        code_source = document.get("code_source")
+        if code_source is None:
+            # Repli pour les corpus antérieurs au champ. Il n'est employé que
+            # si le type désigne une source et une seule.
+            memes_types = [t for t in self.source_par_type if t == type_source]
+            code_source = (self.source_par_type.get(type_source)
+                           if len(memes_types) == 1 else None)
         if code_source is None:
             self._rejeter(
                 document["identifiant"],
                 f"aucune source déclarée pour le type « {type_source} »",
+            )
+            return
+        if code_source not in self.sources_connues:
+            self._rejeter(
+                document["identifiant"],
+                f"source « {code_source} » absente de la nomenclature",
             )
             return
 
@@ -579,12 +618,18 @@ class Chargeur:
         reste du corpus — un effacement de masse déclenché par une commande
         anodine.
         """
-        sources_chargees = sorted({d["code_type_source"] for d in documents})
+        # Les codes portés par les documents, et non déduits de leur type.
+        #
+        # Compétence visée : C4 (épreuve E1)
+        # La déduction passait par `source_par_type`, indexé par TYPE : depuis
+        # que deux sources partagent « scraping », l'une y écrase l'autre et
+        # sortait de cette liste. Ses documents échappaient alors au marquage
+        # des disparus — un document retiré de S2 serait resté en base, présenté
+        # comme courant, sans que rien ne le signale.
         sources_chargees = sorted({
-            self.source_par_type[type_source]
-            for type_source in sources_chargees
-            if type_source in self.source_par_type
-        })
+            d.get("code_source") or self.source_par_type.get(d["code_type_source"])
+            for d in documents
+        } - {None})
 
         if not sources_chargees:
             logger.info(
