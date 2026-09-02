@@ -2,6 +2,7 @@
 name = "eduai-tutor"
 version = "0.1.0"
 description = ""
+license = { file = "LICENSE" }
 authors = [
     { name = "Dorothée Catry", email = "catrydorothee@gmail.com" }
 ]

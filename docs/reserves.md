@@ -975,3 +975,41 @@ pas la livrer : elle donnerait l'illusion d'une progression.
 
 Mesurer le recouvrement, fixer le seuil, écrire l'invite de niveau, brancher le
 déclencheur du parcours. Le modèle de données n'aura pas à changer.
+
+---
+
+## 22. Deux vues de génération d'exercices, identiques aux deux tiers
+
+**Compétence concernée :** C17 (épreuve E4) — application web
+**Statut :** consignée, **non corrigée délibérément**
+
+`generate_exercise` et `generate_exercise_from_course`, dans
+`apps/exercises/views.py`, comptent 265 et 239 lignes utiles pour une
+**similarité de 67 %** : 116 lignes identiques de plus de trente caractères,
+mesurées ligne à ligne.
+
+Ce qui est dupliqué n'est pas de la plomberie : **l'invite envoyée au modèle
+l'est intégralement**, y compris ses consignes les plus fines — « les tests
+doivent appeler la MÊME fonction que celle définie dans la solution », « les
+valeurs attendues doivent être le vrai résultat de votre fonction ».
+
+### La conséquence concrète
+
+Améliorer l'invite dans l'une laisse l'autre en arrière, **et rien ne le
+signale** : les deux vues continuent de fonctionner, en produisant des
+exercices de qualité différente selon le chemin emprunté. Une troisième copie
+de la même consigne vit d'ailleurs dans `apps/agents/agent_coach.py`.
+
+### Pourquoi ce n'est pas corrigé
+
+Le cahier des charges l'interdit explicitement : « Aucun refactoring pour la
+propreté », et « ne pas casser ce qui marche ». Fondre six cents lignes de code
+éprouvé à deux jours du rendu, sur le chemin qui produit les exercices —
+c'est-à-dire une preuve d'évaluation — échangerait un défaut connu et sans
+effet visible contre un risque inconnu.
+
+### À faire après le 14 septembre
+
+Sortir l'invite dans `apps/agents/prompts/`, comme les quatre autres, et la
+charger par `load_prompt`. C'est le geste qui rapporte le plus : il supprime
+les trois copies d'un coup, sans toucher à la logique des vues.
