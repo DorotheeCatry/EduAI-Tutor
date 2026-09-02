@@ -1,5 +1,8 @@
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -395,6 +398,19 @@ def page_de_cours(request, code):
         "fiche": fiche,
         "ajouts": fiche.ajouts.all(),
         "actions": ACTIONS_D_ENRICHISSEMENT,
+        # Le panneau de Koda est ancré dans la colonne de droite. Il lui faut
+        # l'adresse où poser les questions — ici l'enrichissement de la fiche,
+        # et non le chat général — et de quoi savoir ce que l'apprenant lit.
+        "url_enrichissement": reverse("courses:enrichir", args=[code]),
+        "contexte_tuteur": {
+            "page": "cours",
+            "resume": competence.intitule,
+            "elements": [
+                {"libelle": "Compétence", "valeur": f"{competence.code} — {competence.intitule}"},
+            ],
+            "charge": {"competence": competence.code,
+                       "intitule": competence.intitule},
+        },
     })
 
 
@@ -459,8 +475,22 @@ def enrichir_la_fiche(request, code):
     from apps.referentiel.models import Competence
 
     competence = get_object_or_404(Competence, code=code)
-    question = (request.POST.get("question") or "").strip()
-    section = (request.POST.get("section") or "").strip()
+
+    # Deux appelants, deux formats. Le panneau de Koda parle en JSON et nomme
+    # le champ `message`, comme partout ailleurs dans l'application ; la
+    # cellule de la page l'appelle en formulaire et le nomme `question`.
+    # Accepter les deux évite d'avoir deux points d'entrée pour un seul geste.
+    if request.content_type and request.content_type.startswith("application/json"):
+        try:
+            corps = json.loads(request.body or b"{}")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": _("Requête illisible.")}, status=400)
+        question = str(corps.get("message") or corps.get("question") or "").strip()
+        section = str(corps.get("section") or "").strip()
+    else:
+        question = (request.POST.get("question") or "").strip()
+        section = (request.POST.get("section") or "").strip()
+
     if not question:
         return JsonResponse({"error": _("Question absente.")}, status=400)
 
@@ -475,6 +505,11 @@ def enrichir_la_fiche(request, code):
         "question": ajout.question,
         "sources": ajout.sources,
         "cree_le": ajout.cree_le.isoformat(),
+        # Les mêmes valeurs sous les noms qu'emploie le panneau de Koda : il
+        # affiche `reponse` et `horodatage`. Un seul contrat de réponse, donc
+        # un seul script à tenir, quel que soit l'endroit d'où l'on demande.
+        "reponse": ajout.contenu,
+        "horodatage": ajout.cree_le.strftime("%H:%M"),
     })
 
 

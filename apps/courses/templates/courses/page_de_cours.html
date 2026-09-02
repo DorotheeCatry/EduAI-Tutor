@@ -128,59 +128,21 @@ avant de lire, pas après.
         {% endcomment %}
         <div class="flex flex-col gap-3 min-h-0 overflow-hidden">
 
-            <section aria-labelledby="titre-koda"
-                     class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
-                {% comment %}
-                Koda lui-même, et non une icône de bulle.
+            {% comment %}
+            Le panneau de Koda, le vrai, ancré dans la colonne.
 
-                Compétence visée : C17 (épreuve E4)
-                Choix : reprendre exactement la planche et les dimensions du
-                panneau flottant. Motivation : c'est le même interlocuteur ;
-                le voir changer d'apparence selon la page laisserait croire à
-                deux assistants différents.
+            Compétence visée : C17 (épreuve E4)
+            Cette page portait un chat réduit, écrit pour elle : pas de quotas
+            affichés, pas d'historique, pas de brouillon conservé, pas de
+            sources, pas d'actions. Deux chats, donc deux comportements à
+            tenir — et ils avaient déjà divergé.
 
-                Le script de la page pilotait déjà ses états — « réfléchit »
-                pendant l'attente, « parle » à la réponse — mais aucun élément
-                `data-koda` n'existait ici et `koda.js` n'y était pas chargé :
-                les appels tombaient dans le vide. Écrit, atteignable, jamais
-                exécuté : le troisième motif d'incident du projet.
-
-                `aria-hidden` : le titre voisin annonce déjà de qui il s'agit.
-                {% endcomment %}
-                <div class="flex items-center gap-2">
-                    <div data-koda class="koda flex-shrink-0"
-                         style="width:112px;height:92px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:896px 644px"
-                         data-colonnes="8" data-largeur="112" data-hauteur="92"
-                         data-etat-initial="repos" data-assoupissement="120000"
-                         data-alt-parle="{% trans "Koda parle" %}"
-                         data-alt-dort="{% trans "Koda dort" %}"
-                         data-alt-clin="{% trans "Koda fait un clin d'œil" %}"
-                         {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
-                         aria-hidden="true"></div>
-                    <div class="min-w-0">
-                        <h2 id="titre-koda" class="text-base font-bold text-white">
-                            {% trans "Demander à Koda" %}
-                        </h2>
-                        <p class="text-xs text-gray-400 mt-0.5">
-                            {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
-                        </p>
-                    </div>
-                </div>
-
-                <div id="koda-echanges" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-sm defilement-vert"
-                     role="log" aria-live="polite" aria-labelledby="titre-koda"></div>
-
-                <form id="koda-formulaire" class="mt-2 flex gap-2 flex-shrink-0">
-                    <label for="koda-question" class="sr-only">{% trans "Votre question" %}</label>
-                    <input type="text" id="koda-question" autocomplete="off"
-                           placeholder="{% trans "Posez votre question…" %}"
-                           class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green">
-                    <button type="submit"
-                            class="px-3 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white flex-shrink-0">
-                        {% trans "Envoyer" %}
-                    </button>
-                </form>
-            </section>
+            C'est désormais le même composant que la poignée flottante, avec la
+            même conversation et les mêmes garde-fous. Seule l'adresse d'envoi
+            change : ici la réponse va dans la fiche de l'apprenant, comme la
+            décision 040 le prévoit.
+            {% endcomment %}
+            {% include 'components/tuteur.html' with tuteur_ancre=True tuteur_url=url_enrichissement %}
 
             <section aria-labelledby="titre-cellule"
                      class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
@@ -206,9 +168,36 @@ avant de lire, pas après.
                 décision à l'apprenant, et `min-h-*` empêche de les réduire à
                 rien par mégarde.
                 {% endcomment %}
-                <textarea id="cellule-code" spellcheck="false" rows="8"
-                          class="mt-2 w-full min-h-[7rem] px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 font-mono text-xs text-gray-100 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue resize-y defilement-vert"
-                          placeholder="print('bonjour')"></textarea>
+                {% comment %}
+                Le même éditeur que les exercices : Monaco, thème sombre,
+                coloration Python.
+
+                Compétence visée : C17 (épreuve E4)
+                Choix : la zone de texte reste là, et Monaco se pose PAR-DESSUS
+                une fois chargé. Motivation : Monaco vient d'un CDN. S'il
+                n'arrive pas — réseau coupé, CDN bloqué — l'apprenant garde une
+                zone où écrire et exécuter du code, au lieu d'un rectangle vide.
+                C'est le montage déjà retenu pour les exercices ; le reprendre
+                à l'identique évite deux comportements pour un même geste.
+
+                Le fond est celui des blocs de code du cours (#0D1117), plus
+                sombre que le panneau : la cellule se démarque de ce qui
+                l'entoure sans qu'on ait à la border de couleur.
+                {% endcomment %}
+                {% comment %}
+                Le cadre reste redimensionnable à la souris, comme avant
+                Monaco : un extrait tient en trois lignes ou en trente, et
+                figer la hauteur oblige à défiler dans une fenêtre trop petite.
+                `automaticLayout` fait suivre l'éditeur quand le cadre change.
+                {% endcomment %}
+                <div id="cellule-editeur"
+                     class="mt-2 relative flex-1 min-h-[9rem] rounded-lg border border-gray-700 overflow-hidden resize-y"
+                     style="background:#0D1117">
+                    <textarea id="cellule-code" spellcheck="false" rows="8"
+                              class="absolute inset-0 w-full h-full px-3 py-2 bg-transparent font-mono text-xs text-gray-100 focus:outline-none resize-none defilement-vert"
+                              placeholder="print('bonjour')"></textarea>
+                    <div id="cellule-monaco" class="absolute inset-0 hidden"></div>
+                </div>
 
                 {% comment %}
                 La sortie est annoncée : un résultat qui apparaît après coup
@@ -228,60 +217,44 @@ avant de lire, pas après.
 écarte volontairement pour ne pas afficher deux Koda. Sans lui, `window.Koda`
 n'existait pas et les changements d'état de cette page ne faisaient rien.
 {% endcomment %}
-<script src="{% static 'js/koda.js' %}" defer></script>
+{% comment %}
+Monaco, le même que les exercices et depuis la même origine : deux versions du
+même éditeur dans une seule application seraient deux comportements à tenir.
+{% endcomment %}
+<script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<script>
+(function () {
+    if (typeof require === 'undefined') { return; }
+    require.config({paths: {vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs'}});
+    require(['vs/editor/editor.main'], function () {
+        const zone = document.getElementById('cellule-code');
+        const boite = document.getElementById('cellule-monaco');
+        if (!zone || !boite) { return; }
+        window.editeurCellule = monaco.editor.create(boite, {
+            value: zone.value,
+            language: 'python',
+            theme: 'vs-dark',
+            fontSize: 13,
+            automaticLayout: true,
+            minimap: {enabled: false},
+            scrollBeyondLastLine: false,
+            padding: {top: 10, bottom: 8}
+        });
+        zone.style.display = 'none';
+        boite.classList.remove('hidden');
+    });
+})();
+</script>
 
 <script>
 (function () {
     const jeton = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const echanges = document.getElementById('koda-echanges');
-
-    function bulle(texte, deKoda) {
-        const p = document.createElement('p');
-        p.className = deKoda
-            ? 'px-3 py-2 rounded-2xl rounded-tl-sm bg-primary-green/15 border border-primary-green/30 text-gray-100'
-            : 'px-3 py-2 rounded-2xl rounded-tr-sm bg-gray-900 border border-gray-700 text-gray-300 ml-6';
-        p.textContent = texte;
-        echanges.appendChild(p);
-        echanges.scrollTop = echanges.scrollHeight;
-        return p;
-    }
-
-    {% comment %}
-    La question part vers l'enrichissement de la fiche : la réponse de Koda y
-    est enregistrée avec la question qui l'a produite et ses sources. Le quota
-    est décompté au goulot de l'orchestrateur, pas ici (décision 040).
-    {% endcomment %}
-    document.getElementById('koda-formulaire').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const champ = document.getElementById('koda-question');
-        const question = champ.value.trim();
-        if (!question) { return; }
-        bulle(question, false);
-        champ.value = '';
-        const attente = bulle("{% trans "Koda rédige…" %}", true);
-        if (window.Koda) Koda.etat('reflechit');
-        try {
-            const r = await fetch("{% url 'courses:enrichir' competence.code %}", {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded',
-                          'X-CSRFToken': jeton()},
-                body: new URLSearchParams({question: question}),
-            });
-            const corps = await r.json();
-            attente.textContent = r.ok
-                ? corps.contenu
-                : (corps.error || "{% trans "La réponse n'a pas pu être obtenue." %}");
-            if (r.ok && window.Koda) Koda.etat('parle');
-        } catch (err) {
-            attente.textContent = "{% trans "La réponse n'a pas pu être obtenue." %}";
-        } finally {
-            if (window.Koda) setTimeout(() => Koda.etat('repos'), 2500);
-        }
-    });
-
     const sortie = document.getElementById('cellule-sortie');
     document.getElementById('cellule-executer').addEventListener('click', async () => {
-        const code = document.getElementById('cellule-code').value;
+        // Monaco fait foi quand il a pris la main ; sinon la zone de texte.
+        const code = window.editeurCellule
+            ? window.editeurCellule.getValue()
+            : document.getElementById('cellule-code').value;
         if (!code.trim()) { sortie.textContent = "{% trans "Écrivez du code, puis exécutez." %}"; return; }
         sortie.textContent = "{% trans "Exécution…" %}";
         try {
@@ -310,9 +283,22 @@ n'existait pas et les changements d'état de cette page ne faisaient rien.
 <script>
 (function () {
     function decorateCodeBlocks() {
-        const contenu = document.querySelector('.cours-rendu');
-        if (!contenu) return;
+        {% comment %}
+        `querySelectorAll`, et non `querySelector`.
 
+        Compétence visée : C17 (épreuve E4)
+        Un cours de référence rassemble plusieurs fichiers, et la page rend donc
+        AUTANT de blocs `.cours-rendu` qu'elle a de parties — sept pour le cours
+        des collections. En n'en prenant que le premier, la décoration et la
+        coloration syntaxique ne touchaient que la première partie : les autres
+        gardaient leur `<pre>` nu, sans en-tête, sans bouton, sans couleur. La
+        mise en forme paraissait « chaotique » parce qu'elle s'arrêtait au
+        premier tiers de la page.
+        {% endcomment %}
+        const zones = document.querySelectorAll('.cours-rendu');
+        if (!zones.length) return;
+
+        zones.forEach(function (contenu) {
         contenu.querySelectorAll('pre > code').forEach(function (code) {
             const pre = code.parentElement;
             if (pre.closest('.code-block-container')) return;
@@ -360,6 +346,7 @@ n'existait pas et les changements d'état de cette page ne faisaient rien.
             pre.classList.add('code-content', 'language-' + language);
 
             if (window.Prism) Prism.highlightElement(code);
+        });
         });
 
         if (typeof lucide !== 'undefined') lucide.createIcons();

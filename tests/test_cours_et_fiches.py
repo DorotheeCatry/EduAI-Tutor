@@ -527,7 +527,9 @@ def test_la_page_offre_le_chat_et_la_cellule_pas_des_boutons(
     page = client.get(reverse("courses:page_de_cours", args=[competence.code]),
                       secure=True).content.decode()
 
-    assert 'id="koda-echanges"' in page, "le chat de Koda"
+    # Le chat est le composant du tuteur, ancré dans la colonne : c'est son
+    # fil de messages qu'on cherche, pas celui d'un chat écrit pour la page.
+    assert 'id="tuteur-messages"' in page, "le chat de Koda"
     assert 'id="cellule-code"' in page, "la cellule d'essai"
     assert "action-enrichir" not in page, "les trois boutons sont retirés"
     assert 'role="log"' in page and 'aria-live="polite"' in page, (
@@ -615,7 +617,10 @@ def test_les_zones_d_essai_se_redimensionnent(client, competence, apprenante):
     page = client.get(reverse("courses:page_de_cours", args=[competence.code]),
                       secure=True).content.decode()
 
-    editeur = page[page.index('id="cellule-code"'):][:400]
+    # C'est le CADRE de l'éditeur qui se redimensionne, et non la zone de texte
+    # qu'il contient : Monaco se pose par-dessus celle-ci et suit la taille du
+    # cadre grâce à `automaticLayout`.
+    editeur = page[page.index('id="cellule-editeur"'):][:400]
     sortie = page[page.index('id="cellule-sortie"'):][:400]
     assert "resize-y" in editeur and "resize-y" in sortie
     assert "min-h-" in editeur and "min-h-" in sortie, (
