@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-02 08:58+0000\n"
+"POT-Creation-Date: 2026-09-02 13:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -261,15 +261,15 @@ msgid ""
 "apparaîtra ici avec son résultat."
 msgstr "Your first course, exercise or quiz will appear here with its result."
 
-#: apps/chat/actions.py:23 apps/courses/views.py:411
+#: apps/chat/actions.py:23 apps/courses/views.py:415
 msgid "Développe cette partie"
 msgstr "Expand this part"
 
-#: apps/chat/actions.py:30 apps/courses/views.py:412
+#: apps/chat/actions.py:30 apps/courses/views.py:416
 msgid "Un cas plus complexe"
 msgstr "A more complex case"
 
-#: apps/chat/actions.py:36 apps/courses/views.py:413
+#: apps/chat/actions.py:36 apps/courses/views.py:417
 msgid "Je ne comprends pas"
 msgstr "I don't understand"
 
@@ -363,7 +363,7 @@ msgid "Rédigé par"
 msgstr ""
 
 #: apps/courses/models.py:117 apps/courses/models.py:233
-#: apps/courses/templates/courses/page_de_cours.html:56
+#: apps/courses/templates/courses/page_de_cours.html:63
 msgid "Sources"
 msgstr ""
 
@@ -472,7 +472,7 @@ msgstr ""
 msgid "Ajouts de fiche"
 msgstr ""
 
-#: apps/courses/services.py:166
+#: apps/courses/services.py:175
 #, python-format
 msgid ""
 "Compétence : %(competence)s.\n"
@@ -708,39 +708,39 @@ msgid ""
 "arrivera."
 msgstr ""
 
-#: apps/courses/templates/courses/page_de_cours.html:69
+#: apps/courses/templates/courses/page_de_cours.html:76
 msgid "Aucun cours pour cette compétence."
 msgstr "No course for this skill yet."
 
-#: apps/courses/templates/courses/page_de_cours.html:71
+#: apps/courses/templates/courses/page_de_cours.html:78
 msgid ""
 "Votre formateur n'a pas encore publié le sien. Vous pouvez commencer sans "
 "attendre : demandez un enrichissement ci-contre, il ira dans votre fiche et "
 "y restera."
 msgstr ""
 
-#: apps/courses/templates/courses/page_de_cours.html:80
+#: apps/courses/templates/courses/page_de_cours.html:87
 msgid "Enrichir ma fiche"
 msgstr "Add to my notes"
 
-#: apps/courses/templates/courses/page_de_cours.html:83
+#: apps/courses/templates/courses/page_de_cours.html:90
 msgid ""
 "Chaque ajout va dans votre fiche, avec la question qui l'a produit et les "
 "sources employées."
 msgstr ""
 
-#: apps/courses/templates/courses/page_de_cours.html:112
+#: apps/courses/templates/courses/page_de_cours.html:119
 msgid "Koda rédige votre ajout…"
 msgstr ""
 
-#: apps/courses/templates/courses/page_de_cours.html:125
-#: apps/courses/templates/courses/page_de_cours.html:131
+#: apps/courses/templates/courses/page_de_cours.html:132
+#: apps/courses/templates/courses/page_de_cours.html:138
 #, fuzzy
 #| msgid "La réponse n’a pas pu être obtenue."
 msgid "L'ajout n'a pas pu être produit."
 msgstr "The answer could not be retrieved."
 
-#: apps/courses/templates/courses/page_de_cours.html:128
+#: apps/courses/templates/courses/page_de_cours.html:135
 msgid "Ajout enregistré dans votre fiche."
 msgstr ""
 
@@ -772,7 +772,7 @@ msgstr ""
 msgid "❌ Delete error: %(erreur)s"
 msgstr ""
 
-#: apps/courses/views.py:438
+#: apps/courses/views.py:442
 msgid "Question absente."
 msgstr ""
 
@@ -1823,14 +1823,17 @@ msgid "Total experience points gained by the student."
 msgstr ""
 
 #: apps/users/templates/users/login.html:8
-msgid "Connexion - EduAI Tutor"
+#, fuzzy
+#| msgid "Connexion - EduAI Tutor"
+msgid "Connexion - Koda"
 msgstr "Sign in — EduAI Tutor"
 
 #: apps/users/templates/users/login.html:45
 #: apps/users/templates/users/register.html:45
 #: apps/users/templates/users/register.html:137
-msgid "EduAI Tutor"
-msgstr "EduAI Tutor"
+#: templates/components/tuteur.html:37 templates/components/tuteur.html:77
+msgid "Koda"
+msgstr "Koda"
 
 #: apps/users/templates/users/login.html:48
 msgid "Bon retour !"
@@ -1879,7 +1882,7 @@ msgstr ""
 
 #: apps/users/templates/users/login.html:162
 #: apps/users/templates/users/login.html:165
-msgid "EduAI Tutor waving"
+msgid "Koda waving"
 msgstr ""
 
 #: apps/users/templates/users/profile.html:11
@@ -1978,7 +1981,9 @@ msgid "Member since"
 msgstr ""
 
 #: apps/users/templates/users/register.html:8
-msgid "Inscription - EduAI Tutor"
+#, fuzzy
+#| msgid "Inscription - EduAI Tutor"
+msgid "Inscription - Koda"
 msgstr "Sign up — EduAI Tutor"
 
 #: apps/users/templates/users/register.html:48
@@ -2128,8 +2133,8 @@ msgid ""
 msgstr ""
 
 #: templates/base.html:8
-msgid "EduAI Tutor — plateforme d'apprentissage intelligente"
-msgstr "EduAI Tutor — intelligent learning platform"
+msgid "Koda — plateforme d'apprentissage intelligente"
+msgstr "Koda — intelligent learning platform"
 
 #: templates/base.html:68
 msgid "Base template works!"
@@ -2186,12 +2191,8 @@ msgid "● Online"
 msgstr ""
 
 #: templates/components/tuteur.html:23 templates/components/tuteur.html:24
-msgid "Ouvrir le tuteur (Alt+T)"
-msgstr ""
-
-#: templates/components/tuteur.html:37
-msgid "Tuteur"
-msgstr "Tutor"
+msgid "Ouvrir Koda (Alt+T)"
+msgstr "Open Koda (Alt+T)"
 
 #: templates/components/tuteur.html:51
 msgid "Barre du tuteur"
@@ -2208,12 +2209,6 @@ msgstr "Koda is asleep"
 #: templates/components/tuteur.html:73
 msgid "Koda fait un clin d'œil"
 msgstr "Koda winks"
-
-#: templates/components/tuteur.html:77
-#, fuzzy
-#| msgid "Tuteur"
-msgid "Tuteur IA"
-msgstr "Tutor"
 
 #: templates/components/tuteur.html:80
 msgid "En ligne"
@@ -2342,6 +2337,17 @@ msgstr ""
 #: theme/templates/base.html:23
 msgid "Django + Tailwind = ❤️"
 msgstr ""
+
+#~ msgid "EduAI Tutor"
+#~ msgstr "EduAI Tutor"
+
+#~ msgid "Tuteur"
+#~ msgstr "Tutor"
+
+#, fuzzy
+#~| msgid "Tuteur"
+#~ msgid "Tuteur IA"
+#~ msgstr "Tutor"
 
 #~ msgid "Envoyer"
 #~ msgstr "Send"

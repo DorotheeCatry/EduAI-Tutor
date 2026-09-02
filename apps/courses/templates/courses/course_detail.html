@@ -12,7 +12,7 @@
 </script>
 {% endblock %}
 
-{% block title %}{{ course.title|default:"Cours généré" }} - EduAI Tutor{% endblock %}
+{% block title %}{{ course.title|default:"Cours généré" }} - Koda{% endblock %}
 
 {% block content %}
 {% include 'courses/course_content.html' with course=course is_saved_course=is_saved_course error=error %}

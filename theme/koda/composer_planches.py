@@ -126,12 +126,17 @@ def images_du_gros_plan():
     images += [n(i) for i in range(4, 22)]
     # 23 : le clin d'œil, composé sur un seul œil
     images.append(greffer(repos, n(16), YEUX_GAUCHE))
-    # 24-28 : l'assoupissement
-    images += [s(i) for i in (1, 3, 5, 7, 9)]
-    # 29-32 : le sommeil
-    images += [s(i) for i in (12, 20, 28, 36)]
-    # 33-36 : le réveil
-    images += [s(i) for i in (41, 44, 47, 50)]
+    # 24-33 : l'assoupissement, dix images d'affilée
+    #
+    # Il n'en comptait que cinq, prises une sur deux : les paupières tombaient
+    # par à-coups au lieu de descendre. La séquence livrée est continue, il
+    # suffisait de la suivre.
+    images += [s(i) for i in range(1, 11)]
+    # 34-41 : le sommeil, huit images pour une respiration lente
+    images += [s(i) for i in range(12, 44, 4)]
+    # 42-51 : le réveil, dix images d'affilée — c'est ce qu'on voit quand on
+    # appuie sur Koda endormi, donc ce qui mérite le plus de fluidité.
+    images += [s(i) for i in range(41, 51)]
     return images
 
 

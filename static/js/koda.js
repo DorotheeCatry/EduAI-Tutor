@@ -48,9 +48,20 @@
             cadence: 70
         },
         clin: { unique: [1, 23, 23, 23, 1, 0], cadence: 80, puis: "repos" },
-        somnole: { unique: [24, 25, 26, 27, 28], cadence: 120, puis: "dort" },
-        dort: { boucle: [29, 30, 31, 32], cadence: 250 },
-        reveil: { unique: [36, 35, 34, 33], cadence: 80, puis: "repos" }
+        /* Les paupières descendent en dix images, pas cinq : elles tombaient
+         * par à-coups. La cadence ralentit à mesure — on ne s'endort pas à
+         * vitesse constante. */
+        somnole: {
+            unique: [24, 25, 26, 27, 28, 29, 30, 31, 32, 33],
+            cadence: 140, puis: "dort"
+        },
+        dort: { boucle: [34, 35, 36, 37, 38, 39, 40, 41], cadence: 260 },
+        /* Le réveil est ce qu'on voit en appuyant sur un Koda endormi : c'est
+         * la séquence qui mérite le plus de fluidité. */
+        reveil: {
+            unique: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51],
+            cadence: 70, puis: "repos"
+        }
     };
 
     /* Fin de partie. Une planche par séquence, jouée en boucle entière : ni
@@ -239,13 +250,22 @@
         etat: function (nom) {
             window.Koda.instances.forEach(function (i) { i.basculer(nom); });
         },
-        /* Réveille les Koda visibles — appelé à l'ouverture du panneau. */
+        /* Réveille les Koda endormis, et rend la durée de l'animation.
+         *
+         * L'appelant s'en sert pour laisser le réveil se VOIR avant d'ouvrir le
+         * panneau : sans cela, on appuie sur un Koda endormi, le panneau
+         * s'ouvre aussitôt et masque celui de la poignée — le réveil se joue
+         * derrière, pour personne. */
         reveiller: function () {
+            var duree = 0;
             window.Koda.instances.forEach(function (i) {
                 if (i.etat() === "dort" || i.etat() === "somnole") {
                     i.basculer("reveil");
+                    var def = JEUX.grosPlan.reveil;
+                    duree = Math.max(duree, def.unique.length * def.cadence);
                 }
             });
+            return duree;
         }
     };
 
