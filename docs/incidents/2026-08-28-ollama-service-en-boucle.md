@@ -1,4 +1,10 @@
-# Incident — le service Ollama en boucle de redémarrage, RAG indisponible
+# Incident 016 — Le service Ollama en boucle de redémarrage, RAG indisponible
+
+> **Numéroté après coup, le 2 septembre.** Ce dossier était le seul du
+> répertoire à ne pas porter de numéro. Il prend le suivant disponible plutôt
+> que sa place chronologique — 003 en l'occurrence : renuméroter aurait cassé
+> toutes les références croisées du dépôt, qui citent les incidents par leur
+> numéro. L'ordre du répertoire reste chronologique par le nom de fichier.
 
 **Date de détection :** 28 août 2026, 15 h 50
 **Date de début estimée :** 25 août 2026
