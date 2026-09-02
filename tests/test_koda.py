@@ -484,3 +484,37 @@ def test_l_exercice_reussi_fete_sans_interrompre():
     )
     assert 'aria-hidden="true"' in fete
     assert "boite.remove()" in fete, "il passe, il ne s'installe pas"
+
+
+# --- Koda est-il réellement branché là où on le pilote ? ------------------
+
+COURS = Path("apps/courses/templates/courses/page_de_cours.html")
+
+
+def test_toute_page_qui_pilote_koda_le_charge_et_l_affiche():
+    """
+    Piloter les états de Koda suppose son animateur et un élément à animer.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C21 (E5)
+
+    La page de cours appelait `Koda.etat('reflechit')` puis `Koda.etat('parle')`
+    depuis le 02/09/2026, sans qu'aucun `[data-koda]` n'existe dans la page et
+    sans que `koda.js` y soit chargé : `window.Koda` était indéfini et chaque
+    appel tombait dans le vide. Le code était écrit, atteignable, et n'a jamais
+    rien fait — le troisième motif d'incident du projet.
+
+    `koda.js` n'était chargé que par le panneau flottant, que cette page écarte
+    volontairement. Retirer un composant a donc emporté une dépendance que rien
+    ne rendait visible.
+    """
+    gabarit = COURS.read_text(encoding="utf-8")
+
+    if "Koda.etat(" not in gabarit:
+        pytest.skip("cette page ne pilote plus Koda")
+
+    assert "js/koda.js" in gabarit, "l'animateur doit être chargé par la page"
+    assert "data-koda" in gabarit, "il faut un élément à animer"
+    # L'animateur ne peut animer que ce qu'il sait dimensionner.
+    for attribut in ("data-colonnes", "data-largeur", "data-hauteur"):
+        assert attribut in gabarit, f"{attribut} manque à l'élément animé"

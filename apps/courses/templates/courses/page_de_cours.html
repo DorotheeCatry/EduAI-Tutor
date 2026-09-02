@@ -130,13 +130,42 @@ avant de lire, pas après.
 
             <section aria-labelledby="titre-koda"
                      class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
-                <h2 id="titre-koda" class="text-base font-bold text-white flex items-center gap-2">
-                    <i data-lucide="message-circle" class="w-4 h-4 text-primary-green" aria-hidden="true"></i>
-                    {% trans "Demander à Koda" %}
-                </h2>
-                <p class="text-xs text-gray-400 mt-0.5 mb-2">
-                    {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
-                </p>
+                {% comment %}
+                Koda lui-même, et non une icône de bulle.
+
+                Compétence visée : C17 (épreuve E4)
+                Choix : reprendre exactement la planche et les dimensions du
+                panneau flottant. Motivation : c'est le même interlocuteur ;
+                le voir changer d'apparence selon la page laisserait croire à
+                deux assistants différents.
+
+                Le script de la page pilotait déjà ses états — « réfléchit »
+                pendant l'attente, « parle » à la réponse — mais aucun élément
+                `data-koda` n'existait ici et `koda.js` n'y était pas chargé :
+                les appels tombaient dans le vide. Écrit, atteignable, jamais
+                exécuté : le troisième motif d'incident du projet.
+
+                `aria-hidden` : le titre voisin annonce déjà de qui il s'agit.
+                {% endcomment %}
+                <div class="flex items-center gap-2">
+                    <div data-koda class="koda flex-shrink-0"
+                         style="width:112px;height:92px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:896px 644px"
+                         data-colonnes="8" data-largeur="112" data-hauteur="92"
+                         data-etat-initial="repos" data-assoupissement="120000"
+                         data-alt-parle="{% trans "Koda parle" %}"
+                         data-alt-dort="{% trans "Koda dort" %}"
+                         data-alt-clin="{% trans "Koda fait un clin d'œil" %}"
+                         {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
+                         aria-hidden="true"></div>
+                    <div class="min-w-0">
+                        <h2 id="titre-koda" class="text-base font-bold text-white">
+                            {% trans "Demander à Koda" %}
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
+                        </p>
+                    </div>
+                </div>
 
                 <div id="koda-echanges" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-sm defilement-vert"
                      role="log" aria-live="polite" aria-labelledby="titre-koda"></div>
@@ -194,6 +223,13 @@ avant de lire, pas après.
 </div>
 
 {% csrf_token %}
+{% comment %}
+`koda.js` n'était chargé que par `components/tuteur.html`, que cette page
+écarte volontairement pour ne pas afficher deux Koda. Sans lui, `window.Koda`
+n'existait pas et les changements d'état de cette page ne faisaient rien.
+{% endcomment %}
+<script src="{% static 'js/koda.js' %}" defer></script>
+
 <script>
 (function () {
     const jeton = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
