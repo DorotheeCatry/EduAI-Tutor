@@ -55,6 +55,36 @@ seul l'assemblage est du fait du projet, et il est décrit dans la décision 035
 
 ---
 
+## Supports de cours — `data/contents/courses/`
+
+| | |
+|---|---|
+| **Auteur** | L'organisme de formation |
+| **Nature** | Supports pédagogiques markdown, 42 fichiers pour le module Python |
+| **Statut au dépôt** | **Versionnés** depuis le 2 septembre 2026 (décision 042) |
+
+Ils sont versionnés parce qu'ils sont une **preuve exécutable** : sans eux,
+`importer_cours` ne peut pas s'exécuter sur un clone neuf, et les sept cours de
+référence n'existent que sur la machine où ils ont été importés.
+
+## Ressources documentaires — `data/contents/resources/`
+
+| | |
+|---|---|
+| **Nature** | 35 fichiers : 21 PDF, 12 images, 1 markdown |
+| **Licence** | **`A_VERIFIER`** — origine non déterminée |
+| **Statut au dépôt** | **Non versionnés**, délibérément |
+
+Ces fichiers produisent **82 documents du corpus** dont la nomenclature dit :
+*« Origine non déterminée, redistribution suspendue jusqu'à vérification »*.
+Leur redistribution est marquée interdite en base.
+
+**Les verser au dépôt serait précisément la redistribution que cette mention
+suspend.** Leur poids — 93 Mo — n'est qu'un argument d'appoint : c'est la
+licence qui commande, et il importe de dire lequel des deux motifs décide.
+
+---
+
 ## Autres ressources
 
 | Ressource | Origine | Conditions |

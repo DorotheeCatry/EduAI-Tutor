@@ -216,8 +216,18 @@ db.sqlite3
 theme/static_src/node_modules/
 theme/static_src/.gitignore
 
-data
-data/
+# Le répertoire de données reste hors dépôt — sauf les supports de cours et
+# leur index, qui sont des PREUVES : sans eux, `importer_cours` ne peut pas
+# s'exécuter sur un clone neuf, et la chaîne applique déjà le principe qu'un
+# jury doit pouvoir monter le projet depuis le seul dépôt (décision 042).
+#
+# Git ne peut pas réinclure un fichier dont un répertoire parent est exclu :
+# ce sont donc les CONTENUS qui sont exclus, pas les répertoires.
+data/*
+!data/contents/
+data/contents/*
+!data/contents/courses/
+!data/contents/index/
 
 KodaTheme
 KodaTheme/
