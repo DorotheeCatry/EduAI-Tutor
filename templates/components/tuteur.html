@@ -20,13 +20,13 @@ sert.
 {% endcomment %}
 <button type="button" id="tuteur-ouvrir"
         aria-expanded="false" aria-controls="tuteur-panneau"
-        aria-label="{% trans "Ouvrir le tuteur (Alt+T)" %}"
-        title="{% trans "Ouvrir le tuteur (Alt+T)" %}"
+        aria-label="{% trans "Ouvrir Koda (Alt+T)" %}"
+        title="{% trans "Ouvrir Koda (Alt+T)" %}"
         class="fixed bottom-4 right-4 z-40 flex flex-col items-center gap-1 p-2 rounded-2xl
                hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary-green
                transition-colors">
     <div data-koda class="koda"
-         style="width:171px;height:140px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:1368px 700px"
+         style="width:171px;height:140px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:1368px 980px"
          data-colonnes="8" data-largeur="171" data-hauteur="140"
          data-etat-initial="repos" data-assoupissement="45000"
          {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
@@ -34,7 +34,7 @@ sert.
     <span class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-green
                  text-white text-xs font-medium shadow-lg">
         <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-        {% trans "Tuteur" %}
+        {% trans "Koda" %}
         <span id="tuteur-quotas-rapide" class="opacity-75"></span>
     </span>
 </button>
@@ -64,7 +64,7 @@ sert.
             {% endcomment %}
             <div data-koda
                  class="koda"
-                 style="width:112px;height:92px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:896px 460px"
+                 style="width:112px;height:92px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:896px 644px"
                  data-colonnes="8" data-largeur="112" data-hauteur="92"
                  data-etat-initial="repos" data-assoupissement="120000"
                  data-alt-parle="{% trans "Koda parle" %}"
@@ -73,7 +73,7 @@ sert.
                  {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
                  aria-hidden="true"></div>
             <div class="min-w-0">
-                <h2 id="tuteur-titre" class="text-sm font-semibold text-white truncate">{% trans "Tuteur IA" %}</h2>
+                <h2 id="tuteur-titre" class="text-sm font-semibold text-white truncate">{% trans "Koda" %}</h2>
                 <p class="text-xs text-primary-green flex items-center gap-1">
                     <span class="w-2 h-2 rounded-full bg-primary-green inline-block"></span>
                     {% trans "En ligne" %}
@@ -478,10 +478,25 @@ sert.
     {# --- Ouverture / fermeture --- #}
     function ouvrirPanneau(donnerFocus) {
         panneau.hidden = false;
+        {% comment %}
+        À l'ouverture, Koda se RÉVEILLE. Il ne parle pas.
+
+        Compétence visée : C17 (épreuve E4)
+        L'humeur de la salutation était jouée ici, et elle vaut « parle » quand
+        il y a quelque chose à dire : Koda remuait donc les lèvres au simple
+        clic, sans répondre à quoi que ce soit. La parole est réservée à une
+        vraie réponse — c'est ce qui lui donne son sens.
+
+        Le clin d'œil, lui, reste : il salue sans prétendre parler.
+        {% endcomment %}
         if (window.Koda) {
             Koda.reveiller();
             {% if salutation_koda %}
-            setTimeout(function () { Koda.etat('{{ salutation_koda.humeur }}'); }, 400);
+            setTimeout(function () {
+                if (Koda.instance && Koda.instance.etat() !== 'reveil') {
+                    Koda.etat('clin');
+                }
+            }, 500);
             {% endif %}
         }
         ouvrir.setAttribute('aria-expanded', 'true');
@@ -581,7 +596,22 @@ sert.
     });
 
     {# --- Événements --- #}
-    ouvrir.addEventListener('click', ouvrirPanneau);
+    {% comment %}
+    Appuyer sur un Koda endormi le réveille, et on le voit.
+
+    Compétence visée : C17 (épreuve E4)
+    Le panneau s'ouvrait aussitôt, masquant la poignée : le réveil se jouait
+    derrière, pour personne. On laisse donc l'animation se dérouler avant
+    d'ouvrir — mais seulement si Koda dormait vraiment, sinon le clic
+    paraîtrait lent sans raison.
+    {% endcomment %}
+    ouvrir.addEventListener('click', function () {
+        const dort = window.Koda && Koda.instances.some(
+            i => i.etat() === 'dort' || i.etat() === 'somnole');
+        if (!dort) { ouvrirPanneau(); return; }
+        const duree = Koda.reveiller();
+        setTimeout(ouvrirPanneau, duree);
+    });
     fermer.addEventListener('click', fermerPanneau);
     panneau.addEventListener('keydown', e => {
         if (e.key === 'Escape') fermerPanneau();

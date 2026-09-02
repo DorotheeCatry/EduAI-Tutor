@@ -19,5 +19,7 @@ urlpatterns = [
     path('competence/<slug:code>/fiche/', views.ma_fiche, name='ma_fiche'),
     path('competence/<slug:code>/enrichir/', views.enrichir_la_fiche,
          name='enrichir'),
+    path('competence/<slug:code>/executer/', views.executer_du_code,
+         name='executer'),
     path('delete/<int:course_id>/', views.delete_course, name='delete'),
 ]

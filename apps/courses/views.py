@@ -70,10 +70,6 @@ def render_markdown(content):
     )
 
 
-def test_template(request):
-    """Vue de test pour vérifier les templates"""
-    return render(request, 'test.html')
-
 @login_required
 def course_generator(request):
     """Main view for course generation"""
@@ -341,10 +337,29 @@ def catalogue(request):
             "fiche": fiches.get(competence.id),
         })
 
+    # Le catalogue se lit d'abord par MODULE, la compétence venant ensuite.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    # Choix : regrouper côté serveur plutôt que de laisser le gabarit boucler
+    # deux fois. Motivation : l'ordre des modules est celui du référentiel — un
+    # champ `ordre` que la donnée porte — et le reconstituer dans le gabarit
+    # obligerait à le trier là aussi.
+    par_module: dict = {}
+    for entree in entrees:
+        module = entree["competence"].module
+        par_module.setdefault(module.id, {"module": module, "entrees": []})
+        par_module[module.id]["entrees"].append(entree)
+    modules = sorted(par_module.values(),
+                     key=lambda g: (g["module"].ordre, g["module"].code))
+    for groupe in modules:
+        groupe["avec_cours"] = sum(1 for e in groupe["entrees"] if e["cours"])
+
     return render(request, "courses/catalogue.html", {
         "referentiel": referentiel,
         "entrees": entrees,
+        "modules": modules,
         "mes_fiches": [f for f in fiches.values() if f.nombre_ajouts],
+        "modules_de_generation": module_loader.get_available_modules(),
     })
 
 
@@ -363,8 +378,20 @@ def page_de_cours(request, code):
     fiche = fiche_de(request.user, competence)
 
     return render(request, "courses/page_de_cours.html", {
+        # Le chat est dans la page : la poignée flottante s'efface.
+        "koda_dans_la_page": True,
         "competence": competence,
         "cours": cours,
+        # Le markdown est rendu ici, côté serveur, comme pour les cours générés
+        # (décision 002), et **partie par partie** : un cours de référence
+        # rassemble plusieurs fichiers, et le sommaire se tire de leurs titres
+        # plutôt que d'une analyse du HTML.
+        "parties": [
+            {"ancre": partie.ancre, "titre": partie.titre,
+             "sous_module": partie.sous_module,
+             "contenu": render_markdown(partie.contenu)}
+            for partie in cours.parties.all()
+        ] if cours else [],
         "fiche": fiche,
         "ajouts": fiche.ajouts.all(),
         "actions": ACTIONS_D_ENRICHISSEMENT,
@@ -448,4 +475,42 @@ def enrichir_la_fiche(request, code):
         "question": ajout.question,
         "sources": ajout.sources,
         "cree_le": ajout.cree_le.isoformat(),
+    })
+
+
+@login_required
+@require_POST
+def executer_du_code(request, code):
+    """
+    Exécute un extrait Python et rend sa sortie, sans rien enregistrer.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétences concernées : C13 (E3) — sécurité ; C10 (E3)
+
+    Choix : réemployer `SecurePythonExecutor`, celui des exercices, plutôt
+    qu'un `exec` de circonstance. Motivation : il valide le code avant de le
+    compiler, restreint les fonctions accessibles, borne la durée et capture
+    les sorties. Écrire un second chemin d'exécution reviendrait à écrire une
+    seconde surface d'attaque, et à devoir la maintenir aussi bien.
+
+    Choix : rien n'est enregistré. Motivation : cette cellule sert à essayer,
+    pas à rendre un travail. Les exercices, eux, passent par leur propre vue,
+    qui enregistre la soumission et la rattache à sa compétence.
+
+    Choix : aucun quota. Motivation : l'exécution est locale, elle n'appelle
+    aucun service facturé. Le quota compte des générations, pas des essais.
+    """
+    from apps.exercises.security import SecurePythonExecutor
+
+    extrait = (request.POST.get("code") or "").strip()
+    if not extrait:
+        return JsonResponse({"error": _("Aucun code à exécuter.")}, status=400)
+
+    resultat = SecurePythonExecutor().execute_code(extrait)
+    return JsonResponse({
+        "succes": bool(resultat.get("success")),
+        "sortie": resultat.get("output") or "",
+        "erreur": resultat.get("error") or "",
+        "expire": bool(resultat.get("timeout")),
+        "duree": round(resultat.get("execution_time") or 0, 3),
     })

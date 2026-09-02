@@ -1,0 +1,64 @@
+{
+  "01_introduction": [
+    "1-introduction.ipynb",
+    "perspectives.md",
+    "python-3-14-breaking-free-from-gil.md"
+  ],
+  "02_syntaxe_et_variables": [
+    "args-and-kwargs.md",
+    "basics.md",
+    "dictionaries.md",
+    "lists-and-tuples.md",
+    "manipulating-strings.md",
+    "python-easy-args-kwargs.md",
+    "python-sets-what-why-how.md",
+    "sets.md",
+    "string-formatting.md"
+  ],
+  "03_structures_de_controle": [
+    "control-flow.md",
+    "comprehensions.md",
+    "context-manager.md"
+  ],
+  "04_fonctions": [
+    "functions.md",
+    "built-in-functions.md",
+    "decorators.md",
+    "dataclasses.md",
+    "main.md"
+  ],
+  "05_poo": [
+    "oop-basics.md"
+  ],
+  "06_modules_et_packages": [
+    "copy-module.md",
+    "file-directory-path.md",
+    "json-module.md",
+    "json-yaml.md",
+    "os-module.md",
+    "pathlib-module.md",
+    "python-uv-package-manager.md",
+    "setup-py.md",
+    "shelve-module.md",
+    "zipfile-module.md"
+  ],
+  "07_fichiers_et_systeme": [
+    "reading-and-writing-files.md",
+    "virtual-environments.md"
+  ],
+  "08_debug_et_erreurs": [
+    "exception-handling.md",
+    "debugging.md"
+  ],
+  "09_modules_utiles": [
+    "datetime-module.md",
+    "random-module.md",
+    "itertools-module.md",
+    "regular-expressions.md"
+  ],
+  "10_projets_et_workflows": [
+    "python-projects-with-poetry-and-vscode-part-1.md",
+    "python-projects-with-poetry-and-vscode-part-2.md",
+    "python-projects-with-poetry-and-vscode-part-3.md"
+  ]
+}

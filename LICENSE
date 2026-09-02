@@ -1,21 +1,69 @@
-MIT License
+Tous droits réservés
+====================
 
-Copyright (c) 2025 Dorothée Catry
+Copyright (c) 2025-2026 Dorothée Catry
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Ce dépôt et son contenu — code source, documentation, schémas de base de
+données, scripts de traitement, gabarits d'interface et illustrations — sont
+la propriété de leur autrice. Ils ne sont pas placés sous licence libre.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Ce qui est autorisé
+-------------------
+
+1. La CONSULTATION du dépôt, de son historique et de sa documentation, à des
+   fins d'évaluation, de recrutement ou d'appréciation du travail.
+
+2. L'EXÉCUTION du projet sur une machine personnelle, pour vérifier ce que
+   la documentation affirme. Le dépôt est conçu pour cela : la chaîne
+   d'intégration rejoue le schéma depuis zéro, et les supports de cours sont
+   versionnés précisément pour qu'un lecteur puisse tout monter depuis le
+   seul dépôt.
+
+   Cette autorisation est donnée en particulier au jury de la certification
+   RNCP 37827 « Développeur en intelligence artificielle », dont ce dépôt est
+   le support d'évaluation.
+
+3. La CITATION de courts extraits, avec mention de l'autrice et du dépôt.
+
+
+Ce qui ne l'est pas, sans accord écrit préalable
+------------------------------------------------
+
+- La redistribution du dépôt ou d'une partie substantielle de celui-ci.
+- Son emploi dans un produit, un service ou une formation, gratuits ou non.
+- La création d'une œuvre dérivée destinée à être diffusée.
+- L'entraînement d'un modèle statistique sur ce contenu.
+
+Une demande d'autorisation s'adresse à l'autrice.
+
+
+Contenus tiers — cette licence ne s'y applique pas
+--------------------------------------------------
+
+Le dépôt agrège des contenus qui ne sont pas de l'autrice et qui restent
+soumis à leur propre licence. Aucune clause du présent document ne prétend
+s'y substituer, et les obligations qu'ils portent — attribution, mention de
+copyright, partage aux mêmes conditions — survivent intégralement.
+
+Le détail est tenu dans `docs/provenance-ressources.md`. En résumé :
+
+  Corpus documentaire collecté      CC BY-SA 3.0 et 4.0, BSD 3-Clause, MIT,
+  (Stack Exchange, documentations)  Apache 2.0, licence PostgreSQL, PSF
+  Illustrations de Koda             cédées par Camille Catry pour cet usage
+  Bibliothèques employées           leurs licences respectives
+
+RÉSERVE, énoncée plutôt que passée sous silence : les supports de cours de
+`data/contents/courses/` sont déclarés dans `data/contents/provenance.json`
+comme rédigés pour ce projet, alors que quarante d'entre eux portent des
+marques d'un site tiers. Cette contradiction n'est pas tranchée à ce jour. En
+attendant, **la présente licence ne revendique aucun droit sur ces
+fichiers** : ils sont dans le dépôt pour que l'import soit exécutable, et
+leur statut reste à établir.
+
+
+Absence de garantie
+-------------------
+
+Le logiciel est fourni « en l'état », sans garantie d'aucune sorte. L'autrice
+ne saurait être tenue responsable d'un dommage résultant de son emploi.

@@ -49,3 +49,349 @@ html { scrollbar-gutter: stable; }
     .koda-anime { display: none; }
     .koda-fixe { display: block; }
 }
+
+/* --- Mise en forme d'un cours ---------------------------------------------
+ * Compétence visée : C17 (épreuve E4)
+ * Compétence concernée : C13 (E3) — accessibilité
+ *
+ * Extrait d'un bloc <style> de 304 lignes qui vivait dans
+ * `courses/course_content.html`, et qui ne servait donc que la page d'un cours
+ * engendré. Les cours de référence importés s'affichaient sans lui.
+ *
+ * Choix : étendre les sélecteurs existants — `:is(#course-content,
+ * .cours-rendu)` — plutôt qu'écrire un second jeu de règles. Motivation : deux
+ * jeux divergent au premier ajustement, et c'est la mise en forme que
+ * l'autrice a validée qui doit servir aux deux pages, pas une imitation.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Rendu du cours                                                      */
+/*                                                                     */
+/* markdown2 produit du HTML sémantique (h1..h4, p, ul, ol, table,     */
+/* strong, code). Les styles ci-dessous le mettent en forme            */
+/* explicitement : le plugin Tailwind Typography n'est pas installé,   */
+/* donc les classes « prose » ne suffisent pas. Sélecteurs préfixés    */
+/* par :is(#course-content, .cours-rendu) pour ne rien changer au reste de l'application. */
+/* ------------------------------------------------------------------ */
+
+:is(#course-content, .cours-rendu) {
+    color: #E5E7EB;
+    line-height: 1.7;
+}
+
+:is(#course-content, .cours-rendu) h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 2rem 0 1.5rem 0;
+}
+
+:is(#course-content, .cours-rendu) h1:first-child {
+    margin-top: 0;
+}
+
+:is(#course-content, .cours-rendu) h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4CAF50;
+    margin: 1.75rem 0 1rem 0;
+}
+
+:is(#course-content, .cours-rendu) h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #79C0FF;
+    margin: 1.5rem 0 0.75rem 0;
+}
+
+:is(#course-content, .cours-rendu) h4,
+:is(#course-content, .cours-rendu) h5,
+:is(#course-content, .cours-rendu) h6 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: #79C0FF;
+    margin: 1.25rem 0 0.5rem 0;
+}
+
+:is(#course-content, .cours-rendu) p {
+    margin: 0 0 1rem 0;
+}
+
+/* Le gras reste du gras : c'est le défaut que corrige ce correctif.
+   L'ancien parseur en transformait chaque occurrence en titre <h3>. */
+:is(#course-content, .cours-rendu) strong {
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+:is(#course-content, .cours-rendu) em {
+    font-style: italic;
+}
+
+:is(#course-content, .cours-rendu) a {
+    color: #79C0FF;
+    text-decoration: underline;
+}
+
+:is(#course-content, .cours-rendu) ul,
+:is(#course-content, .cours-rendu) ol {
+    margin: 0.5rem 0 1rem 0;
+    padding-left: 1.5rem;
+}
+
+:is(#course-content, .cours-rendu) ul { list-style: disc; }
+:is(#course-content, .cours-rendu) ol { list-style: decimal; }
+
+:is(#course-content, .cours-rendu) li {
+    margin-bottom: 0.375rem;
+}
+
+:is(#course-content, .cours-rendu) li::marker {
+    color: #4CAF50;
+}
+
+:is(#course-content, .cours-rendu) blockquote {
+    border-left: 3px solid #4CAF50;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: #9CA3AF;
+}
+
+:is(#course-content, .cours-rendu) hr {
+    border: none;
+    border-top: 1px solid #30363D;
+    margin: 1.5rem 0;
+}
+
+/* Tableaux : en-têtes <th> explicites, restituables par un lecteur
+   d'écran. Le conteneur défile horizontalement afin que la page
+   elle-même ne déborde jamais sur petit écran. */
+:is(#course-content, .cours-rendu) table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+}
+
+:is(#course-content, .cours-rendu) th,
+:is(#course-content, .cours-rendu) td {
+    border: 1px solid #30363D;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+}
+
+:is(#course-content, .cours-rendu) th {
+    background: #21262D;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+/* Code au fil du texte. Le bloc de code délimité est habillé par
+   decorateCodeBlocks() et utilise .code-block-container plus bas. */
+:is(#course-content, .cours-rendu) :not(pre) > code {
+    background: #0D1117;
+    color: #79C0FF;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.875rem;
+    border: 1px solid #30363D;
+}
+
+/* Styles identiques pour le formatage */
+.keyword-highlight {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: #FFFFFF;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-size: 0.95em;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+}
+
+.inline-code {
+    background: #0D1117;
+    color: #79C0FF;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.875rem;
+    border: 1px solid #30363D;
+}
+
+.code-block-container {
+    background: #0D1117;
+    border: 1px solid #30363D;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin: 0.5rem 0 1rem 0;
+}
+
+.code-header {
+    background: #21262D;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #30363D;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.code-language {
+    font-size: 0.75rem;
+    color: #7C3AED;
+    background: #1E1B4B;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-weight: 600;
+}
+
+.copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: #374151;
+    color: #9CA3AF;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.copy-btn:hover {
+    background: #4B5563;
+    color: #FFFFFF;
+    transform: translateY(-1px);
+}
+
+.copy-btn.copied {
+    background: #4CAF50;
+    color: #FFFFFF;
+}
+
+.code-content {
+    padding: 0.3rem 1rem !important;
+    margin: 0 !important;
+    background: #0D1117;
+    color: #E6EDF3;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+    overflow-x: auto;
+}
+
+.list-container {
+    margin: 0.5rem 0 1rem 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.list-item {
+    position: relative;
+    margin-bottom: 0.125rem;
+    padding-left: 1.5rem;
+    color: #E5E7EB;
+    line-height: 1.4;
+    font-size: 0.875rem;
+    border-left: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.list-item::before {
+    content: "•";
+    color: #4CAF50;
+    font-weight: bold;
+    position: absolute;
+    left: 0.5rem;
+    font-size: 1em;
+    top: 0;
+}
+
+.list-item:hover {
+    border-left-color: #4CAF50;
+}
+
+:is(#course-content, .cours-rendu)-container {
+    scrollbar-width: thin;
+    scrollbar-color: #4B5563 #1F2937;
+    max-height: calc(100vh - 300px);
+}
+
+:is(#course-content, .cours-rendu)-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+:is(#course-content, .cours-rendu)-container::-webkit-scrollbar-track {
+    background: #1F2937;
+    border-radius: 4px;
+}
+
+:is(#course-content, .cours-rendu)-container::-webkit-scrollbar-thumb {
+    background: #4B5563;
+    border-radius: 4px;
+}
+
+:is(#course-content, .cours-rendu)-container::-webkit-scrollbar-thumb:hover {
+    background: #6B7280;
+}
+
+pre.code-content,
+pre[class*="language-"] {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+pre.code-content > code {
+    display: block;
+    padding: 0.8rem 1rem !important;
+    margin: 0 !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+    background: #0D1117 !important;
+    color: #E6EDF3 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+    .code-block-container {
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+    }
+}
+
+/* --- Barre de défilement aux couleurs du thème ---------------------------
+ * Compétence visée : C17 (épreuve E4)
+ * Compétence concernée : C13 (E3) — accessibilité
+ *
+ * Le vert du thème marque les zones qui défilent : le cours, le fil de Koda,
+ * l'éditeur et sa sortie. C'est une démarcation utile — on voit d'un coup
+ * d'œil ce qui contient plus que ce qu'il montre.
+ *
+ * La piste reste sombre et le curseur nettement plus clair : le contraste ne
+ * doit pas dépendre de la perception du vert. Et la largeur reste celle par
+ * défaut sur Firefox (`thin`), qui ne permet pas de la fixer au pixel —
+ * l'apparence diffère donc d'un navigateur à l'autre, ce qui est acceptable
+ * pour une barre de défilement, jamais pour un contenu. */
+.defilement-vert {
+    scrollbar-width: thin;
+    scrollbar-color: #4CAF50 #111827;
+}
+.defilement-vert::-webkit-scrollbar { width: 10px; height: 10px; }
+.defilement-vert::-webkit-scrollbar-track {
+    background: #111827; border-radius: 6px;
+}
+.defilement-vert::-webkit-scrollbar-thumb {
+    background: #4CAF50; border-radius: 6px;
+    border: 2px solid #111827;
+}
+.defilement-vert::-webkit-scrollbar-thumb:hover { background: #66bb6a; }
+.defilement-vert::-webkit-scrollbar-corner { background: #111827; }

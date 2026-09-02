@@ -105,7 +105,6 @@ class CoursDeReference(models.Model):
         max_length=12, choices=STATUTS, verbose_name=_("Statut"),
     )
     titre = models.CharField(max_length=200, verbose_name=_("Titre"))
-    contenu = models.TextField(verbose_name=_("Contenu"))
 
     # Renseigné pour un cours publié, nul pour un cours engendré. Ce champ dit
     # qui répond du contenu — c'est la différence entre les deux statuts.
@@ -146,6 +145,67 @@ class CoursDeReference(models.Model):
     @property
     def est_provisoire(self) -> bool:
         return self.statut == self.PROVISOIRE
+
+    @property
+    def sommaire(self):
+        """
+        Les titres des parties, dans l'ordre — le sommaire du cours.
+
+        Compétence visée : C17 (épreuve E4)
+        Choix : le sommaire se déduit des parties plutôt que d'être analysé
+        dans le HTML rendu. Motivation : les parties sont déjà titrées et
+        ordonnées ; relire le HTML pour y retrouver des titres reviendrait à
+        reconstituer une information qu'on possède.
+        """
+        return [(p.ancre, p.titre) for p in self.parties.all()]
+
+
+class PartieDeCours(models.Model):
+    """
+    Un fichier du support, devenu une partie d'un cours de référence.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Choix : une partie par fichier, plutôt qu'un seul champ `contenu` où tout
+    serait concaténé. Motivation : le corpus Python compte une quarantaine de
+    fichiers rangés en dix sous-modules, quand le référentiel porte sept
+    compétences pour ce module. Un cours de référence **rassemble plusieurs
+    fichiers** : les fondre en un texte unique perdrait leur origine, leur ordre
+    et la possibilité de rejouer l'import fichier par fichier.
+
+    `fichier_source` et `sous_module` sont conservés : ils disent d'où vient un
+    passage, et permettent de repérer un fichier qui a changé de sous-module.
+    """
+
+    cours = models.ForeignKey(
+        CoursDeReference, on_delete=models.CASCADE, related_name="parties",
+        verbose_name=_("Cours"),
+    )
+    ordre = models.PositiveSmallIntegerField(verbose_name=_("Ordre"))
+    titre = models.CharField(max_length=200, verbose_name=_("Titre"))
+    contenu = models.TextField(verbose_name=_("Contenu"))
+    fichier_source = models.CharField(
+        max_length=200, verbose_name=_("Fichier d'origine"),
+        help_text=_("Nom du support markdown dont cette partie provient."),
+    )
+    sous_module = models.CharField(
+        max_length=80, verbose_name=_("Sous-module"),
+        help_text=_("Sous-module du corpus déclaré par le fichier d'index."),
+    )
+
+    class Meta:
+        verbose_name = _("Partie de cours")
+        verbose_name_plural = _("Parties de cours")
+        ordering = ["cours", "ordre"]
+        unique_together = ["cours", "ordre"]
+
+    def __str__(self) -> str:
+        return f"{self.titre} ({self.fichier_source})"
+
+    @property
+    def ancre(self) -> str:
+        """Identifiant d'ancre stable, tiré du nom du fichier d'origine."""
+        return "partie-" + self.fichier_source.replace(".", "-")
 
 
 class FicheDApprenant(models.Model):

@@ -12,7 +12,7 @@ porte un bandeau, pas une note grise en pied de page : l'apprenant doit savoir
 avant de lire, pas après.
 {% endcomment %}
 
-{% block title %}{{ competence.intitule }} — EduAI Tutor{% endblock %}
+{% block title %}{{ competence.intitule }} — Koda{% endblock %}
 
 {% block content %}
 <div class="h-full p-4 flex flex-col gap-3 overflow-hidden">
@@ -46,23 +46,51 @@ avant de lire, pas après.
     <div class="flex-1 min-h-0 grid gap-3 lg:grid-cols-[1.6fr_1fr] overflow-hidden">
 
         <section aria-labelledby="titre-cours"
-                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
+                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0 defilement-vert">
             <h2 id="titre-cours" class="sr-only">{% trans "Cours de référence" %}</h2>
             {% if cours %}
-                <article class="text-gray-200 text-sm leading-relaxed space-y-3">{{ cours.contenu|linebreaks }}</article>
+                {% comment %}
+                Le sommaire, tiré des titres de parties.
 
-                {% if cours.sources %}
-                    <h3 class="text-sm font-semibold text-white mt-4">{% trans "Sources" %}</h3>
-                    <ul class="mt-1 space-y-1 text-xs">
-                        {% for source in cours.sources %}
-                            <li>
-                                <a href="{{ source.url_source }}" rel="noopener"
-                                   class="text-primary-blue hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded">{{ source.titre }}</a>
-                                <span class="text-gray-500">— {{ source.code_licence }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                Compétence visée : C17 (épreuve E4)
+                Compétence concernée : C13 (E3) — accessibilité
+                Des liens vers des ancres : navigable au clavier sans une ligne
+                de script. Un cours de référence rassemble plusieurs supports,
+                et c'est ce qui rend un document long utilisable.
+                {% endcomment %}
+                {% if parties|length > 1 %}
+                    <nav aria-labelledby="titre-sommaire-cours" class="mb-4 pb-3 border-b border-gray-700">
+                        <h2 id="titre-sommaire-cours" class="text-sm font-semibold text-white mb-1.5">
+                            {% trans "Dans ce cours" %}
+                        </h2>
+                        <ol class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                            {% for partie in parties %}
+                                <li>
+                                    <a href="#{{ partie.ancre }}"
+                                       class="text-gray-300 hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded block truncate">
+                                        {{ partie.titre }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </nav>
                 {% endif %}
+
+                {% for partie in parties %}
+                    {% comment %}
+                    Le markdown est rendu côté serveur (décision 002) : `|safe`
+                    porte sur une sortie de `markdown2`, jamais sur une saisie.
+                    La mise en forme est celle des cours engendrés, partagée par
+                    la feuille compilée sous `.cours-rendu`.
+                    {% endcomment %}
+                    <section id="{{ partie.ancre }}" class="scroll-mt-2 mb-6">
+                        <h2 class="text-base font-bold text-white border-b border-gray-700 pb-1 mb-2">
+                            {{ partie.titre }}
+                        </h2>
+                        <div class="cours-rendu text-gray-200 text-sm">{{ partie.contenu|safe }}</div>
+                    </section>
+                {% endfor %}
+
             {% else %}
                 <div class="p-4 rounded-lg border border-dashed border-gray-600">
                     <p class="text-gray-200">{% trans "Aucun cours pour cette compétence." %}</p>
@@ -73,64 +101,163 @@ avant de lire, pas après.
             {% endif %}
         </section>
 
-        <section aria-labelledby="titre-actions"
-                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
-            <h2 id="titre-actions" class="text-base font-bold text-white mb-2">
-                {% trans "Enrichir ma fiche" %}
-            </h2>
-            <p class="text-xs text-gray-400 mb-3">
-                {% trans "Chaque ajout va dans votre fiche, avec la question qui l'a produit et les sources employées." %}
-            </p>
+        {% comment %}
+        La colonne de droite : Koda en haut, une cellule Python en bas.
 
-            <div class="space-y-2">
-                {% for action in actions %}
-                    <button type="button" data-question="{{ action.libelle }}"
-                            class="action-enrichir w-full text-left px-3 py-2 rounded-lg border border-gray-600 bg-gray-900 text-sm text-gray-200 hover:border-primary-green focus:outline-none focus:ring-2 focus:ring-white">
-                        {{ action.libelle }}
+        Compétence visée : C17 (épreuve E4)
+        Compétences concernées : C10 (E3) ; C13 (E3) — accessibilité, sécurité
+
+        Elle proposait trois boutons d'enrichissement. Ils supposaient qu'un
+        apprenant sait, avant de lire, ce qu'il ne comprendra pas — alors qu'une
+        question naît en lisant, et qu'elle est rarement l'une des trois.
+
+        Deux zones, donc, et elles répondent à deux gestes différents :
+        demander, et essayer. La cellule Python n'appelle aucun service
+        facturé : elle s'exécute sur le serveur, dans l'exécuteur restreint des
+        exercices.
+        {% endcomment %}
+        <div class="flex flex-col gap-3 min-h-0 overflow-hidden">
+
+            <section aria-labelledby="titre-koda"
+                     class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
+                <h2 id="titre-koda" class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="message-circle" class="w-4 h-4 text-primary-green" aria-hidden="true"></i>
+                    {% trans "Demander à Koda" %}
+                </h2>
+                <p class="text-xs text-gray-400 mt-0.5 mb-2">
+                    {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
+                </p>
+
+                <div id="koda-echanges" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-sm defilement-vert"
+                     role="log" aria-live="polite" aria-labelledby="titre-koda"></div>
+
+                <form id="koda-formulaire" class="mt-2 flex gap-2 flex-shrink-0">
+                    <label for="koda-question" class="sr-only">{% trans "Votre question" %}</label>
+                    <input type="text" id="koda-question" autocomplete="off"
+                           placeholder="{% trans "Posez votre question…" %}"
+                           class="flex-1 min-w-0 px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green">
+                    <button type="submit"
+                            class="px-3 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white flex-shrink-0">
+                        {% trans "Envoyer" %}
                     </button>
-                {% endfor %}
-            </div>
+                </form>
+            </section>
 
-            {% comment %}
-            L'arrivée d'un ajout est annoncée aux technologies d'assistance :
-            sans `aria-live`, un contenu inséré après le chargement passe
-            inaperçu pour qui ne voit pas l'écran.
-            {% endcomment %}
-            <p id="etat-enrichissement" role="status" aria-live="polite"
-               class="mt-3 text-xs text-gray-400"></p>
-        </section>
+            <section aria-labelledby="titre-cellule"
+                     class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
+                <div class="flex items-center justify-between gap-2 flex-shrink-0">
+                    <h2 id="titre-cellule" class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="terminal" class="w-4 h-4 text-primary-blue" aria-hidden="true"></i>
+                        {% trans "Essayer du code" %}
+                    </h2>
+                    <button type="button" id="cellule-executer"
+                            class="px-3 py-1.5 rounded-lg bg-primary-blue text-white text-xs font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-white">
+                        {% trans "Exécuter" %}
+                    </button>
+                </div>
+
+                <label for="cellule-code" class="sr-only">{% trans "Code Python à exécuter" %}</label>
+{% comment %}
+                Les deux zones se redimensionnent à la souris, par leur coin.
+
+                Compétence visée : C17 (épreuve E4)
+                Un extrait tient en trois lignes ou en trente, et une sortie
+                peut faire une ligne ou cinquante : figer les hauteurs oblige à
+                faire défiler dans une fenêtre trop petite. `resize-y` rend la
+                décision à l'apprenant, et `min-h-*` empêche de les réduire à
+                rien par mégarde.
+                {% endcomment %}
+                <textarea id="cellule-code" spellcheck="false" rows="8"
+                          class="mt-2 w-full min-h-[7rem] px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 font-mono text-xs text-gray-100 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue resize-y defilement-vert"
+                          placeholder="print('bonjour')"></textarea>
+
+                {% comment %}
+                La sortie est annoncée : un résultat qui apparaît après coup
+                passe inaperçu pour qui ne voit pas l'écran.
+                {% endcomment %}
+                <label for="cellule-sortie" class="sr-only">{% trans "Résultat de l'exécution" %}</label>
+                <pre id="cellule-sortie" role="status" aria-live="polite" tabindex="0"
+                     class="mt-2 flex-1 min-h-[9rem] resize-y overflow-auto px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 font-mono text-xs text-gray-300 whitespace-pre-wrap defilement-vert"></pre>
+            </section>
+        </div>
     </div>
 </div>
 
 {% csrf_token %}
 <script>
-document.querySelectorAll('.action-enrichir').forEach(bouton => {
-    bouton.addEventListener('click', async () => {
-        const etat = document.getElementById('etat-enrichissement');
-        etat.textContent = "{% trans "Koda rédige votre ajout…" %}";
-        document.querySelectorAll('.action-enrichir').forEach(b => b.disabled = true);
+(function () {
+    const jeton = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const echanges = document.getElementById('koda-echanges');
+
+    function bulle(texte, deKoda) {
+        const p = document.createElement('p');
+        p.className = deKoda
+            ? 'px-3 py-2 rounded-2xl rounded-tl-sm bg-primary-green/15 border border-primary-green/30 text-gray-100'
+            : 'px-3 py-2 rounded-2xl rounded-tr-sm bg-gray-900 border border-gray-700 text-gray-300 ml-6';
+        p.textContent = texte;
+        echanges.appendChild(p);
+        echanges.scrollTop = echanges.scrollHeight;
+        return p;
+    }
+
+    {% comment %}
+    La question part vers l'enrichissement de la fiche : la réponse de Koda y
+    est enregistrée avec la question qui l'a produite et ses sources. Le quota
+    est décompté au goulot de l'orchestrateur, pas ici (décision 040).
+    {% endcomment %}
+    document.getElementById('koda-formulaire').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const champ = document.getElementById('koda-question');
+        const question = champ.value.trim();
+        if (!question) { return; }
+        bulle(question, false);
+        champ.value = '';
+        const attente = bulle("{% trans "Koda rédige…" %}", true);
+        if (window.Koda) Koda.etat('reflechit');
         try {
-            const reponse = await fetch("{% url 'courses:enrichir' competence.code %}", {
+            const r = await fetch("{% url 'courses:enrichir' competence.code %}", {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: new URLSearchParams({question: bouton.dataset.question}),
+                headers: {'Content-Type': 'application/x-www-form-urlencoded',
+                          'X-CSRFToken': jeton()},
+                body: new URLSearchParams({question: question}),
             });
-            const corps = await reponse.json();
-            if (!reponse.ok) {
-                etat.textContent = corps.error || "{% trans "L'ajout n'a pas pu être produit." %}";
-                return;
-            }
-            etat.textContent = "{% trans "Ajout enregistré dans votre fiche." %}";
-            if (window.Koda) Koda.etat('parle');
-        } catch (e) {
-            etat.textContent = "{% trans "L'ajout n'a pas pu être produit." %}";
+            const corps = await r.json();
+            attente.textContent = r.ok
+                ? corps.contenu
+                : (corps.error || "{% trans "La réponse n'a pas pu être obtenue." %}");
+            if (r.ok && window.Koda) Koda.etat('parle');
+        } catch (err) {
+            attente.textContent = "{% trans "La réponse n'a pas pu être obtenue." %}";
         } finally {
-            document.querySelectorAll('.action-enrichir').forEach(b => b.disabled = false);
+            if (window.Koda) setTimeout(() => Koda.etat('repos'), 2500);
         }
     });
-});
+
+    const sortie = document.getElementById('cellule-sortie');
+    document.getElementById('cellule-executer').addEventListener('click', async () => {
+        const code = document.getElementById('cellule-code').value;
+        if (!code.trim()) { sortie.textContent = "{% trans "Écrivez du code, puis exécutez." %}"; return; }
+        sortie.textContent = "{% trans "Exécution…" %}";
+        try {
+            const r = await fetch("{% url 'courses:executer' competence.code %}", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded',
+                          'X-CSRFToken': jeton()},
+                body: new URLSearchParams({code: code}),
+            });
+            const corps = await r.json();
+            if (corps.expire) {
+                sortie.textContent = "{% trans "Le code a été interrompu : il tournait trop longtemps." %}";
+            } else if (corps.erreur) {
+                sortie.textContent = corps.erreur;
+            } else {
+                sortie.textContent = corps.sortie
+                    || "{% trans "Exécuté sans rien afficher — pensez à print()." %}";
+            }
+        } catch (err) {
+            sortie.textContent = "{% trans "Le code n'a pas pu être exécuté." %}";
+        }
+    });
+})();
 </script>
 {% endblock %}

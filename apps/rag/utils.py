@@ -62,11 +62,6 @@ COLLECTION_PEDAGOGIQUE = "eduai_knowledge_base"
 def load_embedding_function():
     return OllamaEmbeddings(model=MODELE_EMBARQUEMENT, base_url=URL_OLLAMA)
 
-def get_chroma_collection_langchain():
-    return Chroma(
-        persist_directory=CHROMA_PATH,
-        collection_name="eduai_knowledge_base"
-    )
 
 
 # === For native Chroma (used in prepare_chroma.py) ===

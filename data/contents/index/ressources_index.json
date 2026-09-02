@@ -1,0 +1,55 @@
+{
+    "ai": [
+        "ai__agents_cheat_sheet.pdf",
+        "ai__openai_cheat_sheet.avif",
+        "ai__spacy_cheat_sheet.pdf"
+    ],
+    "cloud": [
+        "cloud__aws_azure_gcp_comparison.avif"
+    ],
+    "data_analysis": [
+        "data_analysis__data_governance.avif",
+        "data_analysis__data_wrangling_cheat_sheet.pdf",
+        "data_analysis__descriptive_statistics_cheat_sheet.pdf",
+        "data_analysis__importing_data.pdf",
+        "data_analysis__matplotlib_cheat_sheet.pdf",
+        "data_analysis__numpy_cheat_sheet.pdf",
+        "data_analysis__numpy_scipy_cheat_sheet.pdf",
+        "data_analysis__pandas_cheat_sheet.pdf",
+        "data_analysis__pandas_dates_times_cheat_sheet.pdf",
+        "data_analysis__pandas_reshaping_data.avif",
+        "data_analysis__plotly_cheat_sheet.avif",
+        "data_analysis__seaborn_cheat_sheet.pdf"
+    ],
+    "deep_learning": [
+        "deep_learning__keras_cheat.pdf",
+        "deep_learning__py_torch.avif"
+    ],
+    "dev": [
+        "dev__docker_data_science.avif",
+        "dev__git_cheat_sheet.pdf",
+        "dev__markdown_cheat_sheet.png"
+    ],
+    "excel": [
+        "excel__cheat_sheet.avif",
+        "excel__keyboard_shortcuts.avif"
+    ],
+    "ml": [
+        "ml__pyspark_rdd_cheat_sheet.pdf",
+        "ml__pyspark_sql_cheat_sheet.pdf",
+        "ml__scikit_learn_cheat_sheet.pdf",
+        "ml__supervised_learning_cheat_sheet.avif",
+        "ml__unsupervised_learning_cheat_sheet.avif"
+    ],
+    "python": [
+        "python__basics_cheat_sheet.pdf",
+        "python__cheat_sheet.avif",
+        "python__regex_cheat_sheet.pdf",
+        "python__total_cheatsheet.md"
+    ],
+    "sql": [
+        "sql__joining_data.pdf",
+        "sql__sql_for_data_science.pdf",
+        "sql__window_functions_cheat_sheet.pdf"
+    ]
+}

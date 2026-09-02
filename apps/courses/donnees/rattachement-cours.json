@@ -1,0 +1,90 @@
+{
+  "_lisez_moi": [
+    "Rattachement des sous-modules du corpus aux compétences du référentiel.",
+    "",
+    "Compétence visée : C17 (épreuve E4)",
+    "Ce fichier est une DONNÉE, importable comme le référentiel : le rattachement",
+    "est choisi, jamais déduit d'un nom de fichier ou de sous-module (décision 027).",
+    "",
+    "L'import EXIGE que l'index du corpus et le disque concordent. Un fichier",
+    "présent d'un seul côté fait échouer l'import, qui nomme tous les écarts d'un",
+    "coup — un fichier absent de l'index disparaîtrait sinon en silence."
+  ],
+  "index": "data/contents/index/python_index.json",
+  "repertoire": "data/contents/courses/01_python",
+
+  "sous_modules": {
+    "02_syntaxe_et_variables": {
+      "competence": "types-et-variables",
+      "titre": "Les types de base et les variables"
+    },
+    "03_structures_de_controle": {
+      "competence": "controle-du-flux",
+      "titre": "Conditions, boucles et compréhensions"
+    },
+    "04_fonctions": {
+      "competence": "fonctions",
+      "titre": "Écrire et appeler des fonctions"
+    },
+    "05_poo": {
+      "competence": "objets",
+      "titre": "Classes et objets"
+    },
+    "06_modules_et_packages": {
+      "competence": "modules-et-paquets",
+      "titre": "Organiser un programme en modules et paquets"
+    },
+    "07_fichiers_et_systeme": {
+      "competence": "modules-et-paquets",
+      "titre": "Organiser un programme en modules et paquets"
+    },
+    "08_debug_et_erreurs": {
+      "competence": "erreurs-et-exceptions",
+      "titre": "Gérer les erreurs et déboguer"
+    },
+    "09_modules_utiles": {
+      "competence": "modules-et-paquets",
+      "titre": "Organiser un programme en modules et paquets"
+    }
+  },
+
+  "_exceptions_lisez_moi": [
+    "Une exception couvre un cas où le SOUS-MODULE NE DÉCIDE PAS — pas une",
+    "erreur de classement, qui se corrige dans l'index.",
+    "",
+    "Toutes celles ci-dessous portent sur 02_syntaxe_et_variables, qui mêle trois",
+    "compétences : la compétence « collections » n'a aucun sous-module à elle,",
+    "ses supports vivant dans celui de la syntaxe."
+  ],
+  "exceptions": {
+    "lists-and-tuples.md": {
+      "competence": "collections",
+      "motif": "Les listes et les tuples sont le cœur de « Manipuler les listes, dictionnaires et ensembles ». Le sous-module les range avec la syntaxe de base ; la compétence les réclame."
+    },
+    "dictionaries.md": {
+      "competence": "collections",
+      "motif": "Même raison : les dictionnaires sont nommés dans l'intitulé de la compétence."
+    },
+    "sets.md": {
+      "competence": "collections",
+      "motif": "Même raison : les ensembles sont nommés dans l'intitulé de la compétence."
+    },
+    "python-sets-what-why-how.md": {
+      "competence": "collections",
+      "motif": "Second support sur les ensembles, à ranger avec le premier."
+    },
+    "args-and-kwargs.md": {
+      "competence": "fonctions",
+      "motif": "Les paramètres variables sont une manière d'écrire une fonction, pas un élément de syntaxe de base."
+    },
+    "python-easy-args-kwargs.md": {
+      "competence": "fonctions",
+      "motif": "Second support sur le même sujet."
+    }
+  },
+
+  "hors_parcours": {
+    "01_introduction": "Présentation du langage et actualité, sans compétence correspondante au référentiel.",
+    "10_projets_et_workflows": "Outillage de projet — Poetry, VS Code. Utile, mais aucune compétence du référentiel ne le couvre."
+  }
+}
