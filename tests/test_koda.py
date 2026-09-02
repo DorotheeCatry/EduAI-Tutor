@@ -542,3 +542,37 @@ def test_la_page_de_cours_charge_l_animateur_qu_elle_pilote():
     assert "data-koda" in gabarit, "il faut un élément à animer"
     for attribut in ("data-colonnes", "data-largeur", "data-hauteur"):
         assert attribut in gabarit, f"{attribut} manque à l'élément animé"
+
+
+def test_la_poignee_de_koda_se_deplace_et_retient_sa_place():
+    """
+    Koda peut être posé ailleurs, à la souris comme au clavier.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C13 (E3) — accessibilité
+
+    Koda se tient en bas à droite, là où les pages posent leur action
+    principale : sur le quiz solo, il masquait « Voir mes résultats ». Réserver
+    un coin sur chaque page serait une règle qu'on oublierait à la page
+    suivante ; c'est donc le personnage qui se déplace.
+
+    Trois garanties, et chacune répare un défaut prévisible :
+    le clavier, sans quoi la fonction n'existerait qu'à la souris ;
+    la position retenue, sans quoi il faudrait le déplacer à chaque page ;
+    le re-bornage à la fenêtre, sans quoi un écran plus petit l'emporterait
+    hors champ, irrattrapable.
+    """
+    composant = PANNEAU.read_text(encoding="utf-8")
+
+    assert "tuteur-position-poignee" in composant, "la position doit être retenue"
+    assert "ArrowLeft" in composant and "ArrowDown" in composant, (
+        "les flèches du clavier doivent déplacer la poignée"
+    )
+    assert "window.addEventListener('resize', replacerLaPoignee)" in composant, (
+        "la poignée doit être ramenée dans la fenêtre quand celle-ci change"
+    )
+    assert "Math.max(0, Math.min(x, window.innerWidth" in composant, (
+        "la position doit être bornée à la fenêtre"
+    )
+    # Un déplacement ne doit pas ouvrir le panneau.
+    assert "if (gesteADeplace) { gesteADeplace = false; return; }" in composant

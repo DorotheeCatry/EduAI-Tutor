@@ -20,10 +20,10 @@ sert.
 {% endcomment %}
 <button type="button" id="tuteur-ouvrir"
         aria-expanded="false" aria-controls="tuteur-panneau"
-        aria-label="{% trans "Ouvrir Koda (Alt+T)" %}"
-        title="{% trans "Ouvrir Koda (Alt+T)" %}"
+        aria-label="{% trans "Ouvrir Koda (Alt+T). Glisser, ou flèches du clavier, pour le déplacer." %}"
+        title="{% trans "Ouvrir Koda (Alt+T) — glissez-le, ou déplacez-le aux flèches, s'il vous gêne" %}"
         class="fixed bottom-4 right-4 z-40 flex flex-col items-center gap-1 p-2 rounded-2xl
-               hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary-green
+               cursor-grab hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary-green
                transition-colors">
     <div data-koda class="koda"
          style="width:171px;height:140px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:1368px 980px"
@@ -614,7 +614,124 @@ le signale ailleurs que dans une console.
     d'ouvrir — mais seulement si Koda dormait vraiment, sinon le clic
     paraîtrait lent sans raison.
     {% endcomment %}
+    {% comment %}
+    Déplacer Koda là où il ne gêne pas.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C13 (E3) — accessibilité
+
+    Koda se tient en bas à droite, exactement là où les pages posent leur
+    action principale : sur le quiz solo, il masquait « Voir mes résultats ».
+    Plutôt que de réserver un coin sur chaque page — une règle qu'on oublierait
+    à la page suivante — c'est le personnage qui se déplace.
+
+    Choix : distinguer le déplacement du clic par un SEUIL de quelques pixels.
+    Motivation : sans lui, le moindre tremblement de la main ferait d'un appui
+    un déplacement, et le panneau ne s'ouvrirait plus.
+
+    Choix : la position est retenue par navigateur, et RE-BORNÉE à la fenêtre à
+    chaque chargement comme à chaque redimensionnement. Motivation : une
+    fenêtre rétrécie, ou un écran plus petit, laisserait sinon Koda hors champ
+    — et il n'existerait aucun moyen de le rattraper.
+
+    Choix : les flèches du clavier le déplacent aussi lorsqu'il a le focus, de
+    20 pixels, ou 100 avec Majuscule. Motivation : une fonction qui n'existe
+    qu'à la souris n'existe pas pour tout le monde, et c'est précisément la
+    gêne qu'on corrige ici.
+    {% endcomment %}
+    const CLE_POSITION = 'tuteur-position-poignee';
+    const SEUIL_DEPLACEMENT = 4;
+    let gestePris = false, gesteADeplace = false, prisX = 0, prisY = 0;
+
+    function poserLaPoignee(x, y) {
+        const largeur = ouvrir.offsetWidth || 180;
+        const hauteur = ouvrir.offsetHeight || 170;
+        x = Math.max(0, Math.min(x, window.innerWidth - largeur));
+        y = Math.max(0, Math.min(y, window.innerHeight - hauteur));
+        ouvrir.style.left = x + 'px';
+        ouvrir.style.top = y + 'px';
+        ouvrir.style.right = 'auto';
+        ouvrir.style.bottom = 'auto';
+        return {x: x, y: y};
+    }
+
+    function retenirLaPosition(p) {
+        try { localStorage.setItem(CLE_POSITION, JSON.stringify(p)); } catch (e) {}
+    }
+
+    function replacerLaPoignee() {
+        let brut = null;
+        try { brut = localStorage.getItem(CLE_POSITION); } catch (e) {}
+        if (!brut) return;
+        try {
+            const p = JSON.parse(brut);
+            if (typeof p.x === 'number' && typeof p.y === 'number') {
+                retenirLaPosition(poserLaPoignee(p.x, p.y));
+            }
+        } catch (e) {}
+    }
+
+    function saisirLaPoignee(e) {
+        const t = e.touches ? e.touches[0] : e;
+        const rect = ouvrir.getBoundingClientRect();
+        gestePris = true;
+        gesteADeplace = false;
+        prisX = t.clientX - rect.left;
+        prisY = t.clientY - rect.top;
+    }
+
+    function suivreLaPoignee(e) {
+        if (!gestePris) return;
+        const t = e.touches ? e.touches[0] : e;
+        const rect = ouvrir.getBoundingClientRect();
+        if (!gesteADeplace
+            && Math.abs(t.clientX - (rect.left + prisX)) < SEUIL_DEPLACEMENT
+            && Math.abs(t.clientY - (rect.top + prisY)) < SEUIL_DEPLACEMENT) {
+            return;
+        }
+        gesteADeplace = true;
+        ouvrir.classList.add('cursor-grabbing');
+        poserLaPoignee(t.clientX - prisX, t.clientY - prisY);
+        if (e.cancelable) e.preventDefault();
+    }
+
+    function lacherLaPoignee() {
+        if (!gestePris) return;
+        gestePris = false;
+        ouvrir.classList.remove('cursor-grabbing');
+        if (gesteADeplace) {
+            const rect = ouvrir.getBoundingClientRect();
+            retenirLaPosition({x: rect.left, y: rect.top});
+        }
+    }
+
+    ouvrir.addEventListener('mousedown', saisirLaPoignee);
+    ouvrir.addEventListener('touchstart', saisirLaPoignee, {passive: true});
+    document.addEventListener('mousemove', suivreLaPoignee);
+    document.addEventListener('touchmove', suivreLaPoignee, {passive: false});
+    document.addEventListener('mouseup', lacherLaPoignee);
+    document.addEventListener('touchend', lacherLaPoignee);
+
+    ouvrir.addEventListener('keydown', function (e) {
+        const pas = e.shiftKey ? 100 : 20;
+        const rect = ouvrir.getBoundingClientRect();
+        let dx = 0, dy = 0;
+        if (e.key === 'ArrowLeft') dx = -pas;
+        else if (e.key === 'ArrowRight') dx = pas;
+        else if (e.key === 'ArrowUp') dy = -pas;
+        else if (e.key === 'ArrowDown') dy = pas;
+        else return;
+        e.preventDefault();
+        retenirLaPosition(poserLaPoignee(rect.left + dx, rect.top + dy));
+    });
+
+    window.addEventListener('resize', replacerLaPoignee);
+    replacerLaPoignee();
+
     ouvrir.addEventListener('click', function () {
+        // Un déplacement n'est pas un clic : sans ce garde-fou, poser Koda
+        // ailleurs ouvrirait le panneau à chaque fois.
+        if (gesteADeplace) { gesteADeplace = false; return; }
         const dort = window.Koda && Koda.instances.some(
             i => i.etat() === 'dort' || i.etat() === 'somnole');
         if (!dort) { ouvrirPanneau(); return; }

@@ -66,8 +66,16 @@
         <!-- Dynamically generated -->
     </div>
 
-    <!-- Submit button -->
-    <div class="flex justify-between items-center pt-4 border-t border-gray-700">
+    {% comment %}
+    La marge basse dégage le coin où Koda se tient par défaut.
+
+    Compétence visée : C17 (épreuve E4)
+    Koda peut désormais être déplacé, ce qui règle le cas pour de bon — mais
+    seulement après que l'apprenant l'a déplacé. À la première visite, il
+    couvrait « Voir mes résultats ». Une action principale ne doit pas
+    dépendre d'un geste que personne n'a encore fait.
+    {% endcomment %}
+    <div class="flex justify-between items-center pt-4 mb-48 border-t border-gray-700">
         <a href="{% url 'quiz:lobby' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
             {% trans "Annuler" %}
         </a>
