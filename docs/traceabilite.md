@@ -1,6 +1,9 @@
 # Matrice de traçabilité — RNCP 37827
 
 **Date du relevé :** 28 août 2026
+**Mis à jour le :** 2 septembre 2026 — six extracteurs, 249 tests, 39 décisions,
+15 incidents, 20 réserves. Les écarts du premier relevé sont repris en fin de
+document avec leur suite.
 **Compétence visée :** C19 (épreuve E4) — traçabilité
 **Objet :** indexer, pour chacune des 21 compétences, la preuve et son emplacement
 
@@ -40,10 +43,10 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 
 | # | Compétence | État | Preuve | Emplacement |
 |---|---|---|---|---|
-| C1 | Extraction de données depuis cinq types de sources | **vérifié** | 5 extracteurs distincts, un par type : API REST (Stack Overflow), scraping (doc Python), fichiers, base de données, big data. Socle commun avec point de lancement, gestion d'erreurs différenciée, idempotence, bilan persisté | `data_pipeline/extract/s1_*.py` à `s5_*.py`, `base_extractor.py` |
+| C1 | Extraction de données depuis cinq types de sources | **vérifié** | **6 extracteurs** pour les cinq types exigés : API REST (Stack Overflow), scraping (doc Python), fichiers, base de données, big data — plus un **second scraping** (documentation de six bibliothèques, 91 pages, 1 005 documents). S6 **n'ajoute aucun type** et ne débloque aucun critère : elle enrichit le corpus, et la décision 039 le dit dans ces termes plutôt que de la présenter comme une couverture supplémentaire. Socle commun : point de lancement, gestion d'erreurs différenciée, idempotence, bilan persisté | `data_pipeline/extract/s1_*.py` à `s6_*.py`, `base_extractor.py`, décision 039 |
 | C2 | Requêtes dans deux langages | **vérifié** | 20 fichiers `.sql` en fichiers dédiés, jamais en chaînes inline. SQL PostgreSQL pour le schéma et la collecte S4 ; **Spark SQL** pour la conversion, la sélection et la volumétrie du dump big data. En-têtes documentant objectif, filtrage, jointures et optimisations | `data_pipeline/load/sql/`, `data_pipeline/extract/sql/` dont 3 `*.spark.sql` |
 | C3 | Agrégation et nettoyage des données | **vérifié** | Trois modules distincts — normalisation des dates (ISO 8601), homogénéisation des formats, déduplication. 6 876 entrants, 40 doublons retirés, 6 836 sortants. Clés de déduplication sur identifiant et empreinte SHA-256 du contenu, jamais sur l'URL ni le titre | `data_pipeline/transform/` (6 modules) |
-| C4 | Base de données et modélisation | **vérifié** | Base `eduai_data` en PostgreSQL 16 conteneurisé, **17 tables**, 6 836 documents chargés, 1 211 mots-clés, 20 544 rattachements, 0 rejet. MCD, MLD, dictionnaire de données, document de conformité RGPD. Isolation structurelle d'avec `eduai_app` (décision 006) | `data_pipeline/load/`, `docs/mcd_eduai_data.md`, `docs/mld_eduai_data.md`, `docs/dictionnaire_donnees_eduai_data.md`, `docs/rgpd_eduai_data.md`, décisions 006, 007, 009 |
+| C4 | Base de données et modélisation | **vérifié** | Base `eduai_data` en PostgreSQL 16 conteneurisé, **17 tables**, 6 836 documents chargés — **les 1 005 documents de S6 sont collectés et non encore chargés au 2 septembre**, ce chiffre ne les compte donc pas, 1 211 mots-clés, 20 544 rattachements, 0 rejet. MCD, MLD, dictionnaire de données, document de conformité RGPD. Isolation structurelle d'avec `eduai_app` (décision 006) | `data_pipeline/load/`, `docs/mcd_eduai_data.md`, `docs/mld_eduai_data.md`, `docs/dictionnaire_donnees_eduai_data.md`, `docs/rgpd_eduai_data.md`, décisions 006, 007, 009 |
 | C5 | API REST exposant le jeu de données | **vérifié** | Django REST Framework, 3 jeux de vues et une vue de statistiques, lecture seule garantie par un routeur de base qui lève sur écriture. 6 753 documents exposés sur 6 836 — le filtre de licence est dans le queryset de base, pas dans chaque vue. Authentification, permissions, throttling, pagination, OpenAPI | `apps/api_data/`, `docs/securite_api_donnees.md`, décisions 012, 013 |
 
 ---
@@ -79,16 +82,16 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 | C14 | Analyse du besoin et spécifications fonctionnelles | **présent** | Contexte, trois parties prenantes, besoin exprimé et **origine de l'analyse assumée comme de première main** plutôt que déguisée en étude d'usage. Huit user stories avec critères d'acceptation, **l'accessibilité figurant dans ces critères** et non en section séparée. Périmètre livré et périmètre écarté, avec le motif de chaque exclusion | `docs/analyse_besoin.md`, décisions 004, 005, 017 |
 | C15 | Cadre technique | **présent** | Architecture en cinq ensembles, **décrite textuellement avant d'être schématisée** — l'équivalent textuel est la description, non une légende appauvrie. Pile et versions, environnements conteneurisés, intégration continue, secrets, contrôle de version. Contraintes matérielles réelles suivies chacune de la décision qu'elle a produite | `docs/cadre_technique.md`, `docs/decisions/` |
 | C16 | Démarche de gestion de projet | **présent** | Démarche **réellement suivie**, mesurée dans l'historique : 474 commits en deux phases séparées de treize mois, découpage par chantier plutôt que par sprint, 20 branches, 118 des 120 commits récents portant leur compétence, 17 décisions, 4 notes de session. Ce qui manque est énoncé — ni rétrospective formalisée, ni estimation, ni revue par un pair — avec le coût réel de chaque manque | `docs/demarche_projet.md` |
-| C17 | Application intégrant des services d'IA | **vérifié** | Application Django 5.2 fonctionnelle, déployée et vérifiée sur URL publique. **Référentiel de compétences importable** — aucun libellé en dur, un test le garde — avec rattachement des exercices et des quiz par choix explicite. **Règle de progression énonçable en trois phrases**, dont un niveau déclaré non mesuré plutôt qu'atteint par accumulation. **Page d'accueil sur données mesurées, avec un état vide par bloc**. Interface bilingue français/anglais, langue suivant le compte. **Toutes les données factices retirées** : quatre foyers, dont un taux de réussite calculé sur l'expérience gagnée (incident 011) | `apps/accueil/`, `apps/referentiel/`, décisions 026 à 028, `tests/test_accueil.py`, `tests/test_progression.py` |
-| C18 | Tests automatisés et intégration continue | **vérifié** | 76 tests `pytest` collectés et au vert, dont des contrôles de non-régression rattachés à des incidents précis. Chaîne GitHub Actions à 3 travaux parallèles — qualité, tests sur PostgreSQL réel avec rejeu du schéma, construction et inspection de l'image | `tests/`, `.github/workflows/integration-continue.yml` |
-| C19 | Traçabilité et documentation technique | **vérifié** | 23 entrées de journal de décisions, notes de session, garde-fou Git refusant les commits sur `main`, matrice de traçabilité. **Documentation de la chaîne couvrant toutes les étapes, toutes les tâches et tous les déclencheurs** — trois déclencheurs d'intégration continue, cinq déclencheurs locaux, et le déclencheur de livraison isolé en tableau : événement, branche, condition, effet. **L'étape de livraison est intégrée à la chaîne et s'exécute une fois le packaging validé** (`needs: [qualite, tests, image]`), ce que le critère demande explicitement. Les étapes qui restent manuelles — chargement du jeu de données, transfert et mise à jour du corpus — sont documentées comme telles, non passées sous silence | `.github/workflows/integration-continue.yml`, `docs/chaine_livraison.md`, `docs/decisions/`, `docs/journal/`, `.githooks/pre-commit` |
+| C17 | Application intégrant des services d'IA | **vérifié** | Application Django 5.2 fonctionnelle, déployée et vérifiée sur URL publique. **Référentiel de compétences importable** — aucun libellé en dur, un test le garde — avec rattachement des exercices et des quiz par choix explicite. **Règle de progression énonçable en trois phrases**, dont un niveau déclaré non mesuré plutôt qu'atteint par accumulation. **Page d'accueil sur données mesurées, avec un état vide par bloc**. Interface bilingue français/anglais, langue suivant le compte. **Toutes les données factices retirées** : sept foyers, dont un taux de réussite calculé sur l'expérience gagnée (incident 011). **Quiz multijoueur réparé** : horodatage par le serveur, erreurs enregistrées, rattachement au référentiel, fin de partie prononcée par le serveur et non par chaque client (décisions 031, 032). **Feuille de style compilée** et CDN abandonné — 407 Kio de JavaScript en moins par page, équivalence vérifiée élément par élément sur six pages (décision 034). **Pages tenant dans l'écran** : l'ossature est figée, les cartes défilent, et 1 500 pixels de progression jusque-là coupés sont redevenus atteignables (décision 038). **Tuteur incarné** : personnage animé par planche de sprites, salutation assemblée à partir de données réelles et jamais engendrée, `prefers-reduced-motion` respecté deux fois plutôt qu'une (décisions 035 à 037) | `apps/accueil/`, `apps/referentiel/`, décisions 026 à 028, `tests/test_accueil.py`, `tests/test_progression.py` |
+| C18 | Tests automatisés et intégration continue | **vérifié** | **249 tests** `pytest` collectés et au vert, dont des contrôles de non-régression rattachés à des incidents précis. Chaîne GitHub Actions à **5 travaux** — qualité, tests sur PostgreSQL réel avec rejeu du schéma, construction et inspection des deux images applicatives en matrice, puis publication conditionnée à leur succès | `tests/`, `.github/workflows/integration-continue.yml` |
+| C19 | Traçabilité et documentation technique | **vérifié** | **39 entrées** de journal de décisions, notes de session, garde-fou Git refusant les commits sur `main`, matrice de traçabilité. **Documentation de la chaîne couvrant toutes les étapes, toutes les tâches et tous les déclencheurs** — trois déclencheurs d'intégration continue, cinq déclencheurs locaux, et le déclencheur de livraison isolé en tableau : événement, branche, condition, effet. **L'étape de livraison est intégrée à la chaîne et s'exécute une fois le packaging validé** (`needs: [qualite, tests, image]`), ce que le critère demande explicitement. Les étapes qui restent manuelles — chargement du jeu de données, transfert et mise à jour du corpus — sont documentées comme telles, non passées sous silence | `.github/workflows/integration-continue.yml`, `docs/chaine_livraison.md`, `docs/decisions/`, `docs/journal/`, `.githooks/pre-commit` |
 
 ### Épreuve E5 — monitorage et résolution d'incidents
 
 | # | Compétence | État | Preuve | Emplacement |
 |---|---|---|---|---|
 | C20 | Monitorage de l'application et du service IA | **vérifié** | Journal JSON Lines hors base, sondes branchées sur le mécanisme de rappels de LangChain, seuils d'alerte avec plancher d'appels et délai de silence, estimation de coût, exposition Prometheus et tableau de bord Grafana provisionné depuis un fichier | `apps/monitoring/`, `docker-compose.yml`, décision 014 |
-| C21 | Résolution d'incidents techniques | **vérifié** | **11 dossiers d'incident** complets — déclenchement, périmètre, diagnostic, résolution, tests en succès — chacun avec son contrôle de non-régression. **Et un document qui en dégage trois familles** (`motifs_incidents.md`) : vérifié dans un contexte employé dans un autre ; l'instrument ne mesure pas ce qu'il prétend ; écrit, joignable, jamais appelé. Chaque famille porte la question à poser pour éviter la prochaine occurrence. 13 réserves ouvertes ou levées, datées | `docs/incidents/`, `docs/motifs_incidents.md`, `docs/reserves.md` |
+| C21 | Résolution d'incidents techniques | **vérifié** | **15 dossiers d'incident** complets — déclenchement, périmètre, diagnostic, résolution, tests en succès — chacun avec son contrôle de non-régression. **Et un document qui en dégage trois familles** (`motifs_incidents.md`) : vérifié dans un contexte employé dans un autre ; l'instrument ne mesure pas ce qu'il prétend ; écrit, joignable, jamais appelé. Chaque famille porte les questions à poser pour éviter la prochaine occurrence : **sept à ce jour**, dont trois ajoutées début septembre — *ce contrôle mesure-t-il l'existence ou la substance ?*, *ce nombre compte-t-il la même chose que celui auquel je le compare ?*, *un refus a-t-il été vérifié aussi soigneusement qu'une autorisation ?* **20 réserves** ouvertes ou levées, datées | `docs/incidents/`, `docs/motifs_incidents.md`, `docs/reserves.md` |
 
 ---
 
@@ -96,9 +99,11 @@ comme preuve — c'est le cas de C11 et C12 — la ligne le signale.
 
 | État | Compétences | Nombre |
 |---|---|---|
-| **vérifié** | C1, C2, C3, C4, C5, C7, C9, C13, C18, C19, C20, C21 | 12 |
-| **vérifié** | 12 compétences | 12 |
-| **présent** | C6, C8, C10, C11, C12, C14, C15, C16, C17 | 9 |
+| **vérifié** | C1, C2, C3, C4, C5, C7, C9, C11, C13, C17, C18, C19, C20, C21 | 14 |
+| **présent** | C6, C8, C10, C12, C14, C15, C16 | 7 |
+
+*Une ligne « vérifié » figurait deux fois dans le relevé du 28 août, l'une
+listant les compétences et l'autre les comptant. Corrigé.*
 
 **Les 21 compétences disposent d'une preuve localisable.** Aucune ligne n'est en
 « partiel » ni en « absent ».
@@ -127,12 +132,17 @@ perdent pas :
 | Corpus documentaire non indexé dans le vector store | `poc_multi_agents.md` § 2.2 |
 | Comparaison multi-agents / agent unique non menée — chiffrée à une heure | `poc_multi_agents.md` § 5 bis |
 | Aucune analyse de sécurité des dépendances dans la chaîne | `chaine_livraison.md` § 7 — seule lacune de la liste qui ne soit pas un arbitrage assumé |
+| `attempts_count` compte les soumissions, pas les tentatives avant réussite | `reserves.md` § 13 |
+| `current_streak` est lu pour accorder un bonus, et n'est jamais écrit — il vaut zéro pour tout le monde | `reserves.md` § 19 |
+| Le périmètre de S6 épingle PyTorch 2.13 dans un corpus sans notion de version | `reserves.md` § 20 |
+| `prose` et `prose-invert` employées sans le greffon qui les produit : elles ne stylent rien | `reserves.md` § 18 |
+| Seize traductions devinées par `makemessages`, inertes mais fausses | `reserves.md` § 17 |
+| Une session d'apprentissage reste ouverte après chaque génération de quiz multijoueur | `reserves.md` § 16 |
 
-| Compétence | Document à produire | Ce qui manque exactement |
-|---|---|---|
-| C14 | `docs/analyse_besoin.md` | User stories et critères d'acceptation, **accessibilité comprise dans ces critères** |
-| C15 | `docs/cadre_technique.md` | La consolidation : architecture, environnements, outillage, contraintes matérielles |
-| C16 | `docs/demarche_projet.md` | La démarche réellement suivie, et ce qui manque par rapport à une démarche agile complète |
+**Les trois documents que ce tableau annonçait comme à produire — `analyse_besoin.md`,
+`cadre_technique.md`, `demarche_projet.md` — sont écrits.** Le tableau qui les
+listait est retiré plutôt que laissé à contredire les lignes C14, C15 et C16
+ci-dessus : un document de traçabilité qui se contredit ne trace plus rien.
 
 Deux précisions que les libellés imposent et qu'il serait facile de manquer.
 
@@ -178,12 +188,41 @@ sont consignées ici plutôt que corrigées en silence.
 | Constat | Où | Nature |
 |---|---|---|
 | Le cahier des charges annonce **13 tables** dans `eduai_data` ; la base en compte **17** | `docs/cahier-des-charges.md`, section « État d'avancement » | Chiffre périmé |
-| Le cahier des charges annonce **15 décisions** et **67 tests** ; il y en a **16** et **76** | idem | Chiffres périmés |
-| Une docstring justifie le repli local par le traitement de « données d'apprenants **potentiellement mineurs** » | `apps/agents/tools/model_config.py` | **Contredit les décisions 004 et 005**, qui établissent un public exclusivement adulte. Le repli local reste justifié, mais par la souveraineté des données, pas par la protection des mineurs |
+| Le cahier des charges annonce **15 décisions** et **67 tests** ; il y en a **39** et **249** | idem | Chiffre périmé, et l'écart s'est creusé : un tableau d'avancement tenu à la main vieillit d'autant plus vite que le projet avance |
+| ~~Une docstring justifie le repli local par le traitement de « données d'apprenants **potentiellement mineurs** »~~ — **corrigé** : la docstring dit désormais que le public est exclusivement adulte et que le repli tient à la souveraineté des données | `apps/agents/tools/model_config.py` | Écart levé |
 
-Le troisième écart est le seul qui compte pour le jury : il fait dire à un
-fichier de code le contraire de ce que deux décisions établissent, sur
+Le troisième écart était le seul qui comptait pour le jury : il faisait dire à
+un fichier de code le contraire de ce que deux décisions établissent, sur
 précisément le point — l'âge du public — qui détermine le périmètre RGPD retenu.
+**Il a été corrigé depuis**, et la ligne est conservée barrée : un écart relevé
+puis levé se lit, un écart effacé ne se lit pas.
+
+Le cahier des charges annonce par ailleurs la matrice de traçabilité comme
+**absente**. Elle existe depuis le 28 août. C'est le même mécanisme que les
+chiffres périmés au-dessus — et il vaut d'être noté ici, puisque c'est
+précisément ce document qui est censé y remédier.
+
+---
+
+## Ce que la mise à jour du 2 septembre a changé
+
+Six lignes ont bougé, et deux méritent d'être signalées pour ce qu'elles disent
+du dispositif plutôt que du projet.
+
+**C11 et C17 passent de « présent » à « vérifié ».** Non par ajout de preuve
+mais par exécution : les indicateurs de C11 ont été confrontés à la base et
+plusieurs se sont révélés inventés (incident 011) ; l'application de C17 a été
+vérifiée sur son URL publique, page par page, avec un compte réel.
+
+**Aucune ligne ne passe de « vérifié » à « présent ».** C'est ce qu'il faut
+surveiller dans un document comme celui-ci : une preuve rejouée le 28 août ne
+l'est plus le 2 septembre, et rien ne le signale. Le statut « vérifié » porte
+donc une date implicite — celle du relevé — et non une garantie permanente.
+
+**Les chiffres de ce document vieilliront comme ceux du cahier des charges.**
+Ils sont datés pour cette raison. La parade n'est pas de les tenir à jour en
+permanence, ce que personne ne fait, mais de dater le relevé et de refaire le
+parcours avant chaque rendu.
 
 ---
 
