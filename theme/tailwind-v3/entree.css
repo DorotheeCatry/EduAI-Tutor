@@ -367,3 +367,31 @@ pre.code-content > code {
         border-radius: 0;
     }
 }
+
+/* --- Barre de défilement aux couleurs du thème ---------------------------
+ * Compétence visée : C17 (épreuve E4)
+ * Compétence concernée : C13 (E3) — accessibilité
+ *
+ * Le vert du thème marque les zones qui défilent : le cours, le fil de Koda,
+ * l'éditeur et sa sortie. C'est une démarcation utile — on voit d'un coup
+ * d'œil ce qui contient plus que ce qu'il montre.
+ *
+ * La piste reste sombre et le curseur nettement plus clair : le contraste ne
+ * doit pas dépendre de la perception du vert. Et la largeur reste celle par
+ * défaut sur Firefox (`thin`), qui ne permet pas de la fixer au pixel —
+ * l'apparence diffère donc d'un navigateur à l'autre, ce qui est acceptable
+ * pour une barre de défilement, jamais pour un contenu. */
+.defilement-vert {
+    scrollbar-width: thin;
+    scrollbar-color: #4CAF50 #111827;
+}
+.defilement-vert::-webkit-scrollbar { width: 10px; height: 10px; }
+.defilement-vert::-webkit-scrollbar-track {
+    background: #111827; border-radius: 6px;
+}
+.defilement-vert::-webkit-scrollbar-thumb {
+    background: #4CAF50; border-radius: 6px;
+    border: 2px solid #111827;
+}
+.defilement-vert::-webkit-scrollbar-thumb:hover { background: #66bb6a; }
+.defilement-vert::-webkit-scrollbar-corner { background: #111827; }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-02 13:48+0000\n"
+"POT-Creation-Date: 2026-09-02 14:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,6 +60,8 @@ msgid "Commencez par générer un cours sur le sujet de votre choix."
 msgstr "Start by generating a course on a topic of your choice."
 
 #: apps/accueil/templates/accueil/accueil.html:71
+#: apps/courses/templates/courses/catalogue.html:47
+#: apps/courses/templates/courses/catalogue.html:153
 msgid "Générer un cours"
 msgstr "Generate a course"
 
@@ -246,7 +248,7 @@ msgstr ""
 msgid "Quiz"
 msgstr "Quiz"
 
-#: apps/accueil/templates/accueil/accueil.html:331
+#: apps/accueil/templates/accueil/accueil.html:331 apps/courses/models.py:182
 #: apps/courses/templates/courses/catalogue.html:18
 #: apps/courses/templates/courses/catalogue.html:23
 msgid "Cours"
@@ -261,15 +263,15 @@ msgid ""
 "apparaîtra ici avec son résultat."
 msgstr "Your first course, exercise or quiz will appear here with its result."
 
-#: apps/chat/actions.py:23 apps/courses/views.py:415
+#: apps/chat/actions.py:23 apps/courses/views.py:442
 msgid "Développe cette partie"
 msgstr "Expand this part"
 
-#: apps/chat/actions.py:30 apps/courses/views.py:416
+#: apps/chat/actions.py:30 apps/courses/views.py:443
 msgid "Un cas plus complexe"
 msgstr "A more complex case"
 
-#: apps/chat/actions.py:36 apps/courses/views.py:417
+#: apps/chat/actions.py:36 apps/courses/views.py:444
 msgid "Je ne comprends pas"
 msgstr "I don't understand"
 
@@ -341,7 +343,7 @@ msgstr ""
 msgid "Provisoire, engendré par le modèle"
 msgstr ""
 
-#: apps/courses/models.py:102 apps/courses/models.py:170
+#: apps/courses/models.py:102 apps/courses/models.py:230
 #: apps/referentiel/models.py:206
 msgid "Compétence"
 msgstr "Competency"
@@ -350,129 +352,161 @@ msgstr "Competency"
 msgid "Statut"
 msgstr ""
 
-#: apps/courses/models.py:107
+#: apps/courses/models.py:107 apps/courses/models.py:185
 msgid "Titre"
 msgstr ""
 
-#: apps/courses/models.py:108 apps/courses/models.py:231
-msgid "Contenu"
-msgstr ""
-
-#: apps/courses/models.py:114
+#: apps/courses/models.py:113
 msgid "Rédigé par"
 msgstr ""
 
-#: apps/courses/models.py:117 apps/courses/models.py:233
-#: apps/courses/templates/courses/page_de_cours.html:63
+#: apps/courses/models.py:116 apps/courses/models.py:293
 msgid "Sources"
 msgstr ""
 
-#: apps/courses/models.py:118
+#: apps/courses/models.py:117
 msgid "Fragments du corpus employés, avec leur licence."
 msgstr ""
 
-#: apps/courses/models.py:121 apps/courses/models.py:236
+#: apps/courses/models.py:120 apps/courses/models.py:296
 #, fuzzy
 #| msgid "Importé le"
 msgid "Créé le"
 msgstr "Imported on"
 
-#: apps/courses/models.py:123
+#: apps/courses/models.py:122
 #, fuzzy
 #| msgid "Importé le"
 msgid "Remplacé le"
 msgstr "Imported on"
 
-#: apps/courses/models.py:124
+#: apps/courses/models.py:123
 msgid "Daté quand un cours publié prend la place d'un provisoire."
 msgstr ""
 
-#: apps/courses/models.py:128 apps/courses/models.py:129
+#: apps/courses/models.py:127 apps/courses/models.py:128
 #: apps/courses/templates/courses/page_de_cours.html:51
 #, fuzzy
 #| msgid "Cours créés"
 msgid "Cours de référence"
 msgstr "Courses created"
 
-#: apps/courses/models.py:166
+#: apps/courses/models.py:184 apps/referentiel/models.py:166
+#: apps/referentiel/models.py:203
+msgid "Ordre"
+msgstr ""
+
+#: apps/courses/models.py:186 apps/courses/models.py:291
+msgid "Contenu"
+msgstr ""
+
+#: apps/courses/models.py:188
+msgid "Fichier d'origine"
+msgstr ""
+
+#: apps/courses/models.py:189
+msgid "Nom du support markdown dont cette partie provient."
+msgstr ""
+
+#: apps/courses/models.py:192
+msgid "Sous-module"
+msgstr ""
+
+#: apps/courses/models.py:193
+msgid "Sous-module du corpus déclaré par le fichier d'index."
+msgstr ""
+
+#: apps/courses/models.py:197
+#, fuzzy
+#| msgid "Ouvrir le cours"
+msgid "Partie de cours"
+msgstr "Open the course"
+
+#: apps/courses/models.py:198
+#, fuzzy
+#| msgid "Ouvrir le cours"
+msgid "Parties de cours"
+msgstr "Open the course"
+
+#: apps/courses/models.py:226
 msgid "Apprenant"
 msgstr ""
 
-#: apps/courses/models.py:172
+#: apps/courses/models.py:232
 msgid "Créée le"
 msgstr ""
 
-#: apps/courses/models.py:173
+#: apps/courses/models.py:233
 msgid "Modifiée le"
 msgstr ""
 
-#: apps/courses/models.py:176
+#: apps/courses/models.py:236
 msgid "Fiche d'apprenant"
 msgstr ""
 
-#: apps/courses/models.py:177
+#: apps/courses/models.py:237
 msgid "Fiches d'apprenant"
 msgstr ""
 
-#: apps/courses/models.py:206
+#: apps/courses/models.py:266
 msgid "Demandé par l'apprenant"
 msgstr ""
 
-#: apps/courses/models.py:207
+#: apps/courses/models.py:267
 msgid "Proposé par le parcours"
 msgstr ""
 
-#: apps/courses/models.py:208
+#: apps/courses/models.py:268
 msgid "Montée de niveau"
 msgstr ""
 
-#: apps/courses/models.py:213
+#: apps/courses/models.py:273
 msgid "Fiche"
 msgstr ""
 
-#: apps/courses/models.py:216
+#: apps/courses/models.py:276
 msgid "Question d'origine"
 msgstr ""
 
-#: apps/courses/models.py:217
+#: apps/courses/models.py:277
 msgid "La question ou l'action qui a produit cet ajout."
 msgstr ""
 
-#: apps/courses/models.py:221
+#: apps/courses/models.py:281
 msgid "Origine"
 msgstr ""
 
-#: apps/courses/models.py:224
+#: apps/courses/models.py:284
 msgid "Section visée"
 msgstr ""
 
-#: apps/courses/models.py:225
+#: apps/courses/models.py:285
 msgid "Titre de la section du cours à laquelle l'ajout répondait."
 msgstr ""
 
-#: apps/courses/models.py:228
+#: apps/courses/models.py:288
 #, fuzzy
 #| msgid "Niveau 1"
 msgid "Niveau visé"
 msgstr "Level 1"
 
-#: apps/courses/models.py:229
+#: apps/courses/models.py:289
 msgid "Renseigné pour une montée de niveau, nul sinon."
 msgstr ""
 
-#: apps/courses/models.py:234
+#: apps/courses/models.py:294
 msgid "url_source, code_licence et attribution_requise par fragment."
 msgstr ""
 
-#: apps/courses/models.py:239
+#: apps/courses/models.py:299
 msgid "Ajout de fiche"
 msgstr ""
 
-#: apps/courses/models.py:240
+#: apps/courses/models.py:300
 msgid "Ajouts de fiche"
 msgstr ""
 
-#: apps/courses/services.py:175
+#: apps/courses/services.py:189
 #, python-format
 msgid ""
 "Compétence : %(competence)s.\n"
@@ -488,19 +522,15 @@ msgstr ""
 msgid "Entrées de l'onglet Cours"
 msgstr ""
 
-#: apps/courses/templates/courses/catalogue.html:31
-msgid "Mes fiches"
-msgstr "My notes"
-
-#: apps/courses/templates/courses/catalogue.html:36
+#: apps/courses/templates/courses/catalogue.html:30
 msgid "Catalogue"
 msgstr "Catalogue"
 
-#: apps/courses/templates/courses/catalogue.html:40
-msgid "Sujet libre"
-msgstr "Free topic"
+#: apps/courses/templates/courses/catalogue.html:35
+msgid "Mes fiches"
+msgstr "My notes"
 
-#: apps/courses/templates/courses/catalogue.html:56
+#: apps/courses/templates/courses/catalogue.html:63
 #: apps/courses/templates/courses/fiche.html:30
 #, python-format
 msgid "%(n)s ajout"
@@ -508,42 +538,85 @@ msgid_plural "%(n)s ajouts"
 msgstr[0] ""
 msgstr[1] ""
 
-#: apps/courses/templates/courses/catalogue.html:70
+#: apps/courses/templates/courses/catalogue.html:77
 msgid "Aucune fiche pour l'instant."
 msgstr "No notes yet."
 
-#: apps/courses/templates/courses/catalogue.html:72
+#: apps/courses/templates/courses/catalogue.html:79
 msgid ""
 "Une fiche se crée toute seule dès que vous enrichissez un cours : ouvrez une "
 "compétence du catalogue et demandez à Koda de développer un passage."
 msgstr ""
 
-#: apps/courses/templates/courses/catalogue.html:93
+#: apps/courses/templates/courses/catalogue.html:109
+#, fuzzy, python-format
+#| msgid "%(total)s compétences, aucune entamée"
+msgid "%(n)s compétence"
+msgid_plural "%(n)s compétences"
+msgstr[0] "%(total)s competencies, none started"
+msgstr[1] "%(total)s competencies, none started"
+
+#: apps/courses/templates/courses/catalogue.html:110
+#, fuzzy, python-format
+#| msgid "Aucun cours"
+msgid "%(c)s cours"
+msgid_plural "%(c)s cours"
+msgstr[0] "No course"
+msgstr[1] "No course"
+
+#: apps/courses/templates/courses/catalogue.html:110
+msgid "aucun cours"
+msgstr "no course"
+
+#: apps/courses/templates/courses/catalogue.html:122
 msgid "Cours publié"
 msgstr "Published course"
 
-#: apps/courses/templates/courses/catalogue.html:97
+#: apps/courses/templates/courses/catalogue.html:124
 #: apps/courses/templates/courses/page_de_cours.html:41
 msgid "Cours provisoire"
 msgstr "Provisional course"
 
-#: apps/courses/templates/courses/catalogue.html:101
+#: apps/courses/templates/courses/catalogue.html:126
 msgid "Aucun cours"
 msgstr "No course"
 
-#: apps/courses/templates/courses/catalogue.html:105
+#: apps/courses/templates/courses/catalogue.html:128
 msgid "fiche commencée"
 msgstr "notes started"
 
-#: apps/courses/templates/courses/catalogue.html:113
+#: apps/courses/templates/courses/catalogue.html:138
 #: apps/tracker/templates/tracker/dashboard.html:147
 msgid "Aucun référentiel de compétences n'est actif."
 msgstr "No competency framework is active."
 
-#: apps/courses/templates/courses/catalogue.html:115
+#: apps/courses/templates/courses/catalogue.html:140
+#, fuzzy
+#| msgid "Voir les modules du référentiel"
+msgid "Le catalogue affichera les modules dès qu'un référentiel sera chargé."
+msgstr "See the framework's modules"
+
+#: apps/courses/templates/courses/catalogue.html:155
 msgid ""
-"Le catalogue affichera les compétences dès qu'un référentiel sera chargé."
+"Sur un sujet libre, hors référentiel. Le cours obtenu est provisoire : il "
+"n'a été relu par personne."
 msgstr ""
+
+#: apps/courses/templates/courses/catalogue.html:161
+msgid "Module de contexte"
+msgstr "Context module"
+
+#: apps/courses/templates/courses/catalogue.html:173
+msgid "Sujet"
+msgstr "Topic"
+
+#: apps/courses/templates/courses/catalogue.html:176
+msgid "Les décorateurs en Python, expliqués avec des exemples"
+msgstr ""
+
+#: apps/courses/templates/courses/catalogue.html:182
+msgid "Générer"
+msgstr "Generate"
 
 #: apps/courses/templates/courses/course_content.html:30
 #: apps/users/templates/users/profile.html:118
@@ -708,41 +781,92 @@ msgid ""
 "arrivera."
 msgstr ""
 
-#: apps/courses/templates/courses/page_de_cours.html:76
+#: apps/courses/templates/courses/page_de_cours.html:66
+#, fuzzy
+#| msgid "Le cours"
+msgid "Dans ce cours"
+msgstr "The course"
+
+#: apps/courses/templates/courses/page_de_cours.html:99
 msgid "Aucun cours pour cette compétence."
 msgstr "No course for this skill yet."
 
-#: apps/courses/templates/courses/page_de_cours.html:78
+#: apps/courses/templates/courses/page_de_cours.html:101
 msgid ""
 "Votre formateur n'a pas encore publié le sien. Vous pouvez commencer sans "
 "attendre : demandez un enrichissement ci-contre, il ira dans votre fiche et "
 "y restera."
 msgstr ""
 
-#: apps/courses/templates/courses/page_de_cours.html:87
-msgid "Enrichir ma fiche"
-msgstr "Add to my notes"
-
-#: apps/courses/templates/courses/page_de_cours.html:90
-msgid ""
-"Chaque ajout va dans votre fiche, avec la question qui l'a produit et les "
-"sources employées."
-msgstr ""
-
-#: apps/courses/templates/courses/page_de_cours.html:119
-msgid "Koda rédige votre ajout…"
-msgstr ""
+#: apps/courses/templates/courses/page_de_cours.html:129
+msgid "Demander à Koda"
+msgstr "Ask Koda"
 
 #: apps/courses/templates/courses/page_de_cours.html:132
-#: apps/courses/templates/courses/page_de_cours.html:138
+msgid "Il voit le cours que vous lisez. Sa réponse va dans votre fiche."
+msgstr ""
+
+#: apps/courses/templates/courses/page_de_cours.html:139
+#: templates/components/tuteur.html:173
+msgid "Votre question"
+msgstr "Your question"
+
+#: apps/courses/templates/courses/page_de_cours.html:141
+#: templates/components/tuteur.html:175
+msgid "Posez votre question…"
+msgstr "Ask your question…"
+
+#: apps/courses/templates/courses/page_de_cours.html:145
+msgid "Envoyer"
+msgstr "Send"
+
+#: apps/courses/templates/courses/page_de_cours.html:155
+msgid "Essayer du code"
+msgstr "Try some code"
+
+#: apps/courses/templates/courses/page_de_cours.html:159
+msgid "Exécuter"
+msgstr "Run"
+
+#: apps/courses/templates/courses/page_de_cours.html:163
+msgid "Code Python à exécuter"
+msgstr "Python code to run"
+
+#: apps/courses/templates/courses/page_de_cours.html:184
+msgid "Résultat de l'exécution"
+msgstr "Execution output"
+
+#: apps/courses/templates/courses/page_de_cours.html:222
+msgid "Koda rédige…"
+msgstr "Koda is writing…"
+
+#: apps/courses/templates/courses/page_de_cours.html:234
+#: apps/courses/templates/courses/page_de_cours.html:237
+#: templates/components/tuteur.html:475
 #, fuzzy
 #| msgid "La réponse n’a pas pu être obtenue."
-msgid "L'ajout n'a pas pu être produit."
+msgid "La réponse n'a pas pu être obtenue."
 msgstr "The answer could not be retrieved."
 
-#: apps/courses/templates/courses/page_de_cours.html:135
-msgid "Ajout enregistré dans votre fiche."
-msgstr ""
+#: apps/courses/templates/courses/page_de_cours.html:246
+msgid "Écrivez du code, puis exécutez."
+msgstr "Write some code, then run it."
+
+#: apps/courses/templates/courses/page_de_cours.html:247
+msgid "Exécution…"
+msgstr "Running…"
+
+#: apps/courses/templates/courses/page_de_cours.html:257
+msgid "Le code a été interrompu : il tournait trop longtemps."
+msgstr "The code was stopped: it ran for too long."
+
+#: apps/courses/templates/courses/page_de_cours.html:262
+msgid "Exécuté sans rien afficher — pensez à print()."
+msgstr "Ran without printing anything — try print()."
+
+#: apps/courses/templates/courses/page_de_cours.html:265
+msgid "Le code n'a pas pu être exécuté."
+msgstr "The code could not be run."
 
 #: apps/courses/views.py:89
 msgid "Please enter a topic to generate the course."
@@ -772,8 +896,12 @@ msgstr ""
 msgid "❌ Delete error: %(erreur)s"
 msgstr ""
 
-#: apps/courses/views.py:442
+#: apps/courses/views.py:469
 msgid "Question absente."
+msgstr ""
+
+#: apps/courses/views.py:511
+msgid "Aucun code à exécuter."
 msgstr ""
 
 #: apps/exercises/templates/exercises/exercise_detail.html:27
@@ -1608,10 +1736,6 @@ msgstr ""
 msgid "Référentiels"
 msgstr ""
 
-#: apps/referentiel/models.py:166 apps/referentiel/models.py:203
-msgid "Ordre"
-msgstr ""
-
 #: apps/referentiel/models.py:167
 msgid "Ordre d'affichage ; à défaut, l'ordre alphabétique du code."
 msgstr "Display order; otherwise the alphabetical order of the code."
@@ -2246,23 +2370,9 @@ msgstr "no context — general question"
 msgid "Le tuteur réfléchit…"
 msgstr "The tutor is thinking…"
 
-#: templates/components/tuteur.html:173
-msgid "Votre question"
-msgstr "Your question"
-
-#: templates/components/tuteur.html:175
-msgid "Posez votre question…"
-msgstr "Ask your question…"
-
 #: templates/components/tuteur.html:435
 msgid "restantes"
 msgstr ""
-
-#: templates/components/tuteur.html:475
-#, fuzzy
-#| msgid "La réponse n’a pas pu être obtenue."
-msgid "La réponse n'a pas pu être obtenue."
-msgstr "The answer could not be retrieved."
 
 #: templates/components/xp_notification.html:10
 msgid "+15 XP Earned!"
@@ -2338,6 +2448,14 @@ msgstr ""
 msgid "Django + Tailwind = ❤️"
 msgstr ""
 
+#~ msgid "Enrichir ma fiche"
+#~ msgstr "Add to my notes"
+
+#, fuzzy
+#~| msgid "La réponse n’a pas pu être obtenue."
+#~ msgid "L'ajout n'a pas pu être produit."
+#~ msgstr "The answer could not be retrieved."
+
 #~ msgid "EduAI Tutor"
 #~ msgstr "EduAI Tutor"
 
@@ -2348,9 +2466,6 @@ msgstr ""
 #~| msgid "Tuteur"
 #~ msgid "Tuteur IA"
 #~ msgstr "Tutor"
-
-#~ msgid "Envoyer"
-#~ msgstr "Send"
 
 #~ msgid "Vous"
 #~ msgstr "You"

@@ -533,3 +533,91 @@ def test_la_page_offre_le_chat_et_la_cellule_pas_des_boutons(
     assert 'role="log"' in page and 'aria-live="polite"' in page, (
         "un échange qui arrive après le chargement doit être annoncé"
     )
+
+
+@pytest.mark.django_db
+def test_le_catalogue_se_lit_par_module_avant_la_competence(
+        client, competence, apprenante):
+    """
+    Le module vient d'abord, la compétence ensuite.
+
+    Compétence visée : C17 (épreuve E4), C13 (E3)
+
+    Choix : `<details>` natif plutôt qu'un dépliant en JavaScript. Motivation :
+    il s'ouvre au clavier, annonce son état aux technologies d'assistance et
+    fonctionne script désactivé — trois propriétés qu'il faudrait sinon
+    réécrire, puis tenir.
+    """
+    client.force_login(apprenante)
+    page = client.get(reverse("courses:catalogue"), secure=True).content.decode()
+
+    assert page.count("<details") >= 1, "un menu déroulant par module"
+    assert competence.module.intitule in page
+    assert page.index(competence.module.intitule) < page.index(competence.intitule), (
+        "le module s'affiche avant les compétences qu'il contient"
+    )
+
+
+@pytest.mark.django_db
+def test_les_trois_entrees_sont_dans_l_ordre_voulu(client, apprenante):
+    """
+    Catalogue, puis mes fiches, puis la génération.
+
+    Compétence visée : C17 (épreuve E4)
+
+    La génération est une entrée de cet onglet et non plus une page à part :
+    c'est le même geste — obtenir un cours — au même endroit.
+    """
+    import re as _re
+
+    client.force_login(apprenante)
+    page = client.get(reverse("courses:catalogue"), secure=True).content.decode()
+
+    assert _re.findall(r'data-onglet="(\w+)"', page) == [
+        "catalogue", "fiches", "generer"]
+    assert 'action="/courses/generator/"' in page, (
+        "le formulaire garde sa vue, seule sa présentation change"
+    )
+    # Le catalogue est le panneau ouvert au chargement.
+    debut = page.index('id="vue-catalogue"')
+    assert "hidden" not in page[debut - 60:page.index(">", debut)]
+
+
+@pytest.mark.django_db
+def test_koda_flottant_s_efface_dans_un_cours(client, competence, apprenante):
+    """
+    Deux Koda à l'écran ouvriraient deux endroits pour la même question.
+
+    Compétence visée : C17 (épreuve E4)
+    """
+    client.force_login(apprenante)
+
+    catalogue = client.get(reverse("courses:catalogue"), secure=True).content.decode()
+    cours = client.get(reverse("courses:page_de_cours", args=[competence.code]),
+                       secure=True).content.decode()
+
+    assert 'id="tuteur-ouvrir"' in catalogue, "la poignée reste ailleurs"
+    assert 'id="tuteur-ouvrir"' not in cours, "elle s'efface là où le chat est déjà"
+
+
+@pytest.mark.django_db
+def test_les_zones_d_essai_se_redimensionnent(client, competence, apprenante):
+    """
+    L'apprenant règle la hauteur de l'éditeur et de la sortie.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Un extrait tient en trois lignes ou en trente, une sortie en une ligne ou
+    cinquante : figer les hauteurs oblige à défiler dans une fenêtre trop
+    petite.
+    """
+    client.force_login(apprenante)
+    page = client.get(reverse("courses:page_de_cours", args=[competence.code]),
+                      secure=True).content.decode()
+
+    editeur = page[page.index('id="cellule-code"'):][:400]
+    sortie = page[page.index('id="cellule-sortie"'):][:400]
+    assert "resize-y" in editeur and "resize-y" in sortie
+    assert "min-h-" in editeur and "min-h-" in sortie, (
+        "une hauteur minimale empêche de les réduire à rien par mégarde"
+    )

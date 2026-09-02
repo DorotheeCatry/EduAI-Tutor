@@ -94,7 +94,17 @@ connaître.
     {% endcomment %}
     {% if user.is_authenticated %}
         <form id="csrf-form" style="display: none">{% csrf_token %}</form>
-        {% include 'components/tuteur.html' %}
+        {% comment %}
+        Koda flottant s'efface là où il est déjà dans la page.
+
+        Compétence visée : C17 (épreuve E4)
+        Sur une page de cours, le chat occupe la colonne de droite : garder en
+        plus la poignée flottante donnerait deux Koda à l'écran, dont un qui
+        ouvrirait un second endroit où poser la même question.
+        {% endcomment %}
+        {% if not koda_dans_la_page %}
+            {% include 'components/tuteur.html' %}
+        {% endif %}
     {% endif %}
 
     <script>

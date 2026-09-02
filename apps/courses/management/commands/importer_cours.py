@@ -230,7 +230,48 @@ class Command(BaseCommand):
                     for ligne in texte.split("\n")) + "\n"
             corps = re.sub(r"<%s>(.*?)</%s>" % (balise, balise), remplacer,
                            corps, flags=re.S)
-        return corps
+        return Command._html_en_markdown(corps)
+
+    @staticmethod
+    def _html_en_markdown(corps: str) -> str:
+        """
+        Convertit le HTML en ligne des supports en markdown — hors code.
+
+        Compétence visée : C17 (épreuve E4), C21 (E5)
+
+        Le rendu se fait en **mode sûr** : `markdown2` échappe le HTML brut,
+        ce qui est la bonne règle pour un cours engendré par le modèle. Mais
+        ces supports mêlent markdown et HTML en ligne — `<a>`, `<code>`, `<b>` —
+        et l'apprenant lisait donc « &lt;a target="_blank" href="…"&gt; » au
+        milieu d'une phrase.
+
+        **La conversion se fait à l'import, pas au rendu.** Lever le mode sûr
+        aurait réglé l'affichage et ouvert une porte : le même rendu sert aux
+        cours engendrés par le modèle, dont le HTML ne doit jamais être exécuté.
+
+        Choix : ne convertir que **hors des blocs de code**. Motivation : ces
+        supports contiennent de la sortie de session Python — `<class 'dict'>`,
+        `<stdin>`, `<module>` — qui ressemble à du HTML sans en être. La
+        convertir mutilerait les exemples.
+        """
+        # On ne découpe que sur les blocs délimités, pas sur le code en ligne.
+        #
+        # Découper aussi sur les `\u0060…\u0060` séparait l'ouverture d'un lien de sa
+        # fermeture quand il enveloppe du code — `<a href="…">\u0060KeyError\u0060</a>` —
+        # et la conversion ne s'appliquait plus. Vérifié sur les 41 supports :
+        # aucun code en ligne ne contient de balise, la découpe plus large est
+        # donc sans risque ici.
+        morceaux = re.split(r"(```.*?```)", corps, flags=re.S)
+        for rang, morceau in enumerate(morceaux):
+            if morceau.startswith("```"):
+                continue                      # bloc de code : intact
+            morceau = re.sub(r"<a\b[^>]*href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>",
+                             r"[\2](\1)", morceau, flags=re.S)
+            morceau = re.sub(r"<code>(.*?)</code>", r"`\1`", morceau, flags=re.S)
+            morceau = re.sub(r"</?b>", "**", morceau)
+            morceau = re.sub(r"<br\s*/?>", "\n", morceau)
+            morceaux[rang] = morceau
+        return "".join(morceaux)
 
     # --- 3. Publication ----------------------------------------------------
 

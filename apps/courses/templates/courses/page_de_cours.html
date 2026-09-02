@@ -46,7 +46,7 @@ avant de lire, pas après.
     <div class="flex-1 min-h-0 grid gap-3 lg:grid-cols-[1.6fr_1fr] overflow-hidden">
 
         <section aria-labelledby="titre-cours"
-                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0">
+                 class="p-4 rounded-lg border border-gray-700 bg-gray-800 overflow-y-auto min-h-0 defilement-vert">
             <h2 id="titre-cours" class="sr-only">{% trans "Cours de référence" %}</h2>
             {% if cours %}
                 {% comment %}
@@ -128,7 +128,7 @@ avant de lire, pas après.
                     {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
                 </p>
 
-                <div id="koda-echanges" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-sm"
+                <div id="koda-echanges" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-sm defilement-vert"
                      role="log" aria-live="polite" aria-labelledby="titre-koda"></div>
 
                 <form id="koda-formulaire" class="mt-2 flex gap-2 flex-shrink-0">
@@ -157,16 +157,27 @@ avant de lire, pas après.
                 </div>
 
                 <label for="cellule-code" class="sr-only">{% trans "Code Python à exécuter" %}</label>
-                <textarea id="cellule-code" spellcheck="false" rows="6"
-                          class="mt-2 flex-1 min-h-0 w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 font-mono text-xs text-gray-100 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue resize-none"
+{% comment %}
+                Les deux zones se redimensionnent à la souris, par leur coin.
+
+                Compétence visée : C17 (épreuve E4)
+                Un extrait tient en trois lignes ou en trente, et une sortie
+                peut faire une ligne ou cinquante : figer les hauteurs oblige à
+                faire défiler dans une fenêtre trop petite. `resize-y` rend la
+                décision à l'apprenant, et `min-h-*` empêche de les réduire à
+                rien par mégarde.
+                {% endcomment %}
+                <textarea id="cellule-code" spellcheck="false" rows="8"
+                          class="mt-2 w-full min-h-[7rem] px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 font-mono text-xs text-gray-100 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue resize-y defilement-vert"
                           placeholder="print('bonjour')"></textarea>
 
                 {% comment %}
                 La sortie est annoncée : un résultat qui apparaît après coup
                 passe inaperçu pour qui ne voit pas l'écran.
                 {% endcomment %}
-                <pre id="cellule-sortie" role="status" aria-live="polite"
-                     class="mt-2 max-h-32 overflow-auto px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 font-mono text-xs text-gray-300 whitespace-pre-wrap flex-shrink-0"></pre>
+                <label for="cellule-sortie" class="sr-only">{% trans "Résultat de l'exécution" %}</label>
+                <pre id="cellule-sortie" role="status" aria-live="polite" tabindex="0"
+                     class="mt-2 flex-1 min-h-[9rem] resize-y overflow-auto px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 font-mono text-xs text-gray-300 whitespace-pre-wrap defilement-vert"></pre>
             </section>
         </div>
     </div>

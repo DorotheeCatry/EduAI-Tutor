@@ -341,10 +341,29 @@ def catalogue(request):
             "fiche": fiches.get(competence.id),
         })
 
+    # Le catalogue se lit d'abord par MODULE, la compétence venant ensuite.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    # Choix : regrouper côté serveur plutôt que de laisser le gabarit boucler
+    # deux fois. Motivation : l'ordre des modules est celui du référentiel — un
+    # champ `ordre` que la donnée porte — et le reconstituer dans le gabarit
+    # obligerait à le trier là aussi.
+    par_module: dict = {}
+    for entree in entrees:
+        module = entree["competence"].module
+        par_module.setdefault(module.id, {"module": module, "entrees": []})
+        par_module[module.id]["entrees"].append(entree)
+    modules = sorted(par_module.values(),
+                     key=lambda g: (g["module"].ordre, g["module"].code))
+    for groupe in modules:
+        groupe["avec_cours"] = sum(1 for e in groupe["entrees"] if e["cours"])
+
     return render(request, "courses/catalogue.html", {
         "referentiel": referentiel,
         "entrees": entrees,
+        "modules": modules,
         "mes_fiches": [f for f in fiches.values() if f.nombre_ajouts],
+        "modules_de_generation": module_loader.get_available_modules(),
     })
 
 
@@ -363,6 +382,8 @@ def page_de_cours(request, code):
     fiche = fiche_de(request.user, competence)
 
     return render(request, "courses/page_de_cours.html", {
+        # Le chat est dans la page : la poignée flottante s'efface.
+        "koda_dans_la_page": True,
         "competence": competence,
         "cours": cours,
         # Le markdown est rendu ici, côté serveur, comme pour les cours générés

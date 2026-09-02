@@ -24,26 +24,32 @@ L'ossature de la page est figée, les cartes défilent (décision 038).
 
     <div role="tablist" aria-label="{% trans "Entrées de l'onglet Cours" %}"
          class="flex gap-2 border-b border-gray-700 flex-shrink-0">
-        {% for entree in "fiches,catalogue,libre"|slice:":0" %}{% endfor %}
-        <button type="button" role="tab" id="onglet-fiches" aria-controls="vue-fiches"
-                aria-selected="true" data-onglet="fiches"
-                class="px-3 py-2 text-sm font-medium text-white border-b-2 border-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded-t">
-            {% trans "Mes fiches" %}
-        </button>
         <button type="button" role="tab" id="onglet-catalogue" aria-controls="vue-catalogue"
-                aria-selected="false" data-onglet="catalogue"
-                class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
+                aria-selected="true" data-onglet="catalogue"
+                class="px-3 py-2 text-sm font-medium text-white border-b-2 border-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded-t">
             {% trans "Catalogue" %}
         </button>
-        <a href="{% url 'courses:generator' %}"
-           class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
-            {% trans "Sujet libre" %}
-        </a>
+        <button type="button" role="tab" id="onglet-fiches" aria-controls="vue-fiches"
+                aria-selected="false" data-onglet="fiches"
+                class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
+            {% trans "Mes fiches" %}
+        </button>
+        {% comment %}
+        La génération devient une entrée de cet onglet, et non plus une page à
+        part : c'est le même geste — obtenir un cours — dans le même endroit.
+        Elle garde son formulaire et sa vue ; seule sa présentation rejoint
+        celle des deux autres entrées.
+        {% endcomment %}
+        <button type="button" role="tab" id="onglet-generer" aria-controls="vue-generer"
+                aria-selected="false" data-onglet="generer"
+                class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
+            {% trans "Générer un cours" %}
+        </button>
     </div>
 
     {# ---------- Mes fiches ---------- #}
-    <div id="vue-fiches" role="tabpanel" aria-labelledby="onglet-fiches"
-         class="flex-1 min-h-0 overflow-y-auto">
+    <div id="vue-fiches" role="tabpanel" aria-labelledby="onglet-fiches" hidden
+         class="flex-1 min-h-0 overflow-y-auto defilement-vert">
         {% if mes_fiches %}
             <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                 {% for fiche in mes_fiches %}
@@ -75,46 +81,104 @@ L'ossature de la page est figée, les cartes défilent (décision 038).
     </div>
 
     {# ---------- Catalogue ---------- #}
-    <div id="vue-catalogue" role="tabpanel" aria-labelledby="onglet-catalogue" hidden
-         class="flex-1 min-h-0 overflow-y-auto">
-        {% if entrees %}
-            <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                {% for entree in entrees %}
-                    <li class="p-3 rounded-lg border border-gray-700 bg-gray-800">
-                        <a href="{% url 'courses:page_de_cours' entree.competence.code %}"
-                           class="text-sm text-white hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded">
-                            {{ entree.competence.intitule }}
-                        </a>
-                        <p class="text-[11px] text-gray-500 truncate">{{ entree.competence.module.intitule }}</p>
-                        <p class="text-[11px] mt-1.5">
-                            {% if entree.cours and entree.cours.statut == 'publie' %}
-                                <span class="px-1.5 py-0.5 rounded border border-green-600 bg-green-600/15 text-green-300">
-                                    {% trans "Cours publié" %}
-                                </span>
-                            {% elif entree.cours %}
-                                <span class="px-1.5 py-0.5 rounded border border-amber-500 bg-amber-500/15 text-amber-300">
-                                    {% trans "Cours provisoire" %}
-                                </span>
-                            {% else %}
-                                <span class="px-1.5 py-0.5 rounded border border-gray-600 bg-gray-900 text-gray-400">
-                                    {% trans "Aucun cours" %}
-                                </span>
-                            {% endif %}
-                            {% if entree.fiche %}
-                                <span class="text-gray-400">· {% trans "fiche commencée" %}</span>
-                            {% endif %}
-                        </p>
-                    </li>
+    <div id="vue-catalogue" role="tabpanel" aria-labelledby="onglet-catalogue"
+         class="flex-1 min-h-0 overflow-y-auto defilement-vert">
+        {% if modules %}
+            {% comment %}
+            Un menu déroulant par module, en `<details>`.
+
+            Compétence visée : C17 (épreuve E4)
+            Compétence concernée : C13 (E3) — accessibilité
+            Choix : la balise native plutôt qu'un dépliant en JavaScript.
+            Motivation : elle s'ouvre au clavier, annonce son état aux
+            technologies d'assistance et fonctionne script désactivé — trois
+            propriétés qu'il faudrait sinon réécrire, et tenir.
+
+            Le module vient d'abord, la compétence ensuite : c'est l'ordre du
+            programme, et celui dans lequel un apprenant cherche son cours.
+            {% endcomment %}
+            <div class="space-y-2">
+                {% for groupe in modules %}
+                    <details class="rounded-lg border border-gray-700 bg-gray-800" {% if forloop.first %}open{% endif %}>
+                        <summary class="px-3 py-2 cursor-pointer select-none flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-white rounded-lg">
+                            <span class="text-sm font-semibold text-white truncate">{{ groupe.module.intitule }}</span>
+                            <span class="text-[11px] text-gray-400 flex-shrink-0">
+                                {% blocktrans count n=groupe.entrees|length %}{{ n }} compétence{% plural %}{{ n }} compétences{% endblocktrans %}
+                                {% if groupe.avec_cours %}· {% blocktrans count c=groupe.avec_cours %}{{ c }} cours{% plural %}{{ c }} cours{% endblocktrans %}{% else %}· {% trans "aucun cours" %}{% endif %}
+                            </span>
+                        </summary>
+                        <ul class="px-3 pb-3 pt-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                            {% for entree in groupe.entrees %}
+                                <li class="px-2.5 py-1.5 rounded-lg border border-gray-700 bg-gray-900">
+                                    <a href="{% url 'courses:page_de_cours' entree.competence.code %}"
+                                       class="text-sm text-white hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded block truncate">
+                                        {{ entree.competence.intitule }}
+                                    </a>
+                                    <p class="text-[11px] mt-1">
+                                        {% if entree.cours and entree.cours.statut == 'publie' %}
+                                            <span class="px-1.5 py-0.5 rounded border border-green-600 bg-green-600/15 text-green-300">{% trans "Cours publié" %}</span>
+                                        {% elif entree.cours %}
+                                            <span class="px-1.5 py-0.5 rounded border border-amber-500 bg-amber-500/15 text-amber-300">{% trans "Cours provisoire" %}</span>
+                                        {% else %}
+                                            <span class="px-1.5 py-0.5 rounded border border-gray-600 bg-gray-900 text-gray-400">{% trans "Aucun cours" %}</span>
+                                        {% endif %}
+                                        {% if entree.fiche %}<span class="text-gray-400">· {% trans "fiche commencée" %}</span>{% endif %}
+                                    </p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </details>
                 {% endfor %}
-            </ul>
+            </div>
         {% else %}
             <div class="p-4 rounded-lg border border-dashed border-gray-600 bg-gray-800">
                 <p class="text-gray-200">{% trans "Aucun référentiel de compétences n'est actif." %}</p>
                 <p class="text-sm text-gray-400 mt-1">
-                    {% trans "Le catalogue affichera les compétences dès qu'un référentiel sera chargé." %}
+                    {% trans "Le catalogue affichera les modules dès qu'un référentiel sera chargé." %}
                 </p>
             </div>
         {% endif %}
+    </div>
+
+    {# ---------- Générer un cours ---------- #}
+    <div id="vue-generer" role="tabpanel" aria-labelledby="onglet-generer" hidden
+         class="flex-1 min-h-0 overflow-y-auto defilement-vert">
+        <form method="post" action="{% url 'courses:generator' %}"
+              class="max-w-2xl space-y-4 p-4 rounded-lg border border-gray-700 bg-gray-800">
+            {% csrf_token %}
+            <div>
+                <h2 class="text-base font-bold text-white">{% trans "Générer un cours" %}</h2>
+                <p class="text-xs text-gray-400 mt-0.5">
+                    {% trans "Sur un sujet libre, hors référentiel. Le cours obtenu est provisoire : il n'a été relu par personne." %}
+                </p>
+            </div>
+
+            <div>
+                <label for="generation-module" class="block text-sm font-medium text-gray-300 mb-1">
+                    {% trans "Module de contexte" %}
+                </label>
+                <select name="module" id="generation-module"
+                        class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green">
+                    {% for module in modules_de_generation %}
+                        <option value="{{ module.id }}">{{ module.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="generation-sujet" class="block text-sm font-medium text-gray-300 mb-1">
+                    {% trans "Sujet" %}
+                </label>
+                <textarea name="topic" id="generation-sujet" rows="3" required
+                          placeholder="{% trans "Les décorateurs en Python, expliqués avec des exemples" %}"
+                          class="w-full px-3 py-2 text-sm bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green resize-y defilement-vert"></textarea>
+            </div>
+
+            <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                {% trans "Générer" %}
+            </button>
+        </form>
     </div>
 </div>
 
