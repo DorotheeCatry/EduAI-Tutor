@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% comment %}
+L'onglet à trois entrées : mes fiches, catalogue, sujet libre.
+
+Compétence visée : C17 (épreuve E4)
+Compétence concernée : C13 (E3) — accessibilité
+
+Le statut d'un cours — publié ou provisoire — n'est jamais porté par la seule
+couleur : il est écrit en toutes lettres, et l'icône ne fait que l'accompagner.
+C'est la distinction qui décide de la confiance qu'un apprenant accorde à ce
+qu'il lit.
+
+L'ossature de la page est figée, les cartes défilent (décision 038).
+{% endcomment %}
+
+{% block title %}{% trans "Cours" %} — EduAI Tutor{% endblock %}
+
+{% block content %}
+<div class="h-full p-4 flex flex-col gap-3 overflow-hidden">
+
+    <h1 class="text-xl font-bold text-white">{% trans "Cours" %}</h1>
+
+    <div role="tablist" aria-label="{% trans "Entrées de l'onglet Cours" %}"
+         class="flex gap-2 border-b border-gray-700 flex-shrink-0">
+        {% for entree in "fiches,catalogue,libre"|slice:":0" %}{% endfor %}
+        <button type="button" role="tab" id="onglet-fiches" aria-controls="vue-fiches"
+                aria-selected="true" data-onglet="fiches"
+                class="px-3 py-2 text-sm font-medium text-white border-b-2 border-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded-t">
+            {% trans "Mes fiches" %}
+        </button>
+        <button type="button" role="tab" id="onglet-catalogue" aria-controls="vue-catalogue"
+                aria-selected="false" data-onglet="catalogue"
+                class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
+            {% trans "Catalogue" %}
+        </button>
+        <a href="{% url 'courses:generator' %}"
+           class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
+            {% trans "Sujet libre" %}
+        </a>
+    </div>
+
+    {# ---------- Mes fiches ---------- #}
+    <div id="vue-fiches" role="tabpanel" aria-labelledby="onglet-fiches"
+         class="flex-1 min-h-0 overflow-y-auto">
+        {% if mes_fiches %}
+            <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                {% for fiche in mes_fiches %}
+                    <li class="p-3 rounded-lg border border-gray-700 bg-gray-800">
+                        <a href="{% url 'courses:ma_fiche' fiche.competence.code %}"
+                           class="text-sm font-medium text-white hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded">
+                            {{ fiche.competence.intitule }}
+                        </a>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                            {% blocktrans count n=fiche.nombre_ajouts %}{{ n }} ajout{% plural %}{{ n }} ajouts{% endblocktrans %}
+                            · {{ fiche.modifie_le|date:"d/m" }}
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            {% comment %}
+            État vide : il dit ce qui remplira la page, il ne constate pas un
+            vide. Une compétence sans fiche n'est pas un manque, c'est un
+            travail qui n'a pas encore commencé.
+            {% endcomment %}
+            <div class="p-4 rounded-lg border border-dashed border-gray-600 bg-gray-800">
+                <p class="text-gray-200">{% trans "Aucune fiche pour l'instant." %}</p>
+                <p class="text-sm text-gray-400 mt-1">
+                    {% trans "Une fiche se crée toute seule dès que vous enrichissez un cours : ouvrez une compétence du catalogue et demandez à Koda de développer un passage." %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ---------- Catalogue ---------- #}
+    <div id="vue-catalogue" role="tabpanel" aria-labelledby="onglet-catalogue" hidden
+         class="flex-1 min-h-0 overflow-y-auto">
+        {% if entrees %}
+            <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                {% for entree in entrees %}
+                    <li class="p-3 rounded-lg border border-gray-700 bg-gray-800">
+                        <a href="{% url 'courses:page_de_cours' entree.competence.code %}"
+                           class="text-sm text-white hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded">
+                            {{ entree.competence.intitule }}
+                        </a>
+                        <p class="text-[11px] text-gray-500 truncate">{{ entree.competence.module.intitule }}</p>
+                        <p class="text-[11px] mt-1.5">
+                            {% if entree.cours and entree.cours.statut == 'publie' %}
+                                <span class="px-1.5 py-0.5 rounded border border-green-600 bg-green-600/15 text-green-300">
+                                    {% trans "Cours publié" %}
+                                </span>
+                            {% elif entree.cours %}
+                                <span class="px-1.5 py-0.5 rounded border border-amber-500 bg-amber-500/15 text-amber-300">
+                                    {% trans "Cours provisoire" %}
+                                </span>
+                            {% else %}
+                                <span class="px-1.5 py-0.5 rounded border border-gray-600 bg-gray-900 text-gray-400">
+                                    {% trans "Aucun cours" %}
+                                </span>
+                            {% endif %}
+                            {% if entree.fiche %}
+                                <span class="text-gray-400">· {% trans "fiche commencée" %}</span>
+                            {% endif %}
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="p-4 rounded-lg border border-dashed border-gray-600 bg-gray-800">
+                <p class="text-gray-200">{% trans "Aucun référentiel de compétences n'est actif." %}</p>
+                <p class="text-sm text-gray-400 mt-1">
+                    {% trans "Le catalogue affichera les compétences dès qu'un référentiel sera chargé." %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+{% comment %}
+Les onglets sont des `button` dans un `tablist` : ils sont donc atteignables au
+clavier sans code supplémentaire, et `aria-selected` dit lequel est actif à une
+synthèse vocale. Le panneau caché l'est par `hidden`, que les technologies
+d'assistance respectent — et non par une classe qui le rendrait invisible tout
+en le laissant lisible.
+{% endcomment %}
+document.querySelectorAll('[role="tab"][data-onglet]').forEach(onglet => {
+    onglet.addEventListener('click', () => {
+        document.querySelectorAll('[role="tab"][data-onglet]').forEach(autre => {
+            const actif = autre === onglet;
+            autre.setAttribute('aria-selected', actif ? 'true' : 'false');
+            autre.classList.toggle('text-white', actif);
+            autre.classList.toggle('text-gray-400', !actif);
+            autre.classList.toggle('border-primary-green', actif);
+            autre.classList.toggle('border-transparent', !actif);
+            document.getElementById('vue-' + autre.dataset.onglet).hidden = !actif;
+        });
+    });
+});
+</script>
+{% endblock %}

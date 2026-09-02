@@ -11,5 +11,13 @@ urlpatterns = [
     path('api/sections/<str:module_id>/', views.get_sections_api, name='sections_api'),
     path('detail/<int:course_id>/', views.course_detail, name='detail'),
     path('my-courses/', views.my_courses, name='my_courses'),
+
+    # L'onglet à trois entrées. Le générateur ci-dessus devient « sujet libre »,
+    # une entrée parmi trois, et n'est pas refondu (décision 040).
+    path('catalogue/', views.catalogue, name='catalogue'),
+    path('competence/<slug:code>/', views.page_de_cours, name='page_de_cours'),
+    path('competence/<slug:code>/fiche/', views.ma_fiche, name='ma_fiche'),
+    path('competence/<slug:code>/enrichir/', views.enrichir_la_fiche,
+         name='enrichir'),
     path('delete/<int:course_id>/', views.delete_course, name='delete'),
 ]
