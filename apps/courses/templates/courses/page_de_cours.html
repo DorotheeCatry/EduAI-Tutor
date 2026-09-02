@@ -50,25 +50,47 @@ avant de lire, pas après.
             <h2 id="titre-cours" class="sr-only">{% trans "Cours de référence" %}</h2>
             {% if cours %}
                 {% comment %}
-                Le markdown est rendu côté serveur (décision 002) : `|safe` est
-                donc appliqué à une sortie produite par `markdown2`, pas à une
-                saisie d'apprenant. Le contenu d'un cours de référence vient de
-                l'organisme ou du modèle, jamais d'un champ de formulaire.
-                {% endcomment %}
-                <article class="cours-rendu text-gray-200 text-sm leading-relaxed">{{ contenu_rendu|safe }}</article>
+                Le sommaire, tiré des titres de parties.
 
-                {% if cours.sources %}
-                    <h3 class="text-sm font-semibold text-white mt-4">{% trans "Sources" %}</h3>
-                    <ul class="mt-1 space-y-1 text-xs">
-                        {% for source in cours.sources %}
-                            <li>
-                                <a href="{{ source.url_source }}" rel="noopener"
-                                   class="text-primary-blue hover:underline focus:outline-none focus:ring-2 focus:ring-white rounded">{{ source.titre }}</a>
-                                <span class="text-gray-500">— {{ source.code_licence }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                Compétence visée : C17 (épreuve E4)
+                Compétence concernée : C13 (E3) — accessibilité
+                Des liens vers des ancres : navigable au clavier sans une ligne
+                de script. Un cours de référence rassemble plusieurs supports,
+                et c'est ce qui rend un document long utilisable.
+                {% endcomment %}
+                {% if parties|length > 1 %}
+                    <nav aria-labelledby="titre-sommaire-cours" class="mb-4 pb-3 border-b border-gray-700">
+                        <h2 id="titre-sommaire-cours" class="text-sm font-semibold text-white mb-1.5">
+                            {% trans "Dans ce cours" %}
+                        </h2>
+                        <ol class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+                            {% for partie in parties %}
+                                <li>
+                                    <a href="#{{ partie.ancre }}"
+                                       class="text-gray-300 hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded block truncate">
+                                        {{ partie.titre }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </nav>
                 {% endif %}
+
+                {% for partie in parties %}
+                    {% comment %}
+                    Le markdown est rendu côté serveur (décision 002) : `|safe`
+                    porte sur une sortie de `markdown2`, jamais sur une saisie.
+                    La mise en forme est celle des cours engendrés, partagée par
+                    la feuille compilée sous `.cours-rendu`.
+                    {% endcomment %}
+                    <section id="{{ partie.ancre }}" class="scroll-mt-2 mb-6">
+                        <h2 class="text-base font-bold text-white border-b border-gray-700 pb-1 mb-2">
+                            {{ partie.titre }}
+                        </h2>
+                        <div class="cours-rendu text-gray-200 text-sm">{{ partie.contenu|safe }}</div>
+                    </section>
+                {% endfor %}
+
             {% else %}
                 <div class="p-4 rounded-lg border border-dashed border-gray-600">
                     <p class="text-gray-200">{% trans "Aucun cours pour cette compétence." %}</p>

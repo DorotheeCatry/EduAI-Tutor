@@ -27,7 +27,12 @@ from typing import Any
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.courses.models import AjoutDeFiche, CoursDeReference, FicheDApprenant
+from apps.courses.models import (
+    AjoutDeFiche,
+    CoursDeReference,
+    FicheDApprenant,
+    PartieDeCours,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +72,15 @@ def fiche_de(apprenant, competence) -> FicheDApprenant:
     return fiche
 
 
-def publier_le_cours(competence, contenu: str, titre: str, redige_par):
+def publier_le_cours(competence, parties: list[dict], titre: str, redige_par):
     """
     Publie le cours d'un formateur, et met le provisoire de côté.
 
     Compétence visée : C17 (épreuve E4)
+
+    `parties` est une liste de dictionnaires : `titre`, `contenu`,
+    `fichier_source`, `sous_module`. L'ordre de la liste fait l'ordre des
+    parties.
 
     Choix : le cours remplacé est daté, jamais supprimé. Motivation : il cède
     la place, l'historique reste — un apprenant doit pouvoir comprendre d'où
@@ -94,9 +103,14 @@ def publier_le_cours(competence, contenu: str, titre: str, redige_par):
      .filter(competence=competence, remplace_le__isnull=True)
      .update(remplace_le=timezone.now()))
 
-    return CoursDeReference.objects.create(
+    cours = CoursDeReference.objects.create(
         competence=competence, statut=CoursDeReference.PUBLIE,
-        titre=titre, contenu=contenu, redige_par=redige_par)
+        titre=titre, redige_par=redige_par)
+    PartieDeCours.objects.bulk_create([
+        PartieDeCours(cours=cours, ordre=rang, **partie)
+        for rang, partie in enumerate(parties)
+    ])
+    return cours
 
 
 def attribution_des_fragments(fragments) -> list[dict[str, Any]]:

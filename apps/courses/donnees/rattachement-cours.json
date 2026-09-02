@@ -1,64 +1,90 @@
 {
   "_lisez_moi": [
-    "Rattachement des supports de cours aux compétences du référentiel.",
+    "Rattachement des sous-modules du corpus aux compétences du référentiel.",
     "",
     "Compétence visée : C17 (épreuve E4)",
-    "Ce fichier est une DONNÉE, pas du code : le rattachement d'un support à une",
-    "compétence est choisi, jamais déduit d'un nom de fichier (décision 027).",
-    "Corriger ce fichier et relancer `importer_cours` suffit — l'import est",
-    "idempotent et remplace le cours publié de chaque compétence touchée.",
+    "Ce fichier est une DONNÉE, importable comme le référentiel : le rattachement",
+    "est choisi, jamais déduit d'un nom de fichier ou de sous-module (décision 027).",
     "",
-    "Les fichiers non listés ici ne sont pas importés. C'est délibéré : un",
-    "support sans compétence n'a pas d'endroit où s'afficher."
+    "L'import EXIGE que l'index du corpus et le disque concordent. Un fichier",
+    "présent d'un seul côté fait échouer l'import, qui nomme tous les écarts d'un",
+    "coup — un fichier absent de l'index disparaîtrait sinon en silence."
   ],
+  "index": "data/contents/index/python_index.json",
   "repertoire": "data/contents/courses/01_python",
-  "rattachements": {
-    "types-et-variables": {
-      "titre": "Les types de base et les variables",
-      "fichiers": ["basics.md", "manipulating-strings.md", "string-formatting.md",
-                   "datetime-module.md", "random-module.md"]
+
+  "sous_modules": {
+    "02_syntaxe_et_variables": {
+      "competence": "types-et-variables",
+      "titre": "Les types de base et les variables"
     },
-    "controle-du-flux": {
-      "titre": "Conditions, boucles et compréhensions",
-      "fichiers": ["control-flow.md", "comprehensions.md"]
+    "03_structures_de_controle": {
+      "competence": "controle-du-flux",
+      "titre": "Conditions, boucles et compréhensions"
     },
-    "collections": {
-      "titre": "Listes, dictionnaires et ensembles",
-      "fichiers": ["lists-and-tuples.md", "dictionaries.md", "sets.md",
-                   "python-sets-what-why-how.md", "itertools-module.md"]
+    "04_fonctions": {
+      "competence": "fonctions",
+      "titre": "Écrire et appeler des fonctions"
     },
-    "fonctions": {
-      "titre": "Écrire et appeler des fonctions",
-      "fichiers": ["functions.md", "args-and-kwargs.md", "python-easy-args-kwargs.md",
-                   "decorators.md", "built-in-functions.md"]
+    "05_poo": {
+      "competence": "objets",
+      "titre": "Classes et objets"
     },
-    "erreurs-et-exceptions": {
-      "titre": "Gérer les erreurs et déboguer",
-      "fichiers": ["exception-handling.md", "debugging.md"]
+    "06_modules_et_packages": {
+      "competence": "modules-et-paquets",
+      "titre": "Organiser un programme en modules et paquets"
     },
-    "objets": {
-      "titre": "Classes, objets et gestionnaires de contexte",
-      "fichiers": ["oop-basics.md", "dataclasses.md", "context-manager.md"]
+    "07_fichiers_et_systeme": {
+      "competence": "modules-et-paquets",
+      "titre": "Organiser un programme en modules et paquets"
     },
-    "modules-et-paquets": {
-      "titre": "Organiser un programme : modules, fichiers et outils",
-      "fichiers": ["os-module.md", "pathlib-module.md", "file-directory-path.md",
-                   "reading-and-writing-files.md", "json-module.md", "json-yaml.md",
-                   "copy-module.md", "shelve-module.md", "regular-expressions.md",
-                   "virtual-environments.md", "setup-py.md",
-                   "python-uv-package-manager.md",
-                   "python-projects-with-poetry-and-vscode-part-1.md",
-                   "python-projects-with-poetry-and-vscode-part-2.md",
-                   "python-projects-with-poetry-and-vscode-part-3.md"]
+    "08_debug_et_erreurs": {
+      "competence": "erreurs-et-exceptions",
+      "titre": "Gérer les erreurs et déboguer"
+    },
+    "09_modules_utiles": {
+      "competence": "modules-et-paquets",
+      "titre": "Organiser un programme en modules et paquets"
     }
   },
-  "_non_rattaches": {
-    "commentaire": "Relevés dans le répertoire, volontairement laissés de côté.",
-    "fichiers": {
-      "main.md": "sommaire du module, pas un cours",
-      "perspectives.md": "note d'orientation, hors compétence",
-      "1-introduction.ipynb": "carnet Jupyter, pas du markdown",
-      "python-3-14-breaking-free-from-gil.md": "article d'actualité, hors référentiel"
+
+  "_exceptions_lisez_moi": [
+    "Une exception couvre un cas où le SOUS-MODULE NE DÉCIDE PAS — pas une",
+    "erreur de classement, qui se corrige dans l'index.",
+    "",
+    "Toutes celles ci-dessous portent sur 02_syntaxe_et_variables, qui mêle trois",
+    "compétences : la compétence « collections » n'a aucun sous-module à elle,",
+    "ses supports vivant dans celui de la syntaxe."
+  ],
+  "exceptions": {
+    "lists-and-tuples.md": {
+      "competence": "collections",
+      "motif": "Les listes et les tuples sont le cœur de « Manipuler les listes, dictionnaires et ensembles ». Le sous-module les range avec la syntaxe de base ; la compétence les réclame."
+    },
+    "dictionaries.md": {
+      "competence": "collections",
+      "motif": "Même raison : les dictionnaires sont nommés dans l'intitulé de la compétence."
+    },
+    "sets.md": {
+      "competence": "collections",
+      "motif": "Même raison : les ensembles sont nommés dans l'intitulé de la compétence."
+    },
+    "python-sets-what-why-how.md": {
+      "competence": "collections",
+      "motif": "Second support sur les ensembles, à ranger avec le premier."
+    },
+    "args-and-kwargs.md": {
+      "competence": "fonctions",
+      "motif": "Les paramètres variables sont une manière d'écrire une fonction, pas un élément de syntaxe de base."
+    },
+    "python-easy-args-kwargs.md": {
+      "competence": "fonctions",
+      "motif": "Second support sur le même sujet."
     }
+  },
+
+  "hors_parcours": {
+    "01_introduction": "Présentation du langage et actualité, sans compétence correspondante au référentiel.",
+    "10_projets_et_workflows": "Outillage de projet — Poetry, VS Code. Utile, mais aucune compétence du référentiel ne le couvre."
   }
 }

@@ -19,7 +19,12 @@ from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.courses.models import AjoutDeFiche, CoursDeReference, FicheDApprenant
+from apps.courses.models import (
+    AjoutDeFiche,
+    CoursDeReference,
+    FicheDApprenant,
+    PartieDeCours,
+)
 from apps.courses.services import (
     attribution_des_fragments,
     cours_actif,
@@ -29,6 +34,10 @@ from apps.courses.services import (
 from apps.referentiel.models import Competence
 
 FICHIER_REFERENTIEL = "apps/referentiel/donnees/eduai-2026.json"
+
+#: Une partie minimale, pour les tests qui ne portent pas sur le contenu.
+PARTIE = {"titre": "Une partie", "contenu": "contenu relu",
+          "fichier_source": "essai.md", "sous_module": "02_syntaxe_et_variables"}
 
 
 @pytest.fixture
@@ -61,10 +70,10 @@ def test_un_cours_publie_prend_la_place_du_provisoire(competence, apprenante):
     """
     provisoire = CoursDeReference.objects.create(
         competence=competence, statut=CoursDeReference.PROVISOIRE,
-        titre="Provisoire", contenu="…")
+        titre="Provisoire")
     assert cours_actif(competence) == provisoire
 
-    publie = publier_le_cours(competence, "contenu relu", "Publié", apprenante)
+    publie = publier_le_cours(competence, [PARTIE], "Publié", apprenante)
 
     provisoire.refresh_from_db()
     assert provisoire.remplace_le is not None, "le provisoire doit être daté"
@@ -83,12 +92,12 @@ def test_deux_cours_actifs_du_meme_statut_sont_refuses(competence):
     """
     CoursDeReference.objects.create(
         competence=competence, statut=CoursDeReference.PROVISOIRE,
-        titre="Un", contenu="…")
+        titre="Un")
 
     with pytest.raises(IntegrityError), transaction.atomic():
         CoursDeReference.objects.create(
             competence=competence, statut=CoursDeReference.PROVISOIRE,
-            titre="Deux", contenu="…")
+            titre="Deux")
 
 
 @pytest.mark.django_db
@@ -100,13 +109,13 @@ def test_un_cours_remplace_laisse_la_place_a_un_suivant(competence):
     """
     premier = CoursDeReference.objects.create(
         competence=competence, statut=CoursDeReference.PROVISOIRE,
-        titre="Un", contenu="…")
+        titre="Un")
     premier.remplace_le = timezone.now()
     premier.save()
 
     second = CoursDeReference.objects.create(
         competence=competence, statut=CoursDeReference.PROVISOIRE,
-        titre="Deux", contenu="…")
+        titre="Deux")
     assert cours_actif(competence) == second
 
 
@@ -127,12 +136,12 @@ def test_la_fiche_survit_au_remplacement_du_cours(competence, apprenante):
     """
     CoursDeReference.objects.create(
         competence=competence, statut=CoursDeReference.PROVISOIRE,
-        titre="Provisoire", contenu="…")
+        titre="Provisoire")
     fiche = fiche_de(apprenante, competence)
     AjoutDeFiche.objects.create(fiche=fiche, question="Développe cette partie",
                                 contenu="mon ajout")
 
-    publier_le_cours(competence, "contenu relu", "Publié", apprenante)
+    publier_le_cours(competence, [PARTIE], "Publié", apprenante)
 
     fiche.refresh_from_db()
     assert fiche.ajouts.count() == 1
@@ -251,7 +260,7 @@ def test_le_catalogue_distingue_les_trois_etats(client, competence, apprenante):
     assert "Aucun cours" in page
     CoursDeReference.objects.create(
         competence=competence, statut=CoursDeReference.PROVISOIRE,
-        titre="P", contenu="…")
+        titre="P")
     page = client.get(reverse("courses:catalogue"), secure=True).content.decode()
     assert "Cours provisoire" in page
 
@@ -264,9 +273,11 @@ def test_la_page_de_cours_annonce_le_statut_avant_la_lecture(
 
     Compétence visée : C17 (épreuve E4), C13 (E3)
     """
-    CoursDeReference.objects.create(
-        competence=competence, statut=CoursDeReference.PROVISOIRE,
-        titre="P", contenu="le contenu")
+    cours = CoursDeReference.objects.create(
+        competence=competence, statut=CoursDeReference.PROVISOIRE, titre="P")
+    PartieDeCours.objects.create(
+        cours=cours, ordre=0, titre="Une partie", contenu="le contenu",
+        fichier_source="essai.md", sous_module="02_syntaxe_et_variables")
     client.force_login(apprenante)
 
     page = client.get(reverse("courses:page_de_cours", args=[competence.code]),
@@ -346,8 +357,15 @@ def test_les_supports_de_l_organisme_deviennent_des_cours_publies(competence):
     assert cours.statut == CoursDeReference.PUBLIE, (
         "un support écrit par l'organisme est publié, pas provisoire"
     )
-    assert len(cours.contenu) > 1000
-    assert "\n## " in cours.contenu, "les supports deviennent des sections"
+    parties = list(cours.parties.all())
+    assert parties, "un cours rassemble plusieurs fichiers, pas un seul texte"
+    assert all(p.fichier_source.endswith(".md") for p in parties), (
+        "chaque partie dit de quel support elle vient"
+    )
+    assert all(p.sous_module for p in parties), (
+        "chaque partie garde son sous-module d'origine"
+    )
+    assert cours.sommaire, "le sommaire se tire des titres de parties"
 
 
 @pytest.mark.django_db
@@ -387,11 +405,16 @@ def test_le_rattachement_des_supports_est_une_donnee_pas_du_code():
 
     carte = json.loads(
         Path("apps/courses/donnees/rattachement-cours.json").read_text(encoding="utf-8"))
-    assert carte["rattachements"], "le fichier de rattachement doit être renseigné"
-    assert "_non_rattaches" in carte, (
-        "les supports écartés sont nommés, avec leur motif : un fichier absent "
-        "de la liste ne doit pas ressembler à un oubli"
+    assert carte["sous_modules"], "le rattachement par sous-module doit être renseigné"
+    assert carte["hors_parcours"], (
+        "les sous-modules sans compétence sont nommés avec leur motif : un "
+        "sous-module absent de la table ne doit pas ressembler à un oubli"
     )
+    for fichier, exception in carte["exceptions"].items():
+        assert exception.get("motif"), (
+            "l'exception sur %s doit dire pourquoi le sous-module ne décide "
+            "pas — sans motif, elle ressemble à une faute de saisie" % fichier
+        )
 
 
 @pytest.mark.django_db

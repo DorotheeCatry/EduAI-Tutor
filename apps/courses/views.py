@@ -366,9 +366,15 @@ def page_de_cours(request, code):
         "competence": competence,
         "cours": cours,
         # Le markdown est rendu ici, côté serveur, comme pour les cours générés
-        # (décision 002). Sans cela, un support importé s'affichait avec ses
-        # dièses et ses astérisques — « disponible » mais illisible.
-        "contenu_rendu": render_markdown(cours.contenu) if cours else "",
+        # (décision 002), et **partie par partie** : un cours de référence
+        # rassemble plusieurs fichiers, et le sommaire se tire de leurs titres
+        # plutôt que d'une analyse du HTML.
+        "parties": [
+            {"ancre": partie.ancre, "titre": partie.titre,
+             "sous_module": partie.sous_module,
+             "contenu": render_markdown(partie.contenu)}
+            for partie in cours.parties.all()
+        ] if cours else [],
         "fiche": fiche,
         "ajouts": fiche.ajouts.all(),
         "actions": ACTIONS_D_ENRICHISSEMENT,
