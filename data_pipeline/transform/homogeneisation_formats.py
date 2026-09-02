@@ -45,6 +45,12 @@ CODES_LICENCE = {
     # Source S4. Redistribution interdite : voir 04_donnees_reference.sql.
     "Production des apprenants — usage interne à l'organisme de formation":
         "PRODUCTION-APPRENANT",
+    # Sixième source : documentation des bibliothèques. Les quatre libellés
+    # sont ceux que l'extracteur émet, et les codes ceux de la nomenclature.
+    "BSD 3-Clause": "BSD-3-CLAUSE",
+    "PostgreSQL License": "POSTGRESQL",
+    "Apache 2.0": "APACHE-2.0",
+    "MIT": "MIT",
 }
 
 #: Champs de métadonnées qui décrivent une mesure et non une propriété.
