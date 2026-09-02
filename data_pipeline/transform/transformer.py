@@ -121,6 +121,18 @@ def transformer(repertoire_brut: Path, repertoire_sortie: Path) -> dict[str, Any
     for nom_fichier, brut in lire_corpus_brut(repertoire_brut):
         compte_fichier[nom_fichier] += 1
 
+        # Le document porte son code de source, tiré du nom du fichier brut.
+        #
+        # Compétence visée : C3 (épreuve E1), C4 (E1)
+        # Choix : le préfixe du fichier (`s6_documentation…jsonl` → `s6`) plutôt
+        # que le type de source. Motivation : le chargeur rattachait jusqu'ici
+        # un document à sa source **par son type**, ce qui supposait une source
+        # par type. La sixième source est un second scraping : deux sources
+        # partagent désormais le type, et le rattachement devenait ambigu — le
+        # chargeur refusait de continuer, à juste titre. Le nom du fichier, lui,
+        # désigne l'extracteur sans ambiguïté.
+        brut["code_source"] = nom_fichier.split("_", 1)[0]
+
         # 1. Normalisation des dates, avant toute comparaison.
         brut, perte = normaliser_dates_du_document(brut)
         if perte:

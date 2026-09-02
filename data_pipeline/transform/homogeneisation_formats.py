@@ -187,6 +187,10 @@ def homogeneiser_document(document: dict[str, Any]) -> dict[str, Any]:
         "source_nom": document.get("source_nom") or "",
         "source_url": document.get("source_url") or None,
         "code_licence": code_licence(libelle_licence),
+        # Porté depuis le nom du fichier brut par le transformateur : il dit
+        # de quel extracteur vient le document, ce que le type ne dit plus
+        # depuis qu'une deuxième source partage le type « scraping ».
+        "code_source": document.get("code_source"),
         "licence_declaree": libelle_licence,
         "langue": (document.get("langue") or "en").strip().lower()[:2],
         "extrait_le": document.get("extrait_le"),
