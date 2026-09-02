@@ -150,19 +150,6 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-def get_koda_avatars():
-    # Tu peux scanner un dossier static ou stocker en base si tu veux
-    return [
-        {"filename": "avatar_koda_base.png", "url": static("koda/avatar_koda_base.png"), "display_name": "Koda Classic"},
-        {"filename": "avatar_koda_ninja.png", "url": static("koda/avatar_koda_ninja.png"), "display_name": "Ninja Koda"},
-        {"filename": "avatar_koda_zen.png", "url": static("koda/avatar_koda_zen.png"), "display_name": "Zen Koda"},
-    ]
-
-def get_koda_url(filename):
-    if filename:
-        return static(f'koda/{filename}')
-    return static('koda/avatar_koda_base.png')
-
 
 class SuppressionCompteView(LoginRequiredMixin, View):
     """

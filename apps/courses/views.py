@@ -70,10 +70,6 @@ def render_markdown(content):
     )
 
 
-def test_template(request):
-    """Vue de test pour vérifier les templates"""
-    return render(request, 'test.html')
-
 @login_required
 def course_generator(request):
     """Main view for course generation"""

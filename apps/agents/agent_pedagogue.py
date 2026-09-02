@@ -43,11 +43,3 @@ def get_pedagogue_chain(model_name=None):
         return_source_documents=True,
         chain_type_kwargs={"prompt": prompt}
     )
-
-
-def test_pedagogue_output():
-    """Test function to verify pedagogue output"""
-    chain = get_pedagogue_chain()
-    result = chain.invoke({"question": "les fonctions python"})
-    print("🔍 Test output:", result)
-    return result

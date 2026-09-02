@@ -20,91 +20,112 @@ class SecurePythonExecutor:
     """Simplified and secure Python executor"""
     
     # Allowed functions (whitelist)
-    ALLOWED_BUILTINS = {
-        'abs', 'all', 'any', 'bin', 'bool', 'chr', 'dict', 'divmod',
-        'enumerate', 'filter', 'float', 'format', 'frozenset', 'hex',
-        'int', 'len', 'list', 'map', 'max', 'min', 'oct', 'ord',
-        'pow', 'range', 'reversed', 'round', 'set', 'sorted', 'str',
-        'sum', 'tuple', 'type', 'zip', 'print', 'Exception', 'ValueError',
-        'TypeError', 'IndexError', 'KeyError', 'iter', 'next', 'slice',
-        'hasattr', 'getattr', 'setattr', 'isinstance', 'issubclass',
-        '__import__'
-    }
-    
-    # Forbidden modules (blacklist)
-    FORBIDDEN_MODULES = {
-        'os', 'subprocess', 'socket', 'urllib', 'requests',
-        'shutil', 'glob', 'pickle', 'marshal', 'shelve', 'dbm',
-        'sqlite3', 'threading', 'multiprocessing', 'ctypes',
-        'importlib', 'eval', 'exec', 'compile',
-        'open', 'file', 'input', 'raw_input'
-    }
-    
+    # Les deux listes qui vivaient ici — fonctions autorisées et modules
+    # interdits — sont supprimées avec le filtre textuel qu'elles servaient.
+    # Les conserver aurait laissé croire à une défense qui ne s'exécute plus
+    # (incident 018). La liste blanche des modules vit désormais dans
+    # `MODULES_AUTORISES`, et elle est consultée à l'import, pas à la lecture
+    # du source.
+
     def __init__(self, timeout=5):
         self.timeout = timeout
     
+    #: Modules autorisés à l'import, par leur nom exact. Une liste blanche de
+    #: modules reste nécessaire — RestrictedPython encadre le langage, pas le
+    #: choix des bibliothèques.
+    MODULES_AUTORISES = {
+        "math", "random", "statistics", "string", "datetime",
+        "itertools", "functools", "collections", "re", "json", "decimal",
+    }
+
+    def _importateur_sur(self, nom, globales=None, locales=None,
+                         depuis=(), niveau=0):
+        """
+        Remplace `__import__` par une liste blanche de modules.
+
+        Compétence visée : C13 (épreuve E3) — sécurité
+
+        Choix : filtrer le NOM DU MODULE au moment de l'import, et non le texte
+        du code. Motivation : le filtre précédent lisait les lignes du source à
+        la recherche de « import os ». `__import__('o' + 's')` le traversait
+        sans être vu, et rendait le répertoire de travail du serveur — vérifié.
+        Un nom concaténé arrive ici déjà assemblé : il n'y a plus rien à
+        contourner.
+        """
+        racine = nom.split(".")[0]
+        if racine not in self.MODULES_AUTORISES:
+            raise CodeExecutionError(
+                f"Module non autorisé : {racine}. "
+                f"Disponibles : {', '.join(sorted(self.MODULES_AUTORISES))}."
+            )
+        return __import__(nom, globales, locales, depuis, niveau)
+
     def _create_safe_globals(self):
-        """Creates a secure global environment"""
-        # Create restricted builtins dictionary
-        restricted_builtins = {}
-        for name in self.ALLOWED_BUILTINS:
-            if isinstance(__builtins__, dict):
-                if name in __builtins__:
-                    restricted_builtins[name] = __builtins__[name]
-            else:
-                if hasattr(__builtins__, name):
-                    restricted_builtins[name] = getattr(__builtins__, name)
-        
-        # Add basic math functions
-        import math
-        math_functions = {
-            'sqrt': math.sqrt, 'pow': pow, 'abs': abs,
-            'round': round, 'min': min, 'max': max
-        }
-        
-        # Add functools.wraps directly
-        functools_functions = {
-            'wraps': functools.wraps,
-        }
-        
-        # Add necessary secure modules
-        safe_modules = {
-            'time': time,
-            'functools': functools,
-        }
-        
-        safe_globals = {
-            '__builtins__': restricted_builtins,
-            **math_functions,
-            **functools_functions,
-            **safe_modules
-        }
-        
-        print(f"🔧 Available builtins: {sorted(restricted_builtins.keys())}")
-        print(f"🔧 Available modules: {list(safe_modules.keys())}")
-        print(f"🔧 Available functions: {list(functools_functions.keys())}")
-        return safe_globals
-    
+        """
+        Construit l'environnement d'exécution, sur RestrictedPython.
+
+        Compétence visée : C13 (épreuve E3) — sécurité
+
+        Choix : RestrictedPython plutôt qu'une liste blanche maison.
+        Motivation : la liste maison était contournable, et deux évasions ont
+        été constatées avant de la remplacer —
+
+            __import__('o' + 's').getcwd()          → chemin du serveur
+            (1).__class__.__base__.__subclasses__() → chaîne d'évasion classique
+
+        La première passait parce que le filtre lisait le TEXTE du code ; la
+        seconde parce que rien n'encadrait l'accès aux attributs. RestrictedPython
+        traite les deux à la racine : il réécrit l'arbre syntaxique avant
+        compilation et fait passer chaque accès par une garde.
+
+        C'est une bibliothèque de la Zope Foundation, employée depuis vingt ans
+        et auditée — là où une liste blanche maison n'est éprouvée que par les
+        contournements auxquels son auteur a pensé.
+        """
+        from RestrictedPython import safe_globals, utility_builtins
+        from RestrictedPython.Eval import (
+            default_guarded_getitem,
+            default_guarded_getiter,
+        )
+        from RestrictedPython.Guards import (
+            guarded_iter_unpack_sequence,
+            guarded_unpack_sequence,
+            safer_getattr,
+        )
+        from RestrictedPython.PrintCollector import PrintCollector
+
+        globales = dict(safe_globals)
+        globales["__builtins__"] = dict(globales.get("__builtins__", {}))
+        globales["__builtins__"].update(utility_builtins)
+        globales["__builtins__"]["__import__"] = self._importateur_sur
+
+        # Les gardes. Sans elles, le code réécrit par RestrictedPython lève un
+        # NameError à la première indexation ou boucle : ce ne sont pas des
+        # options, ce sont les fonctions que le code compilé appelle.
+        globales.update({
+            "_print_": PrintCollector,
+            "_getattr_": safer_getattr,      # refuse les attributs spéciaux
+            "_getitem_": default_guarded_getitem,
+            "_getiter_": default_guarded_getiter,
+            "_iter_unpack_sequence_": guarded_iter_unpack_sequence,
+            "_unpack_sequence_": guarded_unpack_sequence,
+            "_write_": lambda objet: objet,
+        })
+        return globales
+
     def _validate_code(self, code):
-        """Validates code before execution"""
-        # Check forbidden imports
-        lines = code.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.startswith('import ') or line.startswith('from '):
-                # Allow secure imports
-                if any(safe_module in line for safe_module in ['time', 'functools']):
-                    continue
-                for forbidden in self.FORBIDDEN_MODULES:
-                    if forbidden in line:
-                        raise CodeExecutionError(f"Forbidden import detected: {forbidden}")
-        
-        # Check dangerous keywords
-        dangerous_keywords = ['exec', 'eval', 'compile', 'open', 'file']
-        for keyword in dangerous_keywords:
-            if keyword in code:
-                raise CodeExecutionError(f"Forbidden keyword detected: {keyword}")
-    
+        """
+        Conservée pour l'interface, la validation se fait à la compilation.
+
+        Compétence visée : C13 (épreuve E3)
+
+        Le contrôle textuel qui vivait ici est supprimé : il donnait une
+        impression de protection que deux lignes suffisaient à démentir. Ce qui
+        protège désormais est `compile_restricted`, dont le refus est une
+        erreur de compilation, et l'importateur ci-dessus.
+        """
+        return None
+
     def execute_code(self, code, test_input=None):
         """
         Executes code securely
@@ -132,9 +153,14 @@ class SecurePythonExecutor:
             
             # Compile code
             try:
-                compiled_code = compile(code, '<user_code>', 'exec')
+                from RestrictedPython import compile_restricted
+                compiled_code = compile_restricted(
+                    code, '<code apprenant>', 'exec')
             except SyntaxError as e:
-                raise CodeExecutionError(f"Syntax error: {str(e)}")
+                # RestrictedPython refuse par une SyntaxError : un accès à un
+                # attribut spécial ou une construction interdite n'atteint
+                # jamais l'exécution.
+                raise CodeExecutionError(f"Code refusé : {str(e)}")
             
             # Create secure execution environment
             safe_globals = self._create_safe_globals()
@@ -148,7 +174,14 @@ class SecurePythonExecutor:
                 with redirect_stdout(output_buffer), redirect_stderr(error_buffer):
                     exec(compiled_code, safe_globals, safe_locals)
                 
-                result['output'] = output_buffer.getvalue()
+                # `print` ne va pas sur la sortie standard : RestrictedPython
+                # le remplace par un collecteur, rangé dans `_print`. Sans
+                # cette lecture, tout code affichait un résultat vide — et la
+                # bibliothèque le signale d'ailleurs par un avertissement,
+                # « Prints, but never reads 'printed' variable ».
+                collecte = safe_locals.get("_print")
+                imprime = collecte() if collecte is not None else ""
+                result['output'] = output_buffer.getvalue() + imprime
                 result['success'] = True
                     
             except Exception as e:
