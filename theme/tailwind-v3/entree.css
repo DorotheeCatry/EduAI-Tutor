@@ -123,15 +123,25 @@ html { scrollbar-gutter: stable; }
    Compétence visée : C17 (épreuve E4)
    Compétence concernée : C13 (E3) — accessibilité
 
-   Le rouge, parce que c'est le gras qui porte les mots-clés d'un cours, et
+   Une couleur, parce que c'est le gras qui porte les mots-clés d'un cours, et
    qu'ils doivent être ce qu'on repère en premier. En blanc, ils avaient la
    couleur du texte courant et se confondaient avec lui dès que la page en
    comptait plusieurs par paragraphe.
 
-   Choix : #F87171 et non un rouge franc. Motivation mesurée : sur le fond du
-   panneau (#1F2937), un rouge franc comme #EF4444 tombe à 3,9:1, sous le seuil
-   AA de 4,5:1. #F87171 tient 5,3:1 là, et de 6,4 à 6,8:1 sur les fonds plus
-   sombres du cours, du chat et des blocs de code.
+   Choix : le jaune de Koda, relevé sur sa planche d'animation. Motivation : la
+   couleur du tuteur devient celle de ce qu'il souligne ; l'interface n'y gagne
+   pas une couleur de plus, elle réemploie la sienne. Et elle ne se confond ni
+   avec le vert des titres, ni avec le bleu des liens.
+
+   Choix : #E0C868, la teinte d'OMBRE de Koda, et non #F8D870, sa teinte
+   pleine. Motivation : la teinte pleine tirait vers le pastel sur ces fonds
+   sombres. L'ombre est un cran plus dense, et elle appartient à la même
+   planche — ce n'est pas un jaune choisi ailleurs puis assombri à vue.
+
+   Contraste mesuré : 8,8:1 sur le fond du panneau (#1F2937), jusqu'à 11,4:1
+   sur les fonds plus sombres du cours, du chat et des blocs de code. Près du
+   double du seuil AA, et bien au-dessus du rouge #F87171 essayé d'abord
+   (5,3:1) — lisible, donc, avant même d'être visible.
 
    Le gras est CONSERVÉ. Motivation : la couleur seule ne doit jamais porter
    une information (WCAG 1.4.1). Un mot-clé reste reconnaissable sans elle —
@@ -139,7 +149,7 @@ html { scrollbar-gutter: stable; }
    du texte environnant. */
 :is(#course-content, .cours-rendu) strong {
     font-weight: 700;
-    color: #F87171;
+    color: #E0C868;
 }
 
 :is(#course-content, .cours-rendu) em {

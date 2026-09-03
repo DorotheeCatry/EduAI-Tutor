@@ -101,7 +101,7 @@ def test_l_ossature_figee_laisse_ses_cartes_retrecir():
 
 def test_les_mots_cles_ressortent_et_gardent_leur_gras():
     """
-    Le gras des supports est rouge, et reste gras.
+    Le gras des supports porte la couleur de Koda, et reste gras.
 
     Compétence visée : C17 (épreuve E4)
     Compétence concernée : C13 (E3) — accessibilité
@@ -112,7 +112,7 @@ def test_les_mots_cles_ressortent_et_gardent_leur_gras():
 
     Le gras est conservé délibérément : la couleur seule ne doit jamais porter
     une information (WCAG 1.4.1). Un mot-clé doit rester reconnaissable sur une
-    impression en noir et blanc, ou pour qui ne distingue pas ce rouge du texte
+    impression en noir et blanc, ou pour qui ne distingue pas ce jaune du texte
     qui l'entoure. Ce test échoue donc si l'on retire le `font-weight`.
     """
     feuille = Path("static/css/tailwind.css").read_text(encoding="utf-8")
@@ -122,9 +122,9 @@ def test_les_mots_cles_ressortent_et_gardent_leur_gras():
     assert regles, "le gras des supports doit porter une couleur explicite"
 
     for regle in regles:
-        assert "#f87171" in regle.lower(), (
-            "le rouge retenu tient 5,3:1 sur le fond du panneau ; un rouge plus "
-            "franc passe sous le seuil AA"
+        assert "#e0c868" in regle.lower(), (
+            "la teinte d'ombre de Koda, relevée sur sa planche : 8,8:1 sur le "
+            "fond du panneau, près du double du seuil AA"
         )
         assert "font-weight" in regle, (
             "la couleur seule ne doit pas porter l'information (WCAG 1.4.1)"
