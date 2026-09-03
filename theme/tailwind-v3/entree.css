@@ -128,20 +128,19 @@ html { scrollbar-gutter: stable; }
    couleur du texte courant et se confondaient avec lui dès que la page en
    comptait plusieurs par paragraphe.
 
-   Choix : le jaune de Koda, relevé sur sa planche d'animation. Motivation : la
-   couleur du tuteur devient celle de ce qu'il souligne ; l'interface n'y gagne
-   pas une couleur de plus, elle réemploie la sienne. Et elle ne se confond ni
-   avec le vert des titres, ni avec le bleu des liens.
+   Choix : #FFD60A, un jaune franc, et non le jaune de Koda lui-même. Motivation
+   mesurée : les teintes du personnage plafonnent à 55 % de saturation — elles
+   sont faites pour un pelage, pas pour signaler. À 96 %, celle-ci se détache
+   d'un coup d'œil au milieu d'un paragraphe, ce qui est exactement sa fonction :
+   les mots-clés doivent se repérer avant d'être lus.
 
-   Choix : #E0C868, la teinte d'OMBRE de Koda, et non #F8D870, sa teinte
-   pleine. Motivation : la teinte pleine tirait vers le pastel sur ces fonds
-   sombres. L'ombre est un cran plus dense, et elle appartient à la même
-   planche — ce n'est pas un jaune choisi ailleurs puis assombri à vue.
+   Choix : une teinte à 50° et non plus haut. Motivation : au-delà de 60°, un
+   jaune vire au citron et s'approche du vert des titres et des boutons. La
+   distinction entre « ce qui structure » et « ce qui compte » se perdrait.
 
-   Contraste mesuré : 8,8:1 sur le fond du panneau (#1F2937), jusqu'à 11,4:1
-   sur les fonds plus sombres du cours, du chat et des blocs de code. Près du
-   double du seuil AA, et bien au-dessus du rouge #F87171 essayé d'abord
-   (5,3:1) — lisible, donc, avant même d'être visible.
+   Contraste mesuré : 10,4:1 sur le fond du panneau (#1F2937), 12,6:1 sur ceux
+   du cours et du chat. Plus du double du seuil AA, et deux fois le rouge
+   #F87171 essayé d'abord (5,3:1) — lisible, donc, avant même d'être visible.
 
    Le gras est CONSERVÉ. Motivation : la couleur seule ne doit jamais porter
    une information (WCAG 1.4.1). Un mot-clé reste reconnaissable sans elle —
@@ -149,7 +148,7 @@ html { scrollbar-gutter: stable; }
    du texte environnant. */
 :is(#course-content, .cours-rendu) strong {
     font-weight: 700;
-    color: #E0C868;
+    color: #FFD60A;
 }
 
 :is(#course-content, .cours-rendu) em {

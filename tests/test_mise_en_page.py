@@ -101,7 +101,7 @@ def test_l_ossature_figee_laisse_ses_cartes_retrecir():
 
 def test_les_mots_cles_ressortent_et_gardent_leur_gras():
     """
-    Le gras des supports porte la couleur de Koda, et reste gras.
+    Le gras des supports est jaune vif, et reste gras.
 
     Compétence visée : C17 (épreuve E4)
     Compétence concernée : C13 (E3) — accessibilité
@@ -122,9 +122,9 @@ def test_les_mots_cles_ressortent_et_gardent_leur_gras():
     assert regles, "le gras des supports doit porter une couleur explicite"
 
     for regle in regles:
-        assert "#e0c868" in regle.lower(), (
-            "la teinte d'ombre de Koda, relevée sur sa planche : 8,8:1 sur le "
-            "fond du panneau, près du double du seuil AA"
+        assert "#ffd60a" in regle.lower(), (
+            "un jaune franc, saturé à 96 % pour se repérer d'un coup d'œil, et "
+            "à 10,4:1 sur le fond du panneau — plus du double du seuil AA"
         )
         assert "font-weight" in regle, (
             "la couleur seule ne doit pas porter l'information (WCAG 1.4.1)"
