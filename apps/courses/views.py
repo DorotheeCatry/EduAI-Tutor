@@ -596,11 +596,41 @@ def executer_du_code(request, code):
     # dans aucun script valide : un code ordinaire ressort inchangé.
     extrait = transcrire(extrait)
 
-    resultat = SecurePythonExecutor().execute_code(extrait)
+    executeur = SecurePythonExecutor()
+    resultat = executeur.execute_code(extrait)
+    avec_contexte = False
+
+    # Un bloc de cours n'est pas un programme : c'est un extrait d'une suite.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    # Motivation mesurée : sur les 402 blocs Python des cours publiés, une
+    # soixantaine emploient un nom défini par un bloc PRÉCÉDENT — `import
+    # itertools` posé une fois, puis quatre exemples qui s'en servent. Exécutés
+    # seuls, ils échouent sur un `NameError` que l'apprenant ne peut ni
+    # comprendre ni corriger : le nom manquant est bien à l'écran, deux
+    # paragraphes plus haut.
+    #
+    # Choix : réessayer AVEC les blocs précédents, et seulement après un échec
+    # sur un nom absent. Motivation : concaténer d'emblée ferait échouer les
+    # blocs qui marchent aujourd'hui — un cours contient des exemples d'erreurs
+    # volontaires, et leur exception emporterait la suite. La reprise ne peut
+    # donc qu'améliorer le résultat, jamais le dégrader.
+    contexte = (request.POST.get("contexte") or "").strip()
+    if contexte and not resultat.get("success") and "is not defined" in (
+            resultat.get("error") or ""):
+        seconde = executeur.execute_code(f"{transcrire(contexte)}\n{extrait}")
+        if seconde.get("success"):
+            resultat, avec_contexte = seconde, True
+
+    resultat["avec_contexte"] = avec_contexte
     return JsonResponse({
         "succes": bool(resultat.get("success")),
         "sortie": resultat.get("output") or "",
         "erreur": resultat.get("error") or "",
         "expire": bool(resultat.get("timeout")),
         "duree": round(resultat.get("execution_time") or 0, 3),
+        # Dit à l'interface que le bloc n'a abouti qu'avec ce qui le précède,
+        # pour qu'elle puisse le signaler plutôt que de laisser croire que le
+        # bloc se suffit à lui-même.
+        "avec_contexte": bool(resultat.get("avec_contexte")),
     })
