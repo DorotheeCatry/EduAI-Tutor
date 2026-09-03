@@ -188,3 +188,39 @@ def test_aucun_texte_traduit_n_est_ecrit_en_clair_dans_un_script():
         "apostrophe ou un guillemet y casse le script entier :\n  "
         + "\n  ".join(fautifs)
     )
+
+
+def test_chaque_gabarit_referme_ses_balises_de_bloc():
+    """
+    Aucun gabarit ne laisse un `div` ou une `section` ouverts.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C21 (E5)
+
+    Ce que ce test défend est arrivé deux fois le 3 septembre. La barre d'état
+    laissait son `div` ouvert : le navigateur la poursuivait jusqu'à la fin du
+    document, et sur une page dont le contenu remplit la hauteur, la barre du
+    bas remontait en coupant le contenu. Le défaut était présent sur TOUTES les
+    pages et ne se voyait que là où la hauteur est contrainte.
+
+    Le déplacement d'un panneau d'onglet avait de son côté laissé deux balises
+    orphelines, qui refermaient le conteneur de la page en avance.
+
+    Le comptage ignore les blocs `script` — leurs chaînes portent des balises
+    qui ne sont pas du balisage — et les commentaires de gabarit.
+    """
+    fautifs = []
+    for gabarit in GABARITS:
+        texte = gabarit.read_text(encoding="utf-8")
+        texte = re.sub(r"<script.*?</script>", "", texte, flags=re.S)
+        texte = re.sub(r"{% comment %}.*?{% endcomment %}", "", texte, flags=re.S)
+        for balise in ("div", "section"):
+            ouverts = len(re.findall(rf"<{balise}[\s>]", texte))
+            fermes = len(re.findall(rf"</{balise}>", texte))
+            if ouverts != fermes:
+                fautifs.append(f"{gabarit} : {balise} {ouverts} ouverts, {fermes} fermés")
+
+    assert fautifs == [], (
+        "balises de bloc non refermées — le navigateur referme alors le "
+        "conteneur de la page où il peut :\n  " + "\n  ".join(fautifs)
+    )

@@ -22,3 +22,18 @@
         <i data-lucide="wifi" class="w-3 h-3"></i>
         <i data-lucide="battery" class="w-3 h-3"></i>
     </div>
+{% comment %}
+Cette fermeture manquait.
+
+Compétence visée : C17 (épreuve E4)
+Compétence concernée : C21 (E5)
+
+Le `div` de la barre restait ouvert. Le navigateur poursuivait donc la barre
+jusqu'à la fin du document, et le conteneur en colonne de `base.html` s'en
+trouvait déséquilibré : sur une page dont le contenu remplit la hauteur, la
+barre du bas remontait et le contenu se trouvait coupé.
+
+Le défaut existait sur TOUTES les pages — chacune rendait un `div` de plus
+qu'elle n'en fermait — et ne se voyait que là où la hauteur est contrainte.
+{% endcomment %}
+</div>
