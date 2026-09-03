@@ -82,6 +82,8 @@ class SecurePythonExecutor:
         et auditée — là où une liste blanche maison n'est éprouvée que par les
         contournements auxquels son auteur a pensé.
         """
+        import builtins
+
         from RestrictedPython import safe_globals, utility_builtins
         from RestrictedPython.Eval import (
             default_guarded_getitem,
@@ -99,6 +101,36 @@ class SecurePythonExecutor:
         globales["__builtins__"].update(utility_builtins)
         globales["__builtins__"]["__import__"] = self._importateur_sur
 
+        # Le vocabulaire ordinaire de Python, absent de `safe_globals`.
+        #
+        # Compétence visée : C13 (épreuve E3)
+        # Compétence concernée : C17 (E4)
+        #
+        # Motivation mesurée : `list`, `dict`, `sum`, `min`, `max`, `enumerate`,
+        # `map`, `filter`, `any`, `all`, `reversed` et `type` ne répondaient pas.
+        # Un cours sur les collections dont `print(list(...))` échoue n'apprend
+        # rien, et l'apprenant conclut que c'est son code qui est faux.
+        #
+        # Ce que ces noms ne donnent pas : ni accès au disque, ni introspection.
+        # Ils construisent et parcourent des valeurs, rien d'autre. Restent
+        # dehors, et le restent :
+        #   `open` et `input`   — l'un ouvre le système de fichiers, l'autre
+        #                         attendrait une saisie que personne ne peut
+        #                         fournir et bloquerait jusqu'au délai ;
+        #   `eval`, `exec`, `compile` — ils rouvriraient un chemin que
+        #                         `compile_restricted` vient de fermer ;
+        #   `getattr`, `setattr`, `dir`, `vars`, `globals` — l'accès aux
+        #                         attributs passe par `safer_getattr`, qui
+        #                         refuse les attributs spéciaux. Les rendre
+        #                         directement rendrait cette garde inutile.
+        for nom in ("list", "dict", "sum", "min", "max", "enumerate", "map",
+                    "filter", "any", "all", "reversed", "type", "iter", "next",
+                    "frozenset", "divmod", "pow", "format", "repr", "ascii",
+                    "bin", "oct", "hex", "chr", "ord", "id", "callable"):
+            valeur = getattr(builtins, nom, None)
+            if valeur is not None:
+                globales["__builtins__"][nom] = valeur
+
         # Les gardes. Sans elles, le code réécrit par RestrictedPython lève un
         # NameError à la première indexation ou boucle : ce ne sont pas des
         # options, ce sont les fonctions que le code compilé appelle.
@@ -110,6 +142,31 @@ class SecurePythonExecutor:
             "_iter_unpack_sequence_": guarded_iter_unpack_sequence,
             "_unpack_sequence_": guarded_unpack_sequence,
             "_write_": lambda objet: objet,
+
+            # Deux noms que RestrictedPython attend dans les globales, sans
+            # lesquels des constructions parfaitement ordinaires échouent.
+            #
+            # Compétence visée : C13 (épreuve E3)
+            # Compétence concernée : C17 (E4)
+            #
+            # `__metaclass__` : sans lui, TOUTE définition de classe échoue sur
+            # « name '__metaclass__' is not defined ». Un cours sur les objets
+            # devenait inexécutable en entier — et le message ne désignait rien
+            # que l'apprenant puisse comprendre ni corriger.
+            #
+            # `_apply_` : le code réécrit y passe pour tout appel à arguments
+            # dépliés, `f(*args)` ou `f(**kwargs)`. Sans lui, ces appels lèvent
+            # un NameError sur un nom que l'apprenant n'a jamais écrit.
+            #
+            # Ni l'un ni l'autre n'élargit ce qui est joignable : le premier
+            # nomme la métaclasse par défaut, le second rappelle la fonction
+            # que le code désignait déjà.
+            "__metaclass__": type,
+            # Le code compilé lit `__name__` au moment de créer une classe : il
+            # y range le module d'origine. La cellule n'est pas un module, on y
+            # met donc un nom qui le dit.
+            "__name__": "cellule",
+            "_apply_": lambda fonction, *args, **kwargs: fonction(*args, **kwargs),
         })
         return globales
 
@@ -164,7 +221,19 @@ class SecurePythonExecutor:
             
             # Create secure execution environment
             safe_globals = self._create_safe_globals()
-            safe_locals = {}
+            # Choix : UN SEUL espace de noms, passé à la fois en globales et en
+            # locales.
+            #
+            # Compétence visée : C13 (épreuve E3)
+            # Motivation mesurée : avec deux espaces distincts, un `import re`
+            # écrit au niveau du bloc atterrit dans les LOCALES, tandis qu'un
+            # corps de fonction ne résout que les GLOBALES. Le module était donc
+            # importé et introuvable dès qu'on s'en servait dans une fonction —
+            # `name 're' is not defined` sur un code parfaitement valide. Le
+            # relevé du 3 septembre comptait 54 blocs de cours perdus par ce
+            # seul mécanisme. Un module Python s'exécute dans un espace unique ;
+            # l'exécuteur fait désormais de même.
+            safe_locals = safe_globals
             
             # Capture outputs
             output_buffer = io.StringIO()

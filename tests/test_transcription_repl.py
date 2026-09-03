@@ -151,3 +151,86 @@ def test_le_bloc_de_cours_s_execute_depuis_la_page(client, django_user_model):
     corps = reponse.json()
     assert corps["succes"] is True, corps["erreur"]
     assert corps["sortie"].strip() == "b"
+
+
+@pytest.mark.django_db
+def test_un_bloc_qui_depend_du_precedent_aboutit(client, django_user_model):
+    """
+    Un bloc qui emploie un nom défini plus haut dans le cours s'exécute.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Sur les 402 blocs Python des cours publiés, une soixantaine emploient un
+    nom posé par un bloc PRÉCÉDENT — `import itertools` écrit une fois, puis
+    plusieurs exemples qui s'en servent. Exécutés seuls, ils échouaient sur un
+    `NameError` que l'apprenant ne pouvait ni comprendre ni corriger : le nom
+    manquant était à l'écran, deux paragraphes plus haut.
+
+    La reprise n'a lieu qu'après un échec sur un nom absent, et seulement si
+    elle réussit : elle ne peut donc pas dégrader un bloc qui aboutissait.
+    """
+    from apps.referentiel.models import Competence, Module, Referentiel
+
+    referentiel = Referentiel.objects.create(code="essai2", intitule="Essai",
+                                             version="1", est_actif=True)
+    module = Module.objects.create(referentiel=referentiel, code="m2",
+                                   intitule="Module", ordre=1)
+    competence = Competence.objects.create(module=module, code="c2",
+                                           intitule="Compétence", ordre=1)
+    utilisateur = django_user_model.objects.create_user(
+        username="apprenant_contexte", password="mot-de-passe-de-test-1")
+    client.force_login(utilisateur)
+
+    adresse = reverse("courses:executer", args=[competence.code])
+
+    # Seul, le bloc échoue : `donnees` n'y est pas défini.
+    seul = client.post(adresse, {"code": "print(sum(donnees))"}, secure=True).json()
+    assert seul["succes"] is False
+    assert "is not defined" in seul["erreur"]
+
+    # Avec le bloc qui le précède, il aboutit — et le dit.
+    avec = client.post(adresse, {
+        "code": "print(sum(donnees))",
+        "contexte": "donnees = [1, 2, 3]",
+    }, secure=True).json()
+
+    assert avec["succes"] is True, avec["erreur"]
+    assert avec["sortie"].strip() == "6"
+    assert avec["avec_contexte"] is True, "l'interface doit pouvoir le signaler"
+
+
+@pytest.mark.django_db
+def test_le_contexte_ne_degrade_pas_un_bloc_qui_marche(client, django_user_model):
+    """
+    Un bloc autonome n'est jamais exécuté avec ce qui le précède.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C21 (E5)
+
+    Les cours contiennent des exemples d'erreurs volontaires. Concaténer les
+    blocs d'emblée ferait échouer ceux qui aboutissent, l'exception du
+    précédent emportant la suite. La reprise est donc conditionnée à un échec.
+    """
+    from apps.referentiel.models import Competence, Module, Referentiel
+
+    referentiel = Referentiel.objects.create(code="essai3", intitule="Essai",
+                                             version="1", est_actif=True)
+    module = Module.objects.create(referentiel=referentiel, code="m3",
+                                   intitule="Module", ordre=1)
+    competence = Competence.objects.create(module=module, code="c3",
+                                           intitule="Compétence", ordre=1)
+    utilisateur = django_user_model.objects.create_user(
+        username="apprenant_autonome", password="mot-de-passe-de-test-1")
+    client.force_login(utilisateur)
+
+    corps = client.post(
+        reverse("courses:executer", args=[competence.code]),
+        {"code": "print('bonjour')", "contexte": "1 / 0"},
+        secure=True,
+    ).json()
+
+    assert corps["succes"] is True
+    assert corps["sortie"].strip() == "bonjour"
+    assert corps["avec_contexte"] is False, (
+        "le contexte fautif ne doit pas avoir été employé"
+    )

@@ -12,8 +12,11 @@ sortaient en texte nu. Recopier cent lignes de script dans un second gabarit
 aurait donné deux comportements à tenir pour un seul geste, et ils auraient
 divergé comme les deux chats avaient divergé.
 
-Il attend `competence` dans le contexte : c'est d'elle que dépend l'adresse
-d'exécution.
+`competence` est FACULTATIVE. Quand elle est là, chaque bloc Python reçoit son
+bouton « Run » et s'exécute contre l'adresse de cette compétence. Sans elle —
+sur une page qui affiche du Markdown hors d'un cours — la mise en cellule, la
+coloration et le bouton « Copy » restent, et seul « Run » disparaît : mieux
+vaut un bloc bien présenté sans bouton qu'un bouton qui n'aboutit nulle part.
 {% endcomment %}
 <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
@@ -28,18 +31,24 @@ d'exécution.
 {% trans "Le code a été interrompu : il tournait trop longtemps." as msg_interrompu %}
 {% trans "Exécuté sans rien afficher — pensez à print()." as msg_muet %}
 {% trans "Le code n'a pas pu être exécuté." as msg_echec %}
+{% trans "— exécuté avec les blocs précédents de ce cours —" as msg_avec_contexte %}
 <script>
 const MESSAGES = {
     attente: "{{ msg_attente|escapejs }}",
     vide: "{{ msg_vide|escapejs }}",
     interrompu: "{{ msg_interrompu|escapejs }}",
     muet: "{{ msg_muet|escapejs }}",
-    echec: "{{ msg_echec|escapejs }}"
+    echec: "{{ msg_echec|escapejs }}",
+    avec_contexte: "{{ msg_avec_contexte|escapejs }}"
 };
 </script>
 
 <script>
 (function () {
+    // Vide quand la page n'est pas celle d'une compétence : le bouton « Run »
+    // n'est alors pas posé, faute d'adresse où envoyer le code.
+    const ADRESSE_EXECUTION = "{% if competence %}{% url 'courses:executer' competence.code %}{% endif %}";
+
     function decorateCodeBlocks() {
         {% comment %}
         `querySelectorAll`, et non `querySelector`.
@@ -79,7 +88,7 @@ const MESSAGES = {
             const btnGroup = document.createElement('div');
             btnGroup.className = 'flex items-center gap-2';
 
-            if (language === 'python') {
+            if (language === 'python' && ADRESSE_EXECUTION) {
                 const runBtn = document.createElement('button');
                 runBtn.className = 'copy-btn run-btn';
                 runBtn.type = 'button';
@@ -110,6 +119,27 @@ const MESSAGES = {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
+    {% comment %}
+    Les blocs qui précèdent celui-ci, dans la même partie de cours.
+
+    Compétence visée : C17 (épreuve E4)
+    Un bloc de cours n'est pas un programme : c'est un extrait d'une suite. Le
+    serveur ne s'en sert qu'en cas d'échec sur un nom absent, et seulement si
+    la reprise réussit — ce qui ne peut qu'améliorer le résultat.
+    {% endcomment %}
+    function contexteAvant(container) {
+        const zone = container.closest('.cours-rendu');
+        if (!zone) { return ''; }
+        const blocs = Array.prototype.slice.call(
+            zone.querySelectorAll('.code-block-container'));
+        const rang = blocs.indexOf(container);
+        if (rang <= 0) { return ''; }
+        return blocs.slice(0, rang).map(function (b) {
+            const c = b.querySelector('code');
+            return c ? c.textContent : '';
+        }).join('\n');
+    }
+
     function runCode(container) {
         const code = container.querySelector('code').textContent;
         const pre = container.querySelector('pre');
@@ -122,16 +152,21 @@ const MESSAGES = {
         }
         sortie.textContent = MESSAGES.attente;
         const jeton = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        fetch('{% url "courses:executer" competence.code %}', {
+        fetch(ADRESSE_EXECUTION, {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': jeton},
-            body: new URLSearchParams({code: code}),
+            body: new URLSearchParams({code: code, contexte: contexteAvant(container)}),
         })
         .then(r => r.json())
         .then(corps => {
             if (corps.expire) sortie.textContent = MESSAGES.interrompu;
             else if (corps.erreur) sortie.textContent = corps.erreur;
             else sortie.textContent = corps.sortie || MESSAGES.muet;
+            // Dire quand le bloc n'a abouti qu'avec ce qui le précède : sinon
+            // l'apprenant le croit autonome et s'étonne ailleurs.
+            if (corps.avec_contexte) {
+                sortie.textContent = MESSAGES.avec_contexte + '\n' + sortie.textContent;
+            }
         })
         .catch(() => { sortie.textContent = MESSAGES.echec; });
     }

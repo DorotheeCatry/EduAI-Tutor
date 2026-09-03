@@ -129,7 +129,7 @@ def erreurs_de_quiz(utilisateur, limite=NOTIONS_A_REVOIR):
     lignes = (
         UserMistake.objects
         .filter(user=utilisateur)
-        .values("competence_id", "competence__intitule", "topic")
+        .values("competence_id", "competence__code", "competence__intitule", "topic")
         .annotate(erreurs=Count("id"), derniere=Max("timestamp"))
         .order_by("-erreurs", "-derniere")[:limite]
     )
@@ -140,6 +140,13 @@ def erreurs_de_quiz(utilisateur, limite=NOTIONS_A_REVOIR):
             "rattachee": bool(ligne["competence_id"]),
             "erreurs": ligne["erreurs"],
             "dernier_passage": ligne["derniere"],
+            # De quoi relancer un quiz sur cette notion. Le bloc « à revoir »
+            # nommait ce qui avait résisté sans offrir d'y revenir : il
+            # constatait, là où sa raison d'être est de faire recommencer.
+            # Une compétence est rejouable par son code ; un sujet libre par
+            # son intitulé — les deux chemins que `quiz_start` accepte déjà.
+            "code": ligne["competence__code"],
+            "sujet": ligne["topic"],
         }
         for ligne in lignes
     ]

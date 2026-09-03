@@ -84,9 +84,13 @@
         <div class="flex-1 overflow-y-auto p-6">
             <div class="prose prose-invert max-w-none">
                 <h3 class="text-lg font-bold text-white mb-4">{% trans "📋 Statement" %}</h3>
-                <div class="text-gray-300 leading-relaxed mb-6">
-                    {{ exercise.description|linebreaks }}
-                </div>
+                {% comment %}
+                L'énoncé passe par le convertisseur des cours et s'affiche avec
+                leur feuille : mêmes titres, mêmes listes, mêmes blocs de code
+                en cellules colorées. Il était rendu par `linebreaks`, qui ne
+                convertit que les sauts de ligne.
+                {% endcomment %}
+                <div class="cours-rendu text-gray-300 leading-relaxed mb-6">{{ enonce_html|safe }}</div>
                 
                 <!-- Tests to pass -->
                 <h3 class="text-lg font-bold text-white mb-4">{% trans "🧪 Tests to pass" %}</h3>
@@ -601,4 +605,11 @@ document.addEventListener('DOMContentLoaded', function () {
     background: #6B7280;
 }
 </style>
+
+{% comment %}
+Les blocs de code de l'énoncé reçoivent la même cellule et la même coloration
+que ceux des cours. Sans compétence dans le contexte, le fragment n'y pose pas
+de bouton « Run » : l'exercice a déjà le sien, et il corrige.
+{% endcomment %}
+{% include 'components/blocs_de_code.html' %}
 {% endblock %}

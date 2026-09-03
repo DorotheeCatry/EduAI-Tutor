@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% comment %}
+Les questions réellement manquées, reposées.
+
+Compétence visée : C17 (épreuve E4)
+Compétences concernées : C13 (E3) — accessibilité ; C20 (E5)
+
+Chaque question porte ses deux propositions : la bonne réponse, et celle qui
+avait été donnée. Aucune n'est inventée — c'est ce qui autorise à les présenter
+comme un choix honnête.
+
+Les propositions sont des boutons radio dans un `fieldset` dont la `legend`
+porte la question : c'est ce qu'un lecteur d'écran annonce avant de lire les
+choix, et c'est ce qui rend le formulaire utilisable sans voir l'écran.
+{% endcomment %}
+
+{% block content %}
+<div class="h-full flex flex-col gap-4 p-6 overflow-hidden">
+
+    <div class="flex items-baseline justify-between gap-3 flex-shrink-0">
+        <h1 class="text-xl font-bold text-white">{% trans "Revoir mes erreurs" %}</h1>
+        <a href="{% url 'revision:flashcards' %}"
+           class="text-sm text-gray-400 hover:text-white underline focus:outline-none focus:ring-2 focus:ring-white rounded">
+            {% trans "Retour à ce qui reste à revoir" %}
+        </a>
+    </div>
+
+    {% if resultat %}
+        {# ---------- La correction ---------- #}
+        <div class="flex-1 min-h-0 overflow-y-auto defilement-vert space-y-4">
+            <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+                <p class="text-lg text-white">
+                    {% blocktrans count justes=resultat.corrigees|length with total=resultat.total %}
+                        {{ justes }} bonne réponse sur {{ total }}.
+                    {% plural %}
+                        {{ justes }} bonnes réponses sur {{ total }}.
+                    {% endblocktrans %}
+                </p>
+                <p class="text-sm text-gray-400 mt-1">
+                    {% trans "Les questions corrigées quittent la liste ; celles qui résistent y restent." %}
+                </p>
+            </div>
+
+            {% if resultat.manquees %}
+                <section aria-labelledby="titre-manquees">
+                    <h2 id="titre-manquees" class="text-base font-bold text-white mb-2">
+                        {% trans "Encore à revoir" %}
+                    </h2>
+                    <ul class="space-y-2">
+                        {% for entree in resultat.manquees %}
+                            <li class="p-3 rounded-lg border border-gray-700 bg-gray-800">
+                                {% comment %}
+                                Un `div`, jamais un `p`.
+
+                                Compétence visée : C17 (épreuve E4)
+                                Le Markdown rendu contient des blocs — des paragraphes, des
+                                listes, des `pre`. Placés dans un `p`, le navigateur ferme le
+                                paragraphe au premier bloc rencontré : le reste se retrouve
+                                hors du conteneur, et perd la classe qui le met en forme.
+                                {% endcomment %}
+                                <div class="cours-rendu text-sm text-gray-200">{{ entree.question_html|safe }}</div>
+                                <p class="text-sm mt-2 text-gray-400">
+                                    {% trans "Votre réponse :" %}
+                                    <span class="cours-rendu text-gray-200">{{ entree.choix_html|safe }}</span>
+                                </p>
+                                <p class="text-sm text-gray-400">
+                                    {% trans "La bonne réponse :" %}
+                                    <span class="cours-rendu text-primary-green">{{ entree.bonne_reponse_html|safe }}</span>
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+        </div>
+
+    {% elif questions %}
+        {# ---------- La séance ---------- #}
+        <form method="post" class="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+            {% csrf_token %}
+            <p class="text-sm text-gray-400 flex-shrink-0">
+                {% blocktrans count nombre=questions|length %}
+                    Une question que vous aviez manquée. Elle est reposée telle quelle.
+                {% plural %}
+                    {{ nombre }} questions que vous aviez manquées. Elles sont reposées telles quelles.
+                {% endblocktrans %}
+            </p>
+
+            <div class="flex-1 min-h-0 overflow-y-auto defilement-vert space-y-3 pr-1">
+                {% for question in questions %}
+                    <fieldset class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+                        <legend class="text-xs text-gray-400 px-1">
+                            {{ question.notion }} · {{ question.pose_le|date:"j F Y" }}
+                        </legend>
+                        <div class="cours-rendu text-sm text-gray-100 mb-3">{{ question.question_html|safe }}</div>
+                        {% comment %}
+                        La valeur envoyée est le texte BRUT — c'est lui que le
+                        serveur compare à la bonne réponse. Seul l'affichage est
+                        mis en forme : une proposition comme `type()` s'écrivait
+                        avec ses accents graves à l'écran.
+                        {% endcomment %}
+                        {% for proposition in question.propositions %}
+                            <label class="flex items-start gap-2 py-1.5 cursor-pointer text-sm text-gray-200">
+                                <input type="radio" name="reponse-{{ question.id }}"
+                                       value="{{ proposition.valeur }}"
+                                       class="mt-1 accent-green-500 focus:outline-none focus:ring-2 focus:ring-white">
+                                <span class="cours-rendu">{{ proposition.html|safe }}</span>
+                            </label>
+                        {% endfor %}
+                    </fieldset>
+                {% endfor %}
+            </div>
+
+            <button type="submit"
+                    class="flex-shrink-0 self-start px-4 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                {% trans "Corriger" %}
+            </button>
+        </form>
+
+    {% else %}
+        <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
+            <p class="text-gray-300">{% trans "Aucune erreur à rejouer." %}</p>
+            <p class="text-sm text-gray-400 mt-1">
+                {% trans "Une question manquée dans un quiz apparaît ici, telle qu'elle a été posée, avec la réponse que vous aviez donnée." %}
+            </p>
+        </div>
+    {% endif %}
+</div>
+
+{% comment %}
+Les questions de quiz portent des blocs de code : elles reçoivent la même mise
+en cellule et la même coloration que les cours. Sans compétence dans le
+contexte, le fragment n'y pose pas de bouton « Run » — ce qui est juste : on
+révise une question, on n'exécute pas son énoncé.
+{% endcomment %}
+{% include 'components/blocs_de_code.html' %}
+{% endblock %}

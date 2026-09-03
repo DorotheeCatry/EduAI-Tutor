@@ -152,6 +152,22 @@ L'ossature de la page est figée, les cartes défilent (décision 038).
     {# ---------- Générer un cours ---------- #}
     <div id="vue-generer" role="tabpanel" aria-labelledby="onglet-generer" hidden
          class="flex-1 min-h-0 overflow-y-auto defilement-vert">
+        {% comment %}
+        Le compteur de générations restantes vit ici, avec le formulaire qui
+        dépense.
+
+        Compétence visée : C13 (épreuve E3) — le coût est visible avant d'être
+        subi.
+
+        Il était sur la page du générateur, qui n'existe plus comme page à
+        part : la génération est devenue une entrée de cet onglet. Sans ce
+        déplacement, l'apprenant dépenserait une génération sans avoir vu ce
+        qu'il lui en restait.
+        {% endcomment %}
+        <div class="max-w-2xl mb-3">
+            {% include "quotas/_compteur_generations.html" %}
+        </div>
+
         <form method="post" action="{% url 'courses:generator' %}"
               class="max-w-2xl space-y-4 p-4 rounded-lg border border-gray-700 bg-gray-800">
             {% csrf_token %}
@@ -189,31 +205,6 @@ L'ossature de la page est figée, les cartes défilent (décision 038).
             </button>
         </form>
     </div>
-</div>
-
-<script>
-{% comment %}
-Les onglets sont des `button` dans un `tablist` : ils sont donc atteignables au
-clavier sans code supplémentaire, et `aria-selected` dit lequel est actif à une
-synthèse vocale. Le panneau caché l'est par `hidden`, que les technologies
-d'assistance respectent — et non par une classe qui le rendrait invisible tout
-en le laissant lisible.
-{% endcomment %}
-document.querySelectorAll('[role="tab"][data-onglet]').forEach(onglet => {
-    onglet.addEventListener('click', () => {
-        document.querySelectorAll('[role="tab"][data-onglet]').forEach(autre => {
-            const actif = autre === onglet;
-            autre.setAttribute('aria-selected', actif ? 'true' : 'false');
-            autre.classList.toggle('text-white', actif);
-            autre.classList.toggle('text-gray-400', !actif);
-            autre.classList.toggle('border-primary-green', actif);
-            autre.classList.toggle('border-transparent', !actif);
-            document.getElementById('vue-' + autre.dataset.onglet).hidden = !actif;
-        });
-    });
-});
-</script>
-
     {# ---------- Lexique ---------- #}
     {% comment %}
     Deux listes, deux provenances, et aucune des deux n'est écrite à la main.
@@ -295,35 +286,32 @@ document.querySelectorAll('[role="tab"][data-onglet]').forEach(onglet => {
             <div id="lexique-bibliotheques">
                 <p class="text-sm text-gray-400">{% trans "Chargement…" %}</p>
             </div>
-            {% if False %}
-                <table class="w-full text-sm border-collapse">
-                    <caption class="sr-only">
-                        {% trans "Bibliothèques du corpus, nombre de pages conservées et licence" %}
-                    </caption>
-                    <thead>
-                        <tr class="text-left text-xs uppercase tracking-wide text-gray-400">
-                            <th scope="col" class="py-2 pr-3 font-medium">{% trans "Bibliothèque" %}</th>
-                            <th scope="col" class="py-2 pr-3 font-medium">{% trans "Pages" %}</th>
-                            <th scope="col" class="py-2 font-medium">{% trans "Licence" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entree in bibliotheques_du_lexique %}
-                            <tr class="border-t border-gray-700">
-                                <td class="py-2 pr-3">
-                                    <a href="{{ entree.url }}" target="_blank" rel="noopener noreferrer"
-                                       class="text-white hover:text-primary-green underline focus:outline-none focus:ring-2 focus:ring-white rounded">{{ entree.nom }}</a>
-                                    <span class="block text-xs text-gray-500">{{ entree.hote }}</span>
-                                </td>
-                                <td class="py-2 pr-3 text-gray-300 tabular-nums">{{ entree.pages }}</td>
-                                <td class="py-2 text-gray-300">{{ entree.licences|join:", " }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% endif %}
         </section>
     </div>
+</div>
+
+<script>
+{% comment %}
+Les onglets sont des `button` dans un `tablist` : ils sont donc atteignables au
+clavier sans code supplémentaire, et `aria-selected` dit lequel est actif à une
+synthèse vocale. Le panneau caché l'est par `hidden`, que les technologies
+d'assistance respectent — et non par une classe qui le rendrait invisible tout
+en le laissant lisible.
+{% endcomment %}
+document.querySelectorAll('[role="tab"][data-onglet]').forEach(onglet => {
+    onglet.addEventListener('click', () => {
+        document.querySelectorAll('[role="tab"][data-onglet]').forEach(autre => {
+            const actif = autre === onglet;
+            autre.setAttribute('aria-selected', actif ? 'true' : 'false');
+            autre.classList.toggle('text-white', actif);
+            autre.classList.toggle('text-gray-400', !actif);
+            autre.classList.toggle('border-primary-green', actif);
+            autre.classList.toggle('border-transparent', !actif);
+            document.getElementById('vue-' + autre.dataset.onglet).hidden = !actif;
+        });
+    });
+});
+</script>
 
 {% trans "Le corpus documentaire n'est pas joignable pour le moment." as msg_corpus_absent %}
 {% trans "Bibliothèque" as msg_bibliotheque %}

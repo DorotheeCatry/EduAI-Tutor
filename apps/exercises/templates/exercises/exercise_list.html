@@ -12,6 +12,26 @@
         </div>
         
         <div class="flex items-center space-x-3">
+            {% comment %}
+            Deux formes d'exercice coexistent dans cet onglet, et c'est
+            délibéré.
+
+            Compétence visée : C17 (épreuve E4)
+            L'exercice seul corrige par des tests et enregistre une soumission :
+            il MESURE. Le carnet enchaîne les énoncés pour une séance et
+            s'emporte en `.ipynb` : il ACCOMPAGNE. Ce ne sont pas les mêmes
+            gestes, et les confondre affaiblirait les deux — l'un perdrait sa
+            correction, l'autre sa continuité.
+            {% endcomment %}
+            <form id="composer-un-carnet" method="get" action="{% url 'exercises:carnet' %}"
+                  class="flex items-center gap-2">
+                <button type="submit"
+                        class="px-4 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-white">
+                    <i data-lucide="notebook-pen" class="w-4 h-4"></i>
+                    <span>{% trans "Composer un carnet" %}</span>
+                </button>
+            </form>
+
             <a href="{% url 'exercises:progress' %}" class="px-4 py-2 text-sm bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
                 <i data-lucide="bar-chart" class="w-4 h-4"></i>
                 <span>{% trans "My Progress" %}</span>
@@ -59,7 +79,18 @@
             <div class="bg-gray-800 rounded-lg border border-gray-700 hover:border-primary-green transition-colors duration-300 overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-start justify-between mb-4">
-                        <h3 class="text-lg font-bold text-white mb-2">{{ exercise.title }}</h3>
+                        {% comment %}
+                        La case appartient au formulaire du carnet, par son
+                        attribut `form`. Elle vit DANS la carte qu'elle
+                        désigne : une liste de cases séparée obligerait à
+                        faire correspondre deux colonnes de mémoire.
+                        {% endcomment %}
+                        <label class="flex items-start gap-2 mb-2 cursor-pointer">
+                            <input type="checkbox" form="composer-un-carnet" name="exercice"
+                                   value="{{ exercise.id }}"
+                                   class="mt-1.5 accent-green-500 focus:outline-none focus:ring-2 focus:ring-white">
+                            <span class="text-lg font-bold text-white">{{ exercise.title }}</span>
+                        </label>
                         <div class="flex items-center space-x-2">
                             {% if exercise.difficulty == 'beginner' %}
                                 <span class="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">{% trans "Beginner" %}</span>

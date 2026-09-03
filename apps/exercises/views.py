@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -81,6 +81,195 @@ def exercise_list(request):
     
     return render(request, 'exercises/exercise_list.html', context)
 
+
+@login_required
+def carnet(request):
+    """
+    Plusieurs exercices à la suite, dans une seule page.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Un exercice à la fois convient pour vérifier une notion ; une séance de
+    travail en enchaîne plusieurs. C'est la forme du carnet, et celle que les
+    apprenants connaissent par Jupyter.
+
+    Choix : la sélection arrive par un paramètre répété `exercice`, et un
+    identifiant inconnu est simplement ignoré. Motivation : la liste peut avoir
+    changé entre l'affichage et l'envoi — un exercice retiré ne doit pas faire
+    échouer la séance entière, il doit en sortir.
+
+    Choix : la solution n'est JAMAIS transmise à la page (décision 029). Un
+    carnet qui la contiendrait cesserait d'être un exercice.
+    """
+    from apps.exercises.generation_carnet import MAXIMUM, MINIMUM, engendrer
+    from apps.quotas.service import QuotaDepasse
+
+    identifiants = []
+    for brut in request.GET.getlist('exercice'):
+        try:
+            identifiants.append(int(brut))
+        except (TypeError, ValueError):
+            continue
+
+    exercices = (Exercise.objects
+                 .filter(is_active=True, id__in=identifiants)
+                 .select_related('competence')
+                 .order_by('created_at'))
+
+    # Les énoncés engendrés vivent dans la SESSION, pas dans le catalogue.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    # Motivation : un exercice du catalogue porte des tests et se corrige. Ceux
+    # d'un carnet n'en ont pas — le carnet accompagne, il ne mesure pas. Les
+    # enregistrer comme exercices remplirait la liste d'entrées que le
+    # correcteur ne saurait pas traiter. La session les garde le temps de la
+    # séance, et le fichier `.ipynb` les emporte pour de bon.
+    engendres = request.session.get('carnet_engendre', [])
+    sujet = (request.GET.get('sujet') or '').strip()
+    refus = ''
+
+    if sujet:
+        try:
+            nombre = int(request.GET.get('nombre', MINIMUM))
+        except (TypeError, ValueError):
+            nombre = MINIMUM
+        try:
+            engendres = engendrer(request.user, sujet, nombre)
+        except QuotaDepasse as depassement:
+            refus = depassement.message
+            engendres = []
+        request.session['carnet_engendre'] = engendres
+
+    for rang, entree in enumerate(engendres):
+        entree['cle'] = f'g{rang}'
+
+    # Les énoncés sont du Markdown — titres, listes, blocs de code — produits
+    # par le même agent que les cours. Les afficher en texte brut laisserait
+    # leurs dièses et leurs accents graves à l'écran (décision 002).
+    from apps.courses.views import render_markdown
+
+    return render(request, 'exercises/carnet.html', {
+        'exercices': [{
+            'cle': str(exercice.id),
+            'titre': exercice.title,
+            'competence': exercice.competence.intitule if exercice.competence else '',
+            'difficulte': exercice.get_difficulty_display(),
+            'code': exercice.starter_code,
+            'enonce_html': render_markdown(exercice.description),
+        } for exercice in exercices] + [{
+            'cle': entree['cle'],
+            'titre': entree['titre'],
+            'competence': sujet or '',
+            'difficulte': '',
+            'code': entree['code'],
+            'enonce_html': render_markdown(entree['enonce']),
+            'engendre': True,
+        } for entree in engendres],
+        'aucun_choix': not identifiants and not engendres,
+        'refus_de_quota': refus,
+        'minimum': MINIMUM,
+        'maximum': MAXIMUM,
+    })
+
+
+@login_required
+@require_POST
+def carnet_ipynb(request):
+    """
+    Rend la séance sous la forme d'un carnet Jupyter téléchargeable.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Choix : une requête POST portant le code réellement saisi, et non un lien
+    qui régénérerait le carnet depuis la base. Motivation : l'apprenant
+    télécharge ce qu'il a écrit — résolu ou non. Un lien rendrait toujours le
+    code de départ, et le fichier ne vaudrait rien comme trace de travail.
+
+    Choix : `Content-Disposition: attachment`. Motivation : sans lui, le
+    navigateur affiche le JSON dans l'onglet, et l'apprenant doit deviner
+    comment l'enregistrer avec la bonne extension.
+    """
+    from apps.exercises.carnet import composer, en_json
+
+    codes, codes_engendres = {}, {}
+    for cle, valeur in request.POST.items():
+        if not cle.startswith('code-'):
+            continue
+        reference = cle.removeprefix('code-')
+        try:
+            codes[int(reference)] = valeur
+        except ValueError:
+            # Une clé qui n'est pas un nombre désigne un énoncé engendré.
+            codes_engendres[reference] = valeur
+
+    exercices = (Exercise.objects
+                 .filter(is_active=True, id__in=list(codes))
+                 .select_related('competence')
+                 .order_by('created_at'))
+
+    entrees = [{
+        'titre': exercice.title,
+        'enonce': exercice.description,
+        'competence': exercice.competence.intitule if exercice.competence else '',
+        'code': codes.get(exercice.id, exercice.starter_code),
+    } for exercice in exercices]
+
+    # Les énoncés engendrés ne sont pas en base : leur texte vient de la
+    # session, et seul leur code arrive du formulaire.
+    for rang, entree in enumerate(request.session.get('carnet_engendre', [])):
+        cle = f'g{rang}'
+        if cle not in codes_engendres:
+            continue
+        entrees.append({
+            'titre': entree.get('titre', ''),
+            'enonce': entree.get('enonce', ''),
+            'competence': '',
+            'code': codes_engendres[cle],
+        })
+
+    carnet_json = en_json(composer(
+        str(_("Séance d'exercices — EduAI Tutor")), entrees))
+
+    reponse = HttpResponse(carnet_json,
+                           content_type='application/x-ipynb+json; charset=utf-8')
+    reponse['Content-Disposition'] = 'attachment; filename="seance-eduai.ipynb"'
+    return reponse
+
+
+@login_required
+@require_POST
+def carnet_executer(request):
+    """
+    Exécute une cellule du carnet, sans rien enregistrer.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétences concernées : C13 (E3) — sécurité ; C21 (E5)
+
+    Choix : le même exécuteur restreint que partout ailleurs, et la même
+    conversion des sessions au prompt. Motivation : un second chemin
+    d'exécution serait une seconde surface d'attaque, et il finirait par
+    diverger — le projet a déjà eu deux chats et deux mises en forme qui
+    avaient divergé.
+
+    Choix : rien n'est enregistré. Motivation : le carnet sert à essayer. La
+    correction par les tests et l'enregistrement d'une soumission restent le
+    fait de l'exercice seul, qui mesure ; le carnet accompagne.
+    """
+    from apps.courses.transcription import transcrire
+    from apps.exercises.security import SecurePythonExecutor
+
+    extrait = (request.POST.get('code') or '').strip()
+    if not extrait:
+        return JsonResponse({'error': str(_('Aucun code à exécuter.'))}, status=400)
+
+    resultat = SecurePythonExecutor().execute_code(transcrire(extrait))
+    return JsonResponse({
+        'succes': bool(resultat.get('success')),
+        'sortie': resultat.get('output') or '',
+        'erreur': resultat.get('error') or '',
+        'expire': bool(resultat.get('timeout')),
+    })
+
 @login_required
 def exercise_detail(request, exercise_id):
     """Page de détail d'un exercice avec interface de code"""
@@ -117,8 +306,15 @@ def exercise_detail(request, exercise_id):
         for action in actions_pour('exercice')
     ]
 
+    # L'énoncé est du Markdown, produit par le même agent que les cours : il
+    # porte des listes, des exemples et des blocs de code. `linebreaks` ne
+    # convertissait que les sauts de ligne, et laissait dièses et accents
+    # graves à l'écran (décision 002).
+    from apps.courses.views import render_markdown
+
     context = {
         'exercise': exercise,
+        'enonce_html': render_markdown(exercise.description),
         'progress': progress,
         'recent_submissions': recent_submissions,
         'contexte_tuteur': contexte_tuteur,

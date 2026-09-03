@@ -26,33 +26,91 @@ avec le même critère affiché.
         {% trans "Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt que ce qui est ancien." %}
     </p>
 
+
+    {% comment %}
+    Où se concentrent les erreurs.
+
+    Compétence visée : C20 (épreuve E5) — restitution
+    Compétence concernée : C13 (E3) — accessibilité
+
+    Le camembert est calculé côté serveur — huit parts au plus, un peu de
+    trigonométrie — plutôt que dessiné par une bibliothèque chargée d'un CDN :
+    une dépendance de moins à tenir, et un graphique qui s'affiche même sans
+    réseau.
+
+    Il est doublé d'un TABLEAU à en-têtes qui porte les mêmes nombres. Un
+    graphique qu'un lecteur d'écran ne restitue pas n'informe que ceux qui
+    voient ; et la couleur seule ne distingue pas les parts, puisque chacune
+    est nommée dans la légende comme dans le tableau.
+    {% endcomment %}
+    {% if repartition.total %}
+        <section aria-labelledby="titre-repartition" class="mb-6">
+            <h2 id="titre-repartition" class="text-base font-bold text-white mb-3">
+                {% trans "Où se concentrent vos erreurs" %}
+            </h2>
+            <div class="flex flex-wrap items-center gap-6">
+                <svg viewBox="0 0 140 140" width="150" height="150" role="img"
+                     aria-labelledby="titre-camembert" class="flex-shrink-0">
+                    <title id="titre-camembert">
+                        {% blocktrans count total=repartition.total %}Répartition d'une erreur par notion{% plural %}Répartition de {{ total }} erreurs par notion{% endblocktrans %}
+                    </title>
+                    {% for part in repartition.parts %}
+                        <path d="{{ part.trace }}" fill="{{ part.teinte }}"
+                              stroke="#111827" stroke-width="1"></path>
+                    {% endfor %}
+                </svg>
+
+                <table class="text-sm border-collapse">
+                    <caption class="sr-only">
+                        {% trans "Nombre d'erreurs et part de chaque notion" %}
+                    </caption>
+                    <thead>
+                        <tr class="text-left text-xs uppercase tracking-wide text-gray-400">
+                            <th scope="col" class="py-1 pr-3 font-medium">{% trans "Notion" %}</th>
+                            <th scope="col" class="py-1 pr-3 font-medium">{% trans "Erreurs" %}</th>
+                            <th scope="col" class="py-1 font-medium">{% trans "Part" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for part in repartition.parts %}
+                            <tr class="border-t border-gray-700">
+                                <td class="py-1 pr-3 text-gray-200">
+                                    <span class="inline-block w-3 h-3 rounded-sm align-middle mr-2"
+                                          style="background:{{ part.teinte }}" aria-hidden="true"></span>
+                                    {{ part.notion }}
+                                </td>
+                                <td class="py-1 pr-3 text-gray-300 tabular-nums">{{ part.erreurs }}</td>
+                                <td class="py-1 text-gray-300 tabular-nums">{{ part.pourcentage }} %</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% endif %}
+
     {% if a_revoir or erreurs_de_quiz %}
         <ul class="space-y-2">
             {% for notion in a_revoir %}
                 <li class="p-4 rounded-lg border border-gray-700 bg-gray-800 flex flex-wrap items-baseline justify-between gap-2">
                     <span class="text-white">
-                        <a href="{% url 'exercises:detail' notion.exercice.id %}" class="hover:underline">
-                            {{ notion.exercice.title }}
-                        </a>
-                        {% if notion.competence %}
-                            <span class="text-xs text-gray-400">— {{ notion.competence.intitule }}</span>
-                        {% else %}
-                            <span class="text-xs text-gray-400">— {% trans "hors référentiel" %}</span>
-                        {% endif %}
-                    </span>
-                    <span class="text-sm text-gray-300">
-                        {% blocktrans count tentatives=notion.tentatives %}{{ tentatives }} tentative{% plural %}{{ tentatives }} tentatives{% endblocktrans %}
-                        <span class="text-gray-500">·</span>
-                        {{ notion.dernier_passage|date:"j F Y" }}
-                    </span>
-                </li>
+                    </li>
             {% endfor %}
             {% for erreur in erreurs_de_quiz %}
                 <li class="p-4 rounded-lg border border-gray-700 bg-gray-800 flex flex-wrap items-baseline justify-between gap-2">
-                    <span class="text-white">
+                    {% comment %}
+                    La case appartient au formulaire posé plus bas, par son
+                    attribut `form`. Motivation : elle doit vivre DANS la ligne
+                    qu'elle désigne — un tableau de cases séparé de la liste
+                    obligerait à faire correspondre deux colonnes de mémoire.
+                    {% endcomment %}
+                    <label class="flex items-baseline gap-2 text-white cursor-pointer">
+                        <input type="checkbox" form="rejouer-mes-erreurs" name="notion"
+                               value="{% if erreur.code %}{{ erreur.code }}{% else %}{{ erreur.sujet }}{% endif %}"
+                               class="accent-green-500 focus:outline-none focus:ring-2 focus:ring-white">
                         {{ erreur.intitule }}
                         <span class="text-xs text-gray-400">— {% trans "quiz" %}</span>
-                    </span>
+                    </label>
                     <span class="text-sm text-gray-300">
                         {% blocktrans count erreurs=erreur.erreurs %}{{ erreurs }} réponse manquée{% plural %}{{ erreurs }} réponses manquées{% endblocktrans %}
                         <span class="text-gray-500">·</span>
@@ -61,6 +119,35 @@ avec le même critère affiché.
                 </li>
             {% endfor %}
         </ul>
+
+        {% if erreurs_de_quiz %}
+            {% comment %}
+            Rejouer les vraies questions, sur ce qui est coché — ou sur tout.
+
+            Compétence visée : C17 (épreuve E4)
+            Compétence concernée : C13 (E3) — quotas
+
+            Rien coché signifie tout : c'est le cas le plus fréquent, et il ne
+            doit demander aucun geste. Le bouton dit ce qu'il fera dans les
+            deux cas plutôt que de rester vague.
+
+            Cette révision ne consomme AUCUNE génération : les questions sont
+            déjà en base, avec leur bonne réponse et celle qui avait été
+            donnée. Elle reste donc disponible quand le quota est épuisé,
+            c'est-à-dire quand l'apprenant a beaucoup travaillé.
+            {% endcomment %}
+            <form id="rejouer-mes-erreurs" method="get"
+                  action="{% url 'revision:mes_erreurs' %}"
+                  class="mt-4 flex flex-wrap items-center gap-3">
+                <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                    {% trans "Rejouer mes vraies erreurs" %}
+                </button>
+                <span class="text-sm text-gray-400">
+                    {% trans "Sur les notions cochées — ou sur toutes, si vous n'en cochez aucune." %}
+                </span>
+            </form>
+        {% endif %}
     {% else %}
         <div class="p-4 rounded-lg border border-gray-700 bg-gray-800">
             <p class="text-gray-300">{% trans "Rien à revoir pour l'instant." %}</p>

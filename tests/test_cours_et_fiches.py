@@ -715,3 +715,37 @@ def test_le_lexique_n_importe_jamais_un_module_inconnu():
     # `apps` est importable ici, et n'est pas dans la bibliothèque standard :
     # la description doit rester vide plutôt que d'aller le chercher.
     assert _description_de_module("apps") == ""
+
+
+@pytest.mark.django_db
+def test_le_panneau_du_lexique_vit_avec_les_autres(client, apprenante):
+    """
+    Le panneau du lexique est dans le conteneur des onglets, pas après lui.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C21 (E5)
+
+    Il avait été inséré APRÈS le `</div>` qui ferme la page. Le script des
+    onglets le dévoilait correctement — `hidden` retiré — mais il se retrouvait
+    hors du conteneur en colonne, dont le `overflow-hidden` le rognait : le
+    lexique paraissait vide alors que ses données étaient bien dans la page.
+
+    Ce test compare des positions plutôt que des balises : c'est l'ordre qui
+    portait le défaut.
+    """
+    client.force_login(apprenante)
+    page = client.get(reverse("courses:catalogue"), secure=True).content.decode()
+
+    for panneau in ('id="vue-catalogue"', 'id="vue-fiches"',
+                    'id="vue-generer"', 'id="vue-lexique"'):
+        assert panneau in page, panneau
+
+    # Les quatre panneaux précèdent le script qui les pilote : ils sont donc
+    # tous dans le même conteneur, celui que ferme le `</div>` juste avant.
+    script_des_onglets = page.index('[role="tab"][data-onglet]')
+    assert page.index('id="vue-lexique"') < script_des_onglets
+    assert page.index('id="vue-generer"') < page.index('id="vue-lexique"')
+
+    # Et le panneau porte bien ce qu'il annonce.
+    assert "Modules rencontrés dans vos cours" in page
+    assert "Bibliothèques documentées dans le corpus" in page

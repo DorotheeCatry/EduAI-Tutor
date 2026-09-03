@@ -171,7 +171,7 @@ def test_le_compteur_de_generations_reste_en_francais_pour_un_francophone(
     """
     client.force_login(apprenant_francophone)
 
-    contenu = client.get(reverse("courses:generator"),
+    contenu = client.get(reverse("courses:catalogue"),
                          secure=True).content.decode("utf-8")
 
     assert "Il vous reste" in contenu

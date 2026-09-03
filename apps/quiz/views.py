@@ -599,8 +599,34 @@ def quiz_start(request):
     """
     mode = request.GET.get('mode', 'solo')
     competence = competence_par_code(request.GET.get('competence', '').strip())
-    topic = (competence.intitule if competence
-             else request.GET.get('topic', 'General Python'))
+
+    # Plusieurs notions à la fois, cochées dans le bloc « à revoir ».
+    #
+    # Compétence visée : C17 (épreuve E4)
+    # Choix : un paramètre répété `notion`, et non une liste séparée par des
+    # virgules. Motivation : plusieurs intitulés du référentiel contiennent des
+    # virgules — ceux qui énumèrent des notions. Une liste à séparateur les
+    # découperait en notions inexistantes, et le quiz porterait sur un sujet
+    # que personne n'a demandé.
+    #
+    # Chaque valeur est d'abord cherchée comme CODE de compétence ; ce qui n'en
+    # est pas est repris comme sujet libre, puisqu'un quiz peut avoir été lancé
+    # hors référentiel (décision 027).
+    notions = [n.strip() for n in request.GET.getlist('notion') if n.strip()]
+    if notions:
+        intitules = []
+        for notion in notions:
+            trouvee = competence_par_code(notion)
+            intitules.append(trouvee.intitule if trouvee else notion)
+        # Le quiz porte sur l'ensemble : c'est ce que « revoir mes erreurs »
+        # veut dire. Une seule notion cochée redonne exactement le cas simple.
+        topic = ' ; '.join(dict.fromkeys(intitules))
+        # Une compétence n'est retenue que si elle est SEULE : un quiz qui
+        # couvre trois notions ne se rattache honnêtement à aucune.
+        competence = competence_par_code(notions[0]) if len(notions) == 1 else None
+    else:
+        topic = (competence.intitule if competence
+                 else request.GET.get('topic', 'General Python'))
 
     # Generate quiz with AI
     orchestrator = get_orchestrator(request.user)
