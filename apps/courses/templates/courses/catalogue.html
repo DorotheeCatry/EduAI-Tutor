@@ -45,6 +45,15 @@ L'ossature de la page est figée, les cartes défilent (décision 038).
                 class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
             {% trans "Générer un cours" %}
         </button>
+        {% comment %}
+        Le lexique en dernier : on y va pour vérifier un nom croisé dans un
+        cours, jamais pour commencer une séance.
+        {% endcomment %}
+        <button type="button" role="tab" id="onglet-lexique" aria-controls="vue-lexique"
+                aria-selected="false" data-onglet="lexique"
+                class="px-3 py-2 text-sm font-medium text-gray-400 border-b-2 border-transparent hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-t">
+            {% trans "Lexique" %}
+        </button>
     </div>
 
     {# ---------- Mes fiches ---------- #}
@@ -203,5 +212,207 @@ document.querySelectorAll('[role="tab"][data-onglet]').forEach(onglet => {
         });
     });
 });
+</script>
+
+    {# ---------- Lexique ---------- #}
+    {% comment %}
+    Deux listes, deux provenances, et aucune des deux n'est écrite à la main.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétences concernées : C4 (E1) — attribution ; C1 (E1) — sources
+
+    Les modules sont relevés dans le contenu des cours publiés, en lisant leurs
+    lignes `import` : ce que l'apprenant lit ici est donc ce que SES cours
+    emploient, pas une liste générale de modules Python. Leur description est
+    la docstring du module lui-même, lue à l'exécution — aucune définition
+    n'a été rédigée pour cette page.
+
+    Les bibliothèques viennent de la base du jeu de données, avec leur licence
+    et le nombre de pages conservées. C'est ce que le tuteur peut citer : une
+    bibliothèque absente d'ici ne sera jamais la source d'une réponse, et
+    l'apprenant a le droit de le savoir.
+    {% endcomment %}
+    <div id="vue-lexique" role="tabpanel" aria-labelledby="onglet-lexique" hidden
+         class="flex-1 min-h-0 overflow-y-auto defilement-vert space-y-6 pr-1">
+
+        <section aria-labelledby="titre-modules-lexique">
+            <h2 id="titre-modules-lexique" class="text-base font-bold text-white">
+                {% trans "Modules rencontrés dans vos cours" %}
+            </h2>
+            <p class="text-xs text-gray-400 mt-0.5 mb-3">
+                {% blocktrans count nombre=modules_du_lexique|length %}
+                    Un module, relevé dans les supports publiés.
+                {% plural %}
+                    {{ nombre }} modules, relevés dans les supports publiés.
+                {% endblocktrans %}
+            </p>
+
+            {% if modules_du_lexique %}
+                <ul class="grid gap-2 sm:grid-cols-2">
+                    {% for entree in modules_du_lexique %}
+                        <li class="p-3 rounded-lg border border-gray-700 bg-gray-800">
+                            <div class="flex items-baseline justify-between gap-2">
+                                <code class="text-sm font-semibold text-primary-green">{{ entree.nom }}</code>
+                                {% if entree.standard %}
+                                    <span class="text-[0.65rem] uppercase tracking-wide text-gray-400">
+                                        {% trans "bibliothèque standard" %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if entree.description %}
+                                <p class="text-xs text-gray-300 mt-1">{{ entree.description }}</p>
+                            {% endif %}
+                            <p class="text-xs text-gray-500 mt-1">
+                                {% for code, intitule in entree.competences %}
+                                    <a href="{% url 'courses:page_de_cours' code %}"
+                                       class="underline hover:text-primary-green focus:outline-none focus:ring-2 focus:ring-white rounded">{{ intitule }}</a>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-sm text-gray-400">
+                    {% trans "Aucun module relevé : les cours publiés n'en importent encore aucun." %}
+                </p>
+            {% endif %}
+        </section>
+
+        <section aria-labelledby="titre-bibliotheques-lexique">
+            <h2 id="titre-bibliotheques-lexique" class="text-base font-bold text-white">
+                {% trans "Bibliothèques documentées dans le corpus" %}
+            </h2>
+            <p class="text-xs text-gray-400 mt-0.5 mb-3">
+                {% trans "Ce que Koda peut citer quand il répond, avec la licence de chaque documentation." %}
+            </p>
+
+            {% comment %}
+            Le tableau est rempli à l'ouverture de l'onglet, et non au
+            chargement de la page : ces lignes vivent dans l'autre base, celle
+            du pipeline. Les charger avec le catalogue ferait dépendre la page
+            entière d'une base dont l'application n'a par ailleurs aucun besoin.
+            {% endcomment %}
+            <div id="lexique-bibliotheques">
+                <p class="text-sm text-gray-400">{% trans "Chargement…" %}</p>
+            </div>
+            {% if False %}
+                <table class="w-full text-sm border-collapse">
+                    <caption class="sr-only">
+                        {% trans "Bibliothèques du corpus, nombre de pages conservées et licence" %}
+                    </caption>
+                    <thead>
+                        <tr class="text-left text-xs uppercase tracking-wide text-gray-400">
+                            <th scope="col" class="py-2 pr-3 font-medium">{% trans "Bibliothèque" %}</th>
+                            <th scope="col" class="py-2 pr-3 font-medium">{% trans "Pages" %}</th>
+                            <th scope="col" class="py-2 font-medium">{% trans "Licence" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entree in bibliotheques_du_lexique %}
+                            <tr class="border-t border-gray-700">
+                                <td class="py-2 pr-3">
+                                    <a href="{{ entree.url }}" target="_blank" rel="noopener noreferrer"
+                                       class="text-white hover:text-primary-green underline focus:outline-none focus:ring-2 focus:ring-white rounded">{{ entree.nom }}</a>
+                                    <span class="block text-xs text-gray-500">{{ entree.hote }}</span>
+                                </td>
+                                <td class="py-2 pr-3 text-gray-300 tabular-nums">{{ entree.pages }}</td>
+                                <td class="py-2 text-gray-300">{{ entree.licences|join:", " }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </section>
+    </div>
+
+{% trans "Le corpus documentaire n'est pas joignable pour le moment." as msg_corpus_absent %}
+{% trans "Bibliothèque" as msg_bibliotheque %}
+{% trans "Pages" as msg_pages %}
+{% trans "Licence" as msg_licence %}
+{% trans "Bibliothèques du corpus, nombre de pages conservées et licence" as msg_legende %}
+<script>
+(function () {
+    const boite = document.getElementById('lexique-bibliotheques');
+    const onglet = document.getElementById('onglet-lexique');
+    if (!boite || !onglet) { return; }
+    let demande = false;
+
+    const LIBELLES = {
+        absent: "{{ msg_corpus_absent|escapejs }}",
+        bibliotheque: "{{ msg_bibliotheque|escapejs }}",
+        pages: "{{ msg_pages|escapejs }}",
+        licence: "{{ msg_licence|escapejs }}",
+        legende: "{{ msg_legende|escapejs }}"
+    };
+
+    function texte(balise, contenu, classes) {
+        const e = document.createElement(balise);
+        e.textContent = contenu;
+        if (classes) { e.className = classes; }
+        return e;
+    }
+
+    function dessiner(entrees) {
+        boite.textContent = '';
+        if (!entrees.length) {
+            boite.appendChild(texte('p', LIBELLES.absent, 'text-sm text-gray-400'));
+            return;
+        }
+        const table = document.createElement('table');
+        table.className = 'w-full text-sm border-collapse';
+        table.appendChild(texte('caption', LIBELLES.legende, 'sr-only'));
+
+        const thead = document.createElement('thead');
+        const ligne = document.createElement('tr');
+        ligne.className = 'text-left text-xs uppercase tracking-wide text-gray-400';
+        [LIBELLES.bibliotheque, LIBELLES.pages, LIBELLES.licence].forEach(function (libelle) {
+            const th = texte('th', libelle, 'py-2 pr-3 font-medium');
+            th.setAttribute('scope', 'col');
+            ligne.appendChild(th);
+        });
+        thead.appendChild(ligne);
+        table.appendChild(thead);
+
+        const corps = document.createElement('tbody');
+        entrees.forEach(function (e) {
+            const tr = document.createElement('tr');
+            tr.className = 'border-t border-gray-700';
+
+            const cellule = document.createElement('td');
+            cellule.className = 'py-2 pr-3';
+            const lien = document.createElement('a');
+            lien.href = e.url;
+            lien.target = '_blank';
+            lien.rel = 'noopener noreferrer';
+            lien.className = 'text-white hover:text-primary-green underline '
+                           + 'focus:outline-none focus:ring-2 focus:ring-white rounded';
+            lien.textContent = e.nom;
+            cellule.appendChild(lien);
+            cellule.appendChild(texte('span', e.hote, 'block text-xs text-gray-500'));
+            tr.appendChild(cellule);
+
+            tr.appendChild(texte('td', String(e.pages), 'py-2 pr-3 text-gray-300 tabular-nums'));
+            tr.appendChild(texte('td', (e.licences || []).join(', '), 'py-2 text-gray-300'));
+            corps.appendChild(tr);
+        });
+        table.appendChild(corps);
+        boite.appendChild(table);
+    }
+
+    function charger() {
+        if (demande) { return; }
+        demande = true;
+        fetch("{% url 'courses:lexique_bibliotheques' %}")
+            .then(function (r) { return r.json(); })
+            .then(function (corps) { dessiner(corps.bibliotheques || []); })
+            .catch(function () { dessiner([]); });
+    }
+
+    onglet.addEventListener('click', charger);
+    // L'onglet peut être ouvert au clavier sans passer par un clic.
+    onglet.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { charger(); }
+    });
+})();
 </script>
 {% endblock %}

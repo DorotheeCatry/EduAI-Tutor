@@ -1,9 +1,13 @@
+import logging
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.courses.lexique import bibliotheques_du_corpus, modules_des_cours
+
 from apps.quotas.service import QuotaDepasse
 from apps.rag.module_loader import module_loader
 from .models import Course
@@ -16,6 +20,8 @@ from django.db.models import Count
 from django.views.decorators.http import require_POST
 
 from apps.courses.models import FicheDApprenant
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -360,7 +366,42 @@ def catalogue(request):
         "modules": modules,
         "mes_fiches": [f for f in fiches.values() if f.nombre_ajouts],
         "modules_de_generation": module_loader.get_available_modules(),
+        # Le lexique : les modules que les cours emploient, relevés dans leur
+        # contenu (apps/courses/lexique.py). Les bibliothèques, elles, vivent
+        # dans l'AUTRE base et sont demandées à part, quand l'onglet s'ouvre.
+        "modules_du_lexique": modules_des_cours(),
     })
+
+
+@login_required
+def lexique_des_bibliotheques(request):
+    """
+    Rend la liste des bibliothèques documentées dans le corpus.
+
+    Compétence visée : C4 (épreuve E1) — attribution
+    Compétences concernées : C17 (E4) ; C13 (E3)
+
+    Choix : un point d'entrée à part, appelé quand l'onglet s'ouvre, plutôt
+    qu'une donnée du catalogue. Motivation : ces lignes vivent dans
+    `eduai_data`, l'autre base — celle du pipeline. Les charger avec le
+    catalogue ferait dépendre la page entière d'une base dont l'application
+    n'a par ailleurs aucun besoin : le jour où elle est arrêtée, l'apprenant
+    n'aurait plus de catalogue du tout, pour un panneau qu'il n'a peut-être
+    pas ouvert. La séparation des deux bases est structurelle (décision 006) ;
+    elle doit l'être aussi dans ce que coûte une page.
+
+    Choix : une base injoignable rend une liste vide, pas une erreur.
+    Motivation : le panneau sait le dire ; une erreur 500 ne dirait rien.
+    """
+    from django.db import DatabaseError
+
+    try:
+        entrees = bibliotheques_du_corpus()
+    except DatabaseError as panne:
+        logger.warning("[lexique] corpus injoignable : %s", panne)
+        entrees = []
+
+    return JsonResponse({"bibliotheques": entrees})
 
 
 @login_required

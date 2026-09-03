@@ -209,8 +209,19 @@ html { scrollbar-gutter: stable; }
     text-align: left;
 }
 
+/* Le corps du tableau est plus SOMBRE que la page, comme les blocs de code.
+   Compétence visée : C17 (épreuve E4)
+   Seul l'en-tête portait un fond : les cellules restaient transparentes, et le
+   tableau se fondait dans le panneau au point qu'on n'en voyait que le
+   quadrillage. Un tableau est un bloc de contenu, comme un extrait de code ;
+   il se démarque de la même façon, par un aplat plus foncé plutôt que par une
+   bordure plus épaisse. */
+:is(#course-content, .cours-rendu) td {
+    background: #0D1117;
+}
+
 :is(#course-content, .cours-rendu) th {
-    background: #21262D;
+    background: #161B22;
     color: #FFFFFF;
     font-weight: 600;
 }

@@ -559,14 +559,17 @@ def test_le_catalogue_se_lit_par_module_avant_la_competence(
 
 
 @pytest.mark.django_db
-def test_les_trois_entrees_sont_dans_l_ordre_voulu(client, apprenante):
+def test_les_entrees_sont_dans_l_ordre_voulu(client, apprenante):
     """
-    Catalogue, puis mes fiches, puis la génération.
+    Catalogue, mes fiches, la génération, puis le lexique.
 
     Compétence visée : C17 (épreuve E4)
 
     La génération est une entrée de cet onglet et non plus une page à part :
     c'est le même geste — obtenir un cours — au même endroit.
+
+    Le lexique vient en dernier : on y va pour vérifier un nom croisé dans un
+    cours, jamais pour commencer une séance.
     """
     import re as _re
 
@@ -574,7 +577,8 @@ def test_les_trois_entrees_sont_dans_l_ordre_voulu(client, apprenante):
     page = client.get(reverse("courses:catalogue"), secure=True).content.decode()
 
     assert _re.findall(r'data-onglet="(\w+)"', page) == [
-        "catalogue", "fiches", "generer"]
+        "catalogue", "fiches", "generer", "lexique",
+    ]
     assert 'action="/courses/generator/"' in page, (
         "le formulaire garde sa vue, seule sa présentation change"
     )
@@ -653,3 +657,61 @@ def test_la_fiche_affiche_les_ajouts_mis_en_forme(client, apprenante, competence
     assert "language-python" in page, "les blocs de code doivent être des blocs"
     assert "## Les listes" not in page, "le Markdown brut ne doit plus s'afficher"
     assert "cours-rendu" in page, "la feuille des cours doit s'appliquer"
+
+
+@pytest.mark.django_db
+def test_le_lexique_ne_liste_que_ce_qui_existe(client, apprenante, competence):
+    """
+    Le lexique est relevé, jamais rédigé.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétences concernées : C4 (E1) — attribution ; C1 (E1) — sources
+
+    Ce que ce test défend : **aucune entrée du lexique n'est écrite à la
+    main**. Les modules viennent des lignes `import` des cours publiés, et
+    leur description est la docstring du module lue à l'exécution. Une base
+    sans cours ne doit donc afficher aucun module — et surtout pas une liste
+    générale de modules Python, qui ferait croire à l'apprenant qu'il les a
+    croisés.
+    """
+    from apps.courses.lexique import modules_des_cours
+
+    assert modules_des_cours() == [], (
+        "sans cours publié, le lexique n'a rien à relever"
+    )
+
+    publier_le_cours(
+        competence,
+        [dict(PARTIE, contenu="```python\nimport json\nfrom pathlib import Path\n```")],
+        titre="Un cours", redige_par=apprenante,
+    )
+
+    entrees = {e["nom"]: e for e in modules_des_cours()}
+
+    assert set(entrees) == {"json", "pathlib"}, "seuls les modules importés"
+    assert entrees["json"]["standard"] is True
+    assert entrees["json"]["description"], (
+        "la description vient de la docstring du module, pas d'un texte écrit ici"
+    )
+    assert entrees["pathlib"]["competences"] == [(competence.code, competence.intitule)]
+
+
+def test_le_lexique_n_importe_jamais_un_module_inconnu():
+    """
+    Un nom trouvé dans un cours n'est pas importé s'il n'est pas standard.
+
+    Compétence visée : C13 (épreuve E3) — sécurité
+    Compétence concernée : C17 (E4)
+
+    Les noms viennent du contenu des supports, donc de fichiers que le projet
+    n'a pas écrits. Importer un nom arbitraire exécuterait son code au
+    chargement de la page : c'est un chemin d'exécution offert à quiconque
+    contrôle un support. La liste de la bibliothèque standard ferme la porte.
+    """
+    from apps.courses.lexique import _description_de_module
+
+    assert _description_de_module("os") != ""
+    assert _description_de_module("un_module_qui_n_existe_pas") == ""
+    # `apps` est importable ici, et n'est pas dans la bibliothèque standard :
+    # la description doit rester vide plutôt que d'aller le chercher.
+    assert _description_de_module("apps") == ""
