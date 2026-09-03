@@ -118,10 +118,28 @@ html { scrollbar-gutter: stable; }
 }
 
 /* Le gras reste du gras : c'est le défaut que corrige ce correctif.
-   L'ancien parseur en transformait chaque occurrence en titre <h3>. */
+   L'ancien parseur en transformait chaque occurrence en titre <h3>.
+
+   Compétence visée : C17 (épreuve E4)
+   Compétence concernée : C13 (E3) — accessibilité
+
+   Le rouge, parce que c'est le gras qui porte les mots-clés d'un cours, et
+   qu'ils doivent être ce qu'on repère en premier. En blanc, ils avaient la
+   couleur du texte courant et se confondaient avec lui dès que la page en
+   comptait plusieurs par paragraphe.
+
+   Choix : #F87171 et non un rouge franc. Motivation mesurée : sur le fond du
+   panneau (#1F2937), un rouge franc comme #EF4444 tombe à 3,9:1, sous le seuil
+   AA de 4,5:1. #F87171 tient 5,3:1 là, et de 6,4 à 6,8:1 sur les fonds plus
+   sombres du cours, du chat et des blocs de code.
+
+   Le gras est CONSERVÉ. Motivation : la couleur seule ne doit jamais porter
+   une information (WCAG 1.4.1). Un mot-clé reste reconnaissable sans elle —
+   sur une impression en noir et blanc, ou pour qui ne distingue pas le rouge
+   du texte environnant. */
 :is(#course-content, .cours-rendu) strong {
     font-weight: 700;
-    color: #FFFFFF;
+    color: #F87171;
 }
 
 :is(#course-content, .cours-rendu) em {
