@@ -1,9 +1,13 @@
+import logging
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from apps.agents.agent_orchestrator import get_orchestrator
+from apps.courses.lexique import bibliotheques_du_corpus, modules_des_cours
+
 from apps.quotas.service import QuotaDepasse
 from apps.rag.module_loader import module_loader
 from .models import Course
@@ -16,6 +20,8 @@ from django.db.models import Count
 from django.views.decorators.http import require_POST
 
 from apps.courses.models import FicheDApprenant
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -360,7 +366,42 @@ def catalogue(request):
         "modules": modules,
         "mes_fiches": [f for f in fiches.values() if f.nombre_ajouts],
         "modules_de_generation": module_loader.get_available_modules(),
+        # Le lexique : les modules que les cours emploient, relevés dans leur
+        # contenu (apps/courses/lexique.py). Les bibliothèques, elles, vivent
+        # dans l'AUTRE base et sont demandées à part, quand l'onglet s'ouvre.
+        "modules_du_lexique": modules_des_cours(),
     })
+
+
+@login_required
+def lexique_des_bibliotheques(request):
+    """
+    Rend la liste des bibliothèques documentées dans le corpus.
+
+    Compétence visée : C4 (épreuve E1) — attribution
+    Compétences concernées : C17 (E4) ; C13 (E3)
+
+    Choix : un point d'entrée à part, appelé quand l'onglet s'ouvre, plutôt
+    qu'une donnée du catalogue. Motivation : ces lignes vivent dans
+    `eduai_data`, l'autre base — celle du pipeline. Les charger avec le
+    catalogue ferait dépendre la page entière d'une base dont l'application
+    n'a par ailleurs aucun besoin : le jour où elle est arrêtée, l'apprenant
+    n'aurait plus de catalogue du tout, pour un panneau qu'il n'a peut-être
+    pas ouvert. La séparation des deux bases est structurelle (décision 006) ;
+    elle doit l'être aussi dans ce que coûte une page.
+
+    Choix : une base injoignable rend une liste vide, pas une erreur.
+    Motivation : le panneau sait le dire ; une erreur 500 ne dirait rien.
+    """
+    from django.db import DatabaseError
+
+    try:
+        entrees = bibliotheques_du_corpus()
+    except DatabaseError as panne:
+        logger.warning("[lexique] corpus injoignable : %s", panne)
+        entrees = []
+
+    return JsonResponse({"bibliotheques": entrees})
 
 
 @login_required
@@ -423,10 +464,20 @@ def ma_fiche(request, code):
         .order_by("-completed_at", "-first_attempt_at")
     )
 
+    # Les ajouts sont du Markdown — titres, listes, blocs de code — et la fiche
+    # les affichait avec `linebreaks`, qui ne convertit que les sauts de ligne :
+    # l'apprenant relisait ses propres réponses avec leurs dièses et leurs
+    # accents graves. Le rendu passe par le convertisseur des cours
+    # (décision 002), posé sur chaque ajout plutôt que dans une structure à
+    # part : le gabarit garde ainsi l'objet, ses dates et ses sources.
+    ajouts = list(fiche.ajouts.all())
+    for ajout in ajouts:
+        ajout.contenu_html = render_markdown(ajout.contenu)
+
     return render(request, "courses/fiche.html", {
         "competence": competence,
         "fiche": fiche,
-        "ajouts": fiche.ajouts.all(),
+        "ajouts": ajouts,
         "cours": cours_actif(competence),
         "exercices": exercices,
     })
@@ -453,16 +504,39 @@ def enrichir_la_fiche(request, code):
     en panne. Motivation : un apprenant qui a épuisé ses quinze générations doit
     lire qu'il les a épuisées, pas « une erreur est survenue ».
     """
+    from apps.chat.echange_courant import est_un_echange_courant, repondre
     from apps.courses.models import AjoutDeFiche
     from apps.courses.services import enrichir
     from apps.quotas.service import QuotaDepasse
     from apps.referentiel.models import Competence
 
     competence = get_object_or_404(Competence, code=code)
+
     question = (request.POST.get("question") or "").strip()
     section = (request.POST.get("section") or "").strip()
     if not question:
         return JsonResponse({"error": _("Question absente.")}, status=400)
+
+    # Une politesse reçoit une phrase, et rien n'est écrit dans la fiche.
+    #
+    # Compétence visée : C10 (épreuve E3), C17 (E4)
+    # Deux raisons, et la seconde est la plus importante. D'abord la réponse :
+    # « ça va ? » partait dans la recherche documentaire et revenait en cours
+    # complet sur la compétence. Ensuite la fiche : elle doit garder ce que
+    # l'apprenant a cherché à comprendre, pas ses bonjours. Une fiche encombrée
+    # de politesses cesse d'être relue.
+    #
+    # La réponse est assemblée localement : aucun appel au fournisseur, donc
+    # aucun quota consommé et aucun chemin de dépense non compté.
+    if est_un_echange_courant(question):
+        phrase = repondre(question, request.user.username)
+        return JsonResponse({
+            "contenu": phrase,
+            "contenu_html": render_markdown(phrase),
+            "question": question,
+            "sources": [],
+            "enregistre": False,
+        })
 
     try:
         ajout = enrichir(request.user, competence, question,
@@ -475,6 +549,12 @@ def enrichir_la_fiche(request, code):
         "question": ajout.question,
         "sources": ajout.sources,
         "cree_le": ajout.cree_le.isoformat(),
+        # La réponse est du Markdown : elle porte des titres, des listes et des
+        # blocs de code. Le rendu se fait ICI, avec le même convertisseur que
+        # les cours (`safe_mode="escape"`), et non dans le navigateur : la page
+        # affichait jusqu'alors les dièses et les accents graves tels quels.
+        "contenu_html": render_markdown(ajout.contenu),
+        "enregistre": True,
     })
 
 
@@ -500,11 +580,21 @@ def executer_du_code(request, code):
     Choix : aucun quota. Motivation : l'exécution est locale, elle n'appelle
     aucun service facturé. Le quota compte des générations, pas des essais.
     """
+    from apps.courses.transcription import transcrire
     from apps.exercises.security import SecurePythonExecutor
 
     extrait = (request.POST.get("code") or "").strip()
     if not extrait:
         return JsonResponse({"error": _("Aucun code à exécuter.")}, status=400)
+
+    # Choix : la conversion est appliquée à TOUT extrait, sans que l'appelant
+    # ait à la demander. Motivation : les supports du cours sont écrits comme
+    # des sessions au prompt (`>>> furniture[0]`), qui ne s'exécutent pas — le
+    # bouton « Run » de ces blocs échouait donc toujours. Et un apprenant qui
+    # recopie un de ces extraits dans la cellule tombe sur le même mur. La
+    # conversion ne touche que ce qui porte un `>>>`, une amorce qui n'existe
+    # dans aucun script valide : un code ordinaire ressort inchangé.
+    extrait = transcrire(extrait)
 
     resultat = SecurePythonExecutor().execute_code(extrait)
     return JsonResponse({

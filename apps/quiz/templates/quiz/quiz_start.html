@@ -1,10 +1,5 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% comment %}
-Libellés de l'écran de fin. Ils étaient assemblés en JavaScript avec un
-`if (langue === 'fr')` et deux blocs de chaînes en dur : les catalogues ne les
-voyaient pas, et une troisième langue aurait demandé un troisième bloc.
-{% endcomment %}
 {% trans "Quiz terminé !" as t_fini %}
 {% trans "Retour au salon" as t_retour %}
 {% trans "Refaire un quiz" as t_refaire %}
@@ -14,8 +9,11 @@ voyaient pas, et une troisième langue aurait demandé un troisième bloc.
 {% trans "Continuez : c'est en pratiquant qu'on progresse." as t_palier0 %}
 {% trans "J'avais dit aux autres Koda que ce quiz était trop facile pour toi." as t_koda_bas %}
 {% trans "Je le savais. Je l'avais dit." as t_koda_haut %}
+{% trans "Correct" as t_correct %}
+{% trans "Sans réponse" as t_sans_reponse %}
+{% trans "Incorrect" as t_incorrect %}
+{% trans "Explication" as t_explication %}
 {% block extra_head %}
-<!-- Prism.js for syntax highlighting -->
 <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
@@ -24,16 +22,11 @@ voyaient pas, et une troisième langue aurait demandé un troisième bloc.
 </script>
 {% endblock %}
 
-{% block title %}Quiz in Progress - Koda{% endblock %}
+{% block title %}Quiz - Koda{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 h-full overflow-y-auto">
+<div class="h-full overflow-y-auto defilement-vert p-6 space-y-6">
 
-    {% comment %}
-    La vue passait déjà un champ `error` que ce gabarit n'affichait nulle part :
-    un quiz non généré donnait une page vide, sans explication. Le refus de
-    quota (C13) emprunte ce même champ, il fallait donc le rendre visible.
-    {% endcomment %}
     {% if error %}
         <div role="alert"
              class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
@@ -44,264 +37,229 @@ voyaient pas, et une troisième langue aurait demandé un troisième bloc.
                 </a>
             </p>
         </div>
-    {% endif %}
-
-    <!-- Quota de génération (C13) -->
+    {% else %}
     {% include "quotas/_compteur_generations.html" %}
 
-    <!-- Top header: title + timer -->
-    <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
+    <!-- Header -->
+    <div class="flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
             <i data-lucide="brain" class="w-6 h-6 text-primary-rose"></i>
-            <h1 class="text-xl font-bold text-white">{% trans "Quiz in Progress" %}</h1>
+            <h1 class="text-xl font-bold text-white">{{ topic }}</h1>
         </div>
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-                <i data-lucide="clock" class="w-5 h-5 text-primary-blue"></i>
-                <span class="text-primary-blue font-mono text-lg" id="timer">30s</span>
-            </div>
-            <div class="text-white">
-                {% trans "Question" %} <span id="current-question">1</span> {% trans "of" %} <span id="total-questions">X</span>
-            </div>
+        <div class="text-sm text-gray-400">
+            {% trans "Quiz solo" %} · <span id="total-questions">0</span> {% trans "questions" %}
         </div>
     </div>
 
-    <!-- Question + answers block -->
-    <div class="bg-gray-800 rounded-lg p-8 border border-gray-700">
-        <div class="mb-8">
-            <div class="w-full bg-gray-700 rounded-full h-2 mb-4">
-                <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-            </div>
-            <div id="question-text" class="text-white space-y-4 text-base"></div>
+    <!-- Progress bar -->
+    <div class="sticky top-0 z-10 bg-gray-900/80 backdrop-blur-sm pt-2 pb-3 -mx-6 px-6">
+        <div class="w-full bg-gray-700 rounded-full h-2">
+            <div id="progress-bar" class="bg-primary-green h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
-
-        <div class="space-y-4" id="options-container">
-            <!-- Dynamically generated options -->
+        <div class="flex justify-between mt-1 text-xs text-gray-400">
+            <span id="answered-count">0</span> / <span id="total-questions-2">0</span> {% trans "répondues" %}
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="flex justify-between items-center">
+    <!-- All questions -->
+    <div id="questions-container" class="space-y-6">
+        <!-- Dynamically generated -->
+    </div>
+
+    {% comment %}
+    La marge basse dégage le coin où Koda se tient par défaut.
+
+    Compétence visée : C17 (épreuve E4)
+    Koda peut désormais être déplacé, ce qui règle le cas pour de bon — mais
+    seulement après que l'apprenant l'a déplacé. À la première visite, il
+    couvrait « Voir mes résultats ». Une action principale ne doit pas
+    dépendre d'un geste que personne n'a encore fait.
+    {% endcomment %}
+    <div class="flex justify-between items-center pt-4 mb-48 border-t border-gray-700">
         <a href="{% url 'quiz:lobby' %}" class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
-            {% trans "Back" %}
+            {% trans "Annuler" %}
         </a>
-        <div class="text-sm text-white font-semibold">
-            {% trans "Score:" %} <span id="score">0</span> / <span id="total-questions-footer">X</span>
-        </div>
+        <button id="submit-quiz" disabled
+                class="px-6 py-2 text-sm bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-40 disabled:cursor-not-allowed">
+            {% trans "Voir mes résultats" %}
+        </button>
     </div>
+
+    <!-- Results section (hidden until submit) -->
+    <div id="results-section" class="hidden space-y-6">
+        <!-- Dynamically generated -->
+    </div>
+    {% endif %}
 </div>
 
 {{ quiz_data|json_script:"quiz-data" }}
 
-{% comment %}
-Le jeton CSRF est requis par l'envoi du résultat en fin de quiz. La vue
-`quiz:submit` ne porte plus `@csrf_exempt` : elle modifie les statistiques du
-compte, et un point de terminaison qui écrit sans protection CSRF est
-exploitable depuis n'importe quelle page tierce ouverte dans le navigateur.
-{% endcomment %}
 <form style="display: none">{% csrf_token %}</form>
 
-<!-- Dynamic JS script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     lucide.createIcons();
 
-    let currentQuestion = 1;
-    let score = 0;
-    let timeLeft = 30;
-    let timer;
-
-    // Les réponses données, dans l'ordre des questions.
-    //
-    // -1 vaut « pas de réponse » : le temps écoulé sans clic est un état réel,
-    // distinct d'une mauvaise réponse, et le serveur doit pouvoir les
-    // distinguer. Les confondre ferait compter comme erreur de compréhension
-    // ce qui n'est qu'un abandon.
-    const reponses = [];
-
-    const quizData = JSON.parse(document.getElementById("quiz-data").textContent);
-    const questions = quizData.questions.map(q => ({
-        text: q.question,
-        options: q.options,
-        correct: q.correct_answer,
-        explanation: q.explanation
-    }));
-
-    // Display total number of questions
-    document.getElementById('total-questions').textContent = questions.length;
-    document.getElementById('total-questions-footer').textContent = questions.length;
-
-    function startTimer() {
-        timer = setInterval(() => {
-            timeLeft--;
-            document.getElementById('timer').textContent = timeLeft + 's';
-
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                if (reponses[currentQuestion - 1] === undefined) {
-                    reponses[currentQuestion - 1] = -1;
-                }
-                showCorrectAnswer();
-            }
-        }, 1000);
+    if (document.getElementById('quiz-data')) {
+        initQuiz();
     }
 
-    function updateQuestion() {
-        const question = questions[currentQuestion - 1];
-        document.getElementById('current-question').textContent = currentQuestion;
+    function initQuiz() {
+        const quizData = JSON.parse(document.getElementById("quiz-data").textContent);
+        const questions = quizData.questions.map(q => ({
+            text: q.question,
+            options: q.options,
+            correct: q.correct_answer,
+            explanation: q.explanation
+        }));
+        const reponses = new Array(questions.length).fill(undefined);
 
-        // Question block processing with ```python``` blocks and <br> handling
-        const formatted = question.text
-            .replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
-            const language = lang || 'code';
-            const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
-            return `<div class="code-block-container my-4">
-                <div class="code-header">
-                    <span class="code-language">${displayLang}</span>
+        document.getElementById('total-questions').textContent = questions.length;
+        document.getElementById('total-questions-2').textContent = questions.length;
+
+        const container = document.getElementById('questions-container');
+
+        questions.forEach((question, qIndex) => {
+            const block = document.createElement('div');
+            block.className = 'bg-gray-800 rounded-lg p-6 border border-gray-700';
+            block.id = `question-block-${qIndex}`;
+
+            // Question text with code formatting
+            const formatted = question.text
+                .replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
+                    const language = lang || 'code';
+                    const displayLang = language === 'python' ? 'Python' : language.charAt(0).toUpperCase() + language.slice(1);
+                    return `<div class="code-block-container my-4">
+                        <div class="code-header">
+                            <span class="code-language">${displayLang}</span>
+                        </div>
+                        <pre class="code-content language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
+                    </div>`;
+                });
+
+            block.innerHTML = `
+                <div class="flex items-start gap-3 mb-4">
+                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0">
+                        ${qIndex + 1}
+                    </div>
+                    <div class="text-white space-y-3 text-base flex-1">${formatted}</div>
                 </div>
-                <pre class="code-content language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
-            </div>`;
-        });
-        const questionTextEl = document.getElementById('question-text');
-        questionTextEl.innerHTML = formatted;
+                <div class="space-y-3" data-options-for="${qIndex}"></div>
+            `;
 
-        // Restart Prism only on new blocks
-        if (window.Prism) {
-            questionTextEl.querySelectorAll('pre code').forEach(block => {
-                Prism.highlightElement(block);
+            container.appendChild(block);
+
+            // Highlight code
+            if (window.Prism) {
+                block.querySelectorAll('pre code').forEach(el => Prism.highlightElement(el));
+            }
+
+            const optionsContainer = block.querySelector(`[data-options-for="${qIndex}"]`);
+
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200';
+                button.setAttribute('data-answer', index);
+                button.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                            ${String.fromCharCode(65 + index)}
+                        </div>
+                        <span>${option}</span>
+                    </div>
+                `;
+                button.addEventListener('click', () => selectAnswer(qIndex, index, button));
+                optionsContainer.appendChild(button);
             });
-        }
-
-        // Update progress bar
-        document.getElementById('progress-bar').style.width = (currentQuestion / questions.length) * 100 + '%';
-
-        // Generate options
-        const optionsContainer = document.getElementById('options-container');
-        optionsContainer.innerHTML = '';
-
-        question.options.forEach((option, index) => {
-            const button = document.createElement('button');
-            button.className = 'quiz-option w-full p-4 text-left bg-gray-900 border border-gray-600 rounded-lg text-white hover:border-primary-green hover:bg-gray-850 transition-all duration-200 transform hover:scale-[1.01]';
-            button.setAttribute('data-answer', index);
-            button.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">
-                        ${String.fromCharCode(65 + index)}
-                    </div>
-                    <span>${option}</span>
-                </div>
-            `;
-            button.addEventListener('click', () => handleAnswer(index));
-            optionsContainer.appendChild(button);
-        });
-    }
-
-    function handleAnswer(answerIndex) {
-        const question = questions[currentQuestion - 1];
-        clearInterval(timer);
-        reponses[currentQuestion - 1] = answerIndex;
-
-        if (answerIndex === question.correct) {
-            score++;
-            document.getElementById('score').textContent = score;
-        }
-
-        document.querySelectorAll('.quiz-option').forEach(btn => {
-            btn.disabled = true;
         });
 
-        showCorrectAnswer();
-    }
-    
-    function showCorrectAnswer() {
-        const question = questions[currentQuestion - 1];
-        const options = document.querySelectorAll('.quiz-option');
-        
-        // Color the options
-        options.forEach((option, index) => {
-            if (index === question.correct) {
-                option.classList.add('border-green-500', 'bg-green-500/20');
-                option.classList.remove('border-gray-600');
-            } else {
-                option.classList.add('border-red-500/50', 'opacity-60');
-                option.classList.remove('border-gray-600');
-            }
-        });
-        
-        // Show explanation if available
-        if (question.explanation) {
-            const explanationDiv = document.createElement('div');
-            explanationDiv.className = 'mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg';
-            explanationDiv.innerHTML = `
-                <div class="flex items-start space-x-3">
-                    <i data-lucide="lightbulb" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
-                    <div>
-                        <h4 class="text-sm font-bold text-blue-400 mb-2">Explanation</h4>
-                        <p class="text-sm text-blue-200">${question.explanation}</p>
-                    </div>
-                </div>
-            `;
-            document.getElementById('options-container').appendChild(explanationDiv);
-            
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
+        function selectAnswer(qIndex, answerIndex, clickedBtn) {
+            reponses[qIndex] = answerIndex;
+
+            // Clear previous selection in this question
+            const allBtns = document.querySelectorAll(`#question-block-${qIndex} .quiz-option`);
+            allBtns.forEach(btn => {
+                btn.classList.remove('border-primary-green', 'bg-primary-green/15');
+                btn.classList.add('border-gray-600');
+            });
+
+            // Highlight selected
+            clickedBtn.classList.remove('border-gray-600');
+            clickedBtn.classList.add('border-primary-green', 'bg-primary-green/15');
+
+            // Update progress
+            const answered = reponses.filter(r => r !== undefined).length;
+            document.getElementById('answered-count').textContent = answered;
+            document.getElementById('progress-bar').style.width = (answered / questions.length) * 100 + '%';
+
+            // Enable submit if all answered
+            if (answered === questions.length) {
+                document.getElementById('submit-quiz').disabled = false;
             }
         }
-        
-        // Continue button
-        const continueBtn = document.createElement('button');
-        continueBtn.className = 'mt-4 w-full py-3 px-4 bg-primary-blue text-white rounded-lg hover:bg-blue-600 transition-colors font-medium';
-        continueBtn.textContent = currentQuestion < questions.length ? 'Next Question' : 'View Results';
-        continueBtn.addEventListener('click', nextQuestion);
-        document.getElementById('options-container').appendChild(continueBtn);
-    }
 
-    function nextQuestion() {
-        if (currentQuestion < questions.length) {
-            currentQuestion++;
-            timeLeft = 60;
-            updateQuestion();
-            startTimer();
-        } else {
-            showFinalResults();
-        }
-    }
-    
-    function showFinalResults() {
-        const pourcentage = Math.round((score / questions.length) * 100);
+        // Submit
+        document.getElementById('submit-quiz').addEventListener('click', function () {
+            // Disable all options
+            document.querySelectorAll('.quiz-option').forEach(btn => btn.disabled = true);
+            this.disabled = true;
 
-        {% comment %}
-        Un écran de fin dans la page, et non plus une boîte de dialogue native.
+            // Calculate score
+            let score = 0;
+            questions.forEach((q, i) => {
+                if (reponses[i] === q.correct) score++;
+            });
 
-        Compétence visée : C17 (épreuve E4)
-        Le résultat s'affichait dans une boîte native : impossible à mettre en
-        forme, invisible pour les catalogues de traduction — les deux jeux de
-        phrases étaient écrits en dur, un par langue — et elle disparaissait au
-        clic, l'apprenant n'ayant alors plus rien sous les yeux au moment où la
-        page se rechargeait sur le salon.
+            {% comment %}
+            L'envoi PRÉCÈDE l'affichage, et ce n'est pas un détail de style.
 
-        Koda accompagne le résultat, il ne le porte pas : le score et la phrase
-        sont du texte, et l'image est `aria-hidden`.
-        {% endcomment %}
-        let palier;
-        if (pourcentage >= 90) { palier = "{{ t_palier90|escapejs }}"; }
-        else if (pourcentage >= 70) { palier = "{{ t_palier70|escapejs }}"; }
-        else if (pourcentage >= 50) { palier = "{{ t_palier50|escapejs }}"; }
-        else { palier = "{{ t_palier0|escapejs }}"; }
+            Compétence visée : C20 (épreuve E5), C21 (E5)
+            L'incident 010 est exactement celui-ci : des quiz vus comme faits,
+            dont la base ne portait aucune trace. Un apprenant qui quitte la
+            page à la seconde où son score s'affiche doit avoir déjà été
+            enregistré. `keepalive` fait survivre la requête à la navigation ;
+            encore faut-il qu'elle soit partie.
+            {% endcomment %}
+            fetch("{% url 'quiz:submit' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+                },
+                body: JSON.stringify({
+                    session_id: quizData.session_id,
+                    answers: Array.from(questions, (_, i) =>
+                        reponses[i] === undefined ? -1 : reponses[i]),
+                }),
+                keepalive: true,
+            }).catch(() => {});
 
-        const koda = pourcentage >= 50
-            ? {image: "{% static 'img/koda/planches/koda-joie.png' %}", jeu: "joie",
-               etat: "fete", l: 200, h: 223, lignes: 6, mot: "{{ t_koda_haut|escapejs }}"}
-            : {image: "{% static 'img/koda/planches/koda-boude.png' %}", jeu: "bouderie",
-               etat: "boude", l: 200, h: 168, lignes: 6, mot: "{{ t_koda_bas|escapejs }}"};
+            showResults(score, questions, reponses);
+        });
 
-        const ecran = document.createElement("div");
-        ecran.className = "fixed inset-0 z-50 flex items-center justify-center bg-gray-900/90 p-4";
-        ecran.setAttribute("role", "dialog");
-        ecran.setAttribute("aria-modal", "true");
-        ecran.setAttribute("aria-labelledby", "titre-resultat");
-        ecran.innerHTML = `
-            <div class="w-full max-w-md text-center bg-gray-800 border border-gray-700 rounded-2xl p-6">
+        function showResults(score, questions, reponses) {
+            const pourcentage = Math.round((score / questions.length) * 100);
+
+            let palier;
+            if (pourcentage >= 90) { palier = "{{ t_palier90|escapejs }}"; }
+            else if (pourcentage >= 70) { palier = "{{ t_palier70|escapejs }}"; }
+            else if (pourcentage >= 50) { palier = "{{ t_palier50|escapejs }}"; }
+            else { palier = "{{ t_palier0|escapejs }}"; }
+
+            const koda = pourcentage >= 50
+                ? {image: "{% static 'img/koda/planches/koda-joie.png' %}", jeu: "joie",
+                   etat: "fete", l: 200, h: 223, lignes: 6, mot: "{{ t_koda_haut|escapejs }}"}
+                : {image: "{% static 'img/koda/planches/koda-boude.png' %}", jeu: "bouderie",
+                   etat: "boude", l: 200, h: 168, lignes: 6, mot: "{{ t_koda_bas|escapejs }}"};
+
+            const section = document.getElementById('results-section');
+            section.innerHTML = '';
+
+            // Score summary
+            const summary = document.createElement('div');
+            summary.className = 'bg-gray-800 rounded-2xl p-6 border border-gray-700 text-center';
+            summary.innerHTML = `
                 <div data-koda class="koda mx-auto mb-3"
                      style="width:${koda.l}px;height:${koda.h}px;
                             background-image:url('${koda.image}');
@@ -311,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
                      data-etat-initial="${koda.etat}"
                      ${document.body.dataset.animationKoda === 'desactivee' ? 'data-animation="desactivee"' : ''}
                      aria-hidden="true"></div>
-                <h2 id="titre-resultat" class="text-xl font-bold text-white">{{ t_fini|escapejs }}</h2>
+                <h2 id="titre-resultats" tabindex="-1" class="text-xl font-bold text-white">{{ t_fini|escapejs }}</h2>
                 <p class="text-3xl font-bold text-primary-green my-2">
                     ${score} / ${questions.length}
                     <span class="text-base text-gray-400">(${pourcentage} %)</span>
@@ -320,98 +278,114 @@ document.addEventListener('DOMContentLoaded', function () {
                 <p class="text-sm text-gray-400 italic mt-1">${koda.mot}</p>
                 <div class="flex gap-3 justify-center mt-5">
                     <a href="{% url 'quiz:lobby' %}"
-                       class="px-4 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-white">
+                       class="px-4 py-2 rounded-lg bg-primary-green text-white text-sm font-medium hover:bg-green-600">
                         {{ t_retour|escapejs }}
                     </a>
                     <a href="{% url 'quiz:start' %}"
-                       class="px-4 py-2 rounded-lg bg-gray-700 text-white text-sm font-medium hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
+                       class="px-4 py-2 rounded-lg bg-gray-700 text-white text-sm font-medium hover:bg-gray-600">
                         {{ t_refaire|escapejs }}
                     </a>
                 </div>
-            </div>`;
+            `;
+            section.appendChild(summary);
 
-        // Le résultat part au serveur AVANT tout affichage.
-        //
-        // Sans cet envoi, la vue `quiz:submit` et tout ce qu'elle déclenche —
-        // clôture de la session, enregistrement des erreurs, compteur de quiz
-        // terminés — n'étaient jamais appelés : du code écrit, joignable, et
-        // que rien n'exécutait (incident 010).
-        //
-        // `keepalive` : la requête doit survivre à une navigation éventuelle.
-        fetch("{% url 'quiz:submit' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
-            },
-            body: JSON.stringify({
-                session_id: quizData.session_id,
-                answers: Array.from(questions, (_, i) =>
-                    reponses[i] === undefined ? -1 : reponses[i]),
-            }),
-            keepalive: true,
-        }).catch(() => {
-            // Un échec d'enregistrement ne retient pas l'apprenant : il a fini
-            // son quiz. La perte est visible au monitorage, par l'absence de
-            // clôture de session.
-        }).finally(() => {
-            document.body.appendChild(ecran);
-            ecran.querySelector("a").focus();
-            if (window.Koda) { Koda.brancher(); }
-        });
+            {% comment %}
+            Le clavier suit le contenu.
+
+            Compétence visée : C13 (épreuve E3) — accessibilité
+            L'écran de fin remplace le quiz DANS la page. Sans ce déplacement,
+            qui navigue au clavier ou par lecteur d'écran reste posé sur un
+            contenu qui n'existe plus, et rien n'annonce le résultat. Ce n'est
+            plus une fenêtre modale : le geste juste n'est pas de piéger le
+            focus, mais de l'amener au titre du résultat.
+            {% endcomment %}
+            const titre = summary.querySelector('#titre-resultats');
+            if (titre) titre.focus();
+
+            // Per-question review
+            questions.forEach((q, i) => {
+                const userAnswer = reponses[i];
+                const isCorrect = userAnswer === q.correct;
+                const wasUnanswered = userAnswer === undefined || userAnswer === -1;
+
+                const review = document.createElement('div');
+                review.className = `bg-gray-800 rounded-lg p-5 border ${isCorrect ? 'border-green-600/50' : 'border-red-500/50'}`;
+
+                const formatted = q.text
+                    .replace(/```(\w+)?\n?([\s\S]*?)```/g, function (match, lang, code) {
+                        const language = lang || 'code';
+                        return `<div class="code-block-container my-3">
+                            <pre class="code-content language-${language}"><code class="language-${language}">${code.trim()}</code></pre>
+                        </div>`;
+                    });
+
+                let optionsHtml = '';
+                q.options.forEach((opt, idx) => {
+                    let bg = 'bg-gray-900 border-gray-700';
+                    let icon = '';
+                    if (idx === q.correct) {
+                        bg = 'bg-green-500/15 border-green-500';
+                        icon = '<i data-lucide="check" class="w-4 h-4 text-green-400"></i>';
+                    } else if (idx === userAnswer && !isCorrect) {
+                        bg = 'bg-red-500/15 border-red-500';
+                        icon = '<i data-lucide="x" class="w-4 h-4 text-red-400"></i>';
+                    }
+                    optionsHtml += `
+                        <div class="flex items-center gap-3 p-3 rounded-lg border ${bg}">
+                            <div class="w-7 h-7 bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                                ${String.fromCharCode(65 + idx)}
+                            </div>
+                            <span class="text-sm text-gray-200 flex-1">${opt}</span>
+                            ${icon}
+                        </div>
+                    `;
+                });
+
+                review.innerHTML = `
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="w-8 h-8 ${isCorrect ? 'bg-green-500' : 'bg-red-500'} rounded-full flex items-center justify-center flex-shrink-0">
+                            ${isCorrect
+                                ? '<i data-lucide="check" class="w-4 h-4 text-white"></i>'
+                                : '<i data-lucide="x" class="w-4 h-4 text-white"></i>'}
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-bold ${isCorrect ? 'text-green-400' : 'text-red-400'} mb-1">
+                                ${isCorrect ? "{{ t_correct|escapejs }}" : wasUnanswered ? "{{ t_sans_reponse|escapejs }}" : "{{ t_incorrect|escapejs }}"}
+                            </div>
+                            <div class="text-white text-sm space-y-2">${formatted}</div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mt-3">${optionsHtml}</div>
+                    ${q.explanation ? `
+                        <div class="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i data-lucide="lightbulb" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                                <div>
+                                    <h4 class="text-sm font-bold text-blue-400 mb-1">{{ t_explication|escapejs }}</h4>
+                                    <p class="text-sm text-blue-200">${q.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+                section.appendChild(review);
+
+                if (window.Prism) {
+                    review.querySelectorAll('pre code').forEach(el => Prism.highlightElement(el));
+                }
+            });
+
+            section.classList.remove('hidden');
+            lucide.createIcons();
+            if (window.Koda) Koda.brancher();
+
+            // Scroll to results
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
-
-    updateQuestion();
-    startTimer();
 });
 </script>
 <style>
-/* ✨ GENERAL FORMATTING */
-.keyword-highlight {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: #FFFFFF;
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-    font-weight: 600;
-    font-size: 0.9em;
-}
-
-.inline-code {
-    background: #0D1117;
-    color: #79C0FF;
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    font-size: 0.875rem;
-    border: 1px solid #30363D;
-}
-
-/* 🧠 EXERCISES */
-.exercise-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    margin: 1rem 0 0.5rem 0;
-    border: 1px solid;
-}
-
-.exercise-statement {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
-    border-color: rgba(59, 130, 246, 0.3);
-}
-
-.exercise-solution {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22C55E;
-    border-color: rgba(34, 197, 94, 0.3);
-}
-
-/* 💻 CODE BLOCKS */
 .code-block-container {
     background: #0D1117;
     border: 1px solid #30363D;
@@ -419,151 +393,38 @@ document.addEventListener('DOMContentLoaded', function () {
     overflow: hidden;
     margin: 1rem 0;
 }
-
 .code-header {
     background: #21262D;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     border-bottom: 1px solid #30363D;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
-
 .code-language {
     font-size: 0.75rem;
     color: #7C3AED;
     background: #1E1B4B;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
     font-weight: 600;
 }
-
-.copy-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    background: #374151;
-    color: #9CA3AF;
-    border: none;
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 500;
-}
-
-.copy-btn:hover {
-    background: #4B5563;
-    color: #FFFFFF;
-    transform: translateY(-1px);
-}
-
-.copy-btn.copied {
-    background: #4CAF50;
-    color: #FFFFFF;
-}
-
 .code-content {
-    padding: 0.3rem 1rem !important;
-    margin: 0 !important;
-    background: #0D1117;
-    color: #E6EDF3;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    font-size: 0.8125rem !important;
-    line-height: 1.4 !important;
+    padding: 0.8rem 1rem !important;
+    background: #0D1117 !important;
+    color: #E6EDF3 !important;
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
     overflow-x: auto;
 }
-
-pre.code-content {
+pre.code-content, pre[class*="language-"] {
     border: none !important;
+    margin: 0 !important;
     box-shadow: none !important;
 }
-
-/* Remove automatic Prism label */
 code[class^="language-"]::before,
 pre[class^="language-"]::before,
 code[class*=" language-"]::before,
-pre[class*=" language-"]::before,
-.code-content::before {
+pre[class*=" language-"]::before {
     content: none !important;
     display: none !important;
-}
-
-/* 🟩 LISTS */
-.list-container {
-    margin: 0.5rem 0;
-    padding-left: 1rem;
-}
-
-.list-item {
-    position: relative;
-    margin-bottom: 0.5rem;
-    color: #E5E7EB;
-    line-height: 1.6;
-}
-
-.list-item::before {
-    content: "•";
-    color: #4CAF50;
-    font-weight: bold;
-    position: absolute;
-    left: -1rem;
-}
-
-/* 📜 SCROLLBAR */
-#course-content-container {
-    scrollbar-width: thin;
-    scrollbar-color: #4B5563 #1F2937;
-    max-height: calc(100vh - 300px);
-}
-
-#course-content-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-#course-content-container::-webkit-scrollbar-track {
-    background: #1F2937;
-    border-radius: 4px;
-}
-
-#course-content-container::-webkit-scrollbar-thumb {
-    background: #4B5563;
-    border-radius: 4px;
-}
-
-#course-content-container::-webkit-scrollbar-thumb:hover {
-    background: #6B7280;
-}
-
-pre.code-content,
-pre[class*="language-"] {
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    background: transparent !important;
-}
-
-pre.code-content > code {
-    display: block;
-    padding: 0.8rem 1rem !important;
-    margin: 0 !important;
-    font-size: 1rem !important;
-    line-height: 1.4 !important;
-    background: #0D1117 !important;
-    color: #E6EDF3 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* 📱 MOBILE */
-@media (max-width: 768px) {
-    .code-block-container {
-        margin-left: -1rem;
-        margin-right: -1rem;
-        border-radius: 0;
-    }
 }
 </style>
 {% endblock %}

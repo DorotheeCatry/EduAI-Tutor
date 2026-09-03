@@ -120,15 +120,64 @@ avant de lire, pas après.
 
             <section aria-labelledby="titre-koda"
                      class="flex-1 min-h-0 flex flex-col p-4 rounded-lg border border-gray-700 bg-gray-800">
-                <h2 id="titre-koda" class="text-base font-bold text-white flex items-center gap-2">
-                    <i data-lucide="message-circle" class="w-4 h-4 text-primary-green" aria-hidden="true"></i>
-                    {% trans "Demander à Koda" %}
-                </h2>
-                <p class="text-xs text-gray-400 mt-0.5 mb-2">
-                    {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
-                </p>
+                {% comment %}
+                Koda lui-même, et non une icône de bulle.
 
-                <div id="koda-echanges" class="flex-1 min-h-0 overflow-y-auto space-y-2 text-sm defilement-vert"
+                Compétence visée : C17 (épreuve E4)
+                Choix : reprendre exactement la planche et les dimensions du
+                panneau flottant. Motivation : c'est le même interlocuteur ;
+                le voir changer d'apparence selon la page laisserait croire à
+                deux assistants différents.
+
+                Le script de la page pilotait déjà ses états — « réfléchit »
+                pendant l'attente, « parle » à la réponse — mais aucun élément
+                `data-koda` n'existait ici et `koda.js` n'y était pas chargé :
+                les appels tombaient dans le vide. Écrit, atteignable, jamais
+                exécuté : le troisième motif d'incident du projet.
+
+                `aria-hidden` : le titre voisin annonce déjà de qui il s'agit.
+                {% endcomment %}
+                <div class="flex items-center gap-2">
+                    <div data-koda class="koda flex-shrink-0"
+                         style="width:112px;height:92px;background-image:url('{% static 'img/koda/planches/koda-gros-plan.png' %}');background-size:896px 644px"
+                         data-colonnes="8" data-largeur="112" data-hauteur="92"
+                         data-etat-initial="repos" data-assoupissement="120000"
+                         data-alt-parle="{% trans "Koda parle" %}"
+                         data-alt-dort="{% trans "Koda dort" %}"
+                         data-alt-clin="{% trans "Koda fait un clin d'œil" %}"
+                         {% if not user.animation_koda %}data-animation="desactivee"{% endif %}
+                         aria-hidden="true"></div>
+                    <div class="min-w-0">
+                        <h2 id="titre-koda" class="text-base font-bold text-white">
+                            {% trans "Demander à Koda" %}
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            {% trans "Il voit le cours que vous lisez. Sa réponse va dans votre fiche." %}
+                        </p>
+                    </div>
+                </div>
+
+                {% comment %}
+                Le fil des échanges est un bleu foncé, à peine détaché du
+                panneau qui l'entoure.
+
+                Compétence visée : C17 (épreuve E4)
+                Compétence concernée : C13 (E3) — accessibilité
+
+                Choix : #0F172A, contre le #1F2937 du panneau. Motivation :
+                démarquer la conversation par le fond plutôt que par un trait
+                de couleur — la zone où l'on lit doit se distinguer de celle où
+                l'on agit, sans ajouter une bordure de plus dans une interface
+                qui en a déjà beaucoup. L'écart doit rester léger : un aplat
+                trop noir découperait la colonne en deux blocs étrangers.
+
+                Le texte reste en gris clair sur ce fond : le contraste tient
+                largement au-delà du seuil AA, et ne dépend pas de la
+                perception du bleu.
+                {% endcomment %}
+                <div id="koda-echanges"
+                     class="flex-1 min-h-0 overflow-y-auto p-3 rounded-lg border border-gray-700 space-y-3 text-sm defilement-vert"
+                     style="background:#0F172A"
                      role="log" aria-live="polite" aria-labelledby="titre-koda"></div>
 
                 <form id="koda-formulaire" class="mt-2 flex gap-2 flex-shrink-0">
@@ -167,9 +216,36 @@ avant de lire, pas après.
                 décision à l'apprenant, et `min-h-*` empêche de les réduire à
                 rien par mégarde.
                 {% endcomment %}
-                <textarea id="cellule-code" spellcheck="false" rows="8"
-                          class="mt-2 w-full min-h-[7rem] px-3 py-2 rounded-lg bg-gray-900 border border-gray-600 font-mono text-xs text-gray-100 focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue resize-y defilement-vert"
-                          placeholder="print('bonjour')"></textarea>
+                {% comment %}
+                Le même éditeur que les exercices : Monaco, thème sombre,
+                coloration Python.
+
+                Compétence visée : C17 (épreuve E4)
+                Choix : la zone de texte reste là, et Monaco se pose PAR-DESSUS
+                une fois chargé. Motivation : Monaco vient d'un CDN. S'il
+                n'arrive pas — réseau coupé, CDN bloqué — l'apprenant garde une
+                zone où écrire et exécuter du code, au lieu d'un rectangle vide.
+                C'est le montage déjà retenu pour les exercices ; le reprendre
+                à l'identique évite deux comportements pour un même geste.
+
+                Le fond est celui des blocs de code du cours (#0D1117), plus
+                sombre que le panneau : la cellule se démarque de ce qui
+                l'entoure sans qu'on ait à la border de couleur.
+                {% endcomment %}
+                {% comment %}
+                Le cadre reste redimensionnable à la souris, comme avant
+                Monaco : un extrait tient en trois lignes ou en trente, et
+                figer la hauteur oblige à défiler dans une fenêtre trop petite.
+                `automaticLayout` fait suivre l'éditeur quand le cadre change.
+                {% endcomment %}
+                <div id="cellule-editeur"
+                     class="mt-2 relative flex-1 min-h-[9rem] rounded-lg border border-gray-700 overflow-hidden resize-y"
+                     style="background:#0D1117">
+                    <textarea id="cellule-code" spellcheck="false" rows="8"
+                              class="absolute inset-0 w-full h-full px-3 py-2 bg-transparent font-mono text-xs text-gray-100 focus:outline-none resize-none defilement-vert"
+                              placeholder="print('bonjour')"></textarea>
+                    <div id="cellule-monaco" class="absolute inset-0 hidden"></div>
+                </div>
 
                 {% comment %}
                 La sortie est annoncée : un résultat qui apparaît après coup
@@ -184,17 +260,76 @@ avant de lire, pas après.
 </div>
 
 {% csrf_token %}
+{% comment %}
+`koda.js` n'était chargé que par `components/tuteur.html`, que cette page
+écarte volontairement pour ne pas afficher deux Koda. Sans lui, `window.Koda`
+n'existait pas et les changements d'état de cette page ne faisaient rien.
+{% endcomment %}
+{% comment %}
+Monaco, le même que les exercices et depuis la même origine : deux versions du
+même éditeur dans une seule application seraient deux comportements à tenir.
+{% endcomment %}
+<script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<script>
+(function () {
+    if (typeof require === 'undefined') { return; }
+    require.config({paths: {vs: 'https://unpkg.com/monaco-editor@0.44.0/min/vs'}});
+    require(['vs/editor/editor.main'], function () {
+        const zone = document.getElementById('cellule-code');
+        const boite = document.getElementById('cellule-monaco');
+        if (!zone || !boite) { return; }
+        window.editeurCellule = monaco.editor.create(boite, {
+            value: zone.value,
+            language: 'python',
+            theme: 'vs-dark',
+            fontSize: 13,
+            automaticLayout: true,
+            minimap: {enabled: false},
+            scrollBeyondLastLine: false,
+            padding: {top: 10, bottom: 8}
+        });
+        zone.style.display = 'none';
+        boite.classList.remove('hidden');
+    });
+})();
+</script>
+
+{% trans "Koda rédige…" as msg_redige %}
+{% trans "La réponse n'a pas pu être obtenue." as msg_koda_echec %}
+{% trans "Pas ajouté à la fiche — on y garde vos questions sur le cours." as msg_non_enregistre %}
+<script>
+const MESSAGES_KODA = {
+    redige: "{{ msg_redige|escapejs }}",
+    echec: "{{ msg_koda_echec|escapejs }}",
+    non_enregistre: "{{ msg_non_enregistre|escapejs }}"
+};
+</script>
+
 <script>
 (function () {
     const jeton = () => document.querySelector('[name=csrfmiddlewaretoken]').value;
     const echanges = document.getElementById('koda-echanges');
 
-    function bulle(texte, deKoda) {
-        const p = document.createElement('p');
+    {% comment %}
+    Une bulle. Celles de Koda peuvent porter du HTML mis en forme, celles de
+    l'apprenant jamais.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C9 (E2) — sécurisation
+
+    Choix : la réponse de Koda est du Markdown, rendu EN HTML PAR LE SERVEUR
+    (`markdown2`, `safe_mode="escape"`), et affichée avec la feuille du cours.
+    Motivation : elle contient des titres, des listes et des blocs de code, qui
+    s'affichaient jusqu'ici en texte brut avec leurs dièses et leurs accents
+    graves. La question de l'apprenant, elle, reste posée par `textContent` :
+    c'est une saisie, elle ne doit jamais être interprétée.
+    {% endcomment %}
+    function bulle(texte, deKoda, html) {
+        const p = document.createElement('div');
         p.className = deKoda
-            ? 'px-3 py-2 rounded-2xl rounded-tl-sm bg-primary-green/15 border border-primary-green/30 text-gray-100'
-            : 'px-3 py-2 rounded-2xl rounded-tr-sm bg-gray-900 border border-gray-700 text-gray-300 ml-6';
-        p.textContent = texte;
+            ? 'cours-rendu px-3 py-2 rounded-2xl rounded-tl-sm bg-primary-green/10 border border-primary-green/30 text-gray-100'
+            : 'px-3 py-2 rounded-2xl rounded-tr-sm bg-gray-800 border border-gray-700 text-gray-300 ml-6';
+        if (deKoda && html) { p.innerHTML = html; } else { p.textContent = texte; }
         echanges.appendChild(p);
         echanges.scrollTop = echanges.scrollHeight;
         return p;
@@ -212,7 +347,7 @@ avant de lire, pas après.
         if (!question) { return; }
         bulle(question, false);
         champ.value = '';
-        const attente = bulle("{% trans "Koda rédige…" %}", true);
+        const attente = bulle(MESSAGES_KODA.redige, true);
         if (window.Koda) Koda.etat('reflechit');
         try {
             const r = await fetch("{% url 'courses:enrichir' competence.code %}", {
@@ -222,12 +357,37 @@ avant de lire, pas après.
                 body: new URLSearchParams({question: question}),
             });
             const corps = await r.json();
-            attente.textContent = r.ok
-                ? corps.contenu
-                : (corps.error || "{% trans "La réponse n'a pas pu être obtenue." %}");
+            if (r.ok && corps.contenu_html) {
+                attente.className = 'cours-rendu px-3 py-2 rounded-2xl rounded-tl-sm '
+                                  + 'bg-primary-green/10 border border-primary-green/30 text-gray-100';
+                attente.innerHTML = corps.contenu_html;
+                {% comment %}
+                Ce qui n'entre pas dans la fiche le dit.
+
+                Compétence visée : C17 (épreuve E4)
+                Un échange courant reçoit une phrase et n'est pas conservé —
+                une fiche encombrée de bonjours cesse d'être relue. Mais ce
+                choix doit se voir : sans cette mention, l'apprenant croirait
+                que sa fiche garde tout, et s'étonnerait plus tard de ne pas y
+                retrouver une réponse.
+                {% endcomment %}
+                if (corps.enregistre === false) {
+                    const note = document.createElement('p');
+                    note.className = 'text-xs text-gray-500 italic mt-1';
+                    note.textContent = MESSAGES_KODA.non_enregistre;
+                    attente.appendChild(note);
+                }
+                // Les blocs de code de la réponse reçoivent le même traitement
+                // que ceux du cours : cellule, en-tête, coloration.
+                if (window.decorateCodeBlocks) window.decorateCodeBlocks();
+            } else {
+                attente.textContent = r.ok
+                    ? corps.contenu
+                    : (corps.error || MESSAGES_KODA.echec);
+            }
             if (r.ok && window.Koda) Koda.etat('parle');
         } catch (err) {
-            attente.textContent = "{% trans "La réponse n'a pas pu être obtenue." %}";
+            attente.textContent = MESSAGES_KODA.echec;
         } finally {
             if (window.Koda) setTimeout(() => Koda.etat('repos'), 2500);
         }
@@ -235,9 +395,12 @@ avant de lire, pas après.
 
     const sortie = document.getElementById('cellule-sortie');
     document.getElementById('cellule-executer').addEventListener('click', async () => {
-        const code = document.getElementById('cellule-code').value;
-        if (!code.trim()) { sortie.textContent = "{% trans "Écrivez du code, puis exécutez." %}"; return; }
-        sortie.textContent = "{% trans "Exécution…" %}";
+        // Monaco fait foi quand il a pris la main ; sinon la zone de texte.
+        const code = window.editeurCellule
+            ? window.editeurCellule.getValue()
+            : document.getElementById('cellule-code').value;
+        if (!code.trim()) { sortie.textContent = MESSAGES.vide; return; }
+        sortie.textContent = MESSAGES.attente;
         try {
             const r = await fetch("{% url 'courses:executer' competence.code %}", {
                 method: 'POST',
@@ -247,17 +410,60 @@ avant de lire, pas après.
             });
             const corps = await r.json();
             if (corps.expire) {
-                sortie.textContent = "{% trans "Le code a été interrompu : il tournait trop longtemps." %}";
+                sortie.textContent = MESSAGES.interrompu;
             } else if (corps.erreur) {
                 sortie.textContent = corps.erreur;
             } else {
-                sortie.textContent = corps.sortie
-                    || "{% trans "Exécuté sans rien afficher — pensez à print()." %}";
+                sortie.textContent = corps.sortie || MESSAGES.muet;
             }
         } catch (err) {
-            sortie.textContent = "{% trans "Le code n'a pas pu être exécuté." %}";
+            sortie.textContent = MESSAGES.echec;
         }
     });
 })();
 </script>
+
+{% comment %}
+Les libellés traversent `escapejs`, et ne sont plus écrits en clair dans le
+code.
+
+Compétence visée : C17 (épreuve E4)
+Compétence concernée : C21 (E5)
+« Le code n'a pas pu être exécuté. » était inséré tel quel dans une chaîne
+JavaScript à guillemets simples. L'apostrophe française refermait la chaîne :
+le script entier cessait d'être analysable, et TOUT ce qu'il contenait
+disparaissait — dont la mise en cellules des blocs de code du cours. Prism
+coloriait quand même, puisqu'il est chargé à part : le texte paraissait
+coloré mais nu, sans cadre ni en-tête, et rien dans la page ne disait
+pourquoi.
+{% endcomment %}
+{% comment %}
+L'animateur de Koda. Il n'était chargé que par le panneau flottant, que cette
+page écarte pour ne pas afficher deux Koda : sans cette ligne, `window.Koda`
+est indéfini et les changements d'état de la page ne font rien.
+{% endcomment %}
+<script src="{% static 'js/koda.js' %}" defer></script>
+
+{% include 'components/blocs_de_code.html' %}
+
+
+<style>
+.cours-rendu pre > code,
+.cours-rendu code[class*="language-"] {
+    text-shadow: none !important;
+}
+.code-output {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    background: #161B22;
+    border-top: 1px solid #30363D;
+    color: #7EE787;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+</style>
 {% endblock %}

@@ -59,6 +59,12 @@ def test_les_messages_du_tuteur_restent_dans_le_html_rendu(client, apprenante):
     client.force_login(apprenante)
     page = client.get(reverse("tracker:dashboard"), secure=True).content.decode()
 
+    # Les libellés destinés à JavaScript traversent `escapejs`, qui rend une
+    # apostrophe sous la forme `\u0027`. Le texte est bien là, sous une écriture
+    # que ce test doit savoir lire : chercher l'apostrophe brute reviendrait à
+    # exiger une insertion non échappée, c'est-à-dire le défaut du 02/09/2026.
+    page = page.replace("\\u0027", "'")
+
     for message in ("Le tuteur réfléchit", "La réponse n'a pas pu être obtenue"):
         assert message in page, (
             "« %s » doit rester dans le HTML : Koda ne le porte pas à sa place"
@@ -417,17 +423,37 @@ def test_le_quiz_solo_n_annonce_plus_son_resultat_par_une_boite_native():
     Une boîte de dialogue native ne se met pas en forme, échappe aux catalogues
     de traduction, et disparaît au clic : l'apprenant n'avait plus rien sous
     les yeux au moment où la page se rechargeait.
+
+    L'écran de fin a été refait le 02/09/2026 : il n'est plus une fenêtre
+    modale mais une section qui remplace le quiz dans la page. Les assertions
+    qui décrivaient la fenêtre — `role="dialog"`, `aria-modal` — ont donc été
+    retirées : elles décrivaient une conception, non une garantie. Ce qui reste
+    ici est ce qui vaut quelle que soit la forme retenue.
     """
     gabarit = SOLO.read_text(encoding="utf-8")
-    fin = gabarit[gabarit.index("function showFinalResults"):]
+    fin = gabarit[gabarit.index("function showResults"):]
 
     assert "alert(" not in fin, "le résultat ne doit plus passer par une boîte native"
-    # Les attributs sont posés par `setAttribute`, pas écrits dans le gabarit
-    # de chaîne : c'est la valeur qui compte, pas la forme.
-    assert '"role", "dialog"' in fin and 'aria-modal' in fin, (
-        "l'écran de fin est une fenêtre : elle doit se déclarer comme telle"
+
+
+def test_le_clavier_suit_le_resultat_affiche():
+    """
+    Le focus est amené au titre du résultat.
+
+    Compétence visée : C13 (épreuve E3) — accessibilité
+
+    L'écran de fin remplace le quiz DANS la page. Sans déplacement du focus,
+    qui navigue au clavier ou par lecteur d'écran reste posé sur un contenu qui
+    n'existe plus, et rien n'annonce le résultat. Ce n'est plus une fenêtre :
+    on n'y piège pas le focus, on l'y amène.
+    """
+    gabarit = SOLO.read_text(encoding="utf-8")
+
+    assert 'id="titre-resultats" tabindex="-1"' in gabarit, (
+        "le titre du résultat doit pouvoir recevoir le focus"
     )
-    assert ".focus()" in fin, "le clavier doit arriver dans la fenêtre ouverte"
+    fin = gabarit[gabarit.index("function showResults"):]
+    assert ".focus()" in fin, "le clavier doit être amené au résultat"
 
 
 def test_le_score_reste_du_texte_dans_l_ecran_de_fin_solo():
@@ -437,7 +463,7 @@ def test_le_score_reste_du_texte_dans_l_ecran_de_fin_solo():
     Compétence visée : C13 (épreuve E3) — accessibilité
     """
     gabarit = SOLO.read_text(encoding="utf-8")
-    fin = gabarit[gabarit.index("function showFinalResults"):]
+    fin = gabarit[gabarit.index("function showResults"):]
 
     assert "${score} / ${questions.length}" in fin, "le score doit être écrit"
     assert "${palier}" in fin, "le commentaire de palier doit être écrit"
@@ -452,16 +478,19 @@ def test_le_resultat_part_au_serveur_avant_tout_affichage():
 
     La chaîne d'enregistrement du quiz solo était écrite, joignable, et rien ne
     l'appelait (incident 010). Refaire l'écran de fin est exactement l'occasion
-    de la débrancher à nouveau sans s'en apercevoir.
+    de la débrancher à nouveau sans s'en apercevoir — et la réécriture du
+    02/09/2026 avait en effet inversé l'ordre : l'affichage partait d'abord.
+
+    Ce test lit l'ordre dans le code appelant, pas dans `showResults` : c'est
+    là que la décision se prend.
     """
     gabarit = SOLO.read_text(encoding="utf-8")
-    fin = gabarit[gabarit.index("function showFinalResults"):]
 
-    assert "quiz:submit" in fin, "le résultat doit être envoyé au serveur"
-    assert "keepalive: true" in fin, (
+    assert "quiz:submit" in gabarit, "le résultat doit être envoyé au serveur"
+    assert "keepalive: true" in gabarit, (
         "la requête doit survivre à une navigation"
     )
-    assert fin.index("fetch(") < fin.index("appendChild(ecran)"), (
+    assert gabarit.index("quiz:submit") < gabarit.index("showResults(score"), (
         "l'envoi doit précéder l'affichage"
     )
 
@@ -484,3 +513,66 @@ def test_l_exercice_reussi_fete_sans_interrompre():
     )
     assert 'aria-hidden="true"' in fete
     assert "boite.remove()" in fete, "il passe, il ne s'installe pas"
+
+
+# --- Koda est-il réellement branché là où on le pilote ? ------------------
+
+COURS = Path("apps/courses/templates/courses/page_de_cours.html")
+
+
+def test_la_page_de_cours_charge_l_animateur_qu_elle_pilote():
+    """
+    Piloter les états de Koda suppose son animateur et un élément à animer.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C21 (E5)
+
+    La page appelait `Koda.etat('reflechit')` puis `Koda.etat('parle')` alors
+    que ni `koda.js` ni aucun élément `data-koda` n'existaient ici : `koda.js`
+    n'était chargé que par le panneau flottant, que cette page écarte pour ne
+    pas afficher deux Koda. `window.Koda` était donc indéfini et chaque appel
+    tombait dans le vide — écrit, atteignable, jamais exécuté.
+    """
+    gabarit = COURS.read_text(encoding="utf-8")
+
+    if "Koda.etat(" not in gabarit:
+        pytest.skip("cette page ne pilote plus Koda")
+
+    assert "js/koda.js" in gabarit, "l'animateur doit être chargé par la page"
+    assert "data-koda" in gabarit, "il faut un élément à animer"
+    for attribut in ("data-colonnes", "data-largeur", "data-hauteur"):
+        assert attribut in gabarit, f"{attribut} manque à l'élément animé"
+
+
+def test_la_poignee_de_koda_se_deplace_et_retient_sa_place():
+    """
+    Koda peut être posé ailleurs, à la souris comme au clavier.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C13 (E3) — accessibilité
+
+    Koda se tient en bas à droite, là où les pages posent leur action
+    principale : sur le quiz solo, il masquait « Voir mes résultats ». Réserver
+    un coin sur chaque page serait une règle qu'on oublierait à la page
+    suivante ; c'est donc le personnage qui se déplace.
+
+    Trois garanties, et chacune répare un défaut prévisible :
+    le clavier, sans quoi la fonction n'existerait qu'à la souris ;
+    la position retenue, sans quoi il faudrait le déplacer à chaque page ;
+    le re-bornage à la fenêtre, sans quoi un écran plus petit l'emporterait
+    hors champ, irrattrapable.
+    """
+    composant = PANNEAU.read_text(encoding="utf-8")
+
+    assert "tuteur-position-poignee" in composant, "la position doit être retenue"
+    assert "ArrowLeft" in composant and "ArrowDown" in composant, (
+        "les flèches du clavier doivent déplacer la poignée"
+    )
+    assert "window.addEventListener('resize', replacerLaPoignee)" in composant, (
+        "la poignée doit être ramenée dans la fenêtre quand celle-ci change"
+    )
+    assert "Math.max(0, Math.min(x, window.innerWidth" in composant, (
+        "la position doit être bornée à la fenêtre"
+    )
+    # Un déplacement ne doit pas ouvrir le panneau.
+    assert "if (gesteADeplace) { gesteADeplace = false; return; }" in composant

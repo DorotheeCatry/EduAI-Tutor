@@ -12,7 +12,7 @@
     bascule vers la feuille compilée (décision 034) — les oublier aurait laissé
     le saut d'affichage sur les deux premières pages que voit un visiteur.
     {% endcomment %}
-    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}{{ version_feuille }}">
     <script src="https://unpkg.com/lucide@1.37.0/dist/umd/lucide.js"></script>
     <style>
         body {

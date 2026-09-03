@@ -118,10 +118,37 @@ html { scrollbar-gutter: stable; }
 }
 
 /* Le gras reste du gras : c'est le défaut que corrige ce correctif.
-   L'ancien parseur en transformait chaque occurrence en titre <h3>. */
+   L'ancien parseur en transformait chaque occurrence en titre <h3>.
+
+   Compétence visée : C17 (épreuve E4)
+   Compétence concernée : C13 (E3) — accessibilité
+
+   Une couleur, parce que c'est le gras qui porte les mots-clés d'un cours, et
+   qu'ils doivent être ce qu'on repère en premier. En blanc, ils avaient la
+   couleur du texte courant et se confondaient avec lui dès que la page en
+   comptait plusieurs par paragraphe.
+
+   Choix : #FFD60A, un jaune franc, et non le jaune de Koda lui-même. Motivation
+   mesurée : les teintes du personnage plafonnent à 55 % de saturation — elles
+   sont faites pour un pelage, pas pour signaler. À 96 %, celle-ci se détache
+   d'un coup d'œil au milieu d'un paragraphe, ce qui est exactement sa fonction :
+   les mots-clés doivent se repérer avant d'être lus.
+
+   Choix : une teinte à 50° et non plus haut. Motivation : au-delà de 60°, un
+   jaune vire au citron et s'approche du vert des titres et des boutons. La
+   distinction entre « ce qui structure » et « ce qui compte » se perdrait.
+
+   Contraste mesuré : 10,4:1 sur le fond du panneau (#1F2937), 12,6:1 sur ceux
+   du cours et du chat. Plus du double du seuil AA, et deux fois le rouge
+   #F87171 essayé d'abord (5,3:1) — lisible, donc, avant même d'être visible.
+
+   Le gras est CONSERVÉ. Motivation : la couleur seule ne doit jamais porter
+   une information (WCAG 1.4.1). Un mot-clé reste reconnaissable sans elle —
+   sur une impression en noir et blanc, ou pour qui ne distingue pas le rouge
+   du texte environnant. */
 :is(#course-content, .cours-rendu) strong {
     font-weight: 700;
-    color: #FFFFFF;
+    color: #FFD60A;
 }
 
 :is(#course-content, .cours-rendu) em {
@@ -182,8 +209,19 @@ html { scrollbar-gutter: stable; }
     text-align: left;
 }
 
+/* Le corps du tableau est plus SOMBRE que la page, comme les blocs de code.
+   Compétence visée : C17 (épreuve E4)
+   Seul l'en-tête portait un fond : les cellules restaient transparentes, et le
+   tableau se fondait dans le panneau au point qu'on n'en voyait que le
+   quadrillage. Un tableau est un bloc de contenu, comme un extrait de code ;
+   il se démarque de la même façon, par un aplat plus foncé plutôt que par une
+   bordure plus épaisse. */
+:is(#course-content, .cours-rendu) td {
+    background: #0D1117;
+}
+
 :is(#course-content, .cours-rendu) th {
-    background: #21262D;
+    background: #161B22;
     color: #FFFFFF;
     font-weight: 600;
 }
@@ -316,29 +354,12 @@ html { scrollbar-gutter: stable; }
     border-left-color: #4CAF50;
 }
 
-:is(#course-content, .cours-rendu)-container {
-    scrollbar-width: thin;
-    scrollbar-color: #4B5563 #1F2937;
-    max-height: calc(100vh - 300px);
-}
-
-:is(#course-content, .cours-rendu)-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-:is(#course-content, .cours-rendu)-container::-webkit-scrollbar-track {
-    background: #1F2937;
-    border-radius: 4px;
-}
-
-:is(#course-content, .cours-rendu)-container::-webkit-scrollbar-thumb {
-    background: #4B5563;
-    border-radius: 4px;
-}
-
-:is(#course-content, .cours-rendu)-container::-webkit-scrollbar-thumb:hover {
-    background: #6B7280;
-}
+/* Un jeu de règles grises visait ici `#course-content-container`. L'élan qui a
+ * élargi les sélecteurs à `.cours-rendu` a produit `:is(#course-content,
+ * .cours-rendu)-container`, qui n'est pas un sélecteur valide : les
+ * navigateurs l'écartent, et ces règles n'ont jamais rien coloré. Elles sont
+ * retirées plutôt que réparées — la barre de défilement de cette zone suit
+ * désormais la règle générale, verte comme les autres. */
 
 pre.code-content,
 pre[class*="language-"] {
@@ -372,26 +393,45 @@ pre.code-content > code {
  * Compétence visée : C17 (épreuve E4)
  * Compétence concernée : C13 (E3) — accessibilité
  *
- * Le vert du thème marque les zones qui défilent : le cours, le fil de Koda,
- * l'éditeur et sa sortie. C'est une démarcation utile — on voit d'un coup
- * d'œil ce qui contient plus que ce qu'il montre.
+ * Le vert du thème marque les zones qui défilent. C'est une démarcation utile
+ * — on voit d'un coup d'œil ce qui contient plus que ce qu'il montre.
+ *
+ * Choix : la règle vaut pour TOUTE l'application, et non pour les seules zones
+ * portant une classe. Motivation : une barre de défilement grise au milieu
+ * d'une interface sombre passe pour un élément d'un autre logiciel. Et une
+ * apparence qui dépend d'une classe posée à la main finit toujours par
+ * manquer quelque part — le catalogue l'avait, le reste des pages non.
  *
  * La piste reste sombre et le curseur nettement plus clair : le contraste ne
  * doit pas dépendre de la perception du vert. Et la largeur reste celle par
  * défaut sur Firefox (`thin`), qui ne permet pas de la fixer au pixel —
  * l'apparence diffère donc d'un navigateur à l'autre, ce qui est acceptable
- * pour une barre de défilement, jamais pour un contenu. */
+ * pour une barre de défilement, jamais pour un contenu.
+ *
+ * `scrollbar-color` s'hérite : le poser sur `html` suffit pour Firefox. Les
+ * pseudo-éléments de WebKit, eux, ne s'héritent pas et se posent sur chaque
+ * élément — d'où le sélecteur universel, qui ne coûte rien puisqu'il ne
+ * s'applique qu'aux éléments munis d'une barre. */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #4CAF50 #111827;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track {
+    background: #111827; border-radius: 6px;
+}
+*::-webkit-scrollbar-thumb {
+    background: #4CAF50; border-radius: 6px;
+    border: 2px solid #111827;
+}
+*::-webkit-scrollbar-thumb:hover { background: #66bb6a; }
+*::-webkit-scrollbar-corner { background: #111827; }
+
+/* Conservée comme repère explicite dans les gabarits : elle ne change plus
+ * l'apparence, mais elle dit « cette zone défile », ce que la relecture d'un
+ * gabarit ne devine pas autrement. Elle reste aussi le point d'accroche si une
+ * zone devait un jour se démarquer des autres. */
 .defilement-vert {
     scrollbar-width: thin;
     scrollbar-color: #4CAF50 #111827;
 }
-.defilement-vert::-webkit-scrollbar { width: 10px; height: 10px; }
-.defilement-vert::-webkit-scrollbar-track {
-    background: #111827; border-radius: 6px;
-}
-.defilement-vert::-webkit-scrollbar-thumb {
-    background: #4CAF50; border-radius: 6px;
-    border: 2px solid #111827;
-}
-.defilement-vert::-webkit-scrollbar-thumb:hover { background: #66bb6a; }
-.defilement-vert::-webkit-scrollbar-corner { background: #111827; }

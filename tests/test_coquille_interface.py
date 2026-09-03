@@ -135,3 +135,56 @@ def test_toute_classe_des_gabarits_existe_dans_la_feuille():
         "classes absentes de la feuille — reconstruire (voir README) : %s"
         % sorted(manquantes)
     )
+
+
+# --- Les textes traduits insérés dans du JavaScript ------------------------
+
+#: `{% trans %}` ou `{% blocktrans %}` écrit tel quel entre les balises d'un
+#: script. La forme sûre passe par une variable et `|escapejs`.
+TRADUCTION_EN_CLAIR = re.compile(r"{%\s*(?:trans|translate|blocktrans)\b")
+
+SCRIPT_EN_LIGNE = re.compile(
+    r"<script(?![^>]*\bsrc=)(?![^>]*application/json)[^>]*>(.*?)</script>",
+    re.S | re.I,
+)
+
+
+def test_aucun_texte_traduit_n_est_ecrit_en_clair_dans_un_script():
+    """
+    Un libellé traduit passe par `escapejs` avant d'entrer dans du JavaScript.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C21 (E5) — incidents
+
+    Ce que ce test défend est arrivé le 02/09/2026. La page de cours écrivait :
+
+        sortie.textContent = '{% trans "Le code n'a pas pu être exécuté." %}';
+
+    L'apostrophe française de la traduction refermait la chaîne JavaScript.
+    Le script entier cessait d'être analysable, et **tout** ce qu'il contenait
+    disparaissait — dont la mise en cellules des blocs de code du cours. Rien
+    ne le signalait : Prism, chargé à part, continuait de colorer le texte, si
+    bien que le cours paraissait coloré mais nu. Une erreur muette dans la
+    console d'un navigateur que personne n'ouvre.
+
+    La forme sûre déclare le libellé puis l'échappe :
+
+        {% trans "…" as msg %}
+        <script>const M = {msg: "{{ msg|escapejs }}"};</script>
+
+    Ce contrôle est statique et ne dépend d'aucun outil extérieur : il lit les
+    gabarits, comme le reste de ce fichier.
+    """
+    fautifs = []
+    for gabarit in GABARITS:
+        texte = gabarit.read_text(encoding="utf-8")
+        for script in SCRIPT_EN_LIGNE.findall(texte):
+            for ligne in script.splitlines():
+                if TRADUCTION_EN_CLAIR.search(ligne) and "escapejs" not in ligne:
+                    fautifs.append(f"{gabarit}: {ligne.strip()[:90]}")
+
+    assert fautifs == [], (
+        "traduction insérée sans échappement dans du JavaScript — une "
+        "apostrophe ou un guillemet y casse le script entier :\n  "
+        + "\n  ".join(fautifs)
+    )

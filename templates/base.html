@@ -33,7 +33,12 @@
     Reconstruire après toute modification de gabarit ajoutant une classe :
     voir la section « Feuille de style » du README.
     {% endcomment %}
-    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    {% comment %}
+    Le suffixe de version n'existe qu'en développement : en production, le nom
+    du fichier porte déjà son empreinte. Sans lui, une feuille reconstruite
+    reste invisible — le navigateur garde l'ancienne, servie sous la même URL.
+    {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}{{ version_feuille }}">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@1.37.0/dist/umd/lucide.js"></script>

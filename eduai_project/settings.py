@@ -217,6 +217,7 @@ TEMPLATES = [
                 # Salutation de Koda (C17). Même paresse : les pages qui ne
                 # rendent pas le tuteur ne paient aucune requête.
                 'apps.chat.salutation.contexte_de_koda',
+                'eduai_project.statiques.version_de_la_feuille',
             ],
             'debug': DEBUG,
         },

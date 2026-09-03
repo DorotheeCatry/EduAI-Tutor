@@ -15,6 +15,8 @@ urlpatterns = [
     # L'onglet à trois entrées. Le générateur ci-dessus devient « sujet libre »,
     # une entrée parmi trois, et n'est pas refondu (décision 040).
     path('catalogue/', views.catalogue, name='catalogue'),
+    path('lexique/bibliotheques/', views.lexique_des_bibliotheques,
+         name='lexique_bibliotheques'),
     path('competence/<slug:code>/', views.page_de_cours, name='page_de_cours'),
     path('competence/<slug:code>/fiche/', views.ma_fiche, name='ma_fiche'),
     path('competence/<slug:code>/enrichir/', views.enrichir_la_fiche,
