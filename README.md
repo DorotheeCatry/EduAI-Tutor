@@ -1,246 +1,195 @@
-# 🎓 EduAI Tutor – AI-Powered Educational Platform
+# EduAI Tutor
 
-## 🧭 Project Overview
+Plateforme d'apprentissage du développement Python, à architecture multi-agents
+et récupération documentaire, pour un organisme de formation professionnelle.
 
-EduAI Tutor is an intelligent educational web platform powered by multi-agent AI architecture. It enables learners to efficiently master development skills (Python, Django, FastAPI, etc.) through:
-
-- **Dynamic course generation** with AI
-- **Interactive quizzes** (solo and multiplayer)
-- **Intelligent search** (educational chatbot with RAG)
-- **Personalized revision** based on learning analytics
-- **Code exercises** with automated testing
-
-Built with **Django** and integrates generative AI components via **LangChain + Groq/Ollama**.
+Ce dépôt sert de support d'évaluation pour la certification **RNCP 37827 —
+Développeur en intelligence artificielle** (Simplon, titre 2023). Les chiffres
+qui suivent sont **relevés sur l'installation, datés du 3 septembre 2026**, et
+non repris d'une version antérieure de ce document.
 
 ---
 
-## 🧠 AI Architecture – Specialized Multi-Agent System
+## Démarrer
 
-| AI Agent | Role | Main Function |
-|----------|------|---------------|
-| 🔍 **Researcher** | Information Retriever | Searches and retrieves relevant educational resources using RAG |
-| 📖 **Pedagogue** | Content Synthesizer | Generates structured courses from retrieved resources |
-| 🎯 **Coach** | Exercise Generator | Creates MCQs, code exercises, and practice problems |
-| 📊 **Watcher** | Analytics & Tracking | Monitors performance, detects learning gaps, triggers revision |
+### Prérequis
 
----
+- Python 3.13 et [uv](https://docs.astral.sh/uv/)
+- Docker et Docker Compose — PostgreSQL tourne en conteneur, **port hôte 5433**
+- Une clé `GROQ_API_KEY` pour les agents ; sans elle, l'application se lance et
+  tout ce qui n'appelle pas le modèle fonctionne
+- Ollama, pour l'embarquement du RAG (`mxbai-embed-large`)
 
-## 🚀 Core Features
+### Installation
 
-### 1. 📖 On-Demand Course Generation
-- User selects a topic (e.g., "Python decorators")
-- AI generates complete structured course: introduction, explanations, examples, summary
-- **Agents involved**: Researcher + Pedagogue
-
-### 2. 🔍 Intelligent Search (Educational Chatbot)
-- Users ask questions freely (e.g., "What's the difference between POST and PUT?")
-- AI uses **RAG engine** to search knowledge base and synthesize answers
-- **Agents involved**: Researcher + Pedagogue
-
-### 3. 📝 Interactive Quizzes (Solo & Multiplayer)
-- **Solo Mode**: Individual training with personalized MCQs
-- **Multiplayer Mode**: Real-time Kahoot-style competitions with live leaderboard
-- Dynamic question generation based on topics
-- **Agent involved**: Coach
-
-### 4. 💻 Code Exercises
-- Python programming exercises with automated testing
-- Secure code execution environment
-- Monaco Editor integration for better coding experience
-- Progress tracking and performance analytics
-- **Agent involved**: Coach
-
-### 5. 📊 Performance Analytics
-- Comprehensive learning dashboard
-- Error analysis and response time tracking
-- XP system with levels and achievements
-- Streak tracking and goal setting
-- **Agent involved**: Watcher
-
-### 6. 🔁 Intelligent Revision System
-- Spaced repetition flashcards (Anki-style)
-- Targeted mini-quizzes for identified weak areas
-- Personalized revision recommendations
-- **Agents involved**: Watcher + Coach
-
----
-
-## 🏗️ Project Structure
-
-```
-eduai-tutor/
-│
-├── apps/                           # Django applications
-│   ├── agents/                     # AI multi-agent orchestration
-│   │   ├── agent_orchestrator.py   # Main AI coordinator
-│   │   ├── agent_researcher.py     # RAG-based information retrieval
-│   │   ├── agent_pedagogue.py      # Course content generation
-│   │   ├── agent_coach.py          # Quiz and exercise generation
-│   │   ├── agent_watcher.py        # Learning analytics and tracking
-│   │   ├── prompts/                # AI prompt templates
-│   │   └── tools/                  # LLM utilities and loaders
-│   │
-│   ├── courses/                    # Course generation and management
-│   │   ├── models.py               # Course and section models
-│   │   ├── views.py                # Course generation logic
-│   │   └── templates/              # Course display templates
-│   │
-│   ├── quiz/                       # Quiz system (solo & multiplayer)
-│   │   ├── models.py               # Game rooms, questions, answers
-│   │   ├── views.py                # Quiz logic and multiplayer
-│   │   ├── consumers.py            # WebSocket handlers for real-time
-│   │   └── templates/              # Quiz interfaces
-│   │
-│   ├── exercises/                  # Code exercise system
-│   │   ├── models.py               # Exercise, submission, progress models
-│   │   ├── views.py                # Exercise logic and code execution
-│   │   ├── security.py             # Secure Python code execution
-│   │   └── templates/              # Exercise interfaces
-│   │
-│   ├── chat/                       # Educational AI chatbot
-│   │   ├── views.py                # Chat API and interface
-│   │   └── templates/              # Chat interface
-│   │
-│   ├── users/                      # User management and authentication
-│   │   ├── models.py               # Custom user model with XP system
-│   │   ├── views.py                # Auth views and profile management
-│   │   ├── forms.py                # Custom auth forms
-│   │   └── templates/              # Auth and profile templates
-│   │
-│   ├── tracker/                    # Performance tracking and analytics
-│   │   ├── views.py                # Dashboard and statistics
-│   │   └── templates/              # Analytics dashboard
-│   │
-│   ├── revision/                   # Intelligent revision system
-│   │   ├── views.py                # Revision logic
-│   │   └── templates/              # Revision interfaces
-│   │
-│   └── rag/                        # Vector search and knowledge base
-│       ├── utils.py                # Embedding and vector store utilities
-│       ├── module_loader.py        # Dynamic module loading
-│       └── scripts/                # Data preparation scripts
-│
-├── templates/                      # Global templates
-│   ├── base.html                   # Main layout template
-│   └── components/                 # Reusable UI components
-│       ├── sidebar.html            # Navigation sidebar
-│       ├── tabbar.html             # Dynamic tab management
-│       ├── statusbar.html          # Status and progress bar
-│       └── xp_notification.html    # XP and level-up notifications
-│
-├── theme/                          # Tailwind CSS theme
-│   └── static_src/                 # Tailwind source files
-│
-├── static/                         # Static assets
-│   ├── css/                        # Custom CSS
-│   ├── img/                        # Images
-│   └── koda/                       # Avatar collection
-│
-├── eduai_project/                  # Django project configuration
-│   ├── settings.py                 # Project settings
-│   ├── urls.py                     # URL routing
-│   └── asgi.py                     # ASGI config for WebSockets
-│
-├── pyproject.toml                  # Dependencies (Poetry)
-└── manage.py                       # Django management
-```
-
----
-
-## 🛠️ Technology Stack
-
-### Backend
-- **Framework**: Django 5.2+ with Django REST Framework
-- **Database**: SQLite (development) / PostgreSQL (production)
-- **AI/NLP**: LangChain + Groq API (with Ollama fallback)
-- **Vector Search**: ChromaDB for RAG implementation
-- **Real-time**: Django Channels + Redis for multiplayer features
-
-### Frontend
-- **Templates**: Django templates with Tailwind CSS
-- **Icons**: Lucide Icons
-- **Code Editor**: Monaco Editor for exercises
-- **Syntax Highlighting**: Prism.js
-- **Real-time**: WebSockets for multiplayer quizzes
-
-### AI & Machine Learning
-- **LLM Provider**: Groq (primary) / Ollama (fallback)
-- **Embeddings**: Ollama embeddings for vector search
-- **Code Execution**: Secure Python sandbox with RestrictedPython
-
----
-
-## 🎯 User Journey
-
-1. **Authentication**: User registers/logs in with email or username
-2. **Course Generation**: Choose topic → AI generates comprehensive course
-3. **Interactive Learning**: Read course, ask questions via AI chat
-4. **Practice**: Take quizzes (solo/multiplayer) and solve code exercises
-5. **Analytics**: View progress, identify weak areas
-6. **Revision**: Use intelligent flashcards and targeted practice
-
----
-
-## 🔧 Installation & Setup
-
-### Prerequisites
-- Python 3.12+
-- Node.js 18+ (for Tailwind CSS)
-- Redis (for multiplayer features)
-- Ollama (optional, for local LLM)
-
-### Quick Start
-
-1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd eduai-tutor
+uv sync                     # dépendances, verrouillées par uv.lock
+cp .env.example .env        # puis renseigner les variables ci-dessous
+docker compose up -d postgres
 ```
 
-2. **Install Python dependencies**
+Le `.env` porte au minimum `DJANGO_SECRET_KEY`, `POSTGRES_*`, `GROQ_API_KEY` et
+`OLLAMA_BASE_URL`. Les quotas (`EDUAI_QUOTA_GENERATIONS_PAR_JOUR`) et les
+modèles par agent (`GROQ_MODEL_*`) y sont réglables sans toucher au code.
+
+### Préparer les données
+
 ```bash
-pip install -e .
+# Schéma de l'application
+uv run python manage.py migrate
+
+# Référentiel de compétences et cours de référence
+uv run python manage.py importer_referentiel apps/referentiel/donnees/eduai-2026.json --activer
+uv run python manage.py importer_cours
 ```
 
-3. **Install frontend dependencies**
+Dans l'image de déploiement, ces deux imports sont **joués au démarrage si la
+base est vide** (`docker/entree-web.sh`) : un déploiement neuf sert des données,
+pas des pages vides. La garde évite qu'un redémarrage republie les cours.
+
+### Lancer
+
 ```bash
-cd theme/static_src
-npm install
-cd ../..
+uv run python manage.py runserver          # http://127.0.0.1:8000/
 ```
 
-4. **Environment setup**
-```bash
-cp .env.example .env
-# Add your GROQ_API_KEY to .env
-```
-
-5. **Database setup**
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-```
-
-6. **Start development servers**
-```bash
-# Terminal 1: Django server
-python manage.py runserver
-
-# Terminal 2: Tailwind CSS
-cd theme/static_src
-npm run dev
-
-# Terminal 3: Redis (for multiplayer)
-redis-server
-```
-
-7. **Access the application**
-- Open http://127.0.0.1:8000
-- Register a new account or use superuser credentials
+L'accueil est la page d'arrivée. Le générateur de cours est une entrée de
+l'onglet **Cours**, pas une page à part.
 
 ---
 
-## 🎨 Feuille de style (Tailwind)
+## Ce que fait l'application
+
+**Des cours de référence** — 7 compétences du module Python portent un cours
+publié, composé de 36 parties issues des supports de l'organisme. Chaque
+apprenant en tire **sa fiche** : ses questions, les réponses de Koda, et
+l'attribution des sources qui les ont produites.
+
+**Koda**, le tuteur. Il voit la page lue, répond à la mesure de ce qu'on lui
+demande — une politesse reçoit une phrase, pas un chapitre — et n'enregistre
+dans la fiche que ce qui relève du travail. Il s'anime, s'endort, et se déplace
+où l'apprenant le pose.
+
+**Des quiz**, solo et multijoueur, qui signalent les lacunes sans certifier
+aucun niveau.
+
+**Des exercices**, sous deux formes : l'exercice seul, corrigé par des tests et
+enregistré — il *mesure* ; et le **carnet**, qui enchaîne de 5 à 20 énoncés
+dans une page et s'exporte en `.ipynb` ouvrable dans Jupyter — il *accompagne*.
+
+**Une révision des vraies erreurs** : les questions réellement manquées sont
+reposées telles quelles, avec la réponse donnée pour distracteur. Aucune
+génération n'est consommée — tout est déjà en base — donc elle reste
+disponible quand le quota est épuisé.
+
+---
+
+## Architecture
+
+Cinq ensembles, et deux séparations qui doivent rester lisibles.
+
+| Ensemble | Où | Épreuve |
+|---|---|---|
+| Pipeline de données | `data_pipeline/` | E1 (C1–C4) |
+| API du jeu de données — **DRF** | `apps/api_data/` | E1 (C5) |
+| API du service IA — **FastAPI** | `service_ia/` | E2 (C9) |
+| Application web Django | `apps/` | E4 (C17) |
+| Monitorage du service IA | `apps/monitoring/` | E5 (C20) |
+
+**Deux API, deux frameworks, deux processus.** DRF sert le jeu de données
+depuis le projet Django ; FastAPI sert le service IA à part. La séparation se
+voit sans explication (décision 015).
+
+**Deux bases sur une seule instance PostgreSQL**, port 5433 :
+
+- `eduai_app` — l'application ; schéma géré par les migrations Django ;
+- `eduai_data` — le jeu de données du pipeline ; schéma géré par les scripts de
+  `data_pipeline/load/sql/`.
+
+PostgreSQL n'autorise aucune requête inter-bases sans extension : l'isolation
+est **structurelle**, pas conventionnelle. Le pipeline peut donc purger et
+recharger son corpus sans qu'aucune erreur de ciblage n'atteigne les comptes
+des apprenants (décision 006).
+
+**ChromaDB n'est pas la base de C4.** C'est un artefact aval, produit par
+l'indexation du corpus.
+
+---
+
+## Le jeu de données
+
+Six sources, **cinq types** — le référentiel en exige cinq.
+
+| Source | Type | Documents |
+|---|---|---|
+| S1 Stack Overflow | API REST | 1 273 |
+| S2 Documentation Python | scraping | 234 |
+| S3 Corpus pédagogique | fichier | 380 |
+| S4 Productions des apprenants | base de données | 27 |
+| S5 Dumps Stack Exchange | big data | 4 948 |
+| S6 Documentation des bibliothèques | scraping | 1 005 |
+| **Total actif** | | **7 867** |
+
+Avec **1 211 mots-clés**, **20 544 rattachements**, 11 campagnes d'extraction,
+0 rejet au chargement. L'API en expose **7 758** : les 82 documents de licence
+non vérifiée et les 27 productions d'apprenants sont retenus par
+`redistribution_autorisee`.
+
+**S4 rend peu, et c'est structurel.** Elle exploite le travail des apprenants,
+que le droit à l'effacement supprime avec leur compte. Plus l'effacement est
+effectif, moins cette source a de matière — la décision 045 énonce la tension
+et dit laquelle des deux exigences cède.
+
+### Rejouer le pipeline
+
+```bash
+uv run python -m data_pipeline.orchestrator                 # extraction → transformation → chargement
+uv run python -m data_pipeline.orchestrator --sans-extraction
+```
+
+Chaque étape est **idempotente** : la relancer ne duplique rien. Les requêtes
+vivent dans des fichiers dédiés — **20 fichiers SQL, dont 3 en Spark SQL**, avec
+en en-tête leur objectif, leurs filtres et leurs optimisations.
+
+### Corpus vectoriel
+
+Deux collections, et elles ne répondent pas à la même question :
+
+- `eduai_knowledge_base` — **387 fragments**, les supports de formation ; c'est
+  le contexte des agents ;
+- `eduai_corpus_documentaire` — **24 004 fragments**, la documentation
+  collectée ; c'est ce que la recherche documentaire interroge.
+
+Le corpus n'est **pas** dans le dépôt ni dans les images : il est monté depuis
+un volume persistant et mis à jour hors ligne (décision 023).
+
+---
+
+## Tests et intégration continue
+
+```bash
+DJANGO_DEBUG=False uv run pytest        # 389 tests
+uv run ruff check .
+```
+
+`DJANGO_DEBUG=False` n'est pas décoratif : hors debug, l'application redirige
+tout appel en clair vers HTTPS, et un test qui ne simule pas la requête sécurisée
+n'atteint jamais la vue.
+
+La chaîne GitHub Actions compte **cinq travaux** — qualité, tests, construction
+et contrôle des deux images, publication au registre avec déclenchement du
+déploiement. Elle s'exécute à chaque poussée ; la publication ne se fait que
+depuis `main`.
+
+Un principe traverse la suite : **un test éprouve un effet, jamais une
+intention.** Plusieurs gardes existent parce qu'un défaut est passé : la
+concordance des classes CSS avec la feuille compilée, l'équilibre des balises
+de bloc des gabarits, l'échappement des traductions insérées dans du
+JavaScript, et le fait qu'une page qui pilote Koda le charge effectivement.
+
+---
+
+## Feuille de style (Tailwind)
 
 La feuille est **compilée hors ligne** et versionnée : `static/css/tailwind.css`.
 Les gabarits la lient par `{% static %}` ; aucune page ne charge plus
@@ -283,7 +232,7 @@ classes en Python. Un chemin oublié donne une page sans styles.
 
 ---
 
-## 🌍 Internationalisation (français / anglais)
+## Internationalisation (français / anglais)
 
 L'interface est servie en **français par défaut**, en anglais si le compte le
 demande. La langue vient de `language_preference`, un champ du compte, appliqué
@@ -373,70 +322,42 @@ n'était lu par personne pour l'affichage.
 
 ---
 
-## 🧪 Key Features in Detail
+---
 
-### Multi-Agent AI System
-- **Orchestrator**: Coordinates all AI agents based on user requests
-- **RAG Integration**: Vector search through educational content
-- **Dynamic Content**: Courses and quizzes generated in real-time
-- **Language Flexibility**: Content generated in user's preferred language
+## Où sont les preuves
 
-### Gamification & Progress
-- **XP System**: Earn experience points for all activities
-- **Levels & Titles**: Progress from Beginner to Legend
-- **Streaks**: Daily learning streak tracking
-- **Achievements**: Unlock titles and badges
+| Document | Ce qu'il porte |
+|---|---|
+| [`docs/traceabilite.md`](docs/traceabilite.md) | La matrice des 21 compétences : verdict, preuve, emplacement |
+| [`docs/decisions/`](docs/decisions/) | **45 décisions** d'architecture : contexte, options, choix, raison |
+| [`docs/incidents/`](docs/incidents/) | **18 incidents** : symptôme, cause, correction, garde posée |
+| [`docs/reserves.md`](docs/reserves.md) | **23 réserves** — ce qui est connu, assumé et non corrigé |
+| [`docs/motifs_incidents.md`](docs/motifs_incidents.md) | Les familles de défauts qui reviennent dans ce projet |
+| [`docs/mcd_eduai_data.md`](docs/mcd_eduai_data.md), [`mld`](docs/mld_eduai_data.md), [`dictionnaire`](docs/dictionnaire_donnees_eduai_data.md) | Modélisation de `eduai_data` |
+| [`docs/rgpd_eduai_data.md`](docs/rgpd_eduai_data.md) | Minimisation, conservation, effacement |
+| [`docs/securite_api_donnees.md`](docs/securite_api_donnees.md), [`service IA`](docs/securite_api_service_ia.md) | OWASP API Top 10, point par point |
+| [`docs/chaine_livraison.md`](docs/chaine_livraison.md) | Installation, images, déploiement, et sept contrôles exécutables |
+| [`docs/benchmark_modeles.md`](docs/benchmark_modeles.md) | Comparaison de trois modèles, protocole écrit avant la mesure |
+| [`docs/strategie_tests.md`](docs/strategie_tests.md) | Ce que la suite défend, et ce qu'elle ne couvre pas |
+| [`docs/journal/`](docs/journal/) | Notes de session : ce qui a été fait, et les difficultés |
 
-### Real-time Multiplayer
-- **WebSocket Integration**: Live quiz competitions
-- **Room System**: Create/join quiz rooms with codes
-- **Live Leaderboard**: Real-time score updates
-- **Synchronized Questions**: All players see questions simultaneously
-
-### Secure Code Execution
-- **Sandboxed Environment**: Safe Python code execution
-- **Automated Testing**: Run predefined tests against user code
-- **Performance Metrics**: Execution time and memory tracking
-- **Monaco Editor**: Professional code editing experience
+Les réserves et les incidents sont des documents de première importance pour
+ce dépôt : ils disent ce qui a été raté, ce qui reste imparfait, et pourquoi.
+Un projet sans défauts documentés est un projet dont les défauts ne sont pas
+encore trouvés.
 
 ---
 
-## 🔮 Future Enhancements
+## Licence
 
-- [ ] **Advanced Analytics**: Learning path recommendations
-- [ ] **Social Features**: Study groups and peer collaboration
-- [ ] **Mobile App**: React Native companion app
-- [ ] **More Languages**: Support for JavaScript, Java, C++
-- [ ] **AI Tutoring**: Personalized 1-on-1 AI tutoring sessions
-- [ ] **Integration**: LMS integration (Moodle, Canvas)
-- [ ] **Certification**: Generate completion certificates
+**Tous droits réservés** — voir [`LICENSE`](LICENSE).
 
----
+La consultation et l'**exécution** sont expressément autorisées, y compris pour
+un jury de certification : ce dépôt est fait pour être rejoué. La
+redistribution, l'usage en produit ou en formation, et l'entraînement d'un
+modèle sur ce contenu demandent un accord écrit.
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **LangChain**: For the excellent AI framework
-- **Groq**: For fast LLM inference
-- **Django**: For the robust web framework
-- **Tailwind CSS**: For the beautiful UI components
-- **Monaco Editor**: For the professional code editing experience
-
----
-
-**Built with ❤️ by the EduAI Team**
+Les **contenus tiers** en sont exclus et gardent leur propre licence : le
+corpus collecté est sous CC BY-SA, BSD, MIT, Apache, PostgreSQL et PSF, avec
+leurs obligations d'attribution. Le détail est dans la licence elle-même et
+dans [`docs/provenance-ressources.md`](docs/provenance-ressources.md).
