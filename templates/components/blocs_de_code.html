@@ -12,8 +12,11 @@ sortaient en texte nu. Recopier cent lignes de script dans un second gabarit
 aurait donné deux comportements à tenir pour un seul geste, et ils auraient
 divergé comme les deux chats avaient divergé.
 
-Il attend `competence` dans le contexte : c'est d'elle que dépend l'adresse
-d'exécution.
+`competence` est FACULTATIVE. Quand elle est là, chaque bloc Python reçoit son
+bouton « Run » et s'exécute contre l'adresse de cette compétence. Sans elle —
+sur une page qui affiche du Markdown hors d'un cours — la mise en cellule, la
+coloration et le bouton « Copy » restent, et seul « Run » disparaît : mieux
+vaut un bloc bien présenté sans bouton qu'un bouton qui n'aboutit nulle part.
 {% endcomment %}
 <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
@@ -42,6 +45,10 @@ const MESSAGES = {
 
 <script>
 (function () {
+    // Vide quand la page n'est pas celle d'une compétence : le bouton « Run »
+    // n'est alors pas posé, faute d'adresse où envoyer le code.
+    const ADRESSE_EXECUTION = "{% if competence %}{% url 'courses:executer' competence.code %}{% endif %}";
+
     function decorateCodeBlocks() {
         {% comment %}
         `querySelectorAll`, et non `querySelector`.
@@ -81,7 +88,7 @@ const MESSAGES = {
             const btnGroup = document.createElement('div');
             btnGroup.className = 'flex items-center gap-2';
 
-            if (language === 'python') {
+            if (language === 'python' && ADRESSE_EXECUTION) {
                 const runBtn = document.createElement('button');
                 runBtn.className = 'copy-btn run-btn';
                 runBtn.type = 'button';
@@ -145,7 +152,7 @@ const MESSAGES = {
         }
         sortie.textContent = MESSAGES.attente;
         const jeton = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        fetch('{% url "courses:executer" competence.code %}', {
+        fetch(ADRESSE_EXECUTION, {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': jeton},
             body: new URLSearchParams({code: code, contexte: contexteAvant(container)}),

@@ -148,12 +148,15 @@ def course_generator(request):
             
         return render(request, 'courses/course_detail.html', context)
     
-    # GET request - show form
-    context = {
-        'modules': module_loader.get_available_modules()
-    }
-    print(f"DEBUG: Rendering template with context: {context}")
-    return render(request, 'courses/generate.html', context)
+    # En GET, plus de page à part : la génération est une ENTRÉE de l'onglet
+    # Cours depuis le regroupement des trois vues.
+    #
+    # Compétence visée : C17 (épreuve E4)
+    # Motivation : deux endroits pour le même geste, c'est deux formulaires à
+    # tenir — et celui-ci était en outre la porte d'entrée du produit, ce qu'il
+    # n'a plus à être. La vue garde son POST, qui reste le point d'arrivée du
+    # formulaire du catalogue.
+    return redirect('courses:catalogue')
 
 
 @login_required

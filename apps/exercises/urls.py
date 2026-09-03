@@ -4,6 +4,10 @@ from . import views
 app_name = 'exercises'
 
 urlpatterns = [
+    # Le carnet : plusieurs exercices dans une page, et son export Jupyter.
+    path('carnet/', views.carnet, name='carnet'),
+    path('carnet/telecharger/', views.carnet_ipynb, name='carnet_ipynb'),
+    path('carnet/executer/', views.carnet_executer, name='carnet_executer'),
     path('', views.exercise_list, name='list'),
     path('<int:exercise_id>/', views.exercise_detail, name='detail'),
     path('<int:exercise_id>/submit/', views.submit_code, name='submit'),

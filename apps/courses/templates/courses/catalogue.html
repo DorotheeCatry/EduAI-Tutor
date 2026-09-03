@@ -152,6 +152,22 @@ L'ossature de la page est figée, les cartes défilent (décision 038).
     {# ---------- Générer un cours ---------- #}
     <div id="vue-generer" role="tabpanel" aria-labelledby="onglet-generer" hidden
          class="flex-1 min-h-0 overflow-y-auto defilement-vert">
+        {% comment %}
+        Le compteur de générations restantes vit ici, avec le formulaire qui
+        dépense.
+
+        Compétence visée : C13 (épreuve E3) — le coût est visible avant d'être
+        subi.
+
+        Il était sur la page du générateur, qui n'existe plus comme page à
+        part : la génération est devenue une entrée de cet onglet. Sans ce
+        déplacement, l'apprenant dépenserait une génération sans avoir vu ce
+        qu'il lui en restait.
+        {% endcomment %}
+        <div class="max-w-2xl mb-3">
+            {% include "quotas/_compteur_generations.html" %}
+        </div>
+
         <form method="post" action="{% url 'courses:generator' %}"
               class="max-w-2xl space-y-4 p-4 rounded-lg border border-gray-700 bg-gray-800">
             {% csrf_token %}

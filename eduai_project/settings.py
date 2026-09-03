@@ -336,8 +336,22 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Authentication redirect URLs
+#
+# Compétence visée : C17 (épreuve E4)
+# Compétence concernée : C21 (E5)
+#
+# Ce réglage était écrit DEUX fois dans ce fichier, avec deux valeurs
+# différentes : `/courses/generator/` ici, `/dashboard/` deux cents lignes plus
+# bas. La seconde l'emportait, comme toujours en Python — et elle désigne une
+# route qui n'existe pas. Un apprenant qui se connectait était donc envoyé
+# nulle part, et retombait sur le générateur de cours par les chemins de
+# traverse du navigateur.
+#
+# Une seule définition désormais, et elle mène à l'accueil : un apprenant qui
+# arrive doit d'abord savoir où il en est. Le générateur reste accessible dans
+# l'onglet Cours ; il cesse d'être ce qu'on voit en arrivant.
 LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = '/courses/generator/'
+LOGIN_REDIRECT_URL = '/accueil/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
 
 # Internationalization
@@ -446,9 +460,8 @@ MEDIA_ROOT = Path(os.environ.get("EDUAI_MEDIA_REPERTOIRE", BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/auth/login/'
-LOGIN_URL = '/auth/login/'            # @login_required protection
+# Les trois réglages d'authentification sont définis plus haut, une seule fois.
+# Ce second bloc les redéfinissait — dont un vers une route inexistante.
 
 # --- API REST du jeu de données (C5, Bloc 1) ---
 #

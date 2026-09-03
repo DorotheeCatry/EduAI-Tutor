@@ -21,6 +21,7 @@ import random
 from collections import Counter
 
 from apps.agents.agent_watcher import UserMistake
+from apps.courses.views import render_markdown
 
 #: Au-delà, une séance de révision cesse d'être une séance.
 QUESTIONS_AU_PLUS = 20
@@ -83,6 +84,9 @@ def erreurs_a_rejouer(utilisateur, notions=None, limite=QUESTIONS_AU_PLUS):
         retenues.append({
             "id": erreur.id,
             "question": erreur.question,
+            # Une question de quiz porte souvent un bloc de code : elle est du
+            # Markdown, et s'affichait avec ses accents graves.
+            "question_html": render_markdown(erreur.question),
             "propositions": propositions,
             "bonne_reponse": bonne,
             "notion": intitule,
@@ -117,7 +121,9 @@ def corriger(utilisateur, reponses):
         if erreur is None:
             continue
         _, intitule = _cle_de_notion(erreur)
-        entree = {"question": erreur.question, "notion": intitule,
+        entree = {"question": erreur.question,
+                  "question_html": render_markdown(erreur.question),
+                  "notion": intitule,
                   "bonne_reponse": (erreur.correct_answer or "").strip(),
                   "choix": choix}
         if choix.strip() == (erreur.correct_answer or "").strip():
