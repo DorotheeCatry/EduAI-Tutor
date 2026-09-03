@@ -128,4 +128,11 @@ cours de référence aura changé.
         </section>
     </div>
 </div>
+
+{% comment %}
+La fiche affiche le même Markdown que le cours — celui que Koda a produit —
+avec ses blocs de code. Sans ce fragment, ils y sortaient en texte nu : ni
+cellule, ni en-tête, ni coloration, et aucun bouton pour les exécuter.
+{% endcomment %}
+{% include 'components/blocs_de_code.html' %}
 {% endblock %}

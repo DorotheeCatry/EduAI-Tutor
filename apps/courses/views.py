@@ -463,6 +463,7 @@ def enrichir_la_fiche(request, code):
     en panne. Motivation : un apprenant qui a épuisé ses quinze générations doit
     lire qu'il les a épuisées, pas « une erreur est survenue ».
     """
+    from apps.chat.echange_courant import est_un_echange_courant, repondre
     from apps.courses.models import AjoutDeFiche
     from apps.courses.services import enrichir
     from apps.quotas.service import QuotaDepasse
@@ -474,6 +475,27 @@ def enrichir_la_fiche(request, code):
     section = (request.POST.get("section") or "").strip()
     if not question:
         return JsonResponse({"error": _("Question absente.")}, status=400)
+
+    # Une politesse reçoit une phrase, et rien n'est écrit dans la fiche.
+    #
+    # Compétence visée : C10 (épreuve E3), C17 (E4)
+    # Deux raisons, et la seconde est la plus importante. D'abord la réponse :
+    # « ça va ? » partait dans la recherche documentaire et revenait en cours
+    # complet sur la compétence. Ensuite la fiche : elle doit garder ce que
+    # l'apprenant a cherché à comprendre, pas ses bonjours. Une fiche encombrée
+    # de politesses cesse d'être relue.
+    #
+    # La réponse est assemblée localement : aucun appel au fournisseur, donc
+    # aucun quota consommé et aucun chemin de dépense non compté.
+    if est_un_echange_courant(question):
+        phrase = repondre(question, request.user.username)
+        return JsonResponse({
+            "contenu": phrase,
+            "contenu_html": render_markdown(phrase),
+            "question": question,
+            "sources": [],
+            "enregistre": False,
+        })
 
     try:
         ajout = enrichir(request.user, competence, question,
@@ -491,6 +513,7 @@ def enrichir_la_fiche(request, code):
         # les cours (`safe_mode="escape"`), et non dans le navigateur : la page
         # affichait jusqu'alors les dièses et les accents graves tels quels.
         "contenu_html": render_markdown(ajout.contenu),
+        "enregistre": True,
     })
 
 

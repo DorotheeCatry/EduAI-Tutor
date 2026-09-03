@@ -185,11 +185,21 @@ def enrichir(apprenant, competence, question: str, *, origine: str,
 
     extraits = "\n\n".join(
         (getattr(f, "page_content", "") or "")[:1200] for f in fragments)
+    # La consigne de proportion n'est pas une politesse d'invite : sans elle,
+    # le modèle répondait à « une liste, c'est quoi ? » par un chapitre complet
+    # sur les collections. Une réponse trop longue n'est pas lue, et ce qui
+    # n'est pas lu n'apprend rien.
     invite = _(
         "Compétence : %(competence)s.\n"
         "Demande de l'apprenant : %(question)s\n\n"
         "Documentation de référence :\n%(extraits)s\n\n"
-        "Réponds en français, en t'appuyant sur cette documentation."
+        "Réponds en français, en t'appuyant sur cette documentation.\n"
+        "Règle de longueur : ta réponse doit être PROPORTIONNÉE à la demande. "
+        "Une question courte appelle une réponse courte — quelques phrases et "
+        "un exemple s'il éclaire. Ne rédige un développement en plusieurs "
+        "parties que si l'apprenant demande explicitement un cours ou une "
+        "explication complète. N'ajoute ni plan, ni introduction, ni "
+        "conclusion à une réponse brève."
     ) % {"competence": competence.intitule, "question": question,
          "extraits": extraits}
 
