@@ -51,14 +51,23 @@ choix, et c'est ce qui rend le formulaire utilisable sans voir l'écran.
                     <ul class="space-y-2">
                         {% for entree in resultat.manquees %}
                             <li class="p-3 rounded-lg border border-gray-700 bg-gray-800">
-                                <p class="cours-rendu text-sm text-gray-200">{{ entree.question_html|safe }}</p>
+                                {% comment %}
+                                Un `div`, jamais un `p`.
+
+                                Compétence visée : C17 (épreuve E4)
+                                Le Markdown rendu contient des blocs — des paragraphes, des
+                                listes, des `pre`. Placés dans un `p`, le navigateur ferme le
+                                paragraphe au premier bloc rencontré : le reste se retrouve
+                                hors du conteneur, et perd la classe qui le met en forme.
+                                {% endcomment %}
+                                <div class="cours-rendu text-sm text-gray-200">{{ entree.question_html|safe }}</div>
                                 <p class="text-sm mt-2 text-gray-400">
                                     {% trans "Votre réponse :" %}
-                                    <span class="text-gray-200">{{ entree.choix }}</span>
+                                    <span class="cours-rendu text-gray-200">{{ entree.choix_html|safe }}</span>
                                 </p>
                                 <p class="text-sm text-gray-400">
                                     {% trans "La bonne réponse :" %}
-                                    <span class="text-primary-green">{{ entree.bonne_reponse }}</span>
+                                    <span class="cours-rendu text-primary-green">{{ entree.bonne_reponse_html|safe }}</span>
                                 </p>
                             </li>
                         {% endfor %}
@@ -85,13 +94,19 @@ choix, et c'est ce qui rend le formulaire utilisable sans voir l'écran.
                         <legend class="text-xs text-gray-400 px-1">
                             {{ question.notion }} · {{ question.pose_le|date:"j F Y" }}
                         </legend>
-                        <p class="cours-rendu text-sm text-gray-100 mb-3">{{ question.question_html|safe }}</p>
+                        <div class="cours-rendu text-sm text-gray-100 mb-3">{{ question.question_html|safe }}</div>
+                        {% comment %}
+                        La valeur envoyée est le texte BRUT — c'est lui que le
+                        serveur compare à la bonne réponse. Seul l'affichage est
+                        mis en forme : une proposition comme `type()` s'écrivait
+                        avec ses accents graves à l'écran.
+                        {% endcomment %}
                         {% for proposition in question.propositions %}
                             <label class="flex items-start gap-2 py-1.5 cursor-pointer text-sm text-gray-200">
                                 <input type="radio" name="reponse-{{ question.id }}"
-                                       value="{{ proposition }}"
+                                       value="{{ proposition.valeur }}"
                                        class="mt-1 accent-green-500 focus:outline-none focus:ring-2 focus:ring-white">
-                                <span>{{ proposition }}</span>
+                                <span class="cours-rendu">{{ proposition.html|safe }}</span>
                             </label>
                         {% endfor %}
                     </fieldset>

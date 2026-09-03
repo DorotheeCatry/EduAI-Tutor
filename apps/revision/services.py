@@ -23,6 +23,24 @@ from collections import Counter
 from apps.agents.agent_watcher import UserMistake
 from apps.courses.views import render_markdown
 
+
+def _en_ligne(texte):
+    """
+    Rend un court texte Markdown sans le paragraphe qui l'enveloppe.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Une proposition de réponse tient sur une ligne — souvent un nom de
+    fonction entre accents graves. Rendue telle quelle, elle arrive dans un
+    `<p>`, qui casse l'alignement du bouton radio et de son libellé. On retire
+    donc l'enveloppe, et seulement elle : le contenu, lui, garde sa mise en
+    forme.
+    """
+    rendu = (render_markdown(texte) or "").strip()
+    if rendu.startswith("<p>") and rendu.endswith("</p>") and rendu.count("<p>") == 1:
+        return rendu[3:-4]
+    return rendu
+
 #: Au-delà, une séance de révision cesse d'être une séance.
 QUESTIONS_AU_PLUS = 20
 
@@ -79,7 +97,10 @@ def erreurs_a_rejouer(utilisateur, notions=None, limite=QUESTIONS_AU_PLUS):
         # évidente.
         if not bonne or not donnee or bonne == donnee:
             continue
-        propositions = [bonne, donnee]
+        # La valeur envoyée reste le texte brut — c'est lui que la correction
+        # compare. Seul l'affichage est mis en forme.
+        propositions = [{"valeur": bonne, "html": _en_ligne(bonne)},
+                        {"valeur": donnee, "html": _en_ligne(donnee)}]
         random.shuffle(propositions)
         retenues.append({
             "id": erreur.id,
@@ -121,11 +142,14 @@ def corriger(utilisateur, reponses):
         if erreur is None:
             continue
         _, intitule = _cle_de_notion(erreur)
+        bonne = (erreur.correct_answer or "").strip()
         entree = {"question": erreur.question,
                   "question_html": render_markdown(erreur.question),
                   "notion": intitule,
-                  "bonne_reponse": (erreur.correct_answer or "").strip(),
-                  "choix": choix}
+                  "bonne_reponse": bonne,
+                  "bonne_reponse_html": _en_ligne(bonne),
+                  "choix": choix,
+                  "choix_html": _en_ligne(choix)}
         if choix.strip() == (erreur.correct_answer or "").strip():
             corrigees.append(entree)
         else:

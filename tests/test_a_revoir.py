@@ -230,3 +230,67 @@ def test_le_camembert_dit_les_memes_nombres_que_son_tableau(client, apprenant_av
     assert "Où se concentrent vos erreurs" in page
     assert "<th scope=\"col\"" in page, "le tableau porte des en-têtes"
     assert competence.intitule in page
+
+
+@pytest.mark.django_db
+def test_la_question_n_est_jamais_enfermee_dans_un_paragraphe(client, apprenant_avec_erreurs):
+    """
+    Le Markdown rendu vit dans un `div`, jamais dans un `p`.
+
+    Compétence visée : C17 (épreuve E4)
+    Compétence concernée : C21 (E5)
+
+    Une question de quiz contient des paragraphes et des blocs de code. Placée
+    dans un `<p>`, le navigateur ferme le paragraphe au premier bloc : le reste
+    du contenu se retrouve HORS du conteneur et perd la classe qui le met en
+    forme. Le rendu paraissait alors « toujours cassé » alors que le Markdown
+    était correctement converti.
+    """
+    from apps.agents.agent_watcher import UserMistake
+
+    utilisateur, _ = apprenant_avec_erreurs
+    UserMistake.objects.filter(user=utilisateur).update(
+        user_answer="Ma réponse fausse",
+        question="## Titre\n\nUn paragraphe.\n\n```python\nprint('x')\n```",
+    )
+    client.force_login(utilisateur)
+
+    page = client.get(reverse("revision:mes_erreurs"), secure=True).content.decode()
+
+    assert '<p class="cours-rendu' not in page, (
+        "un bloc de Markdown ne tient pas dans un paragraphe"
+    )
+    assert '<div class="cours-rendu' in page
+    assert "<h2>Titre</h2>" in page and "language-python" in page
+
+
+@pytest.mark.django_db
+def test_une_proposition_s_affiche_mise_en_forme_et_s_envoie_brute(client, apprenant_avec_erreurs):
+    """
+    Ce qui s'affiche est mis en forme ; ce qui part est le texte d'origine.
+
+    Compétence visée : C17 (épreuve E4)
+
+    Les réponses d'un quiz portent souvent un nom de fonction entre accents
+    graves. Affichées telles quelles, les accents restaient à l'écran. Mais la
+    valeur envoyée doit rester le texte brut : c'est lui que la correction
+    compare à la bonne réponse, et le mettre en forme ferait échouer toute
+    réponse juste.
+    """
+    from apps.agents.agent_watcher import UserMistake
+
+    utilisateur, _ = apprenant_avec_erreurs
+    UserMistake.objects.filter(user=utilisateur).update(
+        correct_answer="`type()`", user_answer="`print()`")
+    client.force_login(utilisateur)
+
+    page = client.get(reverse("revision:mes_erreurs"), secure=True).content.decode()
+
+    assert 'value="`type()`"' in page, "la valeur envoyée reste brute"
+    assert "<code>type()</code>" in page, "l'affichage est mis en forme"
+
+    erreur = UserMistake.objects.filter(user=utilisateur).first()
+    client.post(reverse("revision:mes_erreurs"),
+                {f"reponse-{erreur.id}": "`type()`"}, secure=True)
+    erreur.refresh_from_db()
+    assert erreur.reviewed is True, "la réponse brute doit être reconnue comme juste"
