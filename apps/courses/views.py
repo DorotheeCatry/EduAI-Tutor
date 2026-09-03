@@ -423,10 +423,20 @@ def ma_fiche(request, code):
         .order_by("-completed_at", "-first_attempt_at")
     )
 
+    # Les ajouts sont du Markdown — titres, listes, blocs de code — et la fiche
+    # les affichait avec `linebreaks`, qui ne convertit que les sauts de ligne :
+    # l'apprenant relisait ses propres réponses avec leurs dièses et leurs
+    # accents graves. Le rendu passe par le convertisseur des cours
+    # (décision 002), posé sur chaque ajout plutôt que dans une structure à
+    # part : le gabarit garde ainsi l'objet, ses dates et ses sources.
+    ajouts = list(fiche.ajouts.all())
+    for ajout in ajouts:
+        ajout.contenu_html = render_markdown(ajout.contenu)
+
     return render(request, "courses/fiche.html", {
         "competence": competence,
         "fiche": fiche,
-        "ajouts": fiche.ajouts.all(),
+        "ajouts": ajouts,
         "cours": cours_actif(competence),
         "exercices": exercices,
     })
@@ -506,11 +516,21 @@ def executer_du_code(request, code):
     Choix : aucun quota. Motivation : l'exécution est locale, elle n'appelle
     aucun service facturé. Le quota compte des générations, pas des essais.
     """
+    from apps.courses.transcription import transcrire
     from apps.exercises.security import SecurePythonExecutor
 
     extrait = (request.POST.get("code") or "").strip()
     if not extrait:
         return JsonResponse({"error": _("Aucun code à exécuter.")}, status=400)
+
+    # Choix : la conversion est appliquée à TOUT extrait, sans que l'appelant
+    # ait à la demander. Motivation : les supports du cours sont écrits comme
+    # des sessions au prompt (`>>> furniture[0]`), qui ne s'exécutent pas — le
+    # bouton « Run » de ces blocs échouait donc toujours. Et un apprenant qui
+    # recopie un de ces extraits dans la cellule tombe sur le même mur. La
+    # conversion ne touche que ce qui porte un `>>>`, une amorce qui n'existe
+    # dans aucun script valide : un code ordinaire ressort inchangé.
+    extrait = transcrire(extrait)
 
     resultat = SecurePythonExecutor().execute_code(extrait)
     return JsonResponse({

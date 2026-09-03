@@ -624,3 +624,32 @@ def test_les_zones_d_essai_se_redimensionnent(client, competence, apprenante):
     assert "min-h-" in editeur and "min-h-" in sortie, (
         "une hauteur minimale empêche de les réduire à rien par mégarde"
     )
+
+
+@pytest.mark.django_db
+def test_la_fiche_affiche_les_ajouts_mis_en_forme(client, apprenante, competence):
+    """
+    Ce que l'apprenante relit dans sa fiche est mis en forme, pas en Markdown brut.
+
+    Compétence visée : C17 (épreuve E4)
+
+    La fiche affichait le contenu avec `linebreaks`, qui ne convertit que les
+    sauts de ligne : les titres restaient précédés de leurs dièses et les blocs
+    de code encadrés de leurs accents graves. La réponse de Koda est du
+    Markdown ; elle se rend comme le cours.
+    """
+    fiche = fiche_de(apprenante, competence)
+    AjoutDeFiche.objects.create(
+        fiche=fiche, question="Comment lire une liste ?",
+        contenu="## Les listes\n\nUn exemple :\n\n```python\nprint('a')\n```\n",
+        origine=AjoutDeFiche.A_LA_DEMANDE,
+    )
+    client.force_login(apprenante)
+
+    page = client.get(reverse("courses:ma_fiche", args=[competence.code]),
+                      secure=True).content.decode()
+
+    assert "<h2>Les listes</h2>" in page, "les titres doivent être des titres"
+    assert "language-python" in page, "les blocs de code doivent être des blocs"
+    assert "## Les listes" not in page, "le Markdown brut ne doit plus s'afficher"
+    assert "cours-rendu" in page, "la feuille des cours doit s'appliquer"

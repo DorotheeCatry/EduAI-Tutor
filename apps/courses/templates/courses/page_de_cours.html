@@ -168,19 +168,26 @@ avant de lire, pas après.
                 </div>
 
                 {% comment %}
-                Le fil des échanges est un carré plus sombre que le panneau —
-                le même fond que les blocs de code du cours (#0D1117).
+                Le fil des échanges est un bleu foncé, à peine détaché du
+                panneau qui l'entoure.
 
                 Compétence visée : C17 (épreuve E4)
-                Choix : démarquer la conversation par le fond plutôt que par un
-                trait de couleur. Motivation : la zone où l'on lit doit se
-                distinguer de la zone où l'on agit, et un aplat sombre le dit
-                sans ajouter de bordure de plus dans une interface qui en a
-                déjà beaucoup.
+                Compétence concernée : C13 (E3) — accessibilité
+
+                Choix : #0F172A, contre le #1F2937 du panneau. Motivation :
+                démarquer la conversation par le fond plutôt que par un trait
+                de couleur — la zone où l'on lit doit se distinguer de celle où
+                l'on agit, sans ajouter une bordure de plus dans une interface
+                qui en a déjà beaucoup. L'écart doit rester léger : un aplat
+                trop noir découperait la colonne en deux blocs étrangers.
+
+                Le texte reste en gris clair sur ce fond : le contraste tient
+                largement au-delà du seuil AA, et ne dépend pas de la
+                perception du bleu.
                 {% endcomment %}
                 <div id="koda-echanges"
                      class="flex-1 min-h-0 overflow-y-auto p-3 rounded-lg border border-gray-700 space-y-3 text-sm defilement-vert"
-                     style="background:#0D1117"
+                     style="background:#0F172A"
                      role="log" aria-live="polite" aria-labelledby="titre-koda"></div>
 
                 <form id="koda-formulaire" class="mt-2 flex gap-2 flex-shrink-0">

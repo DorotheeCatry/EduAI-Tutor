@@ -91,7 +91,15 @@ cours de référence aura changé.
                             {% endif %}
                             {% if ajout.niveau_vise %}· {% blocktrans with n=ajout.niveau_vise %}niveau {{ n }}{% endblocktrans %}{% endif %}
                         </p>
-                        <div class="text-sm text-gray-200">{{ ajout.contenu|linebreaks }}</div>
+                        {% comment %}
+                        La réponse de Koda est du Markdown, rendue en HTML par
+                        le serveur (`markdown2`, `safe_mode="escape"`) et
+                        affichée avec la feuille des cours : mêmes titres,
+                        mêmes listes, mêmes blocs de code. `linebreaks` ne
+                        convertissait que les sauts de ligne, et laissait les
+                        dièses et les accents graves à l'écran.
+                        {% endcomment %}
+                        <div class="cours-rendu text-sm text-gray-200">{{ ajout.contenu_html|safe }}</div>
 
                         {% if ajout.sources %}
                             <p class="text-[11px] text-gray-400 mt-2">
