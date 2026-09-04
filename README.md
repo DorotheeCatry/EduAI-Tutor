@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="static/img/koda/animations/SALUTE.gif" alt="Koda vous salue de la main" width="220">
+<img src="static/img/koda/animations/SALUTE.gif" alt="Koda vous salue de la main" width="440">
 
 # Koda · EduAI Tutor
 
@@ -33,7 +33,7 @@ et récupération documentaire, pour un organisme de formation professionnelle.
 
 <table>
 <tr>
-<td width="130" align="center"><img src="static/koda/koda_base.png" width="100" alt="Koda au repos"></td>
+<td width="260" align="center"><img src="static/koda/koda_base.png" width="200" alt="Koda au repos"></td>
 <td>
 
 **Il lit la page avec vous.** Koda voit le cours ouvert et répond dessus — pas
@@ -50,14 +50,15 @@ quand on lui parle. Et si sa place vous gêne, attrapez-le et posez-le ailleurs.
 </table>
 
 <div align="center">
-<img src="static/koda/koda_glassesgirl.png" width="72" alt="">
-<img src="static/koda/koda_magician.png" width="72" alt="">
-<img src="static/koda/koda_inlove.png" width="72" alt="">
-<img src="static/koda/koda_unicorn.png" width="72" alt="">
-<img src="static/koda/koda_inspector.png" width="72" alt="">
-<img src="static/koda/koda_clown.png" width="72" alt="">
-<img src="static/koda/koda_princess.png" width="72" alt="">
-<img src="static/koda/koda_peace.png" width="72" alt="">
+<img src="static/koda/koda_glassesgirl.png" width="144" alt="">
+<img src="static/koda/koda_magician.png" width="144" alt="">
+<img src="static/koda/koda_inlove.png" width="144" alt="">
+<img src="static/koda/koda_unicorn.png" width="144" alt="">
+<br>
+<img src="static/koda/koda_inspector.png" width="144" alt="">
+<img src="static/koda/koda_clown.png" width="144" alt="">
+<img src="static/koda/koda_princess.png" width="144" alt="">
+<img src="static/koda/koda_peace.png" width="144" alt="">
 
 <sub><strong>Vingt avatars</strong> — chacun choisit le sien.</sub>
 </div>
@@ -110,7 +111,7 @@ l'onglet **Cours**, pas une page à part.
 
 <table>
 <tr>
-<td width="120" align="center"><img src="static/koda/koda_glassesboy.png" width="90" alt=""></td>
+<td width="240" align="center"><img src="static/koda/koda_glassesboy.png" width="180" alt=""></td>
 <td>
 
 ### 📚 Des cours, et votre fiche
@@ -123,7 +124,7 @@ qui les ont produites.
 </td>
 </tr>
 <tr>
-<td align="center"><img src="static/koda/koda_stunned.png" width="90" alt=""></td>
+<td align="center"><img src="static/koda/koda_stunned.png" width="180" alt=""></td>
 <td>
 
 ### 🎯 Des quiz, solo et à plusieurs
@@ -134,7 +135,7 @@ et on joue ensemble — le podium reste à l'écran jusqu'à ce qu'on le quitte.
 </td>
 </tr>
 <tr>
-<td align="center"><img src="static/koda/koda_coffeefirst.png" width="90" alt=""></td>
+<td align="center"><img src="static/koda/koda_coffeefirst.png" width="180" alt=""></td>
 <td>
 
 ### 💻 Des exercices, sous deux formes
@@ -147,7 +148,7 @@ gestes.
 </td>
 </tr>
 <tr>
-<td align="center"><img src="static/koda/koda_worried.png" width="90" alt=""></td>
+<td align="center"><img src="static/koda/koda_worried.png" width="180" alt=""></td>
 <td>
 
 ### 🔁 Revoir ses vraies erreurs
@@ -275,7 +276,7 @@ depuis `main`.
 
 <table>
 <tr>
-<td width="110" align="center"><img src="static/koda/koda_inspector.png" width="85" alt=""></td>
+<td width="220" align="center"><img src="static/koda/koda_inspector.png" width="170" alt=""></td>
 <td>
 
 Un principe traverse la suite : **un test éprouve un effet, jamais une
@@ -446,7 +447,7 @@ n'était lu par personne pour l'affichage.
 
 <table>
 <tr>
-<td width="110" align="center"><img src="static/koda/koda_worried.png" width="85" alt=""></td>
+<td width="220" align="center"><img src="static/koda/koda_worried.png" width="170" alt=""></td>
 <td>
 
 Les **réserves** et les **incidents** sont des documents de première importance
@@ -477,7 +478,7 @@ licence elle-même et dans
 
 <div align="center">
 <br>
-<img src="static/img/koda/animations/JUMPING.gif" width="150" alt="Koda saute de joie">
+<img src="static/img/koda/animations/JUMPING.gif" width="300" alt="Koda saute de joie">
 
 <sub>Illustrations de Koda — <strong>Camille Catry</strong>, cédées pour cet usage.</sub>
 <br><br>
