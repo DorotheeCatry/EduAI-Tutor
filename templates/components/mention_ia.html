@@ -1,0 +1,30 @@
+{% load i18n %}
+{% comment %}
+La mention d'interaction avec une intelligence artificielle.
+
+Compétence visée : C6 (épreuve E2) — impact concret de la veille réglementaire
+Compétences concernées : C17 (E4) — interface ; C13 (E3) — accessibilité
+
+Obligation de l'article 50 du règlement (UE) 2024/1689, applicable depuis le
+2 août 2026 : une personne doit être informée qu'elle interagit avec un système
+d'intelligence artificielle, au plus tard lors de la première interaction. Le
+tuteur est un agent conversationnel, donc à risque limité — la qualification est
+établie dans docs/veille/2026-08-28-ai-act-education.md et dans la décision 046.
+
+Choix : un fragment inclus plutôt que le même texte recopié dans chaque gabarit.
+Motivation : le tuteur a deux surfaces de conversation — le panneau flottant et
+la colonne de la page de cours. Recopier la phrase, c'est accepter qu'un jour
+l'une des deux soit modifiée et pas l'autre. Ici, les deux ne peuvent pas
+diverger, et le catalogue de traduction ne porte qu'une entrée.
+
+Choix : une icône ET un texte, comme le bandeau du cours provisoire. Une icône
+seule ne dit rien à un lecteur d'écran, ni à qui ne connaît pas le pictogramme.
+
+Choix : aucune condition autour de la mention. Aucun réglage de compte, aucun
+contexte de page ne peut la faire disparaître — un affichage que l'on peut
+désactiver n'est pas une information, c'est une option.
+{% endcomment %}
+<p class="flex items-start gap-1.5 text-xs text-gray-400" data-mention-ia>
+    <i data-lucide="sparkles" class="w-3 h-3 flex-shrink-0 mt-0.5" aria-hidden="true"></i>
+    <span>{% trans "Koda est une intelligence artificielle. Ses réponses sont générées automatiquement et peuvent comporter des erreurs : vérifiez-les avant de vous en servir." %}</span>
+</p>
