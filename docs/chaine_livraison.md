@@ -627,7 +627,7 @@ démarrage, il ne bascule pas sur une valeur permissive.
 | `EDUAI_DATA_USER`, `EDUAI_DATA_PASSWORD` | `eduai_lecture` et son mot de passe | L'API du jeu de données ne répond plus |
 | `GROQ_API_KEY` | clé du fournisseur | Bascule sur le repli local, indisponible ici |
 | `OLLAMA_BASE_URL` | adresse interne du serveur d'embarquement | Aucune recherche RAG n'aboutit |
-| `EDUAI_QUOTA_GENERATIONS_PAR_JOUR` | `5` | Valeur par défaut prudente |
+| `EDUAI_QUOTA_GENERATIONS_PAR_JOUR` | `15` | Repli sur 15, la valeur du code. **Le tableau portait `5`**, valeur d'avant le changement d'unité comptée : le plafond compte désormais un appel au modèle et non une génération de contenu, et trois questions sur un exercice épuisaient un plafond de cinq. Voir `apps/quotas/service.py` |
 | `EDUAI_PLAFOND_GENERATIONS_PAR_JOUR` | `200` | Valeur par défaut prudente |
 | `MONITORAGE_REPERTOIRE` | chemin sur volume persistant | Les traces disparaîtraient à chaque redéploiement |
 | `EDUAI_MEDIA_REPERTOIRE` | `/app/media`, sur volume persistant | Les photos de profil disparaîtraient à chaque redéploiement |
