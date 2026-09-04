@@ -23,7 +23,7 @@ et récupération documentaire, pour un organisme de formation professionnelle.
 ---
 
 > Ce dépôt sert de support d'évaluation pour la certification **RNCP 37827 —
-> Développeur en intelligence artificielle** (Simplon, titre 2023). Les chiffres
+> Développeur en intelligence artificielle** (Simplon, titre 2026). Les chiffres
 > qui suivent sont **relevés sur l'installation**, datés du 4 septembre 2026, et
 > non repris d'une version antérieure de ce document.
 
@@ -50,15 +50,14 @@ quand on lui parle. Et si sa place vous gêne, attrapez-le et posez-le ailleurs.
 </table>
 
 <div align="center">
-<img src="static/koda/koda_glassesgirl.png" width="144" alt="">
-<img src="static/koda/koda_magician.png" width="144" alt="">
-<img src="static/koda/koda_inlove.png" width="144" alt="">
-<img src="static/koda/koda_unicorn.png" width="144" alt="">
+<img src="static/koda/koda_glassesgirl.png" width="288" alt="">
+<img src="static/koda/koda_magician.png" width="288" alt="">
 <br>
-<img src="static/koda/koda_inspector.png" width="144" alt="">
-<img src="static/koda/koda_clown.png" width="144" alt="">
-<img src="static/koda/koda_princess.png" width="144" alt="">
-<img src="static/koda/koda_peace.png" width="144" alt="">
+<img src="static/koda/koda_unicorn.png" width="288" alt="">
+<img src="static/koda/koda_clown.png" width="288" alt="">
+<br>
+<img src="static/koda/koda_princess.png" width="288" alt="">
+<img src="static/koda/koda_peace.png" width="288" alt="">
 
 <sub><strong>Vingt avatars</strong> — chacun choisit le sien.</sub>
 </div>
@@ -482,5 +481,5 @@ licence elle-même et dans
 
 <sub>Illustrations de Koda — <strong>Camille Catry</strong>, cédées pour cet usage.</sub>
 <br><br>
-<sub><strong>Dorothée Catry</strong> · RNCP 37827 · Simplon, titre 2023</sub>
+<sub><strong>Dorothée Catry</strong> · RNCP 37827 · Simplon, titre 2026</sub>
 </div>

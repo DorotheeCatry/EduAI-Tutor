@@ -12,7 +12,7 @@ détermine le périmètre RGPD retenu et l'absence de tout dispositif de
 protection des mineurs.
 
 Ce dépôt sert de support d'évaluation pour la certification RNCP 37827
-« Développeur en intelligence artificielle » (Simplon, titre 2023).
+« Développeur en intelligence artificielle » (Simplon, titre 2026).
 
 **Échéances fermes :**
 - Rendu des 5 livrables écrits : **4 septembre, 17h**
