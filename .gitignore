@@ -228,6 +228,11 @@ data/*
 data/contents/*
 !data/contents/courses/
 !data/contents/index/
+# Le manifeste de provenance : quelques kilo-octets qui disent, fichier par
+# fichier, d'où vient le corpus et sous quelle licence. C'est la preuve de la
+# discipline de licence (C4), et elle n'a de valeur que si elle est lisible
+# depuis le dépôt — les ressources qu'elle décrit, elles, restent dehors.
+!data/contents/provenance.json
 
 KodaTheme
 KodaTheme/
