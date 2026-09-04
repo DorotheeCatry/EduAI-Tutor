@@ -50,7 +50,7 @@ Conditions de réutilisation des contenus collectés. Une licence couvre plusieu
 
 | Colonne | Type | Clé | Obligatoire | Description |
 |---|---|---|---|---|
-| `code_licence` | `VARCHAR(20)` | PK | oui | Identifiant court de la licence : CC-BY-SA-4.0, PSF, PROPRIETAIRE, A_VERIFIER. |
+| `code_licence` | `VARCHAR(20)` | PK | oui | Identifiant court de la licence. Douze valeurs au 04/09/2026, dont `CC-BY-SA-4.0`, `PSF`, `MIT`, `DATACAMP` — redistribution interdite — et `SANS-LICENCE`, pour un fichier dont le dépôt d'origine n'en déclare aucune. |
 | `libelle` | `VARCHAR(150)` | — | oui | Intitulé complet de la licence. |
 | `url_texte` | `VARCHAR(255)` | — | non | Adresse du texte de référence. Nul pour les licences sans texte publié. |
 | `redistribution_autorisee` | `BOOLEAN` | — | oui | Faux interdit toute diffusion du contenu à un utilisateur, indexation RAG comprise : afficher un contenu est une redistribution. |

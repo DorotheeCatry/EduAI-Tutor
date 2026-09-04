@@ -207,7 +207,7 @@ conditions de réutilisation sont des données à part entière, pas une étique
 
 | Attribut | Nature | Rôle |
 |---|---|---|
-| `code_licence` | texte court | `CC-BY-SA-4.0`, `PSF`, `PROPRIETAIRE`, `A_VERIFIER` |
+| `code_licence` | texte court | `CC-BY-SA-4.0`, `PSF`, `MIT`, `DATACAMP`, `SANS-LICENCE`… |
 | `libelle` | texte | Intitulé complet |
 | `url_texte` | texte | Texte de référence de la licence |
 | `redistribution_autorisee` | booléen | Répond à : ce document peut-il sortir du projet ? |

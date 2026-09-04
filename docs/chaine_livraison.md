@@ -384,7 +384,7 @@ déclencheur à la § 1.1.
 
 ### 4.3 Ce qui se saute, et pourquoi cela se voit
 
-Les tests marqués `corpus` se sautent en intégration : reconstituer 6 836
+Les tests marqués `corpus` se sautent en intégration : reconstituer 7 868
 documents demanderait les dumps et plusieurs heures. **Le saut apparaît dans le
 récapitulatif de la chaîne**, et il est motivé ici. Un test sauté en silence
 serait un test absent.
@@ -773,6 +773,43 @@ Sans effet sur les deux services, qui se connectent en superutilisateur — ce
 qui est en soi une réserve, la huitième.
 
 ### 7.4 Transférer le corpus vectoriel
+
+### La purge par ancienneté
+
+Chaque source déclare une durée de conservation — 365 jours pour les sources
+publiques, **90 jours pour les productions d'apprenants**, sans terme pour le
+corpus pédagogique. La purge supprime les documents qui la dépassent, et les
+cascades du schéma emportent leurs spécialisations, leurs collectes et leurs
+rattachements.
+
+```bash
+uv run python -m data_pipeline.load.purge --a-blanc   # compte, n'écrit pas
+uv run python -m data_pipeline.load.purge             # supprime
+```
+
+**Toujours à blanc d'abord.** La commande dénombre par source avant de
+supprimer, et **n'engage la transaction que si la base a supprimé exactement
+ce qui avait été annoncé** : un écart annule tout. C'est la leçon de
+l'incident 001 — un chargement s'était annoncé réussi sur une base restée
+vide, parce qu'il comptait ce qu'il croyait avoir écrit.
+
+**L'ordonnancement relève de l'hébergeur, pas du dépôt.** Le dépôt fournit la
+commande ; il ne décide pas quand elle passe. Chez Railway, une tâche planifiée
+sur le service de l'application suffit :
+
+```
+0 3 * * *   cd /app && python -m data_pipeline.load.purge
+```
+
+Choix : ne pas embarquer d'ordonnanceur. Motivation : un `cron` dans l'image
+s'exécuterait dans chaque conteneur, y compris ceux qu'on lance pour une
+démonstration ou un test, et supprimerait des données depuis un environnement
+qui n'était pas censé écrire. La planification appartient à l'endroit qui sait
+combien d'exemplaires tournent.
+
+**État au 4 septembre 2026 : aucun document n'est échu.** Le corpus a dix
+jours, la plus courte conservation est de 90. La commande le dit et ne fait
+rien — c'est le comportement attendu, et il est vérifié par les tests.
 
 ### Le volume des médias
 

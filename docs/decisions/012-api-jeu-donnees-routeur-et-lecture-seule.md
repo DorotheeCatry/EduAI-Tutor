@@ -65,7 +65,7 @@ démonstration est venue d'elle-même — `migrate --database=eduai_data` a ét�
 refusé par PostgreSQL *avant* que le routeur ne soit consulté, Django créant sa
 table de suivi des migrations sans passer par `allow_migrate`.
 
-Le rôle est créé par `data_pipeline/load/sql/06_role_lecture.sql`, ne dispose
+Le rôle est créé par `data_pipeline/load/sql/06_role_lecture.sh`, ne dispose
 que du `CONNECT`, de l'`USAGE` sur le schéma et du `SELECT`, et n'a aucun droit
 sur `eduai_app`.
 

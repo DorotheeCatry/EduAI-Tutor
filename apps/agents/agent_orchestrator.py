@@ -120,7 +120,21 @@ class AIOrchestrator:
                 except Exception as e:
                     print(f"⚠️ Tracking disabled (missing table): {e}")
                     # Continue without tracking if tables don't exist yet
-            
+
+            # La séance se clôt ici, où la génération se termine.
+            #
+            # Compétence visée : C20 (épreuve E5) — monitorage
+            # Motivation mesurée : les trois séances `course_generation` de la
+            # base étaient toutes restées ouvertes, donc sans durée. Une
+            # génération a pourtant une fin nette — la réponse est là — à la
+            # différence d'une conversation, dont personne ne sait dire quand
+            # elle s'arrête (réserve 16).
+            if session is not None:
+                try:
+                    self.watcher.end_session(session.id)
+                except Exception as fermeture:
+                    print(f"⚠️ Session non close : {fermeture}")
+
             return {
                 'success': True,
                 'topic': topic,

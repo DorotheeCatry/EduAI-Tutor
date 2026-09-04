@@ -216,10 +216,10 @@ comportement recherché.
 
 | Attribut | Domaine logique | Null | Contrainte |
 |---|---|---|---|
-| `code_licence` | chaîne(20) | non | PK — `CC-BY-SA-4.0`, `PSF`, `PROPRIETAIRE`, `A_VERIFIER` |
+| `code_licence` | chaîne(20) | non | PK — douze valeurs, dont `CC-BY-SA-4.0`, `PSF`, `MIT`, `DATACAMP`, `SANS-LICENCE` |
 | `libelle` | chaîne(150) | non | |
-| `url_texte` | chaîne(255) | **oui** | Nul pour `PROPRIETAIRE` et `A_VERIFIER` |
-| `redistribution_autorisee` | booléen | non | `faux` pour `A_VERIFIER` |
+| `url_texte` | chaîne(255) | **oui** | Nul pour `PROPRIETAIRE` et `SANS-LICENCE` ; renseigné pour `DATACAMP`, qui pointe les conditions de l'éditeur |
+| `redistribution_autorisee` | booléen | non | `faux` pour `DATACAMP`, `SANS-LICENCE` et `PRODUCTION-APPRENANT` |
 | `attribution_requise` | booléen | non | `vrai` pour `CC-BY-SA-4.0` et `PSF` |
 | `mention_copyright` | chaîne(255) | **oui** | Notice fixe imposée par certaines licences |
 

@@ -736,37 +736,41 @@ besoin d'un hôte.
 
 ---
 
-## 16. Une session d'apprentissage reste ouverte après chaque génération de quiz multijoueur
+## 16. Les séances de conversation restent ouvertes, faute de fin identifiable
 
-**Compétence concernée :** C20 (épreuve E5) — données du suivi
-**Statut :** consignée, non corrigée
+**Compétence concernée :** C20 (épreuve E5) — monitorage
+**Statut :** consignée, **partiellement corrigée le 04/09/2026**
 
-La génération d'un quiz ouvre une `LearningSession` de type `quiz` au nom de
-celui qui l'a demandée. En solo, `submit_quiz` la clôt. **En multijoueur, rien
-ne la clôt** : elle garde `end_time` et `score` à vide, indéfiniment.
+Cette réserve visait la génération de quiz multijoueur. Le relevé du 4
+septembre montre qu'elle désignait le mauvais coupable, et qu'elle en taisait
+deux autres :
 
-Elle ne fausse aucun compteur — tous filtrent sur ces deux champs, et la
-correction de l'incident 012 enregistre des sessions distinctes, de type
-`quiz_multijoueur`, pour chaque participant. C'est une ligne pendante, pas une
-mesure fausse.
+| Type de séance | Ouvertes | Total |
+|---|---|---|
+| `chat` | **14** | 14 |
+| `quiz` | 9 | 12 |
+| `quiz_multijoueur` | **0** | 6 |
+| `course_generation` | 3 | 3 |
 
-### Pourquoi ce n'est pas corrigé
+Le multijoueur, seul cité, est désormais le seul entièrement clos — la
+correction de l'incident 012 y a pourvu. La génération de cours est close
+depuis ce jour : une génération a une fin nette, la réponse est là.
 
-Le solo emprunte exactement le même chemin de génération et le clôt
-correctement. Toucher à ce point modifie les deux formes de quiz, dont celle
-dont la chaîne d'enregistrement vient tout juste d'être réparée (incident 010).
-À trois jours du rendu, le risque dépasse le gain : la ligne pendante ne se
-voit sur aucun écran.
+**Restent les conversations, et c'est délibéré.** Une séance de chat n'a pas de
+fin identifiable : l'apprenant ferme l'onglet, revient une heure plus tard,
+reprend le fil. Poser une fin arbitraire — un délai, un changement de page —
+produirait une durée mesurée qui ne mesurerait rien. Mieux vaut une séance sans
+durée, et qui le dit, qu'une durée fabriquée. C'est la règle que l'incident 011
+a imposée au tableau de bord, et elle vaut ici.
 
-### À faire après le 14 septembre
+**Ce que cela n'affecte pas.** Aucune moyenne affichée n'inclut ces séances :
+le score moyen des quiz filtre sur `end_time__isnull=False`, et le temps
+d'étude est annoncé comme non mesuré. Une séance ouverte est un quiz engendré,
+pas un quiz fait — la distinction est dans le code, pas seulement ici.
 
-Décider ce que représente cette session. Deux lectures possibles, et le choix
-n'est pas évident : soit la génération est une activité en soi — auquel cas
-elle doit être close à la génération, avec une durée qui mesure l'attente du
-modèle — soit elle n'en est pas une, et elle ne devrait pas ouvrir de session
-du tout.
-
----
+**Pour lever la réserve**, il faudrait décider ce qu'est la fin d'une
+conversation, puis le mesurer. C'est une question de produit avant d'être une
+question de code.
 
 ## 17. Seize traductions devinées par `makemessages`, inertes mais fausses
 

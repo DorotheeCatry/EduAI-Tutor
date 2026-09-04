@@ -32,25 +32,25 @@ absente.
 
 ## État d'avancement
 
-Relevé du 27/08/2026, en fin de journée. **À lire avant de commencer : ne pas
+Relevé du 04/09/2026. Il vaut pour ce jour-là : un tableau tenu à la main vieillit d'autant plus vite que le projet avance, et la matrice de `docs/traceabilite.md` fait foi en cas d'écart. **À lire avant de commencer : ne pas
 refaire ce qui existe.**
 
 | Chantier | État |
 |---|---|
-| Extracteurs (C1) | **5 sur 5** — S1 API Stack Overflow, S2 scraping doc Python, S3 fichiers, S4 base de données `eduai_app`, S5 big data Spark sur dump Stack Exchange |
-| Base de données (C4) | **En place** — deux bases PostgreSQL, 13 tables, index, contraintes, données de référence chargées, MCD, MLD, dictionnaire, document RGPD |
+| Extracteurs (C1) | **6 extracteurs, 5 types** — S1 API Stack Overflow, S2 scraping doc Python, S3 fichiers, S4 base de données `eduai_app`, S5 big data Spark sur dump Stack Exchange |
+| Base de données (C4) | **En place** — deux bases PostgreSQL, 13 tables et 4 vues, index, contraintes, données de référence chargées, MCD, MLD, dictionnaire, document RGPD |
 | Application web (C17) | **Fonctionnelle**, bascule de SQLite vers `eduai_app` faite |
-| Transformation (C3) | **En place** — `data_pipeline/transform/`, trois modules distincts, rapport de qualité. 6 876 entrants, 40 doublons retirés, 6 836 sortants |
-| Chargement (C4) | **En place** — `data_pipeline/load/chargeur.py`, 6 836 documents en base, 1 211 mots-clés, 20 544 rattachements, 0 rejet |
+| Transformation (C3) | **En place** — `data_pipeline/transform/`, trois modules distincts, rapport de qualité. 7 910 entrants, 42 doublons retirés, 7 868 sortants |
+| Chargement (C4) | **En place** — `data_pipeline/load/chargeur.py`, 7 868 documents en base, 1 211 mots-clés, 20 545 rattachements, 0 rejet |
 | Monitorage du service IA (C20) | **En place et en service** — `apps/monitoring/`, JSON Lines hors base, seuils d'alerte, rapport d'analyse |
-| Journal de décisions (C19) | **15 entrées** dans `docs/decisions/` |
-| Dossiers d'incident (C21) | **3 entrées** dans `docs/incidents/` |
+| Journal de décisions (C19) | **45 entrées** dans `docs/decisions/` |
+| Dossiers d'incident (C21) | **18 entrées** dans `docs/incidents/` |
 | Pipeline complet | **Bout en bout** — extraction (5 sources) → transformation → chargement, rejouable et idempotent à chaque étape |
 | Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL (schéma dans `data_pipeline/load/sql/`, collecte S4 dans `data_pipeline/extract/sql/`), Spark SQL pour S5 |
-| API données DRF (C5) | **En place** — `apps/api_data`, 7 points de terminaison en lecture seule sur `eduai_data`, 6 753 documents exposés, OpenAPI à `/api/docs/` |
+| API données DRF (C5) | **En place** — `apps/api_data`, 7 points de terminaison en lecture seule sur `eduai_data`, 7 759 documents exposés, OpenAPI à `/api/docs/` |
 | API service IA FastAPI (C9) | **En place** — `service_ia/`, 6 points de terminaison, OpenAPI à `/ai/docs`, conteneur déclaré (image non construite) |
-| Tests et CI (C18) | **En place** — 67 tests `pytest`, ruff, et une chaîne GitHub Actions à trois travaux qui échoue visiblement |
-| Matrice de traçabilité | **Absente** |
+| Tests et CI (C18) | **En place** — 394 tests `pytest`, ruff, et une chaîne GitHub Actions à cinq travaux, verte |
+| Matrice de traçabilité | **En place** — `docs/traceabilite.md`, les 21 compétences |
 
 Ce tableau vieillit. En cas de doute, vérifier l'état réel plutôt que le croire.
 
