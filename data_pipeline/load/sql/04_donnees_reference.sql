@@ -85,6 +85,32 @@ INSERT INTO licence (code_licence, libelle, url_texte,
 
     -- Redistribution interdite par précaution, et non par constat : l'origine
     -- du fichier n'est pas tranchée. Le doute se règle en n'affichant pas.
+    -- DataCamp. Vérifiée le 04/09/2026 : les fichiers portent la mention de
+    -- l'éditeur en première page, et ses conditions d'utilisation accordent un
+    -- usage personnel et non commercial en interdisant expressément la
+    -- reproduction et la redistribution.
+    --
+    -- Gratuit à télécharger n'est pas libre de droits : c'est la distinction
+    -- que cette entrée inscrit dans la base, là où `A_VERIFIER` disait
+    -- seulement qu'on ne savait pas.
+    ('DATACAMP',
+     'DataCamp — usage personnel, redistribution interdite',
+     'https://www.datacamp.com/terms-of-use',
+     FALSE, TRUE, '© DataCamp'),
+
+    -- Aucune licence déclarée par l'auteur. Vérifié le 04/09/2026 : le dépôt
+    -- d'origine ne porte pas de fichier LICENSE, et l'API de GitHub rend
+    -- `license: null`. En droit d'auteur, l'absence de licence n'est pas une
+    -- permission : c'est la réservation de tous les droits.
+    --
+    -- Le code est distinct de `A_VERIFIER` à dessein. Le premier dit « on a
+    -- cherché et il n'y a rien » ; le second dit « on n'a pas encore
+    -- cherché ». Les confondre effacerait le travail de vérification.
+    ('SANS-LICENCE',
+     'Aucune licence déclarée par l''auteur — tous droits réservés par défaut',
+     NULL,
+     FALSE, TRUE, NULL),
+
     ('A_VERIFIER',
      'Origine non déterminée, redistribution suspendue jusqu''à vérification',
      NULL,

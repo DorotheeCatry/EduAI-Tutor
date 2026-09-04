@@ -42,6 +42,13 @@ CODES_LICENCE = {
     "PSF License Agreement": "PSF",
     "Propriétaire — autrice du projet": "PROPRIETAIRE",
     "A VERIFIER": "A_VERIFIER",
+    # Vérifié, et sans licence : ce n'est pas la même chose que non vérifié.
+    "Aucune licence déclarée — tous droits réservés": "SANS-LICENCE",
+    # Aides-mémoire de DataCamp, présents dans le corpus local. Gratuits à
+    # télécharger, mais leurs conditions d'utilisation interdisent la
+    # reproduction et la redistribution : la nomenclature porte donc
+    # `redistribution_autorisee = FALSE`, et l'API ne les expose pas.
+    "DataCamp — usage personnel, redistribution interdite": "DATACAMP",
     # Source S4. Redistribution interdite : voir 04_donnees_reference.sql.
     "Production des apprenants — usage interne à l'organisme de formation":
         "PRODUCTION-APPRENANT",

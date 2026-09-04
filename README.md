@@ -124,16 +124,23 @@ Six sources, **cinq types** — le référentiel en exige cinq.
 |---|---|---|
 | S1 Stack Overflow | API REST | 1 273 |
 | S2 Documentation Python | scraping | 234 |
-| S3 Corpus pédagogique | fichier | 380 |
+| S3 Corpus pédagogique | fichier | 381 |
 | S4 Productions des apprenants | base de données | 27 |
 | S5 Dumps Stack Exchange | big data | 4 948 |
 | S6 Documentation des bibliothèques | scraping | 1 005 |
-| **Total actif** | | **7 867** |
+| **Total actif** | | **7 868** |
 
 Avec **1 211 mots-clés**, **20 544 rattachements**, 11 campagnes d'extraction,
-0 rejet au chargement. L'API en expose **7 758** : les 82 documents de licence
-non vérifiée et les 27 productions d'apprenants sont retenus par
-`redistribution_autorisee`.
+0 rejet au chargement. L'API en expose **7 759** : les 81 aides-mémoire de
+DataCamp, le document sans licence déclarée et les 27 productions d'apprenants
+sont retenus par `redistribution_autorisee`.
+
+**Chaque document porte une licence vérifiée**, jamais supposée. Les aides-mémoire
+de DataCamp sont librement téléchargeables mais leurs conditions interdisent la
+redistribution ; un fichier issu d'un dépôt sans `LICENSE` porte
+`SANS-LICENCE`, car l'absence de licence réserve tous les droits. *Gratuit à
+télécharger n'est pas libre de droits* — la nomenclature le dit, et l'API en
+tire les conséquences.
 
 **S4 rend peu, et c'est structurel.** Elle exploite le travail des apprenants,
 que le droit à l'effacement supprime avec leur compte. Plus l'effacement est
