@@ -7,7 +7,8 @@
 
 Le MLD traduit le modèle conceptuel en relations. Il fixe les tables, les clés,
 les domaines logiques et les contraintes d'intégrité. Il ne fixe **pas** les
-types PostgreSQL, les index ni l'ordre des scripts : cela relève du MPD.
+types PostgreSQL, les index ni l'ordre des scripts : cela relève du
+[modèle physique](mpd_eduai_data.md).
 
 **Convention de notation.** `table (**clé primaire**, #clé étrangère, attribut)`.
 Un attribut suivi de `?` est nullable.
