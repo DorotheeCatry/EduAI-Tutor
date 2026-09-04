@@ -187,8 +187,8 @@ sont consignées ici plutôt que corrigées en silence.
 
 | Constat | Où | Nature |
 |---|---|---|
-| Le cahier des charges annonce **13 tables** dans `eduai_data` ; la base en compte **13 tables et 4 vues** | `docs/cahier-des-charges.md`, section « État d'avancement » | Chiffre exact pour les tables, muet sur les vues |
-| Le cahier des charges annonce **15 décisions** et **67 tests** ; il y en a **44** et **338** | idem | Chiffre périmé, et l'écart s'est creusé : un tableau d'avancement tenu à la main vieillit d'autant plus vite que le projet avance |
+| ~~Le cahier des charges annonce **13 tables** sans mentionner les vues~~ — **corrigé le 04/09** : il annonce 13 tables et 4 vues | `docs/cahier-des-charges.md` | Écart levé |
+| ~~Le cahier des charges annonçait **15 décisions** et **67 tests**~~ — **corrigé le 04/09** : 45 décisions, 394 tests, et son relevé porte désormais sa date | idem | Écart levé, la leçon reste : un tableau tenu à la main vieillit d'autant plus vite que le projet avance |
 | ~~Une docstring justifie le repli local par le traitement de « données d'apprenants **potentiellement mineurs** »~~ — **corrigé** : la docstring dit désormais que le public est exclusivement adulte et que le repli tient à la souveraineté des données | `apps/agents/tools/model_config.py` | Écart levé |
 
 Le troisième écart était le seul qui comptait pour le jury : il faisait dire à

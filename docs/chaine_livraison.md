@@ -384,7 +384,7 @@ déclencheur à la § 1.1.
 
 ### 4.3 Ce qui se saute, et pourquoi cela se voit
 
-Les tests marqués `corpus` se sautent en intégration : reconstituer 6 836
+Les tests marqués `corpus` se sautent en intégration : reconstituer 7 868
 documents demanderait les dumps et plusieurs heures. **Le saut apparaît dans le
 récapitulatif de la chaîne**, et il est motivé ici. Un test sauté en silence
 serait un test absent.

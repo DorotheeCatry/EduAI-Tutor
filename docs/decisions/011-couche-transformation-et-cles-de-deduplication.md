@@ -14,7 +14,7 @@ la déduplication.
 ## Décision 1 — une couche distincte, en amont du chargement
 
 `data_pipeline/transform/` est une étape à part entière. Le chargeur lit
-`data/processed/corpus.jsonl` et **jamais** `data/raw/`.
+`data_pipeline/data/processed/corpus.jsonl` et **jamais** `data_pipeline/data/raw/`.
 
 Brancher le chargement sur le brut ferait de la transformation une étape
 facultative, que rien n'obligerait à rejouer après modification d'un
