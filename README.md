@@ -33,7 +33,7 @@ et récupération documentaire, pour un organisme de formation professionnelle.
 
 <table>
 <tr>
-<td width="260" align="center"><img src="static/koda/koda_base.png" width="200" alt="Koda au repos"></td>
+<td width="360" align="center"><img src="static/koda/koda_base.png" width="300" alt="Koda au repos"></td>
 <td>
 
 **Il lit la page avec vous.** Koda voit le cours ouvert et répond dessus — pas
@@ -110,7 +110,7 @@ l'onglet **Cours**, pas une page à part.
 
 <table>
 <tr>
-<td width="240" align="center"><img src="static/koda/koda_glassesboy.png" width="180" alt=""></td>
+<td width="360" align="center"><img src="static/koda/koda_glassesboy.png" width="300" alt=""></td>
 <td>
 
 ### 📚 Des cours, et votre fiche
@@ -123,7 +123,7 @@ qui les ont produites.
 </td>
 </tr>
 <tr>
-<td align="center"><img src="static/koda/koda_stunned.png" width="180" alt=""></td>
+<td align="center"><img src="static/koda/koda_stunned.png" width="300" alt=""></td>
 <td>
 
 ### 🎯 Des quiz, solo et à plusieurs
@@ -134,7 +134,7 @@ et on joue ensemble — le podium reste à l'écran jusqu'à ce qu'on le quitte.
 </td>
 </tr>
 <tr>
-<td align="center"><img src="static/koda/koda_coffeefirst.png" width="180" alt=""></td>
+<td align="center"><img src="static/koda/koda_coffeefirst.png" width="300" alt=""></td>
 <td>
 
 ### 💻 Des exercices, sous deux formes
@@ -147,7 +147,7 @@ gestes.
 </td>
 </tr>
 <tr>
-<td align="center"><img src="static/koda/koda_worried.png" width="180" alt=""></td>
+<td align="center"><img src="static/koda/koda_worried.png" width="300" alt=""></td>
 <td>
 
 ### 🔁 Revoir ses vraies erreurs
@@ -275,7 +275,7 @@ depuis `main`.
 
 <table>
 <tr>
-<td width="220" align="center"><img src="static/koda/koda_inspector.png" width="170" alt=""></td>
+<td width="360" align="center"><img src="static/koda/koda_inspector.png" width="300" alt=""></td>
 <td>
 
 Un principe traverse la suite : **un test éprouve un effet, jamais une
@@ -446,7 +446,7 @@ n'était lu par personne pour l'affichage.
 
 <table>
 <tr>
-<td width="220" align="center"><img src="static/koda/koda_worried.png" width="170" alt=""></td>
+<td width="360" align="center"><img src="static/koda/koda_worried.png" width="300" alt=""></td>
 <td>
 
 Les **réserves** et les **incidents** sont des documents de première importance
