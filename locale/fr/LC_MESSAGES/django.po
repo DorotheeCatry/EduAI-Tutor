@@ -34,10 +34,10 @@ msgid "XP"
 msgstr "XP"
 
 #: apps/accueil/templates/accueil/accueil.html:56
-#, fuzzy
-#| msgid "Exercise"
+
 msgid "Exercices"
-msgstr "Exercice"
+msgstr ""
+
 
 #: apps/accueil/templates/accueil/accueil.html:60
 #: apps/accueil/templates/accueil/accueil.html:352
@@ -130,12 +130,11 @@ msgstr ""
 
 #: apps/accueil/templates/accueil/accueil.html:165
 #: apps/accueil/templates/accueil/accueil.html:205
-#, fuzzy, python-format
-#| msgid "Completed"
+#, python-format
 msgid "%(total)s compétence"
 msgid_plural "%(total)s compétences"
-msgstr[0] "Terminé"
-msgstr[1] "Terminé"
+msgstr[0] ""
+msgstr[1] ""
 
 #: apps/accueil/templates/accueil/accueil.html:180
 #, python-format
@@ -249,10 +248,10 @@ msgid "Dernière activité"
 msgstr ""
 
 #: apps/accueil/templates/accueil/accueil.html:339
-#, fuzzy
-#| msgid "Exercise"
+
 msgid "Exercice"
-msgstr "Exercice"
+msgstr ""
+
 
 #: apps/accueil/templates/accueil/accueil.html:343
 #: apps/courses/templates/courses/fiche.html:68
@@ -261,18 +260,18 @@ msgstr ""
 
 #: apps/accueil/templates/accueil/accueil.html:345
 #: apps/courses/templates/courses/fiche.html:70
-#, fuzzy
-#| msgid "Generate a course"
+
 msgid "en cours"
-msgstr "Générer un cours"
+msgstr ""
+
 
 #: apps/accueil/templates/accueil/accueil.html:361 apps/courses/models.py:182
 #: apps/courses/templates/courses/catalogue.html:18
 #: apps/courses/templates/courses/catalogue.html:23
-#, fuzzy
-#| msgid "Courses"
+
 msgid "Cours"
-msgstr "Cours"
+msgstr ""
+
 
 #: apps/accueil/templates/accueil/accueil.html:371
 msgid ""
@@ -353,10 +352,10 @@ msgid "Parfait. On continue ?"
 msgstr ""
 
 #: apps/chat/echange_courant.py:158
-#, fuzzy
-#| msgid "5 questions"
+
 msgid "Noté. Une autre question ?"
-msgstr "5 questions"
+msgstr ""
+
 
 #: apps/chat/echange_courant.py:159
 msgid "Très bien. Je reste là."
@@ -441,16 +440,16 @@ msgstr ""
 
 #: apps/courses/models.py:102 apps/courses/models.py:230
 #: apps/referentiel/models.py:206
-#, fuzzy
-#| msgid "Completed"
+
 msgid "Compétence"
-msgstr "Terminé"
+msgstr ""
+
 
 #: apps/courses/models.py:105
-#, fuzzy
-#| msgid "Statistics"
+
 msgid "Statut"
-msgstr "Statistiques"
+msgstr ""
+
 
 #: apps/courses/models.py:107 apps/courses/models.py:185
 msgid "Titre"
@@ -495,10 +494,10 @@ msgid "Contenu"
 msgstr ""
 
 #: apps/courses/models.py:188
-#, fuzzy
-#| msgid "Question"
+
 msgid "Fichier d'origine"
-msgstr "Question"
+msgstr ""
+
 
 #: apps/courses/models.py:189
 msgid "Nom du support markdown dont cette partie provient."
@@ -513,16 +512,16 @@ msgid "Sous-module du corpus déclaré par le fichier d'index."
 msgstr ""
 
 #: apps/courses/models.py:197
-#, fuzzy
-#| msgid "Generate a course"
+
 msgid "Partie de cours"
-msgstr "Générer un cours"
+msgstr ""
+
 
 #: apps/courses/models.py:198
-#, fuzzy
-#| msgid "Generate a course"
+
 msgid "Parties de cours"
-msgstr "Générer un cours"
+msgstr ""
+
 
 #: apps/courses/models.py:226
 msgid "Apprenant"
@@ -561,10 +560,10 @@ msgid "Fiche"
 msgstr ""
 
 #: apps/courses/models.py:276
-#, fuzzy
-#| msgid "Question"
+
 msgid "Question d'origine"
-msgstr "Question"
+msgstr ""
+
 
 #: apps/courses/models.py:277
 msgid "La question ou l'action qui a produit cet ajout."
@@ -654,20 +653,18 @@ msgid ""
 msgstr ""
 
 #: apps/courses/templates/courses/catalogue.html:119
-#, fuzzy, python-format
-#| msgid "Completed"
+#, python-format
 msgid "%(n)s compétence"
 msgid_plural "%(n)s compétences"
-msgstr[0] "Terminé"
-msgstr[1] "Terminé"
+msgstr[0] ""
+msgstr[1] ""
 
 #: apps/courses/templates/courses/catalogue.html:120
-#, fuzzy, python-format
-#| msgid "Generate a course"
+#, python-format
 msgid "%(c)s cours"
 msgid_plural "%(c)s cours"
-msgstr[0] "Générer un cours"
-msgstr[1] "Générer un cours"
+msgstr[0] ""
+msgstr[1] ""
 
 #: apps/courses/templates/courses/catalogue.html:120
 msgid "aucun cours"
@@ -942,10 +939,10 @@ msgid ""
 msgstr ""
 
 #: apps/courses/templates/courses/page_de_cours.html:66
-#, fuzzy
-#| msgid "Generate a course"
+
 msgid "Dans ce cours"
-msgstr "Générer un cours"
+msgstr ""
+
 
 #: apps/courses/templates/courses/page_de_cours.html:99
 msgid "Aucun cours pour cette compétence."
@@ -983,10 +980,10 @@ msgstr ""
 
 #: apps/courses/templates/courses/page_de_cours.html:195
 #: templates/components/tuteur.html:178
-#, fuzzy
-#| msgid "5 questions"
+
 msgid "Votre question"
-msgstr "5 questions"
+msgstr ""
+
 
 #: apps/courses/templates/courses/page_de_cours.html:197
 #: templates/components/tuteur.html:180
@@ -1056,20 +1053,20 @@ msgid "❌ Delete error: %(erreur)s"
 msgstr "❌ Erreur à la suppression : %(erreur)s"
 
 #: apps/courses/views.py:521
-#, fuzzy
-#| msgid "Questions"
+
 msgid "Question absente."
-msgstr "Questions"
+msgstr ""
+
 
 #: apps/courses/views.py:591 apps/exercises/views.py:263
 msgid "Aucun code à exécuter."
 msgstr ""
 
 #: apps/exercises/templates/exercises/carnet.html:25
-#, fuzzy
-#| msgid "Continue exercises"
+
 msgid "Carnet d'exercices"
-msgstr "Poursuivre les exercices"
+msgstr ""
+
 
 #: apps/exercises/templates/exercises/carnet.html:27
 msgid ""
@@ -1078,10 +1075,10 @@ msgid ""
 msgstr ""
 
 #: apps/exercises/templates/exercises/carnet.html:32
-#, fuzzy
-#| msgid "Recent exercises"
+
 msgid "Retour aux exercices"
-msgstr "Exercices récents"
+msgstr ""
+
 
 #: apps/exercises/templates/exercises/carnet.html:53
 msgid "Engendrer des exercices sur…"
@@ -1143,10 +1140,10 @@ msgid ""
 msgstr ""
 
 #: apps/exercises/templates/exercises/carnet.html:168
-#, fuzzy
-#| msgid "Continue exercises"
+
 msgid "Choisir des exercices"
-msgstr "Poursuivre les exercices"
+msgstr ""
+
 
 #: apps/exercises/templates/exercises/carnet.html:175
 #: templates/components/blocs_de_code.html:29
@@ -1737,26 +1734,26 @@ msgid "Start Solo Quiz"
 msgstr "Lancer un quiz solo"
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:79
-#, fuzzy
-#| msgid "Multiplayer Modes"
+
 msgid "Multiplayer"
-msgstr "Modes multijoueur"
+msgstr "Multijoueur"
+
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:80
 msgid "Compete with friends in real-time"
 msgstr ""
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:91
-#, fuzzy
-#| msgid "Host a multiplayer quiz for your friends"
+
 msgid "Host a multiplayer quiz"
-msgstr "Hébergez un quiz multijoueur pour vos camarades"
+msgstr "Hébergez un quiz multijoueur"
+
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:100
-#, fuzzy
-#| msgid "Enter Room Code"
+
 msgid "Enter a room code"
 msgstr "Saisir le code de la salle"
+
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:113
 msgid "Active Rooms"
@@ -1840,16 +1837,16 @@ msgid "Revenir au salon"
 msgstr ""
 
 #: apps/quiz/templates/quiz/quiz_start.html:50
-#, fuzzy
-#| msgid "Quiz Topic"
+
 msgid "Quiz solo"
-msgstr "Sujet du quiz"
+msgstr ""
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:50
-#, fuzzy
-#| msgid "5 questions"
+
 msgid "questions"
-msgstr "5 questions"
+msgstr ""
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:60
 msgid "répondues"
@@ -1999,10 +1996,10 @@ msgstr ""
 
 #: apps/referentiel/models.py:85 apps/referentiel/models.py:163
 #: apps/referentiel/models.py:200
-#, fuzzy
-#| msgid "Test Code"
+
 msgid "Code"
-msgstr "Tester le code"
+msgstr ""
+
 
 #: apps/referentiel/models.py:86
 msgid ""
@@ -2016,10 +2013,10 @@ msgid "Intitulé"
 msgstr ""
 
 #: apps/referentiel/models.py:91
-#, fuzzy
-#| msgid "Revision"
+
 msgid "Version"
-msgstr "Révision"
+msgstr ""
+
 
 #: apps/referentiel/models.py:92
 msgid "Version du référentiel chez son auteur, telle qu'il la nomme."
@@ -2071,22 +2068,22 @@ msgid "Modules"
 msgstr ""
 
 #: apps/referentiel/models.py:202
-#, fuzzy
-#| msgid "Question"
+
 msgid "Description"
-msgstr "Question"
+msgstr ""
+
 
 #: apps/referentiel/models.py:207
-#, fuzzy
-#| msgid "Completed courses"
+
 msgid "Compétences"
-msgstr "Cours terminés"
+msgstr ""
+
 
 #: apps/revision/templates/revision/flashcards.html:19
-#, fuzzy
-#| msgid "Revision"
+
 msgid "Révision"
-msgstr "Révision"
+msgstr ""
+
 
 #: apps/revision/templates/revision/flashcards.html:26
 msgid ""
@@ -2134,10 +2131,10 @@ msgid "S'exercer"
 msgstr ""
 
 #: apps/revision/templates/revision/mes_erreurs.html:23
-#, fuzzy
-#| msgid "Form errors"
+
 msgid "Revoir mes erreurs"
-msgstr "Erreurs du formulaire"
+msgstr ""
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:26
 msgid "Retour à ce qui reste à revoir"
@@ -2272,9 +2269,10 @@ msgid ""
 msgstr ""
 
 #: apps/users/admin.py:12
-#, fuzzy
+
 msgid "Profil utilisateur"
-msgstr "Email ou nom d'utilisateur"
+msgstr ""
+
 
 #: apps/users/admin.py:15 apps/users/templates/users/supprimer_compte.html:59
 msgid "Progression"
@@ -2445,9 +2443,10 @@ msgid "Choose your avatar"
 msgstr "Choisir un avatar"
 
 #: apps/users/templates/users/profile.html:42
-#, fuzzy
+
 msgid "Avatar actuel"
-msgstr "Avatar"
+msgstr ""
+
 
 #: apps/users/templates/users/profile.html:44
 msgid "Current avatar"
@@ -2525,10 +2524,10 @@ msgid "Member since"
 msgstr "Membre depuis"
 
 #: apps/users/templates/users/register.html:8
-#, fuzzy
-#| msgid "Question"
+
 msgid "Inscription - Koda"
-msgstr "Question"
+msgstr ""
+
 
 #: apps/users/templates/users/register.html:48
 msgid "Créer un compte"

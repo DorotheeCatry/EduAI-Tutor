@@ -34,10 +34,10 @@ msgid "XP"
 msgstr ""
 
 #: apps/accueil/templates/accueil/accueil.html:56
-#, fuzzy
-#| msgid "Exercices créés"
+
 msgid "Exercices"
-msgstr "Exercises created"
+msgstr "Exercises"
+
 
 #: apps/accueil/templates/accueil/accueil.html:60
 #: apps/accueil/templates/accueil/accueil.html:352
@@ -49,7 +49,8 @@ msgstr "Quiz"
 
 #: apps/accueil/templates/accueil/accueil.html:64
 msgid "Jours de suite"
-msgstr ""
+msgstr "Day streak"
+
 
 #: apps/accueil/templates/accueil/accueil.html:71
 msgid "Ce que je fais maintenant"
@@ -60,14 +61,16 @@ msgstr "What I do now"
 msgid ""
 "Prochaine compétence du parcours : <strong>%(competence)s</strong>, dans "
 "%(module)s."
-msgstr ""
+msgstr "Next skill on your path: <strong>%(competence)s</strong>, in %(module)s."
+
 
 #: apps/accueil/templates/accueil/accueil.html:79
 #, python-format
 msgid ""
 "Encore %(restant)s exercice(s) réussi(s) sur <strong>%(competence)s</strong> "
 "pour atteindre le niveau 2."
-msgstr ""
+msgstr "%(restant)s more completed exercise(s) on <strong>%(competence)s</strong> to reach level 2."
+
 
 #: apps/accueil/templates/accueil/accueil.html:84
 msgid "S'exercer sur cette compétence"
@@ -77,7 +80,8 @@ msgstr "Practise this competency"
 msgid ""
 "Toutes les compétences du référentiel sont au niveau 2. Le niveau 3 n'est "
 "pas mesuré par ce dispositif."
-msgstr ""
+msgstr "Every skill in the framework is at level 2. Level 3 is not measured by this system."
+
 
 #: apps/accueil/templates/accueil/accueil.html:92
 msgid "Explorer un nouveau sujet"
@@ -95,12 +99,14 @@ msgstr "Generate a course"
 
 #: apps/accueil/templates/accueil/accueil.html:122
 msgid "Où j'en suis"
-msgstr ""
+msgstr "Where I stand"
+
 
 #: apps/accueil/templates/accueil/accueil.html:126
 #, python-format
 msgid "%(entamees)s compétences entamées sur %(total)s"
-msgstr ""
+msgstr "%(entamees)s of %(total)s skills started"
+
 
 #: apps/accueil/templates/accueil/accueil.html:134
 msgid "Aucun référentiel de compétences n'est actif pour l'instant."
@@ -110,19 +116,22 @@ msgstr "No competency framework is active at the moment."
 msgid ""
 "Votre travail est enregistré ; la progression s'affichera dès qu'un "
 "référentiel sera chargé."
-msgstr ""
+msgstr "Your work is saved; progress will appear as soon as a framework is loaded."
+
 
 #: apps/accueil/templates/accueil/accueil.html:150
 #, python-format
 msgid "Aucune compétence entamée sur %(total)s"
-msgstr ""
+msgstr "No skill started out of %(total)s"
+
 
 #: apps/accueil/templates/accueil/accueil.html:153
 #, python-format
 msgid ""
 "C'est le début du parcours. La première étape vous attend dans le module "
 "%(module)s."
-msgstr ""
+msgstr "This is the start of the path. Your first step is waiting in module %(module)s."
+
 
 #: apps/accueil/templates/accueil/accueil.html:158
 msgid "Voir les modules du référentiel"
@@ -130,12 +139,11 @@ msgstr "See the framework's modules"
 
 #: apps/accueil/templates/accueil/accueil.html:165
 #: apps/accueil/templates/accueil/accueil.html:205
-#, fuzzy, python-format
-#| msgid "%(total)s compétences, aucune entamée"
+#, python-format
 msgid "%(total)s compétence"
 msgid_plural "%(total)s compétences"
-msgstr[0] "%(total)s competencies, none started"
-msgstr[1] "%(total)s competencies, none started"
+msgstr[0] "%(total)s skill"
+msgstr[1] "%(total)s skills"
 
 #: apps/accueil/templates/accueil/accueil.html:180
 #, python-format
@@ -146,7 +154,8 @@ msgstr "%(atteintes)s of %(total)s at level 1, %(niveau2)s at level 2"
 #, python-format
 msgid ""
 "Équivalent textuel : %(atteintes)s compétence sur %(total)s au niveau 1."
-msgstr ""
+msgstr "Text equivalent: %(atteintes)s of %(total)s skills at level 1."
+
 
 #: apps/accueil/templates/accueil/accueil.html:197
 #, python-format
@@ -156,10 +165,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: apps/accueil/templates/accueil/accueil.html:225
-#, fuzzy
-#| msgid "Libellés des trois niveaux"
+
 msgid "Comment se lisent les trois niveaux"
-msgstr "Labels of the three levels"
+msgstr "How to read the three levels"
+
 
 #: apps/accueil/templates/accueil/accueil.html:229
 #: apps/tracker/templates/tracker/dashboard.html:129
@@ -185,14 +194,15 @@ msgid ""
 "« Non mesuré » ne veut pas dire « non atteint » : ce niveau suppose "
 "d'appliquer une notion à un contexte nouveau, ce que le nombre d'exercices "
 "réussis ne permet pas de constater."
-msgstr ""
+msgstr "\"Not measured\" does not mean \"not reached\": this level requires applying a concept in a new context, which the number of completed exercises cannot establish."
+
 
 #: apps/accueil/templates/accueil/accueil.html:259
 #: apps/revision/templates/revision/flashcards.html:24
-#, fuzzy
-#| msgid "À savoir :"
+
 msgid "À revoir"
-msgstr "Worth knowing:"
+msgstr "To review"
+
 
 #: apps/accueil/templates/accueil/accueil.html:272
 #, python-format
@@ -204,7 +214,8 @@ msgstr[1] ""
 #: apps/accueil/templates/accueil/accueil.html:277
 #: apps/exercises/templates/exercises/carnet.html:102
 msgid "hors référentiel"
-msgstr ""
+msgstr "outside the framework"
+
 
 #: apps/accueil/templates/accueil/accueil.html:289
 #: apps/revision/templates/revision/flashcards.html:117
@@ -229,7 +240,8 @@ msgstr "Nothing to review at the moment."
 msgid ""
 "Cette liste se remplit toute seule : un exercice qui demande plusieurs "
 "tentatives, ou une réponse manquée dans un quiz, y apparaît avec sa date."
-msgstr ""
+msgstr "This list fills itself: an exercise that took several attempts, or a question missed in a quiz, appears here with its date."
+
 
 #: apps/accueil/templates/accueil/accueil.html:309
 #: apps/revision/templates/revision/flashcards.html:162
@@ -246,42 +258,46 @@ msgid ""
 "que ce qui est ancien. Un exercice réussi du premier coup il y a un mois est "
 "probablement encore acquis ; un exercice réussi à la cinquième tentative la "
 "semaine dernière ne l'est pas."
-msgstr ""
+msgstr "Sorted by number of attempts before success: what resisted, rather than what is old. An exercise solved on the first try a month ago is probably still known; one solved on the fifth attempt last week is not."
+
 
 #: apps/accueil/templates/accueil/accueil.html:332
 msgid "Dernière activité"
-msgstr ""
+msgstr "Last activity"
+
 
 #: apps/accueil/templates/accueil/accueil.html:339
-#, fuzzy
-#| msgid "Exercices créés"
+
 msgid "Exercice"
-msgstr "Exercises created"
+msgstr "Exercise"
+
 
 #: apps/accueil/templates/accueil/accueil.html:343
 #: apps/courses/templates/courses/fiche.html:68
 msgid "réussi"
-msgstr ""
+msgstr "completed"
+
 
 #: apps/accueil/templates/accueil/accueil.html:345
 #: apps/courses/templates/courses/fiche.html:70
 msgid "en cours"
-msgstr ""
+msgstr "in progress"
+
 
 #: apps/accueil/templates/accueil/accueil.html:361 apps/courses/models.py:182
 #: apps/courses/templates/courses/catalogue.html:18
 #: apps/courses/templates/courses/catalogue.html:23
 msgid "Cours"
-msgstr ""
+msgstr "Courses"
+
 
 #: apps/accueil/templates/accueil/accueil.html:371
-#, fuzzy
-#| msgid ""
-#| "Votre premier cours, exercice ou quiz apparaîtra ici avec son résultat."
+
 msgid ""
 "Aucune activité pour l'instant. Votre premier cours, exercice ou quiz "
 "apparaîtra ici avec son résultat."
-msgstr "Your first course, exercise or quiz will appear here with its result."
+msgstr "No activity yet. Your first course, exercise or quiz will appear here with its result."
+
 
 #: apps/chat/actions.py:23 apps/courses/views.py:492
 msgid "Développe cette partie"
@@ -314,83 +330,98 @@ msgstr "What is this question asking?"
 #: apps/chat/echange_courant.py:142
 #, python-format
 msgid "Salut %(p)s ! Sur quoi on attaque ?"
-msgstr ""
+msgstr "Hi %(p)s! What are we tackling?"
+
 
 #: apps/chat/echange_courant.py:143
 #, python-format
 msgid "Te voilà, %(p)s. Une question sur le cours ?"
-msgstr ""
+msgstr "There you are, %(p)s. A question about the course?"
+
 
 #: apps/chat/echange_courant.py:144
 #, python-format
 msgid "Bonjour %(p)s ! Dis-moi ce qui coince."
-msgstr ""
+msgstr "Hello %(p)s! Tell me what is blocking you."
+
 
 #: apps/chat/echange_courant.py:147
 msgid "Impeccable, et prêt à répondre. Et toi, ça avance ?"
-msgstr ""
+msgstr "All good here, and ready to answer. How about you, making progress?"
+
 
 #: apps/chat/echange_courant.py:148
 msgid "Très bien ! J'attendais que tu me demandes quelque chose."
-msgstr ""
+msgstr "Very well! I was waiting for you to ask me something."
+
 
 #: apps/chat/echange_courant.py:149
 msgid "Au top. Pose-moi une vraie question, pour voir."
-msgstr ""
+msgstr "Great. Ask me a real question, just to see."
+
 
 #: apps/chat/echange_courant.py:152
 #, python-format
 msgid "Avec plaisir, %(p)s."
-msgstr ""
+msgstr "My pleasure, %(p)s."
+
 
 #: apps/chat/echange_courant.py:153
-#, fuzzy
-#| msgid "Mais j'avais parié avec les autres Koda que t'étais le best !!!"
+
 msgid "Quand tu veux. J'avais parié avec les autres Koda que tu y arriverais."
-msgstr "But I bet the other Kodas you were the best!!!"
+msgstr "Any time. I had a bet with the other Kodas that you would get there."
+
 
 #: apps/chat/echange_courant.py:154
 msgid "De rien ! Si un point reste flou, dis-le."
-msgstr ""
+msgstr "You are welcome! If anything is still unclear, say so."
+
 
 #: apps/chat/echange_courant.py:157
 msgid "Parfait. On continue ?"
-msgstr ""
+msgstr "Perfect. Shall we carry on?"
+
 
 #: apps/chat/echange_courant.py:158
-#, fuzzy
-#| msgid "Votre question"
+
 msgid "Noté. Une autre question ?"
-msgstr "Your question"
+msgstr "Noted. Another question?"
+
 
 #: apps/chat/echange_courant.py:159
 msgid "Très bien. Je reste là."
-msgstr ""
+msgstr "Very well. I am staying right here."
+
 
 #: apps/chat/echange_courant.py:162
 #, python-format
 msgid "Toujours là, %(p)s."
-msgstr ""
+msgstr "Still here, %(p)s."
+
 
 #: apps/chat/echange_courant.py:163
 msgid "Présent. Je t'écoute."
-msgstr ""
+msgstr "Present. I am listening."
+
 
 #: apps/chat/echange_courant.py:166
 #, python-format
 msgid "À bientôt, %(p)s !"
-msgstr ""
+msgstr "See you soon, %(p)s!"
+
 
 #: apps/chat/echange_courant.py:167
 #, python-format
 msgid "Bonne suite, %(p)s. Je garde ta fiche au chaud."
-msgstr ""
+msgstr "Enjoy the rest, %(p)s. I will keep your notes warm."
+
 
 #: apps/chat/echange_courant.py:170
 msgid ""
 "Koda, ton tuteur. Je vois le cours que tu lis, alors demande-moi ce que tu "
 "veux dessus."
-msgstr ""
+msgstr "Koda, your tutor. I can see the course you are reading, so ask me anything about it."
+
 
 #: apps/chat/salutation.py:106
 #, python-format
@@ -438,11 +469,13 @@ msgstr "unknown error"
 
 #: apps/courses/models.py:96
 msgid "Publié par l'organisme"
-msgstr ""
+msgstr "Published by the training provider"
+
 
 #: apps/courses/models.py:97
 msgid "Provisoire, engendré par le modèle"
-msgstr ""
+msgstr "Provisional, generated by the model"
+
 
 #: apps/courses/models.py:102 apps/courses/models.py:230
 #: apps/referentiel/models.py:206
@@ -451,15 +484,18 @@ msgstr "Competency"
 
 #: apps/courses/models.py:105
 msgid "Statut"
-msgstr ""
+msgstr "Status"
+
 
 #: apps/courses/models.py:107 apps/courses/models.py:185
 msgid "Titre"
-msgstr ""
+msgstr "Title"
+
 
 #: apps/courses/models.py:113
 msgid "Rédigé par"
-msgstr ""
+msgstr "Written by"
+
 
 #: apps/courses/models.py:116 apps/courses/models.py:293
 msgid "Sources"
@@ -467,145 +503,171 @@ msgstr ""
 
 #: apps/courses/models.py:117
 msgid "Fragments du corpus employés, avec leur licence."
-msgstr ""
+msgstr "Corpus fragments used, with their licence."
+
 
 #: apps/courses/models.py:120 apps/courses/models.py:296
-#, fuzzy
-#| msgid "Importé le"
+
 msgid "Créé le"
-msgstr "Imported on"
+msgstr "Created on"
+
 
 #: apps/courses/models.py:122
-#, fuzzy
-#| msgid "Importé le"
+
 msgid "Remplacé le"
-msgstr "Imported on"
+msgstr "Replaced on"
+
 
 #: apps/courses/models.py:123
 msgid "Daté quand un cours publié prend la place d'un provisoire."
-msgstr ""
+msgstr "Dated when a published course takes the place of a provisional one."
+
 
 #: apps/courses/models.py:127 apps/courses/models.py:128
 #: apps/courses/templates/courses/page_de_cours.html:51
-#, fuzzy
-#| msgid "Cours créés"
+
 msgid "Cours de référence"
-msgstr "Courses created"
+msgstr "Reference course"
+
 
 #: apps/courses/models.py:184 apps/referentiel/models.py:166
 #: apps/referentiel/models.py:203
 msgid "Ordre"
-msgstr ""
+msgstr "Order"
+
 
 #: apps/courses/models.py:186 apps/courses/models.py:291
 msgid "Contenu"
-msgstr ""
+msgstr "Content"
+
 
 #: apps/courses/models.py:188
 msgid "Fichier d'origine"
-msgstr ""
+msgstr "Source file"
+
 
 #: apps/courses/models.py:189
 msgid "Nom du support markdown dont cette partie provient."
-msgstr ""
+msgstr "Name of the markdown source file this part comes from."
+
 
 #: apps/courses/models.py:192
 msgid "Sous-module"
-msgstr ""
+msgstr "Sub-module"
+
 
 #: apps/courses/models.py:193
 msgid "Sous-module du corpus déclaré par le fichier d'index."
-msgstr ""
+msgstr "Corpus sub-module declared by the index file."
+
 
 #: apps/courses/models.py:197
-#, fuzzy
-#| msgid "Ouvrir le cours"
+
 msgid "Partie de cours"
-msgstr "Open the course"
+msgstr "Course part"
+
 
 #: apps/courses/models.py:198
-#, fuzzy
-#| msgid "Ouvrir le cours"
+
 msgid "Parties de cours"
-msgstr "Open the course"
+msgstr "Course parts"
+
 
 #: apps/courses/models.py:226
 msgid "Apprenant"
-msgstr ""
+msgstr "Learner"
+
 
 #: apps/courses/models.py:232
 msgid "Créée le"
-msgstr ""
+msgstr "Created on"
+
 
 #: apps/courses/models.py:233
 msgid "Modifiée le"
-msgstr ""
+msgstr "Modified on"
+
 
 #: apps/courses/models.py:236
 msgid "Fiche d'apprenant"
-msgstr ""
+msgstr "Learner notes"
+
 
 #: apps/courses/models.py:237
 msgid "Fiches d'apprenant"
-msgstr ""
+msgstr "Learner notes"
+
 
 #: apps/courses/models.py:266
 msgid "Demandé par l'apprenant"
-msgstr ""
+msgstr "Requested by the learner"
+
 
 #: apps/courses/models.py:267
 msgid "Proposé par le parcours"
-msgstr ""
+msgstr "Suggested by your path"
+
 
 #: apps/courses/models.py:268
 msgid "Montée de niveau"
-msgstr ""
+msgstr "Level up"
+
 
 #: apps/courses/models.py:273
 msgid "Fiche"
-msgstr ""
+msgstr "Notes"
+
 
 #: apps/courses/models.py:276
 msgid "Question d'origine"
-msgstr ""
+msgstr "Original question"
+
 
 #: apps/courses/models.py:277
 msgid "La question ou l'action qui a produit cet ajout."
-msgstr ""
+msgstr "The question or the action that produced this addition."
+
 
 #: apps/courses/models.py:281
 msgid "Origine"
-msgstr ""
+msgstr "Origin"
+
 
 #: apps/courses/models.py:284
 msgid "Section visée"
-msgstr ""
+msgstr "Target section"
+
 
 #: apps/courses/models.py:285
 msgid "Titre de la section du cours à laquelle l'ajout répondait."
-msgstr ""
+msgstr "Title of the course section the addition answered."
+
 
 #: apps/courses/models.py:288
-#, fuzzy
-#| msgid "Niveau 1"
+
 msgid "Niveau visé"
-msgstr "Level 1"
+msgstr "Target level"
+
 
 #: apps/courses/models.py:289
 msgid "Renseigné pour une montée de niveau, nul sinon."
-msgstr ""
+msgstr "Filled in for a level up, null otherwise."
+
 
 #: apps/courses/models.py:294
 msgid "url_source, code_licence et attribution_requise par fragment."
-msgstr ""
+msgstr "url_source, code_licence and attribution_requise for each fragment."
+
 
 #: apps/courses/models.py:299
 msgid "Ajout de fiche"
-msgstr ""
+msgstr "Notes addition"
+
 
 #: apps/courses/models.py:300
 msgid "Ajouts de fiche"
-msgstr ""
+msgstr "Notes additions"
+
 
 #: apps/courses/services.py:193
 #, python-format
@@ -622,11 +684,13 @@ msgid ""
 "s'il éclaire. Ne rédige un développement en plusieurs parties que si "
 "l'apprenant demande explicitement un cours ou une explication complète. "
 "N'ajoute ni plan, ni introduction, ni conclusion à une réponse brève."
-msgstr ""
+msgstr "Skill: %(competence)s.\nLearner request: %(question)s\n\nReference documentation:\n%(extraits)s\n\nAnswer in English, drawing on this documentation.\nLength rule: your answer must be PROPORTIONATE to the request. A short question calls for a short answer — a few sentences and an example if it helps. Only write a development in several parts if the learner explicitly asks for a course or a full explanation. Do not add an outline, an introduction or a conclusion to a short answer."
+
 
 #: apps/courses/templates/courses/catalogue.html:25
 msgid "Entrées de l'onglet Cours"
-msgstr ""
+msgstr "Entries in the Courses tab"
+
 
 #: apps/courses/templates/courses/catalogue.html:30
 msgid "Catalogue"
@@ -638,7 +702,8 @@ msgstr "My notes"
 
 #: apps/courses/templates/courses/catalogue.html:57
 msgid "Lexique"
-msgstr ""
+msgstr "Glossary"
+
 
 #: apps/courses/templates/courses/catalogue.html:73
 #: apps/courses/templates/courses/fiche.html:30
@@ -656,23 +721,22 @@ msgstr "No notes yet."
 msgid ""
 "Une fiche se crée toute seule dès que vous enrichissez un cours : ouvrez une "
 "compétence du catalogue et demandez à Koda de développer un passage."
-msgstr ""
+msgstr "Notes are created on their own as soon as you enrich a course: open a skill from the catalogue and ask Koda to expand a passage."
+
 
 #: apps/courses/templates/courses/catalogue.html:119
-#, fuzzy, python-format
-#| msgid "%(total)s compétences, aucune entamée"
+#, python-format
 msgid "%(n)s compétence"
 msgid_plural "%(n)s compétences"
-msgstr[0] "%(total)s competencies, none started"
-msgstr[1] "%(total)s competencies, none started"
+msgstr[0] "%(n)s skill"
+msgstr[1] "%(n)s skills"
 
 #: apps/courses/templates/courses/catalogue.html:120
-#, fuzzy, python-format
-#| msgid "Aucun cours"
+#, python-format
 msgid "%(c)s cours"
 msgid_plural "%(c)s cours"
-msgstr[0] "No course"
-msgstr[1] "No course"
+msgstr[0] "%(c)s course"
+msgstr[1] "%(c)s courses"
 
 #: apps/courses/templates/courses/catalogue.html:120
 msgid "aucun cours"
@@ -701,16 +765,17 @@ msgid "Aucun référentiel de compétences n'est actif."
 msgstr "No competency framework is active."
 
 #: apps/courses/templates/courses/catalogue.html:150
-#, fuzzy
-#| msgid "Voir les modules du référentiel"
+
 msgid "Le catalogue affichera les modules dès qu'un référentiel sera chargé."
-msgstr "See the framework's modules"
+msgstr "The catalogue will show the modules as soon as a framework is loaded."
+
 
 #: apps/courses/templates/courses/catalogue.html:182
 msgid ""
 "Sur un sujet libre, hors référentiel. Le cours obtenu est provisoire : il "
 "n'a été relu par personne."
-msgstr ""
+msgstr "On a free topic, outside the framework. The resulting course is provisional: nobody has reviewed it."
+
 
 #: apps/courses/templates/courses/catalogue.html:188
 msgid "Module de contexte"
@@ -722,7 +787,8 @@ msgstr "Topic"
 
 #: apps/courses/templates/courses/catalogue.html:203
 msgid "Les décorateurs en Python, expliqués avec des exemples"
-msgstr ""
+msgstr "Python decorators, explained with examples"
+
 
 #: apps/courses/templates/courses/catalogue.html:209
 msgid "Générer"
@@ -730,7 +796,8 @@ msgstr "Generate"
 
 #: apps/courses/templates/courses/catalogue.html:237
 msgid "Modules rencontrés dans vos cours"
-msgstr ""
+msgstr "Modules met in your courses"
+
 
 #: apps/courses/templates/courses/catalogue.html:240
 #, python-format
@@ -747,33 +814,40 @@ msgstr[1] ""
 
 #: apps/courses/templates/courses/catalogue.html:255
 msgid "bibliothèque standard"
-msgstr ""
+msgstr "standard library"
+
 
 #: apps/courses/templates/courses/catalogue.html:273
 msgid "Aucun module relevé : les cours publiés n'en importent encore aucun."
-msgstr ""
+msgstr "No module recorded: the published courses do not import any yet."
+
 
 #: apps/courses/templates/courses/catalogue.html:280
 msgid "Bibliothèques documentées dans le corpus"
-msgstr ""
+msgstr "Libraries documented in the corpus"
+
 
 #: apps/courses/templates/courses/catalogue.html:283
 msgid ""
 "Ce que Koda peut citer quand il répond, avec la licence de chaque "
 "documentation."
-msgstr ""
+msgstr "What Koda may cite when it answers, with the licence of each documentation source."
+
 
 #: apps/courses/templates/courses/catalogue.html:294
 msgid "Chargement…"
-msgstr ""
+msgstr "Loading…"
+
 
 #: apps/courses/templates/courses/catalogue.html:323
 msgid "Le corpus documentaire n'est pas joignable pour le moment."
-msgstr ""
+msgstr "The documentation corpus cannot be reached at the moment."
+
 
 #: apps/courses/templates/courses/catalogue.html:324
 msgid "Bibliothèque"
-msgstr ""
+msgstr "Library"
+
 
 #: apps/courses/templates/courses/catalogue.html:325
 msgid "Pages"
@@ -785,7 +859,8 @@ msgstr ""
 
 #: apps/courses/templates/courses/catalogue.html:327
 msgid "Bibliothèques du corpus, nombre de pages conservées et licence"
-msgstr ""
+msgstr "Corpus libraries, number of pages kept and licence"
+
 
 #: apps/courses/templates/courses/course_content.html:37
 #: apps/users/templates/users/profile.html:118
@@ -830,7 +905,8 @@ msgstr "Contents"
 
 #: apps/courses/templates/courses/fiche.html:58
 msgid "Le sommaire se remplira avec vos ajouts."
-msgstr ""
+msgstr "The table of contents will fill up with your additions."
+
 
 #: apps/courses/templates/courses/fiche.html:62
 msgid "Mes exercices"
@@ -838,22 +914,25 @@ msgstr "My exercises"
 
 #: apps/courses/templates/courses/fiche.html:80
 msgid "Mes ajouts"
-msgstr ""
+msgstr "My additions"
+
 
 #: apps/courses/templates/courses/fiche.html:88
 #, python-format
 msgid "sur « %(section)s »"
-msgstr ""
+msgstr "on \"%(section)s\""
+
 
 #: apps/courses/templates/courses/fiche.html:90
 msgid "proposé par votre parcours, offert"
-msgstr ""
+msgstr "suggested by your path, free of charge"
+
 
 #: apps/courses/templates/courses/fiche.html:92
-#, fuzzy, python-format
-#| msgid "Niveau 1"
+#, python-format
 msgid "niveau %(n)s"
-msgstr "Level 1"
+msgstr "level %(n)s"
+
 
 #: apps/courses/templates/courses/fiche.html:107
 msgid "Sources :"
@@ -868,7 +947,8 @@ msgid ""
 "Ouvrez le cours et demandez à Koda de développer un passage, un cas plus "
 "complexe, ou d'expliquer autrement. Chaque réponse viendra ici, avec la "
 "question qui l'a produite."
-msgstr ""
+msgstr "Open the course and ask Koda to expand a passage, give a harder case, or explain it another way. Every answer will land here, with the question that produced it."
+
 
 #: apps/courses/templates/courses/fiche.html:125
 msgid "Ouvrir le cours"
@@ -947,13 +1027,14 @@ msgid ""
 "engendré par le modèle en attendant celui de votre formateur. Il n'a été "
 "relu par personne. Vos ajouts, eux, seront conservés quand le cours publié "
 "arrivera."
-msgstr ""
+msgstr "generated by the model while you wait for your trainer's. Nobody has reviewed it. Your own additions will be kept when the published course arrives."
+
 
 #: apps/courses/templates/courses/page_de_cours.html:66
-#, fuzzy
-#| msgid "Le cours"
+
 msgid "Dans ce cours"
-msgstr "The course"
+msgstr "In this course"
+
 
 #: apps/courses/templates/courses/page_de_cours.html:99
 msgid "Aucun cours pour cette compétence."
@@ -964,7 +1045,8 @@ msgid ""
 "Votre formateur n'a pas encore publié le sien. Vous pouvez commencer sans "
 "attendre : demandez un enrichissement ci-contre, il ira dans votre fiche et "
 "y restera."
-msgstr ""
+msgstr "Your trainer has not published theirs yet. You can start without waiting: ask for an enrichment opposite, it will go into your notes and stay there."
+
 
 #: apps/courses/templates/courses/page_de_cours.html:150
 #: templates/components/tuteur.html:71
@@ -987,7 +1069,8 @@ msgstr "Ask Koda"
 
 #: apps/courses/templates/courses/page_de_cours.html:160
 msgid "Il voit le cours que vous lisez. Sa réponse va dans votre fiche."
-msgstr ""
+msgstr "It sees the course you are reading. Its answer goes into your notes."
+
 
 #: apps/courses/templates/courses/page_de_cours.html:195
 #: templates/components/tuteur.html:178
@@ -1026,14 +1109,15 @@ msgstr "Koda is writing…"
 
 #: apps/courses/templates/courses/page_de_cours.html:313
 #: templates/components/tuteur.html:289
-#, fuzzy
-#| msgid "La réponse n’a pas pu être obtenue."
+
 msgid "La réponse n'a pas pu être obtenue."
 msgstr "The answer could not be retrieved."
 
+
 #: apps/courses/templates/courses/page_de_cours.html:314
 msgid "Pas ajouté à la fiche — on y garde vos questions sur le cours."
-msgstr ""
+msgstr "Not added to your notes — those keep your questions about the course."
+
 
 #: apps/courses/views.py:91
 msgid "Please enter a topic to generate the course."
@@ -1065,96 +1149,111 @@ msgstr ""
 
 #: apps/courses/views.py:521
 msgid "Question absente."
-msgstr ""
+msgstr "Missing question."
+
 
 #: apps/courses/views.py:591 apps/exercises/views.py:263
 msgid "Aucun code à exécuter."
-msgstr ""
+msgstr "No code to run."
+
 
 #: apps/exercises/templates/exercises/carnet.html:25
-#, fuzzy
-#| msgid "Mes exercices"
+
 msgid "Carnet d'exercices"
-msgstr "My exercises"
+msgstr "Exercise notebook"
+
 
 #: apps/exercises/templates/exercises/carnet.html:27
 msgid ""
 "Les énoncés à la suite. Résolvez-les ici, ou emportez le carnet et "
 "travaillez ailleurs."
-msgstr ""
+msgstr "The statements one after another. Solve them here, or take the notebook away and work elsewhere."
+
 
 #: apps/exercises/templates/exercises/carnet.html:32
-#, fuzzy
-#| msgid "Mes exercices"
+
 msgid "Retour aux exercices"
-msgstr "My exercises"
+msgstr "Back to the exercises"
+
 
 #: apps/exercises/templates/exercises/carnet.html:53
 msgid "Engendrer des exercices sur…"
-msgstr ""
+msgstr "Generate exercises on…"
+
 
 #: apps/exercises/templates/exercises/carnet.html:56
 msgid "les dictionnaires, les boucles…"
-msgstr ""
+msgstr "dictionaries, loops…"
+
 
 #: apps/exercises/templates/exercises/carnet.html:61
 msgid "Combien"
-msgstr ""
+msgstr "How many"
+
 
 #: apps/exercises/templates/exercises/carnet.html:74
 msgid "Ajouter au carnet"
-msgstr ""
+msgstr "Add to the notebook"
+
 
 #: apps/exercises/templates/exercises/carnet.html:77
 #, python-format
 msgid ""
 "De %(minimum)s à %(maximum)s énoncés, produits en une seule génération. Les "
 "exercices cochés dans la liste restent dans le carnet."
-msgstr ""
+msgstr "From %(minimum)s to %(maximum)s statements, produced in a single generation. Exercises ticked in the list stay in the notebook."
+
 
 #: apps/exercises/templates/exercises/carnet.html:104
-#, fuzzy
-#| msgid "S'exercer sur cette compétence"
+
 msgid "engendré pour cette séance"
-msgstr "Practise this competency"
+msgstr "generated for this session"
+
 
 #: apps/exercises/templates/exercises/carnet.html:118
 #, python-format
 msgid "Code pour %(titre)s"
-msgstr ""
+msgstr "Code for %(titre)s"
+
 
 #: apps/exercises/templates/exercises/carnet.html:134
 msgid "Cette cellule essaie ; elle ne corrige pas."
-msgstr ""
+msgstr "This cell tries things out; it does not grade them."
+
 
 #: apps/exercises/templates/exercises/carnet.html:147
 msgid "Télécharger le carnet (.ipynb)"
-msgstr ""
+msgstr "Download the notebook (.ipynb)"
+
 
 #: apps/exercises/templates/exercises/carnet.html:150
 msgid ""
 "Le fichier porte ce que vous avez écrit, résolu ou non. Il s'ouvre dans "
 "Jupyter, VS Code ou Colab."
-msgstr ""
+msgstr "The file carries what you wrote, solved or not. It opens in Jupyter, VS Code or Colab."
+
 
 #: apps/exercises/templates/exercises/carnet.html:158
 msgid "Aucun exercice sélectionné."
-msgstr ""
+msgstr "No exercise selected."
+
 
 #: apps/exercises/templates/exercises/carnet.html:160
 msgid "Les exercices demandés ne sont plus disponibles."
-msgstr ""
+msgstr "The requested exercises are no longer available."
+
 
 #: apps/exercises/templates/exercises/carnet.html:164
 msgid ""
 "Cochez ceux que vous voulez enchaîner dans la liste, puis composez le carnet."
-msgstr ""
+msgstr "Tick the ones you want to work through in the list, then build the notebook."
+
 
 #: apps/exercises/templates/exercises/carnet.html:168
-#, fuzzy
-#| msgid "Mes exercices"
+
 msgid "Choisir des exercices"
-msgstr "My exercises"
+msgstr "Choose exercises"
+
 
 #: apps/exercises/templates/exercises/carnet.html:175
 #: templates/components/blocs_de_code.html:29
@@ -1259,7 +1358,8 @@ msgstr ""
 
 #: apps/exercises/templates/exercises/exercise_list.html:32
 msgid "Composer un carnet"
-msgstr ""
+msgstr "Build a notebook"
+
 
 #: apps/exercises/templates/exercises/exercise_list.html:38
 msgid "My Progress"
@@ -1326,7 +1426,8 @@ msgstr "None — free topic, outside the framework"
 msgid ""
 "Seuls les exercices rattachés à une compétence comptent dans votre "
 "progression."
-msgstr ""
+msgstr "Only exercises linked to a skill count towards your progress."
+
 
 #: apps/exercises/templates/exercises/exercise_list.html:268
 #: apps/quiz/templates/quiz/quiz_lobby.html:51
@@ -1423,7 +1524,8 @@ msgstr ""
 
 #: apps/exercises/views.py:231
 msgid "Séance d'exercices — EduAI Tutor"
-msgstr ""
+msgstr "Exercise session — EduAI Tutor"
+
 
 #: apps/exercises/views.py:470
 msgid "Please specify a topic for the exercise."
@@ -1490,7 +1592,8 @@ msgstr ""
 msgid ""
 "Les erreurs de chaque participant reviendront dans son parcours sous cette "
 "compétence."
-msgstr ""
+msgstr "Each participant's mistakes will come back into their own path under this skill."
+
 
 #: apps/quiz/templates/quiz/create_room.html:54
 msgid "Quiz Topic"
@@ -1734,7 +1837,8 @@ msgstr ""
 #: apps/quiz/templates/quiz/quiz_lobby.html:48
 msgid ""
 "Un quiz ne fait pas progresser de niveau : il signale ce qui reste à revoir."
-msgstr ""
+msgstr "A quiz does not raise your level: it points out what still needs review."
+
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:56
 msgid "e.g. Python functions, Django models..."
@@ -1779,7 +1883,8 @@ msgstr "Quizzes completed"
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:165
 msgid "Score moyen"
-msgstr ""
+msgstr "Average score"
+
 
 #: apps/quiz/templates/quiz/quiz_lobby.html:168
 msgid "Aucun quiz terminé"
@@ -1827,7 +1932,8 @@ msgstr ""
 
 #: apps/quiz/templates/quiz/quiz_start.html:13
 msgid "Sans réponse"
-msgstr ""
+msgstr "No answer"
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:14
 msgid "Incorrect"
@@ -1835,35 +1941,39 @@ msgstr ""
 
 #: apps/quiz/templates/quiz/quiz_start.html:15
 msgid "Explication"
-msgstr ""
+msgstr "Explanation"
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:36
 msgid "Revenir au salon"
 msgstr "Back to lobby"
 
 #: apps/quiz/templates/quiz/quiz_start.html:50
-#, fuzzy
-#| msgid "Quiz"
+
 msgid "Quiz solo"
-msgstr "Quiz"
+msgstr "Solo quiz"
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:50
-#, fuzzy
-#| msgid "Votre question"
+
 msgid "questions"
-msgstr "Your question"
+msgstr "questions"
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:60
 msgid "répondues"
-msgstr ""
+msgstr "answered"
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:81
 msgid "Annuler"
-msgstr ""
+msgstr "Cancel"
+
 
 #: apps/quiz/templates/quiz/quiz_start.html:85
 msgid "Voir mes résultats"
-msgstr ""
+msgstr "See my results"
+
 
 #: apps/quiz/templates/quiz/room_detail.html:21
 msgid "Host"
@@ -1976,15 +2086,18 @@ msgstr ""
 
 #: apps/referentiel/models.py:44
 msgid "Imiter"
-msgstr ""
+msgstr "Imitate"
+
 
 #: apps/referentiel/models.py:44
 msgid "Adapter"
-msgstr ""
+msgstr "Adapt"
+
 
 #: apps/referentiel/models.py:44
 msgid "Transposer"
-msgstr ""
+msgstr "Transpose"
+
 
 #: apps/referentiel/models.py:59
 msgid "Les libellés de niveaux doivent former une liste."
@@ -2008,12 +2121,14 @@ msgstr ""
 msgid ""
 "Identifiant stable, repris à l'import pour mettre à jour plutôt que "
 "dupliquer."
-msgstr ""
+msgstr "Stable identifier, reused on import to update rather than duplicate."
+
 
 #: apps/referentiel/models.py:89 apps/referentiel/models.py:164
 #: apps/referentiel/models.py:201
 msgid "Intitulé"
-msgstr ""
+msgstr "Label"
+
 
 #: apps/referentiel/models.py:91
 msgid "Version"
@@ -2029,7 +2144,8 @@ msgstr ""
 
 #: apps/referentiel/models.py:96
 msgid "D'où vient ce référentiel : organisme, document, URL."
-msgstr ""
+msgstr "Where this framework comes from: organisation, document, URL."
+
 
 #: apps/referentiel/models.py:101
 msgid "Libellés des trois niveaux"
@@ -2037,12 +2153,14 @@ msgstr "Labels of the three levels"
 
 #: apps/referentiel/models.py:104
 msgid "Actif"
-msgstr ""
+msgstr "Active"
+
 
 #: apps/referentiel/models.py:105
 msgid ""
 "Un seul référentiel actif à la fois : c'est celui que l'interface affiche."
-msgstr ""
+msgstr "Only one framework is active at a time: it is the one the interface displays."
+
 
 #: apps/referentiel/models.py:108
 msgid "Importé le"
@@ -2050,11 +2168,13 @@ msgstr "Imported on"
 
 #: apps/referentiel/models.py:111 apps/referentiel/models.py:161
 msgid "Référentiel"
-msgstr ""
+msgstr "Framework"
+
 
 #: apps/referentiel/models.py:112
 msgid "Référentiels"
-msgstr ""
+msgstr "Frameworks"
+
 
 #: apps/referentiel/models.py:167
 msgid "Ordre d'affichage ; à défaut, l'ordre alphabétique du code."
@@ -2074,21 +2194,25 @@ msgstr ""
 
 #: apps/referentiel/models.py:207
 msgid "Compétences"
-msgstr ""
+msgstr "Skills"
+
 
 #: apps/revision/templates/revision/flashcards.html:19
 msgid "Révision"
-msgstr ""
+msgstr "Review"
+
 
 #: apps/revision/templates/revision/flashcards.html:26
 msgid ""
 "Classé par nombre de tentatives avant réussite : ce qui a résisté, plutôt "
 "que ce qui est ancien."
-msgstr ""
+msgstr "Sorted by number of attempts before success: what resisted, rather than what is old."
+
 
 #: apps/revision/templates/revision/flashcards.html:50
 msgid "Où se concentrent vos erreurs"
-msgstr ""
+msgstr "Where your mistakes cluster"
+
 
 #: apps/revision/templates/revision/flashcards.html:56
 #, python-format
@@ -2099,39 +2223,48 @@ msgstr[1] ""
 
 #: apps/revision/templates/revision/flashcards.html:66
 msgid "Nombre d'erreurs et part de chaque notion"
-msgstr ""
+msgstr "Number of mistakes and share of each concept"
+
 
 #: apps/revision/templates/revision/flashcards.html:70
 msgid "Notion"
-msgstr ""
+msgstr "Concept"
+
 
 #: apps/revision/templates/revision/flashcards.html:71
 msgid "Erreurs"
-msgstr ""
+msgstr "Mistakes"
+
 
 #: apps/revision/templates/revision/flashcards.html:72
 msgid "Part"
-msgstr ""
+msgstr "Share"
+
 
 #: apps/revision/templates/revision/flashcards.html:147
 msgid "Rejouer mes vraies erreurs"
-msgstr ""
+msgstr "Replay my real mistakes"
+
 
 #: apps/revision/templates/revision/flashcards.html:150
 msgid "Sur les notions cochées — ou sur toutes, si vous n'en cochez aucune."
-msgstr ""
+msgstr "On the ticked concepts — or on all of them, if you tick none."
+
 
 #: apps/revision/templates/revision/flashcards.html:165
 msgid "S'exercer"
-msgstr ""
+msgstr "Practise"
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:23
 msgid "Revoir mes erreurs"
-msgstr ""
+msgstr "Review my mistakes"
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:26
 msgid "Retour à ce qui reste à revoir"
-msgstr ""
+msgstr "Back to what still needs review"
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:35
 #, python-format
@@ -2149,21 +2282,24 @@ msgstr[1] ""
 #: apps/revision/templates/revision/mes_erreurs.html:42
 msgid ""
 "Les questions corrigées quittent la liste ; celles qui résistent y restent."
-msgstr ""
+msgstr "Questions you get right leave the list; the ones that resist stay."
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:49
-#, fuzzy
-#| msgid "À savoir :"
+
 msgid "Encore à revoir"
-msgstr "Worth knowing:"
+msgstr "Still to review"
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:66
 msgid "Votre réponse :"
-msgstr ""
+msgstr "Your answer:"
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:70
 msgid "La bonne réponse :"
-msgstr ""
+msgstr "The correct answer:"
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:85
 #, python-format
@@ -2182,17 +2318,20 @@ msgstr[1] ""
 
 #: apps/revision/templates/revision/mes_erreurs.html:120
 msgid "Corriger"
-msgstr ""
+msgstr "Check"
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:126
 msgid "Aucune erreur à rejouer."
-msgstr ""
+msgstr "No mistake to replay."
+
 
 #: apps/revision/templates/revision/mes_erreurs.html:128
 msgid ""
 "Une question manquée dans un quiz apparaît ici, telle qu'elle a été posée, "
 "avec la réponse que vous aviez donnée."
-msgstr ""
+msgstr "A question missed in a quiz appears here, exactly as it was asked, with the answer you gave."
+
 
 #: apps/tracker/templates/tracker/dashboard.html:20
 #: apps/tracker/templates/tracker/dashboard.html:37
@@ -2204,13 +2343,14 @@ msgstr ""
 msgid ""
 "Ce que vous avez fait, tel que la base l'enregistre. Aucune valeur n'est "
 "estimée."
-msgstr ""
+msgstr "What you did, as the database records it. No value is estimated."
+
 
 #: apps/tracker/templates/tracker/dashboard.html:44
-#, fuzzy
-#| msgid "Créer un compte"
+
 msgid "Décomptes"
-msgstr "Create an account"
+msgstr "Counters"
+
 
 #: apps/tracker/templates/tracker/dashboard.html:47
 #: apps/users/templates/users/supprimer_compte.html:60
@@ -2218,15 +2358,16 @@ msgid "Cours créés"
 msgstr "Courses created"
 
 #: apps/tracker/templates/tracker/dashboard.html:52
-#, fuzzy
-#| msgid "Exercices créés"
+
 msgid "Exercices réussis"
-msgstr "Exercises created"
+msgstr "Completed exercises"
+
 
 #: apps/tracker/templates/tracker/dashboard.html:61
 #, python-format
 msgid "Score moyen : %(moyenne)s %%"
-msgstr ""
+msgstr "Average score: %(moyenne)s %%"
+
 
 #: apps/tracker/templates/tracker/dashboard.html:64
 msgid "Aucun score enregistré"
@@ -2234,11 +2375,13 @@ msgstr "No score recorded"
 
 #: apps/tracker/templates/tracker/dashboard.html:82
 msgid "Temps d'étude"
-msgstr ""
+msgstr "Study time"
+
 
 #: apps/tracker/templates/tracker/dashboard.html:84
 msgid "Les durées de séance ne sont pas enregistrées."
-msgstr ""
+msgstr "Session durations are not recorded."
+
 
 #: apps/tracker/templates/tracker/dashboard.html:93
 msgid "Progression par compétence"
@@ -2248,11 +2391,13 @@ msgstr "Progress by competency"
 msgid ""
 "Un exercice réussi donne le niveau 1, trois exercices distincts le niveau 2. "
 "Le niveau 3 n'est pas mesuré."
-msgstr ""
+msgstr "One completed exercise gives level 1, three distinct exercises give level 2. Level 3 is not measured."
+
 
 #: apps/tracker/templates/tracker/dashboard.html:133
 msgid "Non entamée"
-msgstr ""
+msgstr "Not started"
+
 
 #: apps/tracker/templates/tracker/dashboard.html:139
 #, python-format
@@ -2265,11 +2410,13 @@ msgstr[1] ""
 msgid ""
 "Vos cours, exercices et quiz restent enregistrés ; la progression par "
 "compétence s'affichera dès qu'un référentiel sera chargé."
-msgstr ""
+msgstr "Your courses, exercises and quizzes stay saved; progress by skill will appear as soon as a framework is loaded."
+
 
 #: apps/users/admin.py:12
 msgid "Profil utilisateur"
-msgstr ""
+msgstr "User profile"
+
 
 #: apps/users/admin.py:15 apps/users/templates/users/supprimer_compte.html:59
 msgid "Progression"
@@ -2356,7 +2503,8 @@ msgid ""
 "Anime le personnage du tuteur. Décocher fige Koda sur une image. Le réglage "
 "« mouvement réduit » du système est respecté quoi qu'il arrive : ce champ "
 "permet de figer l'animation sans y toucher."
-msgstr ""
+msgstr "Animates the tutor character. Unticking freezes Koda on a single frame. Your system's \"reduced motion\" setting is honoured whatever happens: this field lets you freeze the animation without touching it."
+
 
 #: apps/users/models.py:98
 msgid "Experience Points"
@@ -2367,10 +2515,10 @@ msgid "Total experience points gained by the student."
 msgstr ""
 
 #: apps/users/templates/users/login.html:8
-#, fuzzy
-#| msgid "Connexion - EduAI Tutor"
+
 msgid "Connexion - Koda"
-msgstr "Sign in — EduAI Tutor"
+msgstr "Sign in — Koda"
+
 
 #: apps/users/templates/users/login.html:45
 #: apps/users/templates/users/register.html:45
@@ -2443,7 +2591,8 @@ msgstr ""
 
 #: apps/users/templates/users/profile.html:42
 msgid "Avatar actuel"
-msgstr ""
+msgstr "Current avatar"
+
 
 #: apps/users/templates/users/profile.html:44
 msgid "Current avatar"
@@ -2498,7 +2647,8 @@ msgstr "Français"
 msgid ""
 "Décocher fige le personnage du tuteur sur une image. Le réglage « mouvement "
 "réduit » de votre système est respecté dans tous les cas."
-msgstr ""
+msgstr "Unticking freezes the tutor character on a single frame. Your system's \"reduced motion\" setting is honoured in every case."
+
 
 #: apps/users/templates/users/profile.html:237
 msgid "Statistics"
@@ -2521,10 +2671,10 @@ msgid "Member since"
 msgstr ""
 
 #: apps/users/templates/users/register.html:8
-#, fuzzy
-#| msgid "Inscription - EduAI Tutor"
+
 msgid "Inscription - Koda"
-msgstr "Sign up — EduAI Tutor"
+msgstr "Sign up — Koda"
+
 
 #: apps/users/templates/users/register.html:48
 msgid "Créer un compte"
@@ -2575,7 +2725,8 @@ msgstr "Warning: this cannot be undone"
 msgid ""
 "Une fois supprimées, ces données ne peuvent pas être\n"
 "      restaurées. Aucune sauvegarde n'en conserve de copie exploitable."
-msgstr ""
+msgstr "Once deleted, this data cannot be\n      restored. No backup keeps a usable copy of it."
+
 
 #: apps/users/templates/users/supprimer_compte.html:44
 msgid "Ce qui sera supprimé"
@@ -2626,7 +2777,8 @@ msgid ""
 "la suppression des salles de quiz que vous avez\n"
 "        hébergées retire aussi les réponses des autres participants à ces\n"
 "        parties."
-msgstr ""
+msgstr "deleting the quiz rooms you have\n        hosted also removes the other participants' answers to those\n        games."
+
 
 #: apps/users/templates/users/supprimer_compte.html:81
 msgid "Confirmation"
@@ -2637,7 +2789,8 @@ msgstr "Confirmation"
 msgid ""
 "Pour confirmer, saisissez\n"
 "          votre adresse électronique : %(adresse)s"
-msgstr ""
+msgstr "To confirm, enter\n          your email address: %(adresse)s"
+
 
 #: apps/users/templates/users/supprimer_compte.html:101
 msgid "La saisie doit correspondre exactement, à la casse près."
@@ -2657,13 +2810,15 @@ msgstr ""
 
 #: apps/users/views.py:180
 msgid "Cet avatar n'existe pas. Choisissez-en un dans la liste."
-msgstr ""
+msgstr "This avatar does not exist. Choose one from the list."
+
 
 #: apps/users/views.py:245
 msgid ""
 "La confirmation ne correspond pas à votre adresse électronique. Le compte "
 "n'a pas été supprimé."
-msgstr ""
+msgstr "The confirmation does not match your email address. The account has not been deleted."
+
 
 #: apps/users/views.py:260
 msgid "Votre compte et les données qui s'y rattachaient ont été supprimés."
@@ -2674,7 +2829,8 @@ msgid ""
 "Votre compte a été supprimé, mais certaines données n'ont pas pu être "
 "effacées. L'incident est enregistré et sera traité ; vous pouvez nous "
 "contacter pour en suivre le traitement."
-msgstr ""
+msgstr "Your account has been deleted, but some data could not be erased. The incident is recorded and will be handled; you may contact us to follow it up."
+
 
 #: templates/base.html:8
 msgid "Koda — plateforme d'apprentissage intelligente"
@@ -2690,7 +2846,8 @@ msgstr ""
 
 #: templates/components/blocs_de_code.html:34
 msgid "— exécuté avec les blocs précédents de ce cours —"
-msgstr ""
+msgstr "— run together with the earlier blocks of this course —"
+
 
 #: templates/components/mention_ia.html:29
 msgid ""
@@ -2749,40 +2906,46 @@ msgstr ""
 
 #: templates/components/tuteur.html:23
 msgid "Ouvrir Koda (Alt+T). Glisser, ou flèches du clavier, pour le déplacer."
-msgstr ""
+msgstr "Open Koda (Alt+T). Drag it, or use the arrow keys, to move it."
+
 
 #: templates/components/tuteur.html:24
 msgid ""
 "Ouvrir Koda (Alt+T) — glissez-le, ou déplacez-le aux flèches, s'il vous gêne"
-msgstr ""
+msgstr "Open Koda (Alt+T) — drag it, or move it with the arrow keys, if it is in your way"
+
 
 #: templates/components/tuteur.html:51
 msgid "Barre du tuteur"
-msgstr ""
+msgstr "Tutor toolbar"
+
 
 #: templates/components/tuteur.html:80
 msgid "En ligne"
-msgstr ""
+msgstr "Online"
+
 
 #: templates/components/tuteur.html:86
 msgid "Redocker à droite"
-msgstr ""
+msgstr "Dock back to the right"
+
 
 #: templates/components/tuteur.html:89
 msgid "Redocker"
-msgstr ""
+msgstr "Dock back"
+
 
 #: templates/components/tuteur.html:93
-#, fuzzy
-#| msgid "Fermer le tuteur"
+
 msgid "Replier le tuteur (Échap)"
-msgstr "Close the tutor"
+msgstr "Collapse the tutor (Esc)"
+
 
 #: templates/components/tuteur.html:96
-#, fuzzy
-#| msgid "Fermer le tuteur"
+
 msgid "Replier le tuteur"
-msgstr "Close the tutor"
+msgstr "Collapse the tutor"
+
 
 #: templates/components/tuteur.html:140
 msgid "Le tuteur voit :"
@@ -2798,7 +2961,8 @@ msgstr "The tutor is thinking…"
 
 #: templates/components/tuteur.html:288
 msgid "restantes"
-msgstr ""
+msgstr "remaining"
+
 
 #: templates/components/xp_notification.html:10
 msgid "+15 XP Earned!"
@@ -2826,7 +2990,8 @@ msgid ""
 "Le service a atteint son plafond quotidien (%(plafond)s générations). La "
 "consultation reste ouverte : vos cours, exercices et quiz déjà enregistrés "
 "restent accessibles. La génération reprendra demain."
-msgstr ""
+msgstr "The service has reached its daily cap (%(plafond)s generations). Browsing stays open: your saved courses, exercises and quizzes remain accessible. Generation will resume tomorrow."
+
 
 #: templates/quotas/_compteur_generations.html:40
 #, python-format
@@ -2837,7 +3002,8 @@ msgstr "You have used your %(quota)s generations for today."
 msgid ""
 "Le compteur repart à zéro à minuit. Vos cours, exercices et quiz déjà "
 "enregistrés restent accessibles."
-msgstr ""
+msgstr "The counter resets to zero at midnight. Your saved courses, exercises and quizzes remain accessible."
+
 
 #: templates/quotas/_compteur_generations.html:56
 #, python-format
