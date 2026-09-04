@@ -53,13 +53,19 @@ Le détail est tenu dans `docs/provenance-ressources.md`. En résumé :
   Illustrations de Koda             cédées par Camille Catry pour cet usage
   Bibliothèques employées           leurs licences respectives
 
-RÉSERVE, énoncée plutôt que passée sous silence : les supports de cours de
-`data/contents/courses/` sont déclarés dans `data/contents/provenance.json`
-comme rédigés pour ce projet, alors que quarante d'entre eux portent des
-marques d'un site tiers. Cette contradiction n'est pas tranchée à ce jour. En
-attendant, **la présente licence ne revendique aucun droit sur ces
-fichiers** : ils sont dans le dépôt pour que l'import soit exécutable, et
-leur statut reste à établir.
+  Supports de cours                 MIT — « Python Cheatsheet » de
+  (`data/contents/courses/`)        wilfredinni, 40 fichiers sur 42
+
+La réserve qui figurait ici est levée. Ces supports étaient déclarés comme
+rédigés pour ce projet ; la vérification du 4 septembre 2026 établit qu'ils
+proviennent de « Python Cheatsheet » de David Wilfredo Delgado
+(https://github.com/wilfredinni/python-cheatsheet), sous licence MIT. Le
+manifeste de provenance porte désormais cette origine, fichier par fichier.
+
+La licence MIT autorise la redistribution et la modification **à condition de
+conserver la mention de droit d'auteur et le texte de la licence**. La
+présente licence ne revendique donc aucun droit sur ces quarante fichiers :
+elle en reconnaît l'auteur, et l'obligation d'attribution qui l'accompagne.
 
 
 Absence de garantie

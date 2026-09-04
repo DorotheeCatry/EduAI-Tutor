@@ -36,16 +36,28 @@ retenus réinclus explicitement.
 Quatre-vingt-treize mégaoctets suffiraient à hésiter. Ce n'est pas la raison
 principale.
 
-**Ces fichiers portent la licence `A_VERIFIER`.** Trente-cinq fichiers — vingt
-et un PDF, douze images, un markdown — qui produisent **82 documents du corpus**
-dont l'origine n'est pas tranchée. La nomenclature les décrit ainsi :
-*« Origine non déterminée, redistribution suspendue jusqu'à vérification »*, et
-leur redistribution est marquée interdite en base.
+**Ces fichiers portaient la licence `A_VERIFIER`** — et ils ne la portent
+plus. La vérification a été faite le 04/09/2026, en lisant les fichiers
+eux-mêmes puis les conditions de leurs éditeurs.
 
-**Les verser au dépôt serait exactement la redistribution que la nomenclature
-suspend.** Le poids n'est donc qu'un argument d'appoint : la position prudente
-et la position économique désignent la même chose, et il faut dire laquelle
-commande. C'est la licence.
+**Dix-neuf des vingt-deux sont des aides-mémoire de DataCamp** : leur première
+page porte la mention « Learn … online at www.DataCamp.com ». Ils sont
+librement téléchargeables sur le site de l'éditeur, et ses conditions
+d'utilisation accordent un usage personnel et non commercial en interdisant
+expressément la reproduction et la redistribution. Ils portent donc la licence
+`DATACAMP`, avec `redistribution_autorisee = FALSE`.
+
+**Un vingtième vient de `gto76/python-cheatsheet`**, dont le dépôt ne déclare
+aucune licence — l'API de GitHub rend `license: null`. En droit d'auteur,
+l'absence de licence n'est pas une permission : c'est la réservation de tous
+les droits. Il porte la licence `SANS-LICENCE`, distincte de `A_VERIFIER` à
+dessein — la première dit « on a cherché et il n'y a rien », la seconde « on
+n'a pas encore cherché ». Les confondre effacerait le travail de vérification.
+
+**Gratuit à télécharger n'est pas libre de droits.** C'est la distinction que
+cette vérification inscrit dans la base, et c'est elle qui justifie que
+`resources/` reste hors du dépôt : le poids n'était que la raison secondaire.
+
 
 Les supports de cours, eux, sont écrits par l'organisme : leur origine est
 claire, et les verser au dépôt ne redistribue rien qui ne lui appartienne.

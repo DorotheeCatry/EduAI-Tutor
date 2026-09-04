@@ -1,0 +1,258 @@
+{
+  "courses/01_python/1-introduction.ipynb": {
+    "licence": "Propriétaire — autrice du projet",
+    "origine": "Rédigé pour EduAI Tutor"
+  },
+  "courses/01_python/args-and-kwargs.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/basics.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/built-in-functions.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/comprehensions.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/context-manager.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/control-flow.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/copy-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/dataclasses.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/datetime-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/debugging.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/decorators.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/dictionaries.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/exception-handling.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/file-directory-path.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/functions.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/itertools-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/json-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/json-yaml.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/lists-and-tuples.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/main.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/manipulating-strings.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/oop-basics.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/os-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/pathlib-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/python-3-14-breaking-free-from-gil.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/python-easy-args-kwargs.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/python-projects-with-poetry-and-vscode-part-1.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/python-projects-with-poetry-and-vscode-part-2.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/python-projects-with-poetry-and-vscode-part-3.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/python-sets-what-why-how.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/python-uv-package-manager.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/random-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/reading-and-writing-files.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/regular-expressions.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/sets.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/setup-py.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/shelve-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/string-formatting.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/virtual-environments.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "courses/01_python/zipfile-module.md": {
+    "licence": "MIT",
+    "origine": "Support issu de « Python Cheatsheet » de David Wilfredo Delgado (wilfredinni), publié sur https://github.com/wilfredinni/python-cheatsheet et https://www.pythoncheatsheet.org. Licence MIT : redistribution et modification autorisées, à condition de conserver la mention de droit d'auteur et le texte de la licence. Vérifié le 04/09/2026 — les fichiers portent la signature du site (frontmatter « - Python Cheatsheet », composants base-title et base-disclaimer), et l'API de GitHub rend spdx_id: MIT pour ce dépôt."
+  },
+  "resources/ai__agents_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/ai__spacy_cheat_sheet.pdf": {
+    "licence": "A VERIFIER",
+    "origine": "A VERIFIER"
+  },
+  "resources/data_analysis__data_wrangling_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__descriptive_statistics_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__importing_data.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__matplotlib_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__numpy_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__numpy_scipy_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__pandas_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__pandas_dates_times_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/data_analysis__seaborn_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/deep_learning__keras_cheat.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/dev__git_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/ml__pyspark_rdd_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/ml__pyspark_sql_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/ml__scikit_learn_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/python__basics_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/python__regex_cheat_sheet.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/python__total_cheatsheet.md": {
+    "licence": "Aucune licence déclarée — tous droits réservés",
+    "origine": "« Comprehensive Python Cheatsheet » de gto76, publié sur https://github.com/gto76/python-cheatsheet. Vérifié le 04/09/2026 : le dépôt ne porte aucun fichier LICENSE et l'API de GitHub rend `license: null`. L'absence de licence réserve tous les droits ; la redistribution est donc exclue."
+  },
+  "resources/sql__joining_data.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/sql__sql_for_data_science.pdf": {
+    "licence": "DataCamp — usage personnel, redistribution interdite",
+    "origine": "Aide-mémoire publié par DataCamp, téléchargeable librement sur datacamp.com. Conditions d'utilisation : usage personnel et non commercial ; reproduction et redistribution interdites (https://www.datacamp.com/terms-of-use). Vérifié le 04/09/2026 en lisant la mention d'éditeur portée par le fichier lui-même."
+  },
+  "resources/sql__window_functions_cheat_sheet.pdf": {
+    "licence": "A VERIFIER",
+    "origine": "A VERIFIER"
+  },
+  "courses/01_python/perspectives.md": {
+    "licence": "Propriétaire — autrice du projet",
+    "origine": "Notes de positionnement rédigées par l'autrice du projet. Aucune marque d'éditeur tiers : vérifié le 04/09/2026."
+  }
+}
