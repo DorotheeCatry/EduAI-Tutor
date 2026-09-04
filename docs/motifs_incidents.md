@@ -409,6 +409,36 @@ incidents et de leurs répliques :
 
 > Vérifier l'effet, dans les conditions où il se produira.
 
+### La huitième question, ajoutée le 04/09 : l'amélioration silencieuse
+
+Les sept questions précédentes visent des pannes. Celle-ci vise le contraire, et
+c'est ce qui la rend nécessaire.
+
+Le 31/08 au soir, `OLLAMA_KEEP_ALIVE=24h` a été posé sur le serveur
+d'embarquement **pour borner la mémoire**. La latence médiane de la recherche
+est tombée de 28,4 secondes à 4,6 — un facteur six, obtenu par accident.
+
+Rien n'a échoué. Rien n'a alerté. Et pourtant, ce réglage a **privé de sa
+justification** le seuil de latence de 75 secondes, dérivé le matin même de neuf
+mesures dans l'ancien régime (décision 024). Le seuil est resté en place,
+inatteignable, pendant quatre jours, pendant que le rapport E5 affirmait qu'il
+« continue de se déclencher sur des événements réels ».
+
+Une panne se signale. **Une amélioration ne se signale pas** : elle ne casse
+rien, elle ne lève aucune alarme, et personne ne va vérifier qu'un système
+devenu six fois plus rapide n'a pas rendu caduque une mesure prise sur
+l'ancien régime.
+
+> **Ce réglage change-t-il le régime d'une grandeur que je surveille ailleurs ?**
+
+La parade est écrite dans la décision 024 elle-même — « un changement de l'un
+des trois demande de rejouer les neuf mesures » — et elle n'a pas été appliquée
+parce que le changement avait été fait pour une autre raison. **Une condition de
+révision ne se déclenche pas toute seule.** Elle doit être relue quand on touche
+au système, pas quand on touche à l'indicateur.
+
+---
+
 ### Une occurrence qui vaut pour toutes : connaître le motif ne suffit pas
 
 Le 31/08, en rédigeant la réserve 14 sur les exemptions CSRF, ce document a
@@ -434,7 +464,7 @@ prémunit, et elle doit précéder l'affirmation, pas la suivre.
 
 | Document | Contenu |
 |---|---|
-| `incidents/` | Les onze dossiers, un par incident |
+| `incidents/` | Les vingt dossiers, un par incident |
 | `strategie_tests.md` | Les trois niveaux de reproduction d'un échec d'intégration |
 | `decisions/024-seuil-de-latence-par-environnement.md` | Régler un indicateur juste dont le contexte a changé |
 | `reserves.md`, réserve 9 | Un contrôle qui repose sur une convention d'exécution |
