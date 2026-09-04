@@ -135,7 +135,10 @@ Avec **1 211 mots-clés**, **20 544 rattachements**, 11 campagnes d'extraction,
 DataCamp, le document sans licence déclarée et les 27 productions d'apprenants
 sont retenus par `redistribution_autorisee`.
 
-**Chaque document porte une licence vérifiée**, jamais supposée. Les aides-mémoire
+**Chaque document porte une licence vérifiée**, jamais supposée — y compris
+les supports de cours, qui viennent de « Python Cheatsheet » de wilfredinni
+(MIT) et non du projet lui-même : la vérification du 4 septembre l'a établi, et
+le manifeste le dit fichier par fichier. Les aides-mémoire
 de DataCamp sont librement téléchargeables mais leurs conditions interdisent la
 redistribution ; un fichier issu d'un dépôt sans `LICENSE` porte
 `SANS-LICENCE`, car l'absence de licence réserve tous les droits. *Gratuit à
