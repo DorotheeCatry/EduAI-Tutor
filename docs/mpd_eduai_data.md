@@ -24,16 +24,202 @@ Il répond à trois questions que le niveau logique laisse ouvertes :
 
 | Question | Où elle est traitée ici |
 |---|---|
-| Quel type physique pour chaque attribut, et sur quelle donnée réelle ? | § 3 et § 4 |
-| Quelles règles le moteur fait-il respecter sans qu'aucun code intervienne ? | § 5 |
-| Quels index, appelés par quelle requête, et lesquels ont été écartés ? | § 6 |
+| Quel type physique pour chaque attribut, et sur quelle donnée réelle ? | § 4 et § 5 |
+| Quelles règles le moteur fait-il respecter sans qu'aucun code intervienne ? | § 6 |
+| Quels index, appelés par quelle requête, et lesquels ont été écartés ? | § 7 |
 
 Le principe qui traverse ces trois réponses : **ce que le moteur peut garantir,
 le code n'a pas à le vérifier.** Une règle inscrite dans le schéma survit à une
 refonte de l'application ; une règle inscrite dans une fonction Python survit à
 la prochaine relecture, au mieux.
 
-## 2. Le SGBD retenu
+## 2. Le schéma physique
+
+Les treize tables avec **leurs types PostgreSQL réels**, relevés dans le
+catalogue système le 4 septembre 2026. Les arêtes portent le **comportement à la
+suppression**, que ni le MCD ni le MLD ne fixent.
+
+```mermaid
+erDiagram
+    COLLECTE {
+        integer id_collecte PK
+        integer id_extraction FK, UK
+        integer id_document FK, UK
+        varchar(200) critere_collecte UK
+        timestamptz vu_le
+    }
+    DESCRIPTION {
+        integer id_document PK, FK
+        varchar(60) code_mot_cle PK, FK
+    }
+    DOCUMENT {
+        integer id_document PK, UK
+        char(2) code_source FK, UK
+        varchar(20) code_type_source FK, UK
+        varchar(120) identifiant_source UK
+        varchar(20) code_licence FK
+        boolean attribution_requise FK
+        varchar(255) titre
+        text contenu
+        varchar(500) url_source
+        langue_document langue
+        timestamptz extrait_le
+        timestamptz dernier_vu_le
+        timestamptz retire_le
+    }
+    DOCUMENT_API_REST {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+        integer score
+        smallint nombre_reponses
+        integer nombre_vues
+        timestamptz cree_le
+    }
+    DOCUMENT_BASE_DONNEES {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+    }
+    DOCUMENT_BIG_DATA {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+    }
+    DOCUMENT_FICHIER {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+        varchar(255) chemin_fichier
+        format_fichier format
+        varchar(50) module_pedagogique
+        smallint index_section
+        varchar(255) origine_declaree
+    }
+    DOCUMENT_WEB {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+        varchar(255) page
+        varchar(255) ancre_section
+    }
+    EXTRACTION {
+        integer id_extraction PK
+        char(2) code_source FK, UK
+        timestamptz horodatage_debut UK
+        numeric duree_secondes
+        statut_extraction statut
+        integer nb_enregistrements
+        integer nb_erreurs
+        varchar(255) fichier_sortie
+    }
+    LICENCE {
+        varchar(20) code_licence PK, UK
+        varchar(150) libelle
+        varchar(255) url_texte
+        boolean redistribution_autorisee
+        boolean attribution_requise UK
+        varchar(255) mention_copyright
+    }
+    MOT_CLE {
+        varchar(60) code_mot_cle PK
+        categorie_mot_cle categorie
+    }
+    SOURCE {
+        char(2) code_source PK, UK
+        varchar(100) nom UK
+        varchar(20) code_type_source FK, UK
+        varchar(255) url_racine
+        text contraintes_acces
+        smallint duree_conservation_jours
+    }
+    TYPE_SOURCE {
+        varchar(20) code_type_source PK
+        varchar(80) libelle
+        text description
+    }
+
+    TYPE_SOURCE ||--o{ SOURCE     : "NO ACTION"
+    SOURCE   ||--o{ EXTRACTION    : "NO ACTION"
+    SOURCE   ||--o{ DOCUMENT      : "NO ACTION"
+    LICENCE  ||--o{ DOCUMENT      : "NO ACTION"
+    EXTRACTION ||--o{ COLLECTE    : "RESTRICT — une campagne atteste"
+    DOCUMENT   ||--|{ COLLECTE    : "CASCADE"
+    DOCUMENT   ||--o{ DESCRIPTION : "CASCADE"
+    MOT_CLE    ||--o{ DESCRIPTION : "RESTRICT — un mot-clé employé"
+    DOCUMENT ||--o| DOCUMENT_API_REST     : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_WEB          : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_FICHIER      : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_BASE_DONNEES : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_BIG_DATA     : "CASCADE"
+```
+
+### Comment ce diagramme a été produit, et comment le refaire
+
+Il n'est pas dessiné : il est **lu dans la base**. La requête qui donne les
+colonnes et leurs types :
+
+```sql
+SELECT c.relname, a.attname, format_type(a.atttypid, a.atttypmod), a.attnum
+FROM pg_attribute a
+JOIN pg_class c ON c.oid = a.attrelid
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind = 'r'
+  AND a.attnum > 0 AND NOT a.attisdropped
+ORDER BY c.relname, a.attnum;
+```
+
+et celle qui donne les marques `PK`, `FK` et `UK` :
+
+```sql
+SELECT conrelid::regclass, contype, unnest(conkey)
+FROM pg_constraint
+WHERE connamespace = 'public'::regnamespace AND contype IN ('p','f','u');
+```
+
+Deux abréviations sont introduites pour la lisibilité du diagramme, et ce sont
+des alias PostgreSQL valides, non des approximations : `character varying(n)` y
+est noté `varchar(n)`, et `timestamp with time zone` y est noté `timestamptz`.
+
+**Une seule précision est perdue, et il faut le dire :** la notation `erDiagram`
+de Mermaid n'admet pas la virgule dans un nom de type. `extraction.duree_secondes`
+y apparaît donc comme `numeric` alors que la colonne est déclarée
+**`numeric(10,2)`** — dix chiffres significatifs dont deux décimales. Le § 5
+porte la valeur exacte et sa justification.
+
+### Ce que ce diagramme montre et que le MLD ne montrait pas
+
+**Les types sont ceux du moteur**, avec leurs bornes : `char(2)` pour un code de
+source, `varchar(120)` pour un identifiant, `text` sans borne pour le contenu,
+`smallint` pour un nombre de réponses et `integer` pour un nombre de vues. Le
+§ 4 justifie chacun sur la valeur réellement observée.
+
+**Les quatre types énumérés apparaissent sous leur nom** — `langue_document`,
+`format_fichier`, `statut_extraction`, `categorie_mot_cle` — là où le MLD ne
+disait que « énuméré ». Ce sont des types du schéma, pas des colonnes texte
+contraintes : ajouter une valeur est une opération de schéma.
+
+**Les arêtes portent `CASCADE` ou `RESTRICT`**, et la différence est sémantique
+et non technique : ce qui **décrit** un document disparaît avec lui — les cinq
+sous-types, les collectes, les descriptions ; ce qui **atteste** d'une opération
+ne disparaît pas — une campagne d'extraction et un mot-clé encore employé sont
+en `RESTRICT`.
+
+**Une colonne peut porter deux marques.** `DESCRIPTION.id_document` est `PK, FK`;
+`DOCUMENT.code_source` est `FK, UK`. Ces cumuls ne sont pas décoratifs : c'est
+exactement par eux que la partition et la non-divergence des colonnes
+redondantes sont garanties par le moteur.
+
+### Alternative textuelle au diagramme
+
+Treize tables. `DOCUMENT` est au centre, avec treize colonnes, une clé primaire
+entière engendrée, deux clés étrangères composites — vers `SOURCE` et vers
+`LICENCE` — et une contrainte d'unicité sur `(code_source, identifiant_source)`
+qui constitue sa clé naturelle. Cinq tables filles lui sont rattachées par
+`(id_document, code_type_source)` en `ON DELETE CASCADE`. Deux tables de
+jonction, `COLLECTE` et `DESCRIPTION`, la relient à `EXTRACTION` et à `MOT_CLE`;
+leurs clés étrangères vers `DOCUMENT` sont en `CASCADE`, celles vers
+`EXTRACTION` et `MOT_CLE` en `RESTRICT`. Quatre tables de référence complètent
+l'ensemble : `TYPE_SOURCE`, `SOURCE`, `LICENCE`, `MOT_CLE`.
+
+---
+
+## 3. Le SGBD retenu
 
 **PostgreSQL 16.15**, en conteneur (`postgres:16-alpine`), instance unique
 partagée avec la base applicative `eduai_app`, port hôte **5433**.
@@ -49,7 +235,7 @@ règle linguistique : c'est le bon choix pour un corpus bilingue où aucune des
 deux langues ne doit être privilégiée dans l'ordre de tri, et c'est aussi la
 plus rapide.
 
-## 3. Les types énumérés
+## 4. Les types énumérés
 
 Quatre domaines fermés sont portés par des types énumérés PostgreSQL plutôt que
 par des colonnes texte assorties d'un `CHECK`.
@@ -73,7 +259,7 @@ domaines qui portent des attributs, eux, sont bien des tables : `type_source`,
 précisément l'effet recherché — un sixième type de source ne doit pas pouvoir
 apparaître par un simple `INSERT`.
 
-## 4. Les types physiques, choisis sur les données réelles
+## 5. Les types physiques, choisis sur les données réelles
 
 La règle appliquée : **le type se choisit sur la valeur observée, avec la marge
 que la nature de la donnée impose** — pas sur le type le plus large « au cas
@@ -100,7 +286,7 @@ nature : un score Stack Overflow est cumulatif et ne décroît pas. Choisir un
 type sur une grandeur monotone croissante demande une marge, pas un ajustement
 au plus juste.
 
-## 5. Les contraintes d'intégrité
+## 6. Les contraintes d'intégrité
 
 **Cinquante-cinq contraintes** relevées dans le catalogue : **22 `CHECK`**,
 **7 unicités**, **13 clés étrangères** et **13 clés primaires**. Elles sont
@@ -179,7 +365,7 @@ La différence entre `CASCADE` et `RESTRICT` n'est pas technique, elle est
 sémantique : ce qui **décrit** un document disparaît avec lui, ce qui **atteste**
 d'une opération ne disparaît pas.
 
-## 6. Les index
+## 7. Les index
 
 Huit index explicites, en plus des index créés d'office par les clés primaires
 et les contraintes d'unicité. **Chacun répond à une requête prévue** — un index
@@ -223,7 +409,7 @@ indexe que ceux qui portent une URL — les seuls que le RAG puisse citer.
 chaque mise à jour et à chaque suppression. Sur un chargement de 7 868
 documents, c'est mesurable.
 
-## 7. Les vues de contrôle
+## 8. Les vues de contrôle
 
 Quatre vues, qui ne servent pas à l'application mais à **vérifier la base**.
 
@@ -239,7 +425,7 @@ rendent zéro ligne quand tout va bien. Une vue qui doit être vide se relit en
 une requête, là où la même vérification en Python demanderait qu'on pense à
 l'appeler.
 
-## 8. L'ordre des scripts
+## 9. L'ordre des scripts
 
 Le schéma se rejoue depuis zéro, dans cet ordre, chaque fichier supposant le
 précédent :
@@ -261,7 +447,7 @@ rejouable depuis une base vierge**, et la chaîne d'intégration continue le
 rejoue à chaque exécution pour que cette propriété soit vérifiée et non
 supposée.
 
-## 9. Les rôles et privilèges
+## 10. Les rôles et privilèges
 
 | Rôle | Droits | Employé par |
 |---|---|---|
@@ -273,7 +459,7 @@ seule, après le routeur de base de données de Django et les vues. C'est le seu
 des trois que le code applicatif ne peut pas contourner : il a déjà refusé une
 commande de migration avant que le code ait eu son mot à dire.
 
-## 10. Le volume constaté
+## 11. Le volume constaté
 
 Relevé du 4 septembre 2026 par `count(*)`, non par les statistiques du
 planificateur.
@@ -305,7 +491,7 @@ distingue ce qui n'a jamais existé de ce qui a cessé d'exister. C'est aussi ce
 qui explique l'écart d'une unité entre les 7 868 documents produits par le
 pipeline et les 7 869 présents en base.
 
-## 11. Ce que ce document ne fixe pas
+## 12. Ce que ce document ne fixe pas
 
 - **Le corpus vectoriel.** ChromaDB est un artefact aval, reconstruit depuis
   cette base. Il n'est pas la base de données évaluée par C4.
