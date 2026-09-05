@@ -27,7 +27,167 @@ Un attribut suivi de `?` est nullable.
 
 ---
 
-## 2. Relations
+## 2. Le schéma relationnel
+
+Les treize relations, leurs clés et leurs dépendances. **Ce diagramme n'est pas
+celui du MCD** : les associations y sont devenues des relations à part entière,
+les clés étrangères y sont visibles, et les cinq sous-types y figurent tous —
+le MCD n'en représentait que trois.
+
+Les domaines sont **logiques** — `texte`, `entier`, `horodatage`, `enumere` — et
+non des types PostgreSQL : ceux-là sont fixés par le
+[modèle physique](mpd_eduai_data.md).
+
+```mermaid
+erDiagram
+    COLLECTE {
+        entier id_collecte PK
+        entier id_extraction FK, UK
+        entier id_document FK, UK
+        texte critere_collecte UK
+        horodatage vu_le
+    }
+    DESCRIPTION {
+        entier id_document PK, FK
+        texte code_mot_cle PK, FK
+    }
+    DOCUMENT {
+        entier id_document PK, UK
+        texte code_source FK, UK
+        texte code_type_source FK, UK
+        texte identifiant_source UK
+        texte code_licence FK
+        booleen attribution_requise FK
+        texte titre
+        texte_long contenu
+        texte url_source
+        enumere langue
+        horodatage extrait_le
+        horodatage dernier_vu_le
+        horodatage retire_le
+    }
+    DOCUMENT_API_REST {
+        entier id_document PK, FK
+        texte code_type_source FK
+        entier score
+        entier nombre_reponses
+        entier nombre_vues
+        horodatage cree_le
+    }
+    DOCUMENT_BASE_DONNEES {
+        entier id_document PK, FK
+        texte code_type_source FK
+    }
+    DOCUMENT_BIG_DATA {
+        entier id_document PK, FK
+        texte code_type_source FK
+    }
+    DOCUMENT_FICHIER {
+        entier id_document PK, FK
+        texte code_type_source FK
+        texte chemin_fichier
+        enumere format
+        texte module_pedagogique
+        entier index_section
+        texte origine_declaree
+    }
+    DOCUMENT_WEB {
+        entier id_document PK, FK
+        texte code_type_source FK
+        texte page
+        texte ancre_section
+    }
+    EXTRACTION {
+        entier id_extraction PK
+        texte code_source FK, UK
+        horodatage horodatage_debut UK
+        decimal duree_secondes
+        enumere statut
+        entier nb_enregistrements
+        entier nb_erreurs
+        texte fichier_sortie
+    }
+    LICENCE {
+        texte code_licence PK, UK
+        texte libelle
+        texte url_texte
+        booleen redistribution_autorisee
+        booleen attribution_requise UK
+        texte mention_copyright
+    }
+    MOT_CLE {
+        texte code_mot_cle PK
+        enumere categorie
+    }
+    SOURCE {
+        texte code_source PK, UK
+        texte nom UK
+        texte code_type_source FK, UK
+        texte url_racine
+        texte_long contraintes_acces
+        entier duree_conservation_jours
+    }
+    TYPE_SOURCE {
+        texte code_type_source PK
+        texte libelle
+        texte_long description
+    }
+
+    TYPE_SOURCE ||--o{ SOURCE     : "classe"
+    SOURCE   ||--o{ EXTRACTION    : "fait l'objet de"
+    SOURCE   ||--o{ DOCUMENT      : "fournit (clé composite avec le type)"
+    LICENCE  ||--o{ DOCUMENT      : "couvre (clé composite avec l'attribution)"
+    EXTRACTION ||--o{ COLLECTE    : "enregistre"
+    DOCUMENT   ||--|{ COLLECTE    : "est vu dans"
+    DOCUMENT   ||--o{ DESCRIPTION : "porte"
+    MOT_CLE    ||--o{ DESCRIPTION : "qualifie"
+    DOCUMENT ||--o| DOCUMENT_API_REST     : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_WEB          : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_FICHIER      : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_BASE_DONNEES : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_BIG_DATA     : "partition par le type"
+```
+
+### Ce que ce diagramme montre et que le MCD ne pouvait pas montrer
+
+**Deux clés étrangères sont composites**, et c'est le point de conception le
+plus important de ce modèle :
+
+- `DOCUMENT` référence `SOURCE` par **(code_source, code_type_source)** et non
+  par le seul code de source ;
+- `DOCUMENT` référence `LICENCE` par **(code_licence, attribution_requise)**.
+
+Ces deux colonnes redondantes — `code_type_source` et `attribution_requise` —
+sont portées par `DOCUMENT` alors qu'elles appartiennent logiquement à `SOURCE`
+et à `LICENCE`. C'est une entorse assumée à la troisième forme normale, traitée
+au § 5. Elle rend **impossible** que les deux copies divergent, et elle est ce
+qui permet la partition déclarative ci-dessous.
+
+**Les cinq tables filles portent une clé primaire qui est aussi étrangère**, et
+composite : `(id_document, code_type_source)`. Assortie d'une contrainte qui
+fige la valeur du type dans chaque fille, elle rend l'exclusivité de la
+partition vérifiable par le moteur. Un document issu du scraping ne peut pas
+obtenir de ligne dans `DOCUMENT_API_REST`.
+
+**`COLLECTE` porte le critère de collecte**, et non `DOCUMENT`. C'est ce qui
+permet à une même question atteinte par deux mots-clés de rester **un seul
+document vu deux fois**, et non deux documents. C'est le fondement de
+l'idempotence du chargement.
+
+### Alternative textuelle au diagramme
+
+Treize relations. Quatre relations de référence — `TYPE_SOURCE`, `SOURCE`,
+`LICENCE`, `MOT_CLE`. Une relation d'activité, `EXTRACTION`, rattachée à
+`SOURCE`. Une relation centrale, `DOCUMENT`, rattachée à `SOURCE` et à
+`LICENCE` par deux clés composites. Deux relations issues d'associations :
+`COLLECTE`, qui joint `EXTRACTION` et `DOCUMENT` en portant le critère et la
+date de vue, et `DESCRIPTION`, qui joint `DOCUMENT` et `MOT_CLE`. Cinq relations
+de spécialisation, une par type de source, chacune liée à `DOCUMENT` par une clé
+primaire composite qui est aussi étrangère.
+
+---
+
+## 3. Relations
 
 ```
 source            (**code_source**, nom, type_source, url_racine?,
@@ -66,7 +226,7 @@ description       (**#id_document, #code_mot_cle**)
 
 ---
 
-## 3. Implémentation de la partition
+## 4. Implémentation de la partition
 
 C'est le point technique central du MLD. Le MCD décrit une spécialisation
 **exclusive et totale** ; aucune de ces deux propriétés ne s'obtient
@@ -185,7 +345,7 @@ moteur à chaque écriture et impossible à contourner.
 
 ---
 
-## 4. Domaines, nullabilité et contraintes
+## 5. Domaines, nullabilité et contraintes
 
 Longueurs maximales relevées sur les 1 928 enregistrements extraits. Les
 domaines sont dimensionnés avec une marge, sans excès : une colonne trop large
@@ -379,7 +539,7 @@ défaut du modèle, mais il mérite d'être connu avant de s'appuyer sur
 
 ---
 
-## 5. Normalisation
+## 6. Normalisation
 
 Le schéma est en **troisième forme normale**, à une exception délibérée.
 
@@ -422,7 +582,7 @@ et une erreur de modélisation.
 
 ---
 
-## 6. Volumétrie et vérification
+## 7. Volumétrie et vérification
 
 | Table | Lignes attendues | Origine du chiffre |
 |---|---|---|
@@ -452,7 +612,7 @@ au chargement.
 
 ---
 
-## 7. Ce que le MPD met en œuvre
+## 8. Ce que le MPD met en œuvre
 
 - Types PostgreSQL concrets — `VARCHAR` contre `TEXT`, `ENUM` natif contre
   table de référence et clé étrangère, `TIMESTAMPTZ`, `NUMERIC`.
@@ -466,7 +626,7 @@ au chargement.
 
 ---
 
-## 8. Arbitrages retenus
+## 9. Arbitrages retenus
 
 | Point | Décision |
 |---|---|
