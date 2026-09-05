@@ -1047,3 +1047,50 @@ projet retient la seconde et l'écrit.
 Servir `/media/` depuis le proxy de l'hébergeur, ou déposer les fichiers sur un
 stockage objet et n'en garder que l'URL en base. Le second geste supprime aussi
 le besoin de volume persistant.
+
+---
+
+## 24. L'image déployée peut être antérieure au correctif de la collection
+
+**Composant :** `service_ia/`, image `eduai/service-ia`
+**Nature :** écart possible entre le code du dépôt et ce qui tourne
+
+Le conteneur `eduai_service_ia` du poste tourne l'image `eduai/service-ia:1.0.0`,
+**construite le 29/08/2026 à 19 h 13**. Le correctif qui branche la recherche
+documentaire sur la bonne collection — commit `aed93fe`, incident 006 — est de
+**21 h 11 le même jour**, deux heures plus tard.
+
+L'image porte donc encore le nom de collection écrit en dur :
+
+```
+$ docker run --rm --entrypoint sh eduai/service-ia:1.0.0 \
+    -c "grep -n 'eduai_knowledge_base' /app/service_ia/main.py"
+451:        "collection": "eduai_knowledge_base",
+```
+
+**Conséquence sur le poste, constatée :** `/ai/recherche` y interroge
+`eduai_knowledge_base` — **387 fragments**, les supports de formation — et non
+`eduai_corpus_documentaire`, qui en porte **24 004**. Le tuteur cherche dans
+1,6 % du corpus, et répond quand même : rien n'échoue, la recherche rend cinq
+fragments, et seule la sonde de santé trahit le nom de la collection.
+
+**Ce qui n'est pas établi : l'état de l'hébergeur.** L'URL publique n'est pas
+dans le dépôt, et la vérification n'a pas pu être faite. Si le déploiement
+n'a pas été rejoué depuis le 29/08 au soir, la production est dans le même état.
+
+**Le contrôle tient en une requête**, et il ne demande aucun secret :
+
+```bash
+curl -s https://<service-ia>/ai/sante | grep -A3 corpus_rag
+```
+
+- `"collection": "eduai_corpus_documentaire"` → la production est à jour ;
+- `"collection": "eduai_knowledge_base"` → **elle est antérieure au correctif**,
+  et il faut republier l'image avant toute démonstration.
+
+**Ce que cette réserve apprend, indépendamment de sa réponse.** Le correctif de
+l'incident 006 est dans le dépôt, il est testé, et la matrice de traçabilité le
+compte comme acquis. Il ne l'est que sur le code. **Un correctif n'est acquis
+qu'une fois déployé et constaté sur le système en marche** — et le seul
+contrôle qui l'aurait montré, la sonde de santé, existe et n'a pas été relu
+depuis le 29/08.

@@ -175,3 +175,73 @@ La question à ajouter à `docs/motifs_incidents.md` :
 
 Une amélioration ne déclenche aucune alarme. C'est ce qui la rend plus difficile
 à suivre qu'une panne.
+
+---
+
+## Remesure du 5 septembre 2026 — la méthode elle-même atteint sa limite
+
+Les neuf mesures ont été rejouées, comme la mise à jour de la veille le
+demandait. **Sur le poste seulement** : l'URL publique du service IA n'est pas
+dans le dépôt, et le seuil de 75 secondes, qui est celui de l'hébergeur, reste
+donc à redériver.
+
+### Le relevé
+
+Neuf recherches, **neuf requêtes différentes** — le protocole d'origine ne le
+précisait pas, et répéter la même requête aurait mesuré un cache plutôt qu'un
+service. Un préchauffage exclu. Collection `eduai_corpus_documentaire`,
+**24 004 fragments**, code courant du dépôt. Machine à 8 cœurs, charge 0,4.
+
+| Relevé | n | min | médiane | max | écart-type |
+|---|---|---|---|---|---|
+| Poste, base de la décision (3 s annoncés) | — | — | **~3 s** | — | — |
+| Poste, 05/09 | 9 | 0,06 s | **0,06 s** | 0,06 s | **0,00 s** |
+
+**Le régime du poste a changé d'un facteur cinquante**, et pour la même raison
+que celui de l'hébergeur : le modèle d'embarquement reste chargé. Le seuil de
+10 secondes est donc aussi périmé que celui de 75 — la décision n'avait vu que
+le second.
+
+### Ce que la remesure apprend sur la méthode
+
+**Les deux règles ne convergent plus, et ce n'est pas un accident de mesure.**
+
+| Règle | Valeur | |
+|---|---|---|
+| Moyenne + 2,5 écarts-types | **0,06 s** | dégénérée |
+| Maximum + 30 % | **0,08 s** | |
+
+Écart : 22 %. La première règle repose sur la dispersion ; avec un écart-type
+nul, elle rend la moyenne elle-même — c'est-à-dire un seuil que **la moitié des
+appels franchit**. Elle avait du sens sur le régime de l'hébergeur au 31/08, où
+l'écart-type valait 17,5 secondes ; elle n'en a plus sur un service régulier.
+
+**La convergence des deux règles n'était pas une propriété de la méthode, c'était
+une propriété du régime mesuré.** Un service très dispersé les fait converger ;
+un service régulier les fait diverger. Ce qui donnait confiance dans le 75 —
+« deux règles indépendantes qui convergent » — ne peut donc pas être invoqué
+pour un régime stable.
+
+### Ce qui est décidé
+
+**Aucun seuil n'est modifié.** Poser 0,08 seconde sur le poste rendrait l'alerte
+permanente au premier ralentissement banal, et ce serait retomber dans le motif
+de l'incident 009.
+
+Ce que la remesure établit, et qui suffit pour l'instant :
+
+- la méthode à deux règles **exige un plancher** quand la dispersion est faible.
+  Un seuil de latence sur un service régulier se dérive d'un multiple de la
+  médiane, pas d'un écart-type nul ;
+- les **deux** seuils sont périmés, pas seulement celui de l'hébergeur ;
+- le seuil de l'hébergeur reste à redériver, et l'outil est prêt :
+  `benchmark/mesurer_latence_recherche.py`, qui applique les deux règles,
+  **dit quand elles divergent**, et consigne l'état de la machine avec le relevé.
+
+### Une réserve ouverte par cette remesure
+
+La première tentative de mesure a porté sur le conteneur local, qui répondait
+en 0,07 s sur **387 fragments** au lieu de 24 004 : l'image tourne du code
+antérieur au correctif de l'incident 006. La mesure a été jetée. **L'état de
+l'hébergeur n'est pas établi** — voir la réserve 24, qui donne le contrôle en une
+requête.
