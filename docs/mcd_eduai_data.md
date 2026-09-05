@@ -159,7 +159,7 @@ dans leur sous-ensemble et absents ailleurs. Ils sont donc modélisés en
 > la contrainte se déduisent du type de sa source, qui est unique et toujours
 > renseigné.
 >
-> Le diagramme ci-dessous la représente par trois relations un-à-zéro-ou-un
+> Le diagramme ci-dessous la représente par cinq relations un-à-zéro-ou-un
 > (`||--o|`) : la notation `erDiagram` de Mermaid ne sait pas exprimer une
 > partition. Le zéro-ou-un y traduit le point de vue d'une sous-entité prise
 > isolément — un document donné n'a pas de ligne dans `DOCUMENT_WEB` s'il vient
@@ -199,6 +199,35 @@ dans leur sous-ensemble et absents ailleurs. Ils sont donc modélisés en
 | `origine_declaree` | texte | Provenance issue du manifeste `data/contents/provenance.json` |
 
 S4 et S5 ajouteront chacune leur spécialisation, sans toucher aux existantes.
+
+### DOCUMENT_BASE_DONNEES et DOCUMENT_BIG_DATA — complétées le 05/09/2026
+
+**Les deux sous-entités annoncées ci-dessus sont arrivées, et elles n'ont
+aucun attribut propre.**
+
+| Sous-entité | Documents | Attributs propres |
+|---|---|---|
+| `DOCUMENT_BASE_DONNEES` | 27 | aucun |
+| `DOCUMENT_BIG_DATA` | 4 948 | aucun |
+
+C'est un résultat, pas une omission, et il mérite d'être défendu. Une
+spécialisation sans attribut propre paraît inutile : pourquoi une entité qui
+n'ajoute rien ? Parce que **ce qu'elle porte n'est pas un attribut, c'est une
+appartenance**. La partition est exclusive et totale : chaque document est
+d'exactement un type. Supprimer ces deux sous-entités parce qu'elles sont vides
+rendrait la partition partielle, et deux des cinq types exigés par C1 ne seraient
+plus représentés dans le modèle.
+
+Le contraste avec `DOCUMENT_FICHIER`, qui porte cinq attributs, est lui-même une
+information : une production d'apprenant n'a ni format, ni module, ni rang de
+section, et un enregistrement de dump n'en a pas davantage une fois converti.
+**La richesse d'une sous-entité mesure ce que sa source publie, pas son
+importance.**
+
+> **Écart entre ce modèle et le rapport E1.** L'annexe 4 du rapport prête à
+> `DOC. BIG DATA` deux attributs, `site` et `année`. Ils avaient été prévus, ils
+> n'ont pas été implémentés : la table physique ne porte que sa clé. Le modèle
+> physique fait foi.
 
 ### LICENCE
 
@@ -332,6 +361,12 @@ erDiagram
         entier index_section
         texte origine_declaree
     }
+    DOCUMENT_BASE_DONNEES {
+        entier id_document PK
+    }
+    DOCUMENT_BIG_DATA {
+        entier id_document PK
+    }
 
     SOURCE   ||--o{ EXTRACTION : "fait l'objet de"
     SOURCE   ||--o{ DOCUMENT   : "fournit"
@@ -343,11 +378,13 @@ erDiagram
     DOCUMENT   ||--o| DOCUMENT_API_REST : "spécialisation"
     DOCUMENT   ||--o| DOCUMENT_WEB      : "spécialisation"
     DOCUMENT   ||--o| DOCUMENT_FICHIER  : "spécialisation"
+    DOCUMENT   ||--o| DOCUMENT_BASE_DONNEES : "spécialisation"
+    DOCUMENT   ||--o| DOCUMENT_BIG_DATA     : "spécialisation"
 ```
 
 ### Alternative textuelle au diagramme
 
-Le schéma comporte six entités principales et trois spécialisations.
+Le schéma comporte six entités principales et cinq spécialisations.
 
 `SOURCE` est au centre : elle alimente `EXTRACTION` (une source, plusieurs
 exécutions) et `DOCUMENT` (une source, plusieurs documents). `LICENCE` couvre
@@ -358,8 +395,10 @@ porte le critère de collecte ainsi que l'horodatage. Une extraction peut
 n'enregistrer aucune collecte — c'est le cas d'une exécution en échec, qui
 reste malgré tout tracée. `MOT_CLE` et `DOCUMENT`
 sont reliés par l'entité associative `DESCRIPTION`, également
-plusieurs-à-plusieurs. Enfin, `DOCUMENT` se spécialise en trois sous-entités
-— `DOCUMENT_API_REST`, `DOCUMENT_WEB` et `DOCUMENT_FICHIER` — chacune reliée
+plusieurs-à-plusieurs. Enfin, `DOCUMENT` se spécialise en cinq sous-entités
+— `DOCUMENT_API_REST`, `DOCUMENT_WEB`, `DOCUMENT_FICHIER`,
+`DOCUMENT_BASE_DONNEES` et `DOCUMENT_BIG_DATA`, les deux dernières sans attribut
+propre — chacune reliée
 par une relation un-à-zéro-ou-un et portant les attributs propres à son type de
 source. Cette notation est une limite de Mermaid : la spécialisation réelle est
 une partition, exclusive et totale, décrite au paragraphe 3.
