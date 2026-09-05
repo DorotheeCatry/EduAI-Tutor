@@ -1,0 +1,5 @@
+{
+  "theme": "neutral",
+  "er": { "fontSize": 13, "entityPadding": 12, "minEntityWidth": 130 },
+  "themeVariables": { "fontFamily": "DejaVu Sans, Arial, sans-serif" }
+}

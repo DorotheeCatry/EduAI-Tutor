@@ -1,0 +1,107 @@
+erDiagram
+    COLLECTE {
+        entier id_collecte PK
+        entier id_extraction FK, UK
+        entier id_document FK, UK
+        texte critere_collecte UK
+        horodatage vu_le
+    }
+    DESCRIPTION {
+        entier id_document PK, FK
+        texte code_mot_cle PK, FK
+    }
+    DOCUMENT {
+        entier id_document PK, UK
+        texte code_source FK, UK
+        texte code_type_source FK, UK
+        texte identifiant_source UK
+        texte code_licence FK
+        booleen attribution_requise FK
+        texte titre
+        texte_long contenu
+        texte url_source
+        enumere langue
+        horodatage extrait_le
+        horodatage dernier_vu_le
+        horodatage retire_le
+    }
+    DOCUMENT_API_REST {
+        entier id_document PK, FK
+        texte code_type_source FK
+        entier score
+        entier nombre_reponses
+        entier nombre_vues
+        horodatage cree_le
+    }
+    DOCUMENT_BASE_DONNEES {
+        entier id_document PK, FK
+        texte code_type_source FK
+    }
+    DOCUMENT_BIG_DATA {
+        entier id_document PK, FK
+        texte code_type_source FK
+    }
+    DOCUMENT_FICHIER {
+        entier id_document PK, FK
+        texte code_type_source FK
+        texte chemin_fichier
+        enumere format
+        texte module_pedagogique
+        entier index_section
+        texte origine_declaree
+    }
+    DOCUMENT_WEB {
+        entier id_document PK, FK
+        texte code_type_source FK
+        texte page
+        texte ancre_section
+    }
+    EXTRACTION {
+        entier id_extraction PK
+        texte code_source FK, UK
+        horodatage horodatage_debut UK
+        decimal duree_secondes
+        enumere statut
+        entier nb_enregistrements
+        entier nb_erreurs
+        texte fichier_sortie
+    }
+    LICENCE {
+        texte code_licence PK, UK
+        texte libelle
+        texte url_texte
+        booleen redistribution_autorisee
+        booleen attribution_requise UK
+        texte mention_copyright
+    }
+    MOT_CLE {
+        texte code_mot_cle PK
+        enumere categorie
+    }
+    SOURCE {
+        texte code_source PK, UK
+        texte nom UK
+        texte code_type_source FK, UK
+        texte url_racine
+        texte_long contraintes_acces
+        entier duree_conservation_jours
+    }
+    TYPE_SOURCE {
+        texte code_type_source PK
+        texte libelle
+        texte_long description
+    }
+
+    TYPE_SOURCE ||--o{ SOURCE     : "classe"
+    SOURCE   ||--o{ EXTRACTION    : "fait l'objet de"
+    SOURCE   ||--o{ DOCUMENT      : "fournit (clé composite avec le type)"
+    LICENCE  ||--o{ DOCUMENT      : "couvre (clé composite avec l'attribution)"
+    EXTRACTION ||--o{ COLLECTE    : "enregistre"
+    DOCUMENT   ||--|{ COLLECTE    : "est vu dans"
+    DOCUMENT   ||--o{ DESCRIPTION : "porte"
+    MOT_CLE    ||--o{ DESCRIPTION : "qualifie"
+    DOCUMENT ||--o| DOCUMENT_API_REST     : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_WEB          : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_FICHIER      : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_BASE_DONNEES : "partition par le type"
+    DOCUMENT ||--o| DOCUMENT_BIG_DATA     : "partition par le type"
