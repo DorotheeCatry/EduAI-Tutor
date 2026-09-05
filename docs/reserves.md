@@ -1081,8 +1081,12 @@ n'a pas été rejoué depuis le 29/08 au soir, la production est dans le même �
 **Le contrôle tient en une requête**, et il ne demande aucun secret :
 
 ```bash
-curl -s https://<service-ia>/ai/sante | grep -A3 corpus_rag
+curl -s https://<service-ia>/ai/sante | grep -o '"collection":"[^"]*"'
 ```
+
+La sonde répond en JSON compact, sur une seule ligne : un `grep -A3` y rendrait
+toute la charge utile. L'extraction du seul nom de collection est ce qui rend le
+contrôle lisible d'un coup d'œil.
 
 - `"collection": "eduai_corpus_documentaire"` → la production est à jour ;
 - `"collection": "eduai_knowledge_base"` → **elle est antérieure au correctif**,
