@@ -1,0 +1,91 @@
+erDiagram
+    SOURCE {
+        texte code_source PK
+        texte nom
+        enum type_source
+        texte url_racine
+        texte contraintes_acces
+        entier duree_conservation_jours
+    }
+    EXTRACTION {
+        entier id_extraction PK
+        texte code_source FK
+        horodatage horodatage_debut
+        decimal duree_secondes
+        enum statut
+        entier nb_enregistrements
+        entier nb_erreurs
+        texte fichier_sortie
+    }
+    DOCUMENT {
+        entier id_document PK
+        texte code_source FK
+        texte identifiant_source
+        texte code_licence FK
+        texte titre
+        texte contenu
+        texte url_source
+        enum langue
+        horodatage extrait_le
+    }
+    COLLECTE {
+        entier id_extraction FK
+        entier id_document FK
+        texte critere_collecte
+        horodatage vu_le
+    }
+    LICENCE {
+        texte code_licence PK
+        texte libelle
+        texte url_texte
+        booleen redistribution_autorisee
+        booleen attribution_requise
+    }
+    MOT_CLE {
+        texte code_mot_cle PK
+        enum type_mot_cle
+    }
+    DESCRIPTION {
+        entier id_document FK
+        texte code_mot_cle FK
+    }
+    DOCUMENT_API_REST {
+        entier id_document PK
+        entier score
+        entier nombre_reponses
+        entier nombre_vues
+        horodatage cree_le
+    }
+    DOCUMENT_WEB {
+        entier id_document PK
+        texte page
+        texte ancre_section
+        texte mention_copyright
+    }
+    DOCUMENT_FICHIER {
+        entier id_document PK
+        texte chemin_fichier
+        enum format
+        texte module_pedagogique
+        entier index_section
+        texte origine_declaree
+    }
+    DOCUMENT_BASE_DONNEES {
+        entier id_document PK
+    }
+    DOCUMENT_BIG_DATA {
+        entier id_document PK
+    }
+
+    SOURCE   ||--o{ EXTRACTION : "fait l'objet de"
+    SOURCE   ||--o{ DOCUMENT   : "fournit"
+    LICENCE  ||--o{ DOCUMENT   : "couvre"
+    EXTRACTION ||--o{ COLLECTE : "enregistre"
+    DOCUMENT   ||--|{ COLLECTE : "est vu dans"
+    DOCUMENT   ||--o{ DESCRIPTION : "porte"
+    MOT_CLE    ||--o{ DESCRIPTION : "qualifie"
+    DOCUMENT   ||--o| DOCUMENT_API_REST : "spécialisation"
+    DOCUMENT   ||--o| DOCUMENT_WEB      : "spécialisation"
+    DOCUMENT   ||--o| DOCUMENT_FICHIER  : "spécialisation"
+    DOCUMENT   ||--o| DOCUMENT_BASE_DONNEES : "spécialisation"
+    DOCUMENT   ||--o| DOCUMENT_BIG_DATA     : "spécialisation"

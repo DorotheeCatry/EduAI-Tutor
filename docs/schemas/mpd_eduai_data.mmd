@@ -1,0 +1,107 @@
+erDiagram
+    COLLECTE {
+        integer id_collecte PK
+        integer id_extraction FK, UK
+        integer id_document FK, UK
+        varchar(200) critere_collecte UK
+        timestamptz vu_le
+    }
+    DESCRIPTION {
+        integer id_document PK, FK
+        varchar(60) code_mot_cle PK, FK
+    }
+    DOCUMENT {
+        integer id_document PK, UK
+        char(2) code_source FK, UK
+        varchar(20) code_type_source FK, UK
+        varchar(120) identifiant_source UK
+        varchar(20) code_licence FK
+        boolean attribution_requise FK
+        varchar(255) titre
+        text contenu
+        varchar(500) url_source
+        langue_document langue
+        timestamptz extrait_le
+        timestamptz dernier_vu_le
+        timestamptz retire_le
+    }
+    DOCUMENT_API_REST {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+        integer score
+        smallint nombre_reponses
+        integer nombre_vues
+        timestamptz cree_le
+    }
+    DOCUMENT_BASE_DONNEES {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+    }
+    DOCUMENT_BIG_DATA {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+    }
+    DOCUMENT_FICHIER {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+        varchar(255) chemin_fichier
+        format_fichier format
+        varchar(50) module_pedagogique
+        smallint index_section
+        varchar(255) origine_declaree
+    }
+    DOCUMENT_WEB {
+        integer id_document PK, FK
+        varchar(20) code_type_source FK
+        varchar(255) page
+        varchar(255) ancre_section
+    }
+    EXTRACTION {
+        integer id_extraction PK
+        char(2) code_source FK, UK
+        timestamptz horodatage_debut UK
+        numeric duree_secondes
+        statut_extraction statut
+        integer nb_enregistrements
+        integer nb_erreurs
+        varchar(255) fichier_sortie
+    }
+    LICENCE {
+        varchar(20) code_licence PK, UK
+        varchar(150) libelle
+        varchar(255) url_texte
+        boolean redistribution_autorisee
+        boolean attribution_requise UK
+        varchar(255) mention_copyright
+    }
+    MOT_CLE {
+        varchar(60) code_mot_cle PK
+        categorie_mot_cle categorie
+    }
+    SOURCE {
+        char(2) code_source PK, UK
+        varchar(100) nom UK
+        varchar(20) code_type_source FK, UK
+        varchar(255) url_racine
+        text contraintes_acces
+        smallint duree_conservation_jours
+    }
+    TYPE_SOURCE {
+        varchar(20) code_type_source PK
+        varchar(80) libelle
+        text description
+    }
+
+    TYPE_SOURCE ||--o{ SOURCE     : "NO ACTION"
+    SOURCE   ||--o{ EXTRACTION    : "NO ACTION"
+    SOURCE   ||--o{ DOCUMENT      : "NO ACTION"
+    LICENCE  ||--o{ DOCUMENT      : "NO ACTION"
+    EXTRACTION ||--o{ COLLECTE    : "RESTRICT — une campagne atteste"
+    DOCUMENT   ||--|{ COLLECTE    : "CASCADE"
+    DOCUMENT   ||--o{ DESCRIPTION : "CASCADE"
+    MOT_CLE    ||--o{ DESCRIPTION : "RESTRICT — un mot-clé employé"
+    DOCUMENT ||--o| DOCUMENT_API_REST     : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_WEB          : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_FICHIER      : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_BASE_DONNEES : "CASCADE"
+    DOCUMENT ||--o| DOCUMENT_BIG_DATA     : "CASCADE"
