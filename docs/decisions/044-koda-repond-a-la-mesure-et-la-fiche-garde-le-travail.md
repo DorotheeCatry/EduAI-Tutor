@@ -57,6 +57,13 @@ renvoie une vraie question d'un « ça marche ! » et ne l'enregistre jamais.
 réponse. Sans elle, l'apprenant croirait que sa fiche garde tout, et
 s'étonnerait plus tard de ne pas y retrouver une réponse.
 
+## Suite
+
+La consigne de longueur ajoutée à l'invite n'a pas suffi : elle arrivait sous
+le gabarit par défaut de LangChain, qui disait déjà autre chose. Voir la
+décision 047, qui la déplace dans le gabarit lui-même et étend le raccourci au
+panneau flottant.
+
 ## Limite connue
 
 La reconnaissance est une liste de tournures françaises. Elle ne couvre ni les
