@@ -232,7 +232,11 @@ def test_le_parcours_ne_decompte_pas_le_quota_de_l_apprenant():
     orchestrateur = Path("apps/agents/agent_orchestrator.py").read_text(encoding="utf-8")
     services = Path("apps/courses/services.py").read_text(encoding="utf-8")
 
-    assert "def answer_question(self, question, sans_quota=False)" in orchestrateur, (
+    # La correspondance s'arrête avant la parenthèse fermante : ce que ce test
+    # défend est la VALEUR PAR DÉFAUT de `sans_quota`, pas la liste complète des
+    # arguments. `extraits` s'y est ajouté depuis, et exiger une signature figée
+    # aurait fait échouer un changement qui ne touche pas au quota.
+    assert "def answer_question(self, question, sans_quota=False" in orchestrateur, (
         "le défaut doit être le décompte"
     )
     assert "if not sans_quota:" in orchestrateur

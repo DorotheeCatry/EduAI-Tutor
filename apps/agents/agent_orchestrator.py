@@ -153,12 +153,32 @@ class AIOrchestrator:
                 'topic': topic
             }
     
+    def _repondre_sur_extraits(self, question, extraits):
+        """
+        Appelle le modèle avec des extraits fournis, sans nouvelle recherche.
+
+        Compétence visée : C10 (épreuve E3)
+
+        Choix : le MÊME gabarit que la chaîne RAG, chargé depuis
+        `agent_researcher`. Motivation : deux chemins de réponse qui suivraient
+        deux consignes différentes finiraient par répondre différemment à la
+        même question, et la règle de proportion ne tiendrait que sur l'un des
+        deux. Un seul gabarit, deux façons de le remplir.
+        """
+        from apps.agents.agent_researcher import gabarit_de_reponse
+        from apps.agents.tools.llm_loader import get_llm
+
+        invite = gabarit_de_reponse().format(context=extraits, question=question)
+        reponse = get_llm().invoke(invite)
+        return reponse.content if hasattr(reponse, 'content') else str(reponse)
+
     @sous_agent("researcher")
-    def answer_question(self, question, sans_quota=False):
+    def answer_question(self, question, sans_quota=False, extraits=None):
         """
         Answers a question using the RAG system
 
         Compétence visée : C13 (épreuve E3) — le quota est décompté ici.
+        Compétence concernée : C10 (E3) — ce qui part au modèle.
 
         Choix : `sans_quota` est faux par défaut, et le seul appelant qui le
         lève est l'enrichissement proposé par le parcours. Motivation :
@@ -166,6 +186,27 @@ class AIOrchestrator:
         de sa part ne se comprend qu'après l'avoir subi deux fois
         (décision 040). Le défaut reste le décompte : une dépense non imputée
         doit être un cas déclaré, jamais un oubli.
+
+        Choix : `extraits` permet à un appelant qui a DÉJÀ sa documentation de
+        la fournir, au lieu d'en faire chercher une seconde.
+
+        **Motivation constatée.** L'enrichissement de fiche interrogeait le
+        corpus documentaire — celui qui porte les licences et permet de citer
+        ses sources — collait les quatre fragments obtenus dans une invite, et
+        passait cette invite entière ici. Elle repartait alors dans
+        `RetrievalQA`, qui s'en servait comme REQUÊTE de recherche : on
+        cherchait des documents avec un texte de cinq mille caractères
+        contenant déjà des documents. Deux dégâts. Le premier : une requête
+        pareille ne ressemble à rien, et les fragments qui remontaient étaient
+        du bruit. Le second, plus grave : cette seconde recherche visait
+        `eduai_knowledge_base`, quand les sources affichées à l'apprenant
+        venaient de `eduai_corpus_documentaire`. La réponse ne s'appuyait donc
+        pas sur les sources qu'on lui montrait.
+
+        Quand `extraits` est fourni, aucune recherche n'a lieu : le modèle
+        reçoit le même gabarit que par la chaîne RAG, avec ces extraits-là pour
+        contexte. L'appel reste ici, au goulot qui décompte le quota et qui
+        déclare l'agent au monitorage.
         """
         # Voir generate_course : le décompte précède le `try` pour la même
         # raison. Cette méthode sert aussi bien le chat que la génération
@@ -175,12 +216,18 @@ class AIOrchestrator:
 
         try:
             print(f"🔍 Searching for: {question}")
-            
+
             # Use researcher to find and synthesize answer
             try:
-                result = self.researcher.invoke(question)
-                answer = result.get('result', result)
-                sources = [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])]
+                if extraits is not None:
+                    answer = self._repondre_sur_extraits(question, extraits)
+                    # Les sources sont celles de l'appelant, qui a fait la
+                    # recherche : les redire ici les dédoublerait.
+                    sources = []
+                else:
+                    result = self.researcher.invoke(question)
+                    answer = result.get('result', result)
+                    sources = [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])]
             except Exception as e:
                 print(f"Error with RAG, using fallback: {e}")
                 # Fallback without RAG (direct LLM call instead of RetrievalQA)
