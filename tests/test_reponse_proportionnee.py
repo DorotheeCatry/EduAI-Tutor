@@ -24,13 +24,11 @@ panneau flottant — est couvert par `tests/test_echange_courant.py`, avec le
 reste de la reconnaissance des échanges courants.
 """
 
-import json
 from io import StringIO
 from unittest.mock import MagicMock, patch
 
 import pytest
 from django.core.management import call_command
-from django.urls import reverse
 
 from apps.courses.models import AjoutDeFiche
 from apps.referentiel.models import Competence

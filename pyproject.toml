@@ -114,7 +114,22 @@ extend-exclude = [
 # douteuse.
 select = ["E4", "E7", "E9", "F", "W291", "W292", "W605"]
 ignore = [
-    # Les modules d'agents importent pour l'effet de bord de l'amorçage Django.
+    # Concession à l'existant, et non une règle qu'on défendrait.
+    #
+    # La justification précédente était : « les modules d'agents importent pour
+    # l'effet de bord de l'amorçage Django ». Elle décrivait un cas réel mais
+    # couvrait tout autre chose — un `import random` jamais employé dans l'agent
+    # Coach, entre autres. Une exemption justifiée par un motif qui ne la
+    # concerne pas est pire qu'une exemption assumée : elle fait croire que le
+    # sujet a été examiné.
+    #
+    # Le motif réel : 50 imports inutilisés subsistent dans du code antérieur à
+    # l'introduction du linter, répartis sur une quinzaine de fichiers dont des
+    # vues qu'aucun test ne couvre. Les retirer tous à l'approche du rendu est
+    # un risque sans contrepartie.
+    #
+    # La couche `apps/agents/`, elle, a été nettoyée le 12/09/2026 et passe
+    # `uv run ruff check apps/agents --select F401`.
     "F401",
 ]
 
