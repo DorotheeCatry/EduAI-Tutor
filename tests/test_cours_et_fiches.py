@@ -409,16 +409,34 @@ def test_le_rattachement_des_supports_est_une_donnee_pas_du_code():
 
     carte = json.loads(
         Path("apps/courses/donnees/rattachement-cours.json").read_text(encoding="utf-8"))
-    assert carte["sous_modules"], "le rattachement par sous-module doit être renseigné"
-    assert carte["hors_parcours"], (
+
+    # Le fichier déclare une LISTE de corpus depuis le 12/09/2026 : il n'en
+    # portait qu'un seul, à plat, ce qui verrouillait l'import sur le module
+    # Python quelle que soit la matière déposée ailleurs (réserve 25). Les
+    # contrôles ci-dessous valent pour chacun, et non plus pour la racine.
+    corpus = carte["corpus"]
+    assert corpus, "au moins un corpus doit être déclaré"
+
+    for bloc in corpus:
+        assert Path(bloc["index"]).exists(), (
+            "l'index déclaré par le corpus %s doit exister" % bloc.get("module")
+        )
+        assert Path(bloc["repertoire"]).is_dir(), (
+            "le répertoire déclaré par le corpus %s doit exister" % bloc.get("module")
+        )
+        assert bloc["sous_modules"], (
+            "le rattachement par sous-module doit être renseigné"
+        )
+        for fichier, exception in bloc.get("exceptions", {}).items():
+            assert exception.get("motif"), (
+                "l'exception sur %s doit dire pourquoi le sous-module ne décide "
+                "pas — sans motif, elle ressemble à une faute de saisie" % fichier
+            )
+
+    assert any(bloc.get("hors_parcours") for bloc in corpus), (
         "les sous-modules sans compétence sont nommés avec leur motif : un "
         "sous-module absent de la table ne doit pas ressembler à un oubli"
     )
-    for fichier, exception in carte["exceptions"].items():
-        assert exception.get("motif"), (
-            "l'exception sur %s doit dire pourquoi le sous-module ne décide "
-            "pas — sans motif, elle ressemble à une faute de saisie" % fichier
-        )
 
 
 @pytest.mark.django_db
