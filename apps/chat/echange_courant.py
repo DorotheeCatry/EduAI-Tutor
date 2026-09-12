@@ -60,6 +60,25 @@ INDICES_TECHNIQUES = re.compile(
     r"explique|expliques|explication|montre|donne|difference|differences)\b"
 )
 
+#: Les queues optionnelles — un « koda », un « toi » — écrites une fois pour
+#: toutes plutôt que répétées dans chaque motif.
+QUEUES = r"(?: (?:koda|toi|a toi|tout le monde|les amis))?"
+
+#: Les salutations, abréviations comprises.
+#:
+#: Choix : `bjr`, `slt`, `cc`, `bsr` figurent ici au même titre que les formes
+#: écrites en entier. Motivation mesurée : « bjrs ça va » n'était pas reconnu,
+#: et partait donc au modèle comme une demande de cours. Un apprenant qui tape
+#: dans une zone de discussion abrège — la liste doit connaître ce qu'il écrit
+#: réellement, pas ce qu'il écrirait dans une lettre.
+SALUTATIONS = (r"(?:re ?)?(?:salut|slt|bonjour|bjr|bjrs|bonsoir|bsr|coucou|cc|"
+               r"hello|hey|yo|hi|wesh)")
+
+#: La prise de nouvelles, qu'elle vienne seule ou après une salutation.
+NOUVELLES = (r"(?:(?:comment )?(?:ca va|ca roule|ca gaze|ca farte)(?: bien)?|"
+             r"comment (?:vas tu|allez vous)|(?:tu vas|vous allez) bien|"
+             r"quoi de neuf)")
+
 #: Les tournures reconnues, en correspondance ENTIÈRE et non en simple début.
 #:
 #: Choix : `fullmatch`, et non `match`. Motivation mesurée : avec un simple
@@ -68,16 +87,15 @@ INDICES_TECHNIQUES = re.compile(
 #: le message ENTIER soit une politesse ramène le doute du bon côté : ce qui
 #: dépasse la formule est traité comme une question.
 #:
-#: Les queues optionnelles — un « koda », un « toi » — sont écrites une fois
-#: pour toutes dans QUEUES, plutôt que répétées dans chaque motif.
-QUEUES = r"(?: (?:koda|toi|a toi|tout le monde|les amis))?"
-
+#: Choix : la salutation et la prise de nouvelles forment UNE tournure, la
+#: seconde étant optionnelle. Motivation mesurée : la correspondance entière,
+#: appliquée à des tournures isolées, rejetait l'enchaînement le plus courant
+#: de tous — « bonjour ça va ? » est deux formules connues collées, et aucune
+#: des deux ne correspondait au message entier. La règle restait juste, la
+#: liste était incomplète.
 TOURNURES_COURANTES = tuple(re.compile(motif + QUEUES) for motif in (
-    r"(?:re)?(?:salut|bonjour|bonsoir|coucou|hello|hey|yo|hi|wesh)",
-    r"(?:comment )?(?:ca va|ca roule|ca gaze|ca farte)(?: bien)?",
-    r"comment (?:vas tu|allez vous)",
-    r"(?:tu vas|vous allez) bien",
-    r"quoi de neuf",
+    SALUTATIONS + QUEUES + rf"(?: {NOUVELLES})?",
+    NOUVELLES,
     r"(?:merci|thanks|thx)(?: beaucoup| bien| infiniment)?",
     r"(?:ok|okay|d accord|daccord|tres bien|parfait|nickel|super|cool|genial|"
     r"top|bravo|bien vu|impeccable|ca marche|compris|je vois)",
@@ -148,6 +166,17 @@ def _repertoire(pseudo: str) -> dict[str, list[str]]:
             _("Très bien ! J'attendais que tu me demandes quelque chose."),
             _("Au top. Pose-moi une vraie question, pour voir."),
         ],
+        # « Bonjour, ça va ? » pose deux choses à la fois. Répondre par la
+        # seule salutation laisserait la question en plan, et répondre par la
+        # seule forme sauterait le bonjour.
+        "salutation_et_forme": [
+            _("Salut %(p)s ! Tout roule de mon côté. On attaque quoi ?")
+            % {"p": pseudo},
+            _("Bonjour %(p)s, impeccable ! Dis-moi ce qui coince.")
+            % {"p": pseudo},
+            _("Te voilà %(p)s ! Au top. Une question sur le cours ?")
+            % {"p": pseudo},
+        ],
         "remerciement": [
             _("Avec plaisir, %(p)s.") % {"p": pseudo},
             _("Quand tu veux. J'avais parié avec les autres Koda que tu y arriverais."),
@@ -174,7 +203,22 @@ def _repertoire(pseudo: str) -> dict[str, list[str]]:
 
 
 def _famille(message: str) -> str:
-    """Range un message dans une famille de réponse."""
+    """
+    Range un message dans une famille de réponse.
+
+    Compétence visée : C10 (épreuve E3)
+
+    Choix : les salutations et les prises de nouvelles sont reconnues ici avec
+    les MÊMES fragments que `TOURNURES_COURANTES`. Motivation : les deux listes
+    étaient écrites deux fois, et elles avaient déjà divergé — les abréviations
+    ajoutées d'un côté auraient manqué de l'autre, et « bjr » aurait reçu la
+    réponse d'acquiescement par défaut, « Parfait. On continue ? », en guise de
+    bonjour.
+
+    Choix : le cas composé est examiné AVANT les deux cas simples. Motivation :
+    « bonjour ça va » commence par une salutation, et serait rangé avec elles
+    par le premier motif qui correspond.
+    """
     aplati = _aplatir(message)
     if re.match(r"^(qui es tu|qui est tu|comment tu t appelles|c est quoi ton "
                 r"nom|tu t appelles comment)", aplati):
@@ -185,10 +229,11 @@ def _famille(message: str) -> str:
         return "remerciement"
     if re.match(r"^(tu es la|t es la|tu m entends|il y a quelqu un)", aplati):
         return "presence"
-    if re.match(r"^(ca|comment) (va|vas tu|ca va)|^(tu vas bien|vous allez bien|"
-                r"ca roule|ca gaze|quoi de neuf|ca farte)", aplati):
+    if re.match(SALUTATIONS + QUEUES + rf" {NOUVELLES}", aplati):
+        return "salutation_et_forme"
+    if re.match(NOUVELLES, aplati):
         return "forme"
-    if re.match(r"^(salut|bonjour|bonsoir|coucou|hello|hey|yo|hi|wesh)", aplati):
+    if re.match(SALUTATIONS, aplati):
         return "salutation"
     return "acquiescement"
 

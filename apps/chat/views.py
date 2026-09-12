@@ -18,6 +18,7 @@ from apps.quotas.service import QuotaDepasse, etat
 
 from .actions import invite_de_l_action
 from .contexte import composer_l_invite
+from .echange_courant import est_un_echange_courant, repondre
 
 
 @require_POST
@@ -62,6 +63,26 @@ def send_message(request):
 
     if not message:
         return JsonResponse({'error': 'message vide'}, status=400)
+
+    # Une politesse reçoit une phrase, sans appeler le modèle.
+    #
+    # Compétence visée : C10 (épreuve E3), C13 (E3)
+    # Choix : le même raccourci que la page de cours (décision 044), posé ici
+    # aussi. Motivation : il n'existait que sur `courses:enrichir`, si bien que
+    # le même « bonjour » recevait une phrase dans une page de cours et un
+    # développement facturé dans le panneau flottant — qui, lui, est présent
+    # sur toutes les pages. Un dispositif qui ne tient que sur l'une des deux
+    # portes d'entrée ne tient pas.
+    #
+    # Placé APRÈS la résolution des actions, délibérément : une action
+    # préformée a déjà remplacé `message` par une invite complète, qui n'est
+    # pas une politesse et doit partir au modèle.
+    if not action and est_un_echange_courant(message):
+        return JsonResponse({
+            'reponse': repondre(message, request.user.username),
+            'horodatage': timezone.localtime().strftime('%H:%M'),
+            'quota': etat(request.user),
+        })
 
     orchestrateur = get_orchestrator(request.user)
 
