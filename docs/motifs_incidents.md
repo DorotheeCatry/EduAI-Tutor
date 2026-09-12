@@ -1,5 +1,18 @@
 # Motifs récurrents des incidents
 
+> **Note de numérotation — 12/09/2026.** Le numéro **020 est employé deux
+> fois** dans `docs/incidents/` : par le dossier du 25/08 (un modèle retiré du
+> catalogue) et par celui du 07/09 (un crochet de déploiement qui redéployait
+> toujours la même image). Le premier a été **reconstruit le 04/09**, après
+> coup, et a reçu un numéro déjà attribué depuis.
+>
+> **Le doublon n'est pas corrigé, délibérément.** Renuméroter romprait les
+> renvois qui citent ces dossiers — décisions, réserves, matrice de
+> traçabilité, messages de commit — et un numéro cité dans un commit poussé ne
+> se réécrit pas. Les deux dossiers se distinguent sans ambiguïté par leur date
+> et leur titre, qui sont d'ailleurs ce que les renvois emploient le plus
+> souvent. Le dossier suivant porte 021.
+
 **Date :** 31 août 2026
 **Compétence visée :** C21 (épreuve E5) — résolution d'incident
 **Compétences concernées :** C20 (E5) — monitorage ; C18 (E4) ; C13 (E3) ; C19 (E5)
