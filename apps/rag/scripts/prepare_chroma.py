@@ -1,5 +1,6 @@
-import os
 import json
+import logging
+import os
 from pathlib import Path
 from tqdm import tqdm
 from PIL import Image
@@ -11,6 +12,8 @@ from langchain.schema import Document
 from apps.rag.utils import load_embedding_function, get_chroma_collection_native
 from apps.rag.splitter import get_splitter
 from apps.rag.module_loader import module_loader
+
+logger = logging.getLogger(__name__)
 
 # La carte « répertoire de module → fichier d'index ».
 #
@@ -32,7 +35,7 @@ RESOURCES_FOLDER = DATA_FOLDER / "resources"
 CHUNK_THRESHOLD = 1000
 
 SUPPORTED_IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".avif"]
-SUPPORTED_TEXT_EXTS = [".md", ".ipynb", ".pdf"]
+SUPPORTED_TEXT_EXTS = [".md", ".ipynb", ".pdf", ".pptx"]
 
 _loaded_indexes = {}
 
@@ -98,6 +101,61 @@ def ocr_image_to_document(filepath: Path):
         print(f"❌ OCR failed for {filepath.name}: {e}")
         return None
 
+# === Diaporamas ===
+def pptx_to_document(filepath: Path):
+    """
+    Rend le texte d'un diaporama, une diapositive par bloc.
+
+    Compétence visée : C10 (épreuve E3), C4 (E1)
+
+    Choix : `python-pptx` plutôt que `UnstructuredPowerPointLoader`.
+    Motivation : ce dernier tire `unstructured`, qui entraîne à sa suite une
+    chaîne de dépendances d'analyse documentaire hors de proportion avec le
+    besoin. `python-pptx` lit le format directement, et la seule chose qu'on
+    lui demande est le texte.
+
+    Choix : les diapositives sont séparées par un titre de niveau 2 numéroté.
+    Motivation : un diaporama concaténé d'un bloc perd sa structure, et le
+    découpeur du RAG couperait au milieu d'une notion. Le numéro de diapositive
+    donne au fragment une adresse que l'apprenant peut retrouver dans le
+    fichier d'origine.
+
+    Choix : le texte des tableaux est repris, cellule par cellule. Motivation :
+    dans un support sur les relations entre tables, le tableau EST le contenu ;
+    l'ignorer laisserait des diapositives vides.
+    """
+    from pptx import Presentation
+
+    presentation = Presentation(str(filepath))
+    morceaux = []
+
+    for rang, diapositive in enumerate(presentation.slides, start=1):
+        lignes = []
+        for forme in diapositive.shapes:
+            if forme.has_text_frame and forme.text_frame.text.strip():
+                lignes.append(forme.text_frame.text.strip())
+            if getattr(forme, "has_table", False):
+                for ligne in forme.table.rows:
+                    cellules = [c.text.strip() for c in ligne.cells if c.text.strip()]
+                    if cellules:
+                        lignes.append(" | ".join(cellules))
+        if lignes:
+            morceaux.append(f"## Diapositive {rang}\n\n" + "\n\n".join(lignes))
+
+    if not morceaux:
+        logger.warning("Diaporama sans texte exploitable : %s", filepath.name)
+        return None
+
+    return Document(
+        page_content="\n\n".join(morceaux),
+        metadata={
+            "source": filepath.name,
+            "type": "pptx",
+            "section": get_section(filepath),
+        },
+    )
+
+
 # === Unit loader ===
 def load_document(filepath: Path):
     suffix = filepath.suffix.lower()
@@ -109,6 +167,9 @@ def load_document(filepath: Path):
             return NotebookLoader(str(filepath)).load()
         elif suffix == ".pdf":
             return PyPDFLoader(str(filepath)).load()
+        elif suffix == ".pptx":
+            doc = pptx_to_document(filepath)
+            return [doc] if doc else []
         elif suffix in SUPPORTED_IMAGE_EXTS:
             doc = ocr_image_to_document(filepath)
             return [doc] if doc else []

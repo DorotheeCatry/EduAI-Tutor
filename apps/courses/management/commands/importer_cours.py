@@ -23,6 +23,18 @@ des exceptions au fichier — chacune motivée par écrit. Une exception couvre 
 cas où le sous-module ne décide pas ; une erreur de classement se corrige dans
 l'index.
 
+**3. Plusieurs corpus peuvent être déclarés**, un par module, dans la liste
+`corpus` du fichier de rattachement. Chacun porte son index, son répertoire et
+ses rattachements. Les parties sont rassemblées **par compétence à travers tous
+les corpus** avant publication : deux corpus peuvent alimenter la même
+compétence sans que le second efface le travail du premier.
+
+Le fichier ne portait qu'un seul couple index/répertoire jusqu'au 12/09/2026,
+ce qui verrouillait l'import sur le module Python quelle que soit la matière
+déposée ailleurs — trois modules du référentiel sur quatre n'avaient aucun
+cours (réserve 25). La forme à plat reste acceptée et vaut pour un corpus
+unique.
+
 Idempotente : relancer remplace le cours actif de chaque compétence touchée.
 """
 
@@ -53,16 +65,67 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         carte = json.loads(Path(options["rattachement"]).read_text(encoding="utf-8"))
-        index = json.loads(Path(carte["index"]).read_text(encoding="utf-8"))
-        repertoire = Path(carte["repertoire"])
+        corpus = self._corpus_declares(carte)
 
-        try:
-            self._verifier_la_concordance(index, repertoire, carte)
-        except EcartDeCorpus as ecart:
-            raise SystemExit(str(ecart)) from ecart
+        # Tous les corpus sont vérifiés AVANT qu'aucun ne soit lu.
+        #
+        # Compétence visée : C21 (épreuve E5)
+        # C'est la règle 1 de l'en-tête, étendue au cas de plusieurs corpus :
+        # elle promet qu'aucun cours n'est publié quand l'index et le disque
+        # divergent. Vérifier corpus par corpus, en publiant au fil de l'eau,
+        # aurait publié les premiers avant d'échouer sur le troisième — et la
+        # promesse ne vaudrait plus.
+        ecarts = []
+        for bloc in corpus:
+            index = json.loads(Path(bloc["index"]).read_text(encoding="utf-8"))
+            try:
+                self._verifier_la_concordance(index, Path(bloc["repertoire"]), bloc)
+            except EcartDeCorpus as ecart:
+                ecarts.append(str(ecart))
+            bloc["_index"] = index
+        if ecarts:
+            raise SystemExit("\n\n".join(ecarts))
 
-        parties_par_competence = self._repartir(index, repertoire, carte)
-        self._publier(parties_par_competence, carte, options["a_blanc"])
+        # Les parties sont rassemblées par compétence À TRAVERS les corpus.
+        #
+        # Compétence visée : C17 (épreuve E4)
+        # `publier_le_cours` met de côté le cours actif de la compétence et en
+        # publie un neuf. Publier corpus par corpus ferait donc remplacer, par
+        # le second, le cours que le premier venait de publier sur une même
+        # compétence — deux corpus peuvent légitimement l'alimenter.
+        parties_par_competence: dict[str, list[dict]] = {}
+        titres: dict[str, str] = {}
+        for bloc in corpus:
+            reparties = self._repartir(
+                bloc["_index"], Path(bloc["repertoire"]), bloc)
+            for code, parties in reparties.items():
+                parties_par_competence.setdefault(code, []).extend(parties)
+            titres.update({entree["competence"]: entree["titre"]
+                           for entree in bloc["sous_modules"].values()})
+
+        self._publier(parties_par_competence, titres, options["a_blanc"])
+
+    @staticmethod
+    def _corpus_declares(carte) -> list[dict]:
+        """
+        Rend la liste des corpus à importer, quelle que soit la forme du fichier.
+
+        Compétence visée : C17 (épreuve E4), C21 (E5)
+
+        Le fichier de rattachement ne portait qu'un seul couple
+        index/répertoire, écrit à plat. L'import était donc verrouillé sur un
+        module — le module Python — quelle que soit la matière déposée ailleurs,
+        et trois modules du référentiel sur quatre n'avaient aucun cours
+        (réserve 25).
+
+        Choix : la forme à plat reste acceptée, et vaut pour un corpus unique.
+        Motivation : l'option `--rattachement` permet de passer un autre
+        fichier, et rien ne justifie de casser ceux qui existent — la liste est
+        un élargissement, pas un remplacement.
+        """
+        if "corpus" in carte:
+            return list(carte["corpus"])
+        return [carte]
 
     # --- 1. La concordance, avant toute chose ------------------------------
 
@@ -275,9 +338,15 @@ class Command(BaseCommand):
 
     # --- 3. Publication ----------------------------------------------------
 
-    def _publier(self, par_competence: dict, carte, a_blanc: bool) -> None:
-        """Publie un cours par compétence, avec ses parties dans l'ordre."""
-        titres = {e["competence"]: e["titre"] for e in carte["sous_modules"].values()}
+    def _publier(self, par_competence: dict, titres: dict, a_blanc: bool) -> None:
+        """
+        Publie un cours par compétence, avec ses parties dans l'ordre.
+
+        Compétence visée : C17 (épreuve E4)
+
+        `titres` est rassemblé par l'appelant sur l'ensemble des corpus : cette
+        méthode ne connaît plus la carte, seulement le résultat de sa lecture.
+        """
         publies = 0
 
         for code, parties in sorted(par_competence.items()):
