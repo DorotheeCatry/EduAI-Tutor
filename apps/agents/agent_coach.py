@@ -1,141 +1,193 @@
-# apps/agents/agent_coach.py
+"""
+Agent Coach : compose les quiz et les exercices à partir d'un sujet.
+
+Compétence visée : C10 (épreuve E3) — agents et interactions
+Compétences concernées : C13 (E3) — maîtrise du coût ; C17 (E4)
+
+**Ce module ne fabrique rien.** C'est sa règle principale, et elle a été
+introduite le 12/09/2026 en remplacement d'un comportement inverse.
+
+Auparavant, un échec de génération ne remontait pas : `generate_quiz` rendait
+un quiz d'exemple — « Question d'exemple sur X », quatre options « Option A » à
+« Option D », et `correct_answer: 0`. Ce quiz était affiché comme un vrai. Il
+était répondable, notable, et sa « bonne réponse » était l'option A, choisie
+arbitrairement. L'apprenant qui répondait autre chose enregistrait un
+`UserMistake`, qui alimente `notions_a_revoir`, que Koda cite ensuite dans sa
+salutation. Une erreur inventée devenait une notion à revoir.
+
+C'est le même défaut que les sept foyers de données fabriquées retirés du
+projet en une semaine, à une différence près qui l'aggrave : celui-ci
+**écrivait** en base au lieu de seulement afficher.
+
+Un échec lève donc désormais `GenerationImpossible`. Les appelants savent déjà
+traiter l'absence de questions — `AIOrchestrator.create_quiz` rend
+`{"questions": []}` avec le motif, et les deux vues de quiz vérifient la liste
+avant d'en faire quoi que ce soit. Dire « la génération a échoué » est une
+information ; rendre un faux quiz n'en est pas une.
+
+Distinction avec le repli des exercices (`apps/exercises/views.py`), qui, lui,
+est conservé : celui-là crée un gabarit vide, **le dit à l'apprenant** par un
+message d'avertissement, et refuse de le rattacher à une compétence pour qu'il
+ne fasse progresser personne. Un repli annoncé et neutralisé n'est pas une
+donnée fabriquée. Un repli silencieux qui se fait passer pour un résultat, si.
+"""
+
+import json
+import logging
 
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
+
 from apps.agents.tools.llm_loader import get_llm
 from apps.agents.tools.model_config import get_model_for
-from langchain_community.vectorstores import Chroma
-from apps.rag.utils import load_embedding_function
 from apps.agents.utils import load_prompt, parse_text_quiz
-import json
-import random
+
+logger = logging.getLogger(__name__)
+
+
+class GenerationImpossible(RuntimeError):
+    """
+    L'agent n'a pas pu produire ce qu'on lui demandait.
+
+    Compétence visée : C10 (épreuve E3), C21 (E5)
+
+    Choix : une exception nommée plutôt qu'un `None` ou un objet vide.
+    Motivation : un appelant qui reçoit `None` doit se souvenir de le tester ;
+    un appelant qui reçoit une exception ne peut pas l'ignorer par distraction.
+    Et le motif voyage avec — ce qui permet de l'afficher et de le journaliser
+    au lieu de le perdre.
+    """
+
 
 def get_coach_chain(model_name=None):
     """
-    AI Coach Agent: generates MCQs and exercises from a given topic.
+    Chaîne du Coach : engendre un questionnaire à choix multiples.
 
     Compétence visée : C10 (épreuve E3)
-    Choix : le modèle n'est plus codé en dur mais résolu par get_model_for.
+    Choix : le modèle n'est pas codé en dur mais résolu par `get_model_for`.
+    Motivation : voir `tools/model_config.py` — un identifiant écrit en dur dans
+    trois fichiers a déjà provoqué une panne complète de la couche IA quand le
+    fournisseur l'a retiré de son catalogue (décision 001).
     """
     if model_name is None:
         model_name = get_model_for("coach")
 
-    llm = get_llm(model_name=model_name)
-    
-    # Prompt for generating MCQs
-    quiz_prompt = PromptTemplate(
+    invite = PromptTemplate(
         input_variables=["topic", "num_questions", "language"],
-        template=load_prompt("coach")
+        template=load_prompt("coach"),
     )
-    return LLMChain(llm=llm, prompt=quiz_prompt)
+    return LLMChain(llm=get_llm(model_name=model_name), prompt=invite)
+
 
 def get_code_exercise_chain(model_name=None):
     """
-    AI Coach Agent: generates code completion exercises.
+    Chaîne du Coach : engendre un exercice de code à compléter.
 
     Compétence visée : C10 (épreuve E3)
-    Choix : le modèle n'est plus codé en dur mais résolu par get_model_for.
+
+    Choix : l'invite vit dans `prompts/coach_exercice.txt`, comme celles des
+    autres agents. Motivation : elle était écrite en dur dans ce fichier, en
+    anglais, seule de toutes les invites du projet à ne pas être relisible au
+    même endroit que les autres. Une invite est un texte qu'on relit et qu'on
+    corrige ; ce n'est pas du code.
     """
     if model_name is None:
         model_name = get_model_for("coach")
 
-    llm = get_llm(model_name=model_name)
-    
-    code_prompt = PromptTemplate(
+    invite = PromptTemplate(
         input_variables=["topic"],
-        template="""
-You are a programming expert who creates code exercises.
-
-TOPIC: {topic}
-
-Create a practical code exercise on "{topic}" at intermediate level.
-
-The exercise should include:
-- A clear statement
-- Code to complete with missing parts (marked with # TODO)
-- The complete solution
-- Tests to verify the solution
-
-RESPONSE FORMAT (strict JSON):
-{{
-  "title": "Exercise title",
-  "description": "Detailed description of what to do",
-  "starter_code": "Starting code with # TODO",
-  "solution": "Complete solution code",
-  "tests": [
-    {{"input": "input value", "expected": "expected result"}}
-  ]
-}}
-
-Respond ONLY with JSON, no additional text.
-"""
+        template=load_prompt("coach_exercice"),
     )
-    
-    return LLMChain(llm=llm, prompt=code_prompt)
+    return LLMChain(llm=get_llm(model_name=model_name), prompt=invite)
+
 
 def generate_quiz(topic, num_questions=5, language="fr"):
+    """
+    Engendre un quiz sur un sujet, ou lève si le modèle n'a rien donné d'exploitable.
+
+    Compétence visée : C10 (épreuve E3), C21 (E5)
+
+    Choix : `invoke` et non `run`. Motivation : `Chain.run` est déprécié dans
+    LangChain 0.3 et supprimé en 1.0 ; `invoke` est l'appel qui survivra à la
+    prochaine montée de version. La sortie se lit alors sous la clé `text`.
+
+    Choix : deux échecs distincts, un seul type d'exception. Motivation : que
+    le modèle soit injoignable ou qu'il ait répondu hors format, le résultat
+    pour l'apprenant est le même — pas de quiz. Mais le motif diffère, et il
+    est journalisé séparément.
+
+    Raises:
+        GenerationImpossible: le modèle n'a pas répondu, ou sa réponse ne
+            contient aucune question analysable.
+    """
     try:
-        chain = get_coach_chain()
-        result = chain.run(
-            topic=topic,
-            num_questions=num_questions,
-            language=language
+        chaine = get_coach_chain()
+        sortie = chaine.invoke({
+            "topic": topic,
+            "num_questions": num_questions,
+            "language": language,
+        })
+    except Exception as erreur:
+        logger.exception("Quiz sur %r : appel au modele en echec.", topic)
+        raise GenerationImpossible(
+            f"le modèle n'a pas répondu ({type(erreur).__name__})"
+        ) from erreur
+
+    brut = sortie.get("text", "") if isinstance(sortie, dict) else str(sortie)
+    logger.debug("Quiz sur %r : %d caracteres recus.", topic, len(brut))
+
+    quiz = parse_text_quiz(brut)
+    if not quiz or not quiz.get("questions"):
+        logger.warning(
+            "Quiz sur %r : reponse du modele non analysable, aucune question.",
+            topic,
         )
-        print("🧠 Raw model output:", result)
+        raise GenerationImpossible(
+            "la réponse du modèle ne contient aucune question exploitable"
+        )
 
-        quiz_data = parse_text_quiz(result)
-        if quiz_data and quiz_data.get("questions"):
-            return quiz_data
+    return quiz
 
-    except Exception as e:
-        print(f"❌ Quiz generation failed: {e}")
-
-    # Fallback with language support
-    fallback_text = {
-        "fr": {
-            "question": f"Question d'exemple sur {topic}",
-            "options": ["Option A", "Option B", "Option C", "Option D"],
-            "explanation": "Explication d'exemple"
-        },
-        "en": {
-            "question": f"Example question on {topic}",
-            "options": ["Option A", "Option B", "Option C", "Option D"],
-            "explanation": "Sample explanation"
-        }
-    }
-    
-    lang_text = fallback_text.get(language, fallback_text["en"])
-    
-    return {
-        "questions": [
-            {
-                "question": lang_text["question"],
-                "options": lang_text["options"],
-                "correct_answer": 0,
-                "explanation": lang_text["explanation"]
-            }
-        ]
-    }
 
 def generate_code_exercise(topic):
     """
-    Generates a code exercise on a given topic.
+    Engendre un exercice de code, ou lève si le modèle n'a rien donné d'exploitable.
+
+    Compétence visée : C10 (épreuve E3), C21 (E5)
+
+    **Cette fonction n'a aucun appelant aujourd'hui** : la génération
+    d'exercices de l'application passe par `apps/exercises/views.py`, qui
+    compose sa propre invite et appelle `answer_question`. Elle est conservée
+    parce qu'elle fait partie du rôle déclaré du Coach, et corrigée parce que
+    du code fautif conservé reste du code fautif — son repli rendait un
+    exercice dont la solution attendue était `print('Hello World')` et le test
+    `{"input": "test", "expected": "result"}`.
+
+    Raises:
+        GenerationImpossible: le modèle n'a pas répondu, ou sa réponse n'est
+            pas le JSON demandé.
     """
     try:
-        chain = get_code_exercise_chain()
-        result = chain.run(topic=topic)
-        
-        # Parse the JSON
-        exercise_data = json.loads(result)
-        return exercise_data
-        
-    except Exception as e:
-        print(f"Error during exercise generation: {e}")
-        # Fallback with example exercise
-        return {
-            "title": f"Exercise on {topic}",
-            "description": f"Practical exercise on {topic}",
-            "starter_code": f"# TODO: Implement {topic}\npass",
-            "solution": f"# Solution for {topic}\nprint('Hello World')",
-            "tests": [{"input": "test", "expected": "result"}]
-        }
+        chaine = get_code_exercise_chain()
+        sortie = chaine.invoke({"topic": topic})
+    except Exception as erreur:
+        logger.exception("Exercice sur %r : appel au modele en echec.", topic)
+        raise GenerationImpossible(
+            f"le modèle n'a pas répondu ({type(erreur).__name__})"
+        ) from erreur
+
+    brut = sortie.get("text", "") if isinstance(sortie, dict) else str(sortie)
+
+    try:
+        return json.loads(brut)
+    except (json.JSONDecodeError, TypeError) as erreur:
+        # Exception nommée, jamais `except Exception` : une réponse hors format
+        # et une panne d'appel ne se diagnostiquent pas de la même façon, et
+        # les confondre coûterait une heure au prochain qui lira le journal.
+        logger.warning(
+            "Exercice sur %r : reponse du modele non analysable en JSON (%s).",
+            topic, erreur,
+        )
+        raise GenerationImpossible(
+            "la réponse du modèle n'est pas le JSON attendu"
+        ) from erreur
