@@ -1,5 +1,7 @@
 # apps/agents/agent_researcher.py
 
+import logging
+
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from apps.agents.tools.llm_loader import get_llm
@@ -7,6 +9,9 @@ from apps.agents.tools.model_config import get_model_for
 from langchain_community.vectorstores import Chroma
 from apps.rag.utils import load_embedding_function
 from apps.agents.utils import load_prompt
+
+logger = logging.getLogger(__name__)
+
 
 def gabarit_de_reponse():
     """
@@ -71,7 +76,10 @@ def get_researcher_chain(model_name=None):
             chain_type_kwargs={"prompt": gabarit_de_reponse()},
         )
     except Exception as e:
-        print(f"Error initializing researcher: {e}")
+        logger.warning(
+            "Chaine RAG du chercheur non construite (%s : %s), repli sans RAG.",
+            type(e).__name__, e,
+        )
         # Fallback without RAG
         llm = get_llm(model_name=model_name)
         from langchain.chains import LLMChain
