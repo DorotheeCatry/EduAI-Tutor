@@ -1224,11 +1224,55 @@ fait**. C'est le quatrième dispositif de ce projet décrit comme actif sans
 l'être, et c'est exactement le motif qui a produit l'incident 020 — lequel avait
 été diagnostiqué, corrigé, et dont la réserve pointait déjà ce silence.
 
-**Ce qu'il faudrait.** Railway ne surveille aucun registre externe : un crochet
-par service est nécessaire (trois services, donc trois crochets et trois
-secrets), ou un jeton de projet et trois `railway redeploy --from-source` dans
-la chaîne. Le crochet est préférable au jeton pour la raison que la chaîne écrit
-déjà en commentaire : il ne peut faire qu'une chose, redéployer ce service.
+**La cause est plus profonde qu'un secret oublié : le crochet n'existe pas.**
 
-Et l'étape ne devrait pas rendre `success` en silence : l'absence de crochet
-doit être visible dans le récapitulatif de livraison, à défaut d'échouer.
+Vérifié dans la documentation de l'hébergeur le 12/09/2026. Les webhooks de
+Railway sont **sortants** — « the URL you provide will receive a webhook payload
+when any service's deployment status changes » : Railway appelle votre URL pour
+vous notifier. **Aucune URL entrante ne permet de déclencher un déploiement.**
+Des « service deploy hooks » figurent sur le forum de l'hébergeur comme une
+fonctionnalité *demandée*, pas disponible.
+
+L'étape de la chaîne attend donc un secret qui ne peut pas exister :
+
+```yaml
+CROCHET: ${{ secrets.RAILWAY_CROCHET_DEPLOIEMENT }}
+...
+curl --request POST "${CROCHET}"
+```
+
+Le dossier d'incident 020 porte la même erreur d'hypothèse — « un crochet
+Railway porte sur **un** service ». Il n'est pas réécrit : un dossier d'incident
+est la trace de ce qui a été compris au moment des faits, et la corriger après
+coup effacerait la démarche. Cette réserve est l'endroit où l'erreur est
+relevée.
+
+**Ce qu'il faut à la place.** Railway ne surveille aucun registre externe, donc
+la chaîne doit lui parler. Deux chemins seulement :
+
+1. **Le client en ligne de commande, avec un jeton de projet.** Un seul secret,
+   `RAILWAY_TOKEN`, créé depuis les réglages du projet (onglet *Tokens*). Sa
+   portée est **un seul environnement d'un seul projet**, et il ne peut mener
+   que des actions de déploiement : une compromission de la chaîne d'intégration
+   expose cet environnement, pas le compte. La chaîne appelle ensuite, pour
+   chacun des trois services :
+
+   ```bash
+   railway redeploy --service <service> --from-source --yes
+   ```
+
+   `--from-source` est indispensable — sans lui, la commande rejoue le
+   déploiement existant, donc l'image existante. **Chemin vérifié** : c'est
+   exactement la commande qui a redéployé les trois services le 12/09.
+
+2. **L'API GraphQL**, mutation `serviceInstanceRedeploy`, appelée en `curl` avec
+   l'en-tête `Project-Access-Token`. Même jeton, même portée, sans dépendre du
+   client en ligne de commande.
+
+Le jeton de compte (`RAILWAY_API_TOKEN`) est à écarter : sa portée est
+l'ensemble des ressources et des espaces de travail.
+
+Et l'étape ne devrait pas rendre `success` en silence. Que le secret manque ou
+que la fonctionnalité n'existe pas, une livraison qui ne déploie rien doit se
+lire dans le récapitulatif — c'est ce silence qui a produit l'incident 020, puis
+la mesure de cette réserve.
