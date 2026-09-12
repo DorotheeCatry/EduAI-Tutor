@@ -164,12 +164,19 @@ class AIOrchestrator:
         deux consignes différentes finiraient par répondre différemment à la
         même question, et la règle de proportion ne tiendrait que sur l'un des
         deux. Un seul gabarit, deux façons de le remplir.
+
+        Choix : le modèle est résolu par `get_model_for("researcher")`, comme
+        celui de la chaîne. Motivation : `get_llm()` appelé sans nom retombe sur
+        `DEFAULT_LLM_MODEL`, ce qui rendrait `GROQ_MODEL_RESEARCHER` sans effet
+        sur ce chemin — le routage par agent (décision 001) ne vaut que s'il
+        vaut partout.
         """
         from apps.agents.agent_researcher import gabarit_de_reponse
         from apps.agents.tools.llm_loader import get_llm
+        from apps.agents.tools.model_config import get_model_for
 
         invite = gabarit_de_reponse().format(context=extraits, question=question)
-        reponse = get_llm().invoke(invite)
+        reponse = get_llm(model_name=get_model_for("researcher")).invoke(invite)
         return reponse.content if hasattr(reponse, 'content') else str(reponse)
 
     @sous_agent("researcher")
