@@ -1098,3 +1098,72 @@ compte comme acquis. Il ne l'est que sur le code. **Un correctif n'est acquis
 qu'une fois déployé et constaté sur le système en marche** — et le seul
 contrôle qui l'aurait montré, la sonde de santé, existe et n'a pas été relu
 depuis le 29/08.
+
+---
+
+## 25. Trois modules du référentiel sur quatre n'ont aucun cours
+
+**Composant :** `data/contents/courses/`, `apps/courses/donnees/rattachement-cours.json`
+**Nature :** couverture partielle, invisible depuis le code
+
+Le référentiel actif `eduai-2026` déclare **quatre modules et vingt et une
+compétences** :
+
+| Module | Compétences | Cours de référence |
+|---|---|---|
+| Python | 7 | **7** |
+| Analyse de données | 5 | **0** |
+| SQL et bases relationnelles | 5 | **0** |
+| Apprentissage automatique | 4 | **0** |
+
+**Sept compétences sur vingt et une ont un cours. Quatorze n'en ont aucun.**
+
+La cause est en amont, dans la matière disponible. Relevé du 12/09/2026 :
+
+```
+01_python              42 fichiers   .md .ipynb
+03_sql                  1 fichier    .pptx
+02_data_analysis        0 fichier
+04_machine_learning     0 fichier
+(et sept autres répertoires vides)
+```
+
+Trois points s'additionnent.
+
+**Le seul fichier hors Python est un `.pptx`.** `apps/rag/scripts/prepare_chroma.py`
+lit `.md`, `.ipynb`, `.pdf` et des images ; il ignore ce format. Le support SQL
+n'est donc ni indexé ni importable.
+
+**`data_science_index.json` fait zéro octet.** Il a été versionné vide au commit
+`8b484a1`, et l'est resté. `prepare_chroma` l'ignore en le signalant.
+
+**Le rattachement est câblé sur un seul module.**
+`apps/courses/donnees/rattachement-cours.json` déclare un unique couple :
+
+```json
+"index": "data/contents/index/python_index.json",
+"repertoire": "data/contents/courses/01_python",
+```
+
+L'importeur de cours ne peut donc structurellement en couvrir qu'un.
+
+**Ce que cela ne veut pas dire.** Un apprenant qui ouvre une compétence SQL
+n'est pas devant le vide : le corpus documentaire du pipeline — 24 004
+fragments, alimenté par les six sources — répond sur les jointures, sur pandas
+et sur scikit-learn, et c'est lui qu'interroge l'enrichissement de fiche
+(`apps/courses/services.py`). Les 35 antisèches de `data/contents/resources/`
+couvrent elles aussi les autres thèmes : douze en analyse de données, cinq en
+apprentissage automatique, trois en SQL. Ce sont des antisèches, pas des cours.
+
+Ce qui manque est le **cours de référence** : le support rédigé, découpé en
+parties, rattaché à une compétence, que la page de compétence affiche.
+
+**Ce que croirait à tort un lecteur du dépôt.** Le référentiel, la matrice de
+traçabilité, le catalogue et les vingt et une pages de compétence existent tous
+et fonctionnent. Rien, dans le code, ne signale que quatorze de ces pages
+s'ouvrent sans cours — `cours_actif()` rend `None`, le gabarit s'affiche, et
+seule la lecture de la base le montre.
+
+**Ce n'est pas un défaut de code**, et aucun correctif ne le résout : il manque
+de la matière pédagogique, pas une fonction. La réserve existe pour que
+l'écart soit dit plutôt que découvert.

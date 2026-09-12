@@ -151,9 +151,13 @@ contrat lève, et le corpus réel valide.
 
 ## Limite connue
 
-`data_science_index.json` est vide, et `prepare_chroma` l'ignore en le
-signalant. Les répertoires de cours portent des noms préfixés (`01_python`,
-`02_data_analysis`) que la carte d'index ne couvre que pour `python` : les
-sections des autres modules ressortiront « unknown » à la prochaine
-reconstruction de la collection pédagogique. Le script fonctionne, son
-périmètre est partiel — ce qui était déjà le cas avant, et n'est pas traité ici.
+`prepare_chroma` fonctionne, et son périmètre est partiel : `data_science_index.json`
+fait zéro octet, et la carte d'index ne couvre que `python`.
+
+**Cette limite était d'abord écrite ici comme un problème d'étiquetage de
+sections.** Elle est plus large que cela, et la vérification faite après coup l'a
+montré : sur les quatre modules du référentiel, un seul dispose de supports de
+cours. Sept compétences sur vingt et une ont un cours de référence, quatorze
+n'en ont aucun. Ce n'est pas un défaut de code et aucun correctif ne le résout —
+c'est de la matière pédagogique qui manque. Consigné en **réserve 25**, à sa
+place.
