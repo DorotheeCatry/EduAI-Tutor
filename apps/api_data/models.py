@@ -272,11 +272,40 @@ class Description(models.Model):
         db_table = "description"
 
 
+# =========================================================================
+# Les cinq tables de détail, une par type de source
+# =========================================================================
+#
+# Compétence visée : C5 (épreuve E1), C1 (E1)
+#
+# **Elles sont déclarées et ne sont exposées par aucun point de terminaison.**
+# C'est délibéré, et c'est écrit ici plutôt que laissé à deviner : un relevé du
+# code mort les a signalées le 12/09/2026 comme des classes que rien ne
+# référence, ce qui est exact et ne veut pas dire qu'elles sont de trop.
+#
+# Ce qu'elles font : elles reflètent, dans l'ORM, les cinq tables de détail du
+# schéma physique de `eduai_data` — une par type de source collecté (C1). Un
+# lecteur qui ouvre ce fichier voit la couverture des cinq types sans avoir à
+# lire le SQL, et `managed = False` dit qu'elles ne créent rien : le schéma
+# reste géré par `data_pipeline/load/sql/`.
+#
+# Ce qu'elles ne font pas : servir une API. Les exposer demanderait cinq
+# sérialiseurs, cinq vues et cinq entrées d'OpenAPI, c'est-à-dire une
+# fonctionnalité que rien ne réclame — les sept points de terminaison existants
+# servent le jeu de données par `Document`, `Source`, `Extraction` et les
+# statistiques.
+#
+# Si elles devaient un jour disparaître, ce serait avec les tables qu'elles
+# décrivent, pas avant.
+
+
 class DocumentApiRest(models.Model):
     """
     Attributs propres aux documents issus d'un service web (S1).
 
     Compétence visée : C5 (épreuve E1)
+
+    Déclarée, non exposée : voir le bloc ci-dessus.
     """
 
     document = models.OneToOneField(
