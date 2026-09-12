@@ -39,6 +39,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
+from .contrat_transforme import DocumentTransforme
 from .deduplication import dedupliquer
 from .homogeneisation_formats import homogeneiser_document
 from .normalisation_dates import normaliser_dates_du_document
@@ -197,6 +198,29 @@ def _ecrire_corpus(documents: list[dict[str, Any]], repertoire: Path) -> Path:
     repertoire.mkdir(parents=True, exist_ok=True)
     chemin = repertoire / "corpus.jsonl"
     temporaire = chemin.with_suffix(".jsonl.tmp")
+
+    # Le contrat de sortie est VÉRIFIÉ ici, avant la moindre écriture.
+    #
+    # Compétence visée : C3 (épreuve E1), C4 (E1)
+    #
+    # `DocumentTransforme` existait depuis l'origine, documenté comme « le
+    # contrat de sortie de la couche de transformation », et n'était importé par
+    # personne : cette couche écrivait des dictionnaires, le chargeur en lisait.
+    # Un contrat que rien n'applique n'est pas un contrat, et celui-ci avait
+    # déjà dérivé sans que rien ne le signale — il ignorait `code_source`,
+    # ajouté au corpus réel avec la sixième source.
+    #
+    # La vérification a lieu AVANT l'ouverture du fichier temporaire, et non
+    # document par document pendant l'écriture : un corpus à moitié écrit puis
+    # abandonné laisserait un `.tmp` dont personne ne saurait quoi faire.
+    for rang, document in enumerate(documents):
+        try:
+            DocumentTransforme.depuis_dict(document)
+        except TypeError as ecart:
+            raise TypeError(
+                f"document {rang} ({document.get('identifiant', 'sans identifiant')}) "
+                f"hors du contrat de transformation : {ecart}"
+            ) from ecart
 
     with temporaire.open("w", encoding="utf-8") as flux:
         for document in documents:
