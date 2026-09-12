@@ -10,7 +10,19 @@ from langchain.schema import Document
 
 from apps.rag.utils import load_embedding_function, get_chroma_collection_native
 from apps.rag.splitter import get_splitter
-from apps.rag.module_index_map import MODULE_INDEX_MAP
+from apps.rag.module_loader import module_loader
+
+# La carte « répertoire de module → fichier d'index ».
+#
+# Compétence visée : C18 (épreuve E4)
+# Elle venait de `apps.rag.module_index_map`, un module de compatibilité qui
+# ne faisait que relayer `module_loader` et qui a été supprimé le 30/08/2026
+# avec le remplacement de la liste blanche maison par RestrictedPython. Cet
+# import est resté, si bien que ce script ne s'importait plus du tout —
+# `ModuleNotFoundError` — sans que rien ne le signale, puisque rien ne
+# l'importe. Il est branché directement sur sa source au lieu de passer par
+# un relais.
+MODULE_INDEX_MAP = module_loader.module_index_map
 
 # === CONFIGURATION ===
 DATA_FOLDER = Path("data/contents")
