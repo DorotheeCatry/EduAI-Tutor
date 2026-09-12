@@ -149,7 +149,7 @@ def _chercher_dans_le_corpus(requete: str) -> list[Any]:
     défaut. Motivation : voir l'en-tête du module — c'est la seule des deux qui
     permette de citer ses sources.
     """
-    from langchain_community.vectorstores import Chroma
+    from langchain_chroma import Chroma
 
     from apps.rag.utils import COLLECTION_DOCUMENTAIRE, load_embedding_function
 

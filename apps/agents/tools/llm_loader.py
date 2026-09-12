@@ -13,7 +13,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from langchain_community.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
 
 from apps.agents.tools.model_config import modele_local, use_local_llm

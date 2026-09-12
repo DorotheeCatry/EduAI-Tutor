@@ -6,7 +6,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from apps.agents.tools.llm_loader import get_llm
 from apps.agents.tools.model_config import get_model_for
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from apps.rag.utils import load_embedding_function
 from apps.agents.utils import load_prompt
 

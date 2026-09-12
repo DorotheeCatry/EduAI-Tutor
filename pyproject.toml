@@ -36,6 +36,15 @@ dependencies = [
     "fastapi>=0.115",
     "slowapi>=0.1.9",
     "whitenoise>=6.8,<7.0",
+    # Ajoutees le 12/09/2026 (decision 048). `ChatOllama`, `OllamaEmbeddings` et
+    # `Chroma` etaient importes depuis `langchain-community`, ou les trois sont
+    # deprecies et disparaissent en LangChain 1.0. Ce sont les paquets que
+    # LangChain designe lui-meme comme remplacants : aucune API n'a change, les
+    # deux collections du corpus relisent a l'identique (387 et 24 004
+    # fragments, metadonnees intactes) et la suite ne leve plus aucun
+    # avertissement de depreciation LangChain.
+    "langchain-ollama>=0.3.10",
+    "langchain-chroma>=0.2.6",
 ]
 
 # Dépendances du pipeline de données, hors du socle applicatif.

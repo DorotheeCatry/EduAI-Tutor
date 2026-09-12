@@ -5,7 +5,7 @@ from langchain.prompts import PromptTemplate
 from apps.agents.tools.llm_loader import get_llm
 from apps.agents.tools.model_config import get_model_for
 from apps.agents.utils import load_prompt
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from apps.rag.utils import load_embedding_function
 
 
