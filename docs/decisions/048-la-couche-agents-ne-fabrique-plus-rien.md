@@ -103,17 +103,51 @@ l'interdit explicitement à cette date, et l'architecture en place — quatre
 agents, quatre rôles, un goulot de quota unique — n'a pas de défaut de
 conception. Ce sont ses bords qui étaient fautifs.
 
-## Limite connue
+## Les dépréciations LangChain, et le code mort
 
-Deux dépréciations LangChain subsistent et ne sont **pas** traitées :
-`ChatOllama` importé depuis `langchain_community` et `Chroma` de même. Les
-corriger exige `langchain-ollama` et `langchain-chroma`, donc deux dépendances
-nouvelles à dix jours du rendu, ce que le cahier des charges interdit. Elles
-sont sans effet tant que LangChain reste en 0.3 ; elles deviendront bloquantes
-en 1.0. `Chain.run`, en revanche, a été remplacé par `invoke` — celui-là ne
-coûtait aucune dépendance.
+Ces deux points ont d'abord été écartés, puis traités le même jour sur décision
+explicite. La première rédaction de cette décision les portait en « limite
+connue », au motif que le cahier des charges interdit les dépendances nouvelles
+et la suppression de code à cette date. L'arbitrage a été tranché dans l'autre
+sens, et il est consigné ici parce qu'il corrige la lecture qui avait été faite
+de ces interdits.
+
+**Les trois classes dépréciées sont remplacées.** `ChatOllama`,
+`OllamaEmbeddings` et `Chroma` étaient importées depuis `langchain-community`,
+où elles sont dépréciées depuis LangChain 0.3.1 et disparaissent en 1.0. Elles
+viennent désormais de `langchain-ollama` et `langchain-chroma` — les paquets que
+LangChain désigne lui-même comme remplaçants. Aucune signature d'appel ne
+change.
+
+Vérifié plutôt que supposé, parce qu'un corpus vectoriel est la dernière chose
+qu'on veut casser : les deux collections relisent à l'identique avec le nouveau
+client — 387 fragments pour `eduai_knowledge_base`, 24 004 pour
+`eduai_corpus_documentaire` — et les métadonnées d'attribution
+(`code_licence`, `attribution_requise`) sont intactes. La suite complète ne
+lève plus aucun avertissement de dépréciation LangChain.
+
+**`generate_code_exercise` est supprimée**, avec `get_code_exercise_chain` et
+son invite. Elle portait le même repli fabriqué que le quiz — solution attendue
+`print('Hello World')`, test `{"input": "test", "expected": "result"}` — et
+n'avait aucun appelant : la génération d'exercices de l'application passe par
+`apps/exercises/views.py`.
+
+Le raisonnement qui l'avait d'abord fait conserver était la règle d'or du
+cahier des charges — vérifier qu'on ne supprime pas une preuve avant de
+condenser. Vérification faite, ce n'en était pas une : la preuve de la
+génération d'exercices est le chemin qui s'exécute, pas celui qui dort. Et une
+seconde implémentation que personne n'exécute est du code que personne ne
+corrige — ce qui est exactement ce qui lui était arrivé pendant trois semaines.
+Un test empêche qu'elle revienne.
+
+## Limite connue
 
 L'exemption `F401` de `ruff` reste en place pour le dépôt : 50 imports
 inutilisés subsistent dans du code antérieur au linter. La couche `apps/agents/`
 en est nettoyée, et le motif de l'exemption a été réécrit — il décrivait un cas
 réel pour couvrir tout autre chose.
+
+`apps/rag/scripts/prepare_chroma.py` importe encore `TextLoader`,
+`NotebookLoader` et `PyPDFLoader` depuis `langchain-community`. Ceux-là n'y sont
+pas dépréciés : `langchain-community` reste leur domicile, et aucun paquet
+dédié ne les reprend.
