@@ -246,6 +246,7 @@ depuis un `.env` local non versionné.
 | `GROQ_API_KEY` | Clé du fournisseur ; son absence bascule sur le local |
 | `GROQ_MODEL`, `DEFAULT_LLM_MODEL` | Modèles par défaut |
 | `USE_LOCAL_LLM` | Force le repli local. **Consulté en premier**, avant la clé : c'est un choix de l'exploitant, il prime sur la présence d'une clé |
+| `RAILWAY_TOKEN` | **Secret de dépôt, pas variable de service.** Jeton de PROJET de l'hébergeur, employé par la chaîne pour redéployer. Sa portée est un seul environnement d'un seul projet |
 | `LLM_TIMEOUT_SECONDES` | Défaut 60 s — près de neuf fois la pire latence relevée au monitorage (6,96 s) |
 | `LLM_REPRISES` | Défaut 2 — reprises de transport, elles ne consomment aucun quota |
 | `OLLAMA_BASE_URL` | Défaut `http://127.0.0.1:11434` |
@@ -580,6 +581,42 @@ qui est déployé, et ce qui ne l'est pas :
 | PostgreSQL | oui | Les deux bases, `eduai_app` et `eduai_data` |
 | Redis | non | `InMemoryChannelLayer` en usage, et le seul consommateur WebSocket n'a aucun client (réserve 1) |
 | Prometheus, Grafana | non | Le jury doit voir l'application vivre, pas la pile d'observabilité. Le monitorage JSON Lines, lui, continue de fonctionner sur le serveur : c'est lui la preuve de C20 |
+
+### 7.0 Comment une image arrive en ligne
+
+**L'hébergeur ne surveille aucun registre.** Rien ne lui signale qu'une image
+`:main` vient d'être publiée sur `ghcr.io` : il faut le lui demander. Et il
+**n'offre pas de crochet de déploiement** — ses webhooks sont sortants, c'est
+lui qui appelle votre URL pour notifier un changement d'état. La chaîne a
+longtemps appelé en POST un secret qui ne pouvait pas exister ; voir l'incident
+020 et la réserve 26.
+
+Le déclenchement passe donc par le client en ligne de commande, avec un jeton
+de projet :
+
+```bash
+railway redeploy --service <service> --from-source --yes
+```
+
+**`--from-source` n'est pas optionnel.** Sans lui, la commande rejoue le
+déploiement existant, donc l'image existante — le redéploiement réussit et ne
+change rien.
+
+La chaîne le fait pour les trois services, puis **constate** que chacun a bien
+ouvert un nouveau déploiement, en comparant les identifiants avant et après. Si
+l'un d'eux est inchangé, l'étape échoue : une livraison qui ne livre pas est un
+échec, et le vert de la chaîne ne doit jamais dire le contraire.
+
+**Deux façons de la déclencher :**
+
+| Déclencheur | Publie les images | Redéploie |
+|---|---|---|
+| Poussée sur `main` | oui | oui |
+| Lancement manuel (`workflow_dispatch`), depuis n'importe quelle branche | **non** | oui |
+
+Le lancement manuel remet en ligne l'image `:main` courante. Il ne publie pas :
+`:main` doit rester l'image de `main`, et la publier depuis une branche ferait
+servir en production du code qui n'y est pas.
 
 ### 7.1 Provisionner les services
 
