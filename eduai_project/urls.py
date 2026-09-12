@@ -28,9 +28,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve as django_serve
 
-def redirect_to_login(request):
-    """Redirects to default login page"""
-    return redirect('users:login')
 
 def redirect_to_courses(request):
     """
