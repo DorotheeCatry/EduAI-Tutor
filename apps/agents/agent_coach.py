@@ -19,6 +19,14 @@ C'est le même défaut que les sept foyers de données fabriquées retirés du
 projet en une semaine, à une différence près qui l'aggrave : celui-ci
 **écrivait** en base au lieu de seulement afficher.
 
+`generate_code_exercise` portait le même défaut — solution attendue
+`print('Hello World')`, test `{"input": "test", "expected": "result"}`. Elle a
+été **supprimée** plutôt que corrigée : elle n'avait aucun appelant. La
+génération d'exercices de l'application passe par `apps/exercises/views.py`,
+qui compose sa propre invite et appelle `answer_question`. Garder une seconde
+implémentation que personne n'exécute, c'est garder du code que personne ne
+corrige — et c'est bien ce qui s'était passé.
+
 Un échec lève donc désormais `GenerationImpossible`. Les appelants savent déjà
 traiter l'absence de questions — `AIOrchestrator.create_quiz` rend
 `{"questions": []}` avec le motif, et les deux vues de quiz vérifient la liste
@@ -32,7 +40,6 @@ ne fasse progresser personne. Un repli annoncé et neutralisé n'est pas une
 donnée fabriquée. Un repli silencieux qui se fait passer pour un résultat, si.
 """
 
-import json
 import logging
 
 from langchain.chains import LLMChain
@@ -75,28 +82,6 @@ def get_coach_chain(model_name=None):
     invite = PromptTemplate(
         input_variables=["topic", "num_questions", "language"],
         template=load_prompt("coach"),
-    )
-    return LLMChain(llm=get_llm(model_name=model_name), prompt=invite)
-
-
-def get_code_exercise_chain(model_name=None):
-    """
-    Chaîne du Coach : engendre un exercice de code à compléter.
-
-    Compétence visée : C10 (épreuve E3)
-
-    Choix : l'invite vit dans `prompts/coach_exercice.txt`, comme celles des
-    autres agents. Motivation : elle était écrite en dur dans ce fichier, en
-    anglais, seule de toutes les invites du projet à ne pas être relisible au
-    même endroit que les autres. Une invite est un texte qu'on relit et qu'on
-    corrige ; ce n'est pas du code.
-    """
-    if model_name is None:
-        model_name = get_model_for("coach")
-
-    invite = PromptTemplate(
-        input_variables=["topic"],
-        template=load_prompt("coach_exercice"),
     )
     return LLMChain(llm=get_llm(model_name=model_name), prompt=invite)
 
@@ -147,47 +132,3 @@ def generate_quiz(topic, num_questions=5, language="fr"):
         )
 
     return quiz
-
-
-def generate_code_exercise(topic):
-    """
-    Engendre un exercice de code, ou lève si le modèle n'a rien donné d'exploitable.
-
-    Compétence visée : C10 (épreuve E3), C21 (E5)
-
-    **Cette fonction n'a aucun appelant aujourd'hui** : la génération
-    d'exercices de l'application passe par `apps/exercises/views.py`, qui
-    compose sa propre invite et appelle `answer_question`. Elle est conservée
-    parce qu'elle fait partie du rôle déclaré du Coach, et corrigée parce que
-    du code fautif conservé reste du code fautif — son repli rendait un
-    exercice dont la solution attendue était `print('Hello World')` et le test
-    `{"input": "test", "expected": "result"}`.
-
-    Raises:
-        GenerationImpossible: le modèle n'a pas répondu, ou sa réponse n'est
-            pas le JSON demandé.
-    """
-    try:
-        chaine = get_code_exercise_chain()
-        sortie = chaine.invoke({"topic": topic})
-    except Exception as erreur:
-        logger.exception("Exercice sur %r : appel au modele en echec.", topic)
-        raise GenerationImpossible(
-            f"le modèle n'a pas répondu ({type(erreur).__name__})"
-        ) from erreur
-
-    brut = sortie.get("text", "") if isinstance(sortie, dict) else str(sortie)
-
-    try:
-        return json.loads(brut)
-    except (json.JSONDecodeError, TypeError) as erreur:
-        # Exception nommée, jamais `except Exception` : une réponse hors format
-        # et une panne d'appel ne se diagnostiquent pas de la même façon, et
-        # les confondre coûterait une heure au prochain qui lira le journal.
-        logger.warning(
-            "Exercice sur %r : reponse du modele non analysable en JSON (%s).",
-            topic, erreur,
-        )
-        raise GenerationImpossible(
-            "la réponse du modèle n'est pas le JSON attendu"
-        ) from erreur

@@ -24,11 +24,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from apps.agents.agent_coach import (
-    GenerationImpossible,
-    generate_code_exercise,
-    generate_quiz,
-)
+from apps.agents.agent_coach import GenerationImpossible, generate_quiz
 
 REPERTOIRE_AGENTS = Path("apps/agents")
 
@@ -97,22 +93,26 @@ def test_un_quiz_analysable_est_rendu_tel_quel():
     assert quiz["questions"][0]["correct_answer"] == 0
 
 
-def test_l_exercice_leve_au_lieu_de_rendre_hello_world():
+def test_la_generation_d_exercice_du_coach_a_ete_retiree():
     """
-    Compétence visée : C10 (épreuve E3), C21 (E5)
+    Une seule implémentation de la génération d'exercices, et c'est la vivante.
 
-    Le repli rendait un exercice dont la solution attendue était
-    `print('Hello World')` et le test `{"input": "test", "expected": "result"}`.
-    Un exercice qui ne teste rien et se réussit en quelques secondes n'est pas
-    un exercice dégradé : c'est une mesure fausse.
+    Compétence visée : C10 (épreuve E3), C18 (E4)
+
+    `generate_code_exercise` portait le même repli fabriqué — solution attendue
+    `print('Hello World')`, test `{"input": "test", "expected": "result"}` — et
+    n'avait aucun appelant. La génération d'exercices de l'application passe par
+    `apps/exercises/views.py`, qui compose sa propre invite et appelle
+    `answer_question`.
+
+    Elle a donc été supprimée plutôt que corrigée. Une seconde implémentation
+    que personne n'exécute est du code que personne ne corrige — c'est
+    exactement ce qui lui était arrivé. Ce test empêche qu'elle revienne.
     """
-    with patch("apps.agents.agent_coach.get_code_exercise_chain") as chaine:
-        chaine.return_value.invoke.return_value = {"text": "Voici ton exercice !"}
+    import apps.agents.agent_coach as coach
 
-        with pytest.raises(GenerationImpossible) as echec:
-            generate_code_exercise("les listes")
-
-    assert "JSON" in str(echec.value)
+    assert not hasattr(coach, "generate_code_exercise")
+    assert not hasattr(coach, "get_code_exercise_chain")
 
 
 def test_le_coach_ne_contient_plus_aucun_contenu_fabrique():
