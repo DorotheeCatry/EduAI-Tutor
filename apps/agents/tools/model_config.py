@@ -47,8 +47,31 @@ ROUTAGE_PAR_DEFAUT = {
 
 AGENTS_CONNUS = tuple(ROUTAGE_PAR_DEFAUT)
 
-# Nom du modèle d'embedding servi par Ollama pour le RAG.
-MODELE_EMBEDDING = os.getenv("OLLAMA_EMBED_MODEL", "mxbai-embed-large")
+# --- Le modèle du repli local ---
+#
+# Compétence visée : C10 (épreuve E3)
+#
+# Il est nommé À PART des modèles Groq, et c'est le point important. Les
+# identifiants ci-dessus (`openai/gpt-oss-120b`…) sont ceux du catalogue Groq :
+# Ollama ne les connaît pas. Passer l'un d'eux à Ollama produit un 404 sur un
+# nom de modèle, c'est-à-dire exactement la panne que la décision 001 était
+# censée rendre impossible — un repli qui échoue est pire qu'une absence de
+# repli, parce qu'on croit l'avoir.
+MODELE_LOCAL_PAR_DEFAUT = "mistral"
+
+
+def modele_local() -> str:
+    """
+    Rend le nom du modèle à demander à Ollama.
+
+    Compétence visée : C10 (épreuve E3)
+
+    Choix : une variable dédiée (`OLLAMA_MODEL`) plutôt que la réutilisation de
+    `DEFAULT_LLM_MODEL`. Motivation : cette dernière porte un identifiant Groq
+    dans le `.env.example` du projet. La partager reviendrait à demander
+    `openai/gpt-oss-120b` à Ollama.
+    """
+    return os.getenv("OLLAMA_MODEL", MODELE_LOCAL_PAR_DEFAUT)
 
 
 def get_model_for(agent: str) -> str:
@@ -98,10 +121,23 @@ def use_local_llm() -> bool:
     """
     Indique si la couche IA doit utiliser Ollama en local plutôt que Groq.
 
-    Compétence visée : C10 (épreuve E3)
+    Compétence visée : C10 (épreuve E3), C21 (E5)
 
     Choix : un simple drapeau d'environnement (USE_LOCAL_LLM) plutôt qu'une
     détection automatique de panne. Le basculement doit rester une décision
     explicite et reproductible, y compris en direct pendant la démonstration.
+
+    **Cette fonction n'était appelée par personne.** Le drapeau est décrit dans
+    la décision 001, dans `docs/chaine_livraison.md` et dans le dossier
+    d'incident du 25/08 — « un drapeau `USE_LOCAL_LLM` bascule vers Ollama » —
+    et il ne basculait rien : `get_llm` choisissait sur la seule présence de
+    `GROQ_API_KEY`. Le manque était noté dans le journal du 25/08 et n'avait pas
+    été repris.
+
+    Les tests de `tests/test_routage_modeles.py` éprouvaient la fonction, et
+    passaient : ils ne pouvaient pas voir qu'aucun appelant ne s'en servait.
+    C'est la forme d'assurance la plus trompeuse — un test vert sur une
+    fonctionnalité absente. `get_llm` l'appelle désormais en premier, et un test
+    éprouve le comportement et non plus seulement la lecture du drapeau.
     """
     return os.getenv("USE_LOCAL_LLM", "false").lower() in {"1", "true", "yes"}

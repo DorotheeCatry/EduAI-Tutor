@@ -211,3 +211,99 @@ def test_sans_drapeau_le_service_reste_sur_le_fournisseur_distant():
     Compétence visée : C10 (épreuve E3)
     """
     assert use_local_llm() is False
+
+
+# --- Le drapeau est-il RELIÉ à quelque chose ? ------------------------------
+#
+# Les trois tests ci-dessus éprouvent la LECTURE du drapeau. Ils passaient
+# pendant que `use_local_llm()` n'était appelé par personne : `get_llm`
+# choisissait sur la seule présence de `GROQ_API_KEY`. Un test vert sur une
+# fonctionnalité absente est la forme d'assurance la plus trompeuse qui soit —
+# ceux qui suivent éprouvent le COMPORTEMENT.
+
+
+def test_le_drapeau_bascule_reellement_le_client(monkeypatch):
+    """
+    `USE_LOCAL_LLM` levé envoie sur Ollama, même avec une clé Groq présente.
+
+    Compétence visée : C10 (épreuve E3), C21 (E5)
+
+    L'ordre compte : le drapeau est un choix de l'exploitant, la clé n'est
+    qu'une ressource disponible. Une clé oubliée dans l'environnement suffisait
+    à envoyer au fournisseur les invites que ce drapeau devait garder sur la
+    machine — ce qui vide de son sens l'argument de souveraineté des données de
+    la décision 001.
+    """
+    from apps.agents.tools.llm_loader import get_llm
+
+    monkeypatch.setenv("USE_LOCAL_LLM", "true")
+    monkeypatch.setenv("GROQ_API_KEY", "une-cle-presente-malgre-tout")
+
+    client = get_llm(model_name=MODELE_QUALITE)
+
+    assert type(client).__name__ == "ChatOllama", (
+        "le drapeau doit primer sur la présence d'une clé"
+    )
+
+
+def test_le_repli_local_ne_recoit_jamais_un_identifiant_groq(monkeypatch):
+    """
+    Ollama reçoit un nom de modèle qu'Ollama connaît.
+
+    Compétence visée : C10 (épreuve E3), C21 (E5)
+
+    Le repli passait le `model_name` reçu en argument, c'est-à-dire un
+    identifiant du catalogue Groq — `openai/gpt-oss-120b`. Ollama ne sert aucun
+    modèle portant ce nom : le repli échouait donc à tous les coups, sur la
+    même erreur de nom de modèle que l'incident du 25/08 qu'il était censé
+    couvrir. Un repli qui échoue est pire qu'une absence de repli, parce qu'on
+    croit l'avoir.
+    """
+    from apps.agents.tools.llm_loader import get_llm
+
+    monkeypatch.setenv("USE_LOCAL_LLM", "true")
+    monkeypatch.delenv("OLLAMA_MODEL", raising=False)
+
+    client = get_llm(model_name=MODELE_QUALITE)
+
+    assert client.model != MODELE_QUALITE
+    assert "/" not in client.model, (
+        "un identifiant à barre oblique est un nom de catalogue Groq"
+    )
+
+
+def test_sans_cle_le_service_bascule_aussi_en_local(monkeypatch):
+    """
+    Troisième chemin : pas de drapeau, pas de clé.
+
+    Compétence visée : C10 (épreuve E3)
+    """
+    from apps.agents.tools.llm_loader import get_llm
+
+    monkeypatch.delenv("USE_LOCAL_LLM", raising=False)
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+
+    assert type(get_llm(model_name=MODELE_RAPIDE)).__name__ == "ChatOllama"
+
+
+def test_un_appel_distant_porte_un_delai_d_attente(monkeypatch):
+    """
+    Aucun appel au fournisseur ne peut pendre indéfiniment.
+
+    Compétence visée : C13 (épreuve E3)
+
+    Il n'y en avait aucun. Un appel qui ne revient pas immobilisait le worker
+    Django qui l'attendait, sans que rien ne le relâche. Le seuil vient d'une
+    mesure : 60 s, près de neuf fois la pire latence relevée au monitorage
+    (6,96 s pour un maximum, 1,52 s de médiane sur 90 appels).
+    """
+    from apps.agents.tools.llm_loader import DELAI_D_ATTENTE, REPRISES, get_llm
+
+    monkeypatch.delenv("USE_LOCAL_LLM", raising=False)
+    monkeypatch.setenv("GROQ_API_KEY", "cle-factice-de-construction")
+
+    client = get_llm(model_name=MODELE_QUALITE)
+
+    assert client.request_timeout == DELAI_D_ATTENTE
+    assert client.max_retries == REPRISES
+    assert 0 < DELAI_D_ATTENTE <= 120, "un délai d'attente utile est borné"

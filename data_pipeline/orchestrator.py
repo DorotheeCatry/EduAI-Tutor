@@ -6,7 +6,7 @@ Compétence visée : C3 (épreuve E1) — enchaînement de la transformation
 Compétence visée : C4 (épreuve E1) — enchaînement du chargement
 Compétence visée : C20 (épreuve E5) — rapport d'exécution consolidé
 
-    extraction (cinq sources) -> transformation -> chargement
+    extraction (six sources, cinq types) -> transformation -> chargement
 
 Lancement :
 
@@ -49,6 +49,9 @@ from .extract.s2_scraping_python_docs import ExtracteurPythonDocs
 from .extract.s3_fichiers_corpus import ExtracteurCorpusLocal
 from .extract.s4_base_donnees_eduai_app import ExtracteurBaseDonneesEduaiApp
 from .extract.s5_bigdata_stackexchange import ExtracteurBigDataStackExchange
+from .extract.s6_scraping_documentation_bibliotheques import (
+    ExtracteurDocumentationBibliotheques,
+)
 from .load.chargeur import Chargeur, ecrire_rapport as ecrire_rapport_chargement
 from .transform.transformer import (
     REPERTOIRE_TRANSFORME,
@@ -57,19 +60,39 @@ from .transform.transformer import (
 
 logger = logging.getLogger(__name__)
 
-#: Les cinq sources, dans l'ordre des codes.
+#: Les six sources, dans l'ordre des codes. Elles couvrent cinq TYPES.
 #:
 #: Choix : une table explicite plutôt qu'une découverte automatique des modules
 #: du paquet `extract`. Motivation : le référentiel exige cinq types de sources
 #: distincts, et cette table est la preuve, lisible d'un coup d'œil, qu'ils sont
 #: tous branchés au flux. Une découverte dynamique masquerait une source
 #: silencieusement retirée.
+#:
+#: **S6 y figure depuis le 12/09/2026, et son absence était une vraie faille.**
+#: La sixième source (décision 039) avait sa décision, sa réserve, son
+#: extracteur de 22 Ko, et le transformeur comme le chargeur savaient la
+#: traiter — un commentaire de `transformer.py` explique même comment le
+#: rattachement d'un document à sa source a été corrigé POUR ELLE. Mais cette
+#: table ne la portait pas.
+#:
+#: La conséquence n'était pas théorique : `data/raw/` contient
+#: `s6_documentation_bibliotheques.jsonl` et ses 1 005 enregistrements, qui
+#: entrent bien dans le corpus transformé puis en base. L'extraction avait donc
+#: été lancée à la main. Le point de lancement unique — celui dont le
+#: référentiel fait un critère — ne savait pas reproduire le jeu de données
+#: qu'il avait chargé.
+#:
+#: S6 est un SECOND scraping : elle n'ajoute pas un sixième type, elle
+#: confirme que deux sources peuvent partager un type. C'est exactement ce que
+#: le rattachement par `code_source` a rendu possible.
 SOURCES = [
     ("s1", "Stack Overflow (service web)", ExtracteurStackOverflow),
     ("s2", "Documentation Python (scraping)", ExtracteurPythonDocs),
     ("s3", "Corpus local (fichiers)", ExtracteurCorpusLocal),
     ("s4", "eduai_app (base de données)", ExtracteurBaseDonneesEduaiApp),
     ("s5", "Dump Stack Exchange (big data)", ExtracteurBigDataStackExchange),
+    ("s6", "Documentation des bibliothèques (scraping)",
+     ExtracteurDocumentationBibliotheques),
 ]
 
 #: Statuts d'extraction considérés comme un déroulement normal.
@@ -330,7 +353,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     analyseur = argparse.ArgumentParser(
         description=(
-            "Flux de données complet : extraction des cinq sources, "
+            "Flux de données complet : extraction des six sources, "
             "transformation, chargement dans eduai_data."
         ),
     )

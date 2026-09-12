@@ -167,7 +167,7 @@ def construire_client(modele: dict[str, str], jetons_max: int = JETONS_SORTIE_MA
         )
 
     if modele["fournisseur"] == "ollama":
-        from langchain_community.chat_models import ChatOllama
+        from langchain_ollama import ChatOllama
 
         return ChatOllama(
             model=modele["nom"],

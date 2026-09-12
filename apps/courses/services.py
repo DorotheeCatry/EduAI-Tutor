@@ -149,7 +149,7 @@ def _chercher_dans_le_corpus(requete: str) -> list[Any]:
     défaut. Motivation : voir l'en-tête du module — c'est la seule des deux qui
     permette de citer ses sources.
     """
-    from langchain_community.vectorstores import Chroma
+    from langchain_chroma import Chroma
 
     from apps.rag.utils import COLLECTION_DOCUMENTAIRE, load_embedding_function
 
@@ -183,30 +183,34 @@ def enrichir(apprenant, competence, question: str, *, origine: str,
     fragments = _chercher_dans_le_corpus(f"{competence.intitule} — {question}")
     sources = attribution_des_fragments(fragments)
 
+    # La compétence travaillée accompagne les extraits, et non la question.
+    #
+    # Compétence visée : C10 (épreuve E3)
+    # Choix : le champ « question » transmis au modèle ne porte QUE les mots de
+    # l'apprenant. Motivation constatée : tout ce qu'on ajoutait autour — le
+    # cadre, les extraits, les consignes de longueur — se retrouvait dans le
+    # même champ, et le modèle répondait à ce mélange plutôt qu'à la demande.
+    # « Les listes, c'est quoi ? » revenait en chapitre sur les collections.
+    # Le cadre est du contexte : il se range avec le contexte.
     extraits = "\n\n".join(
-        (getattr(f, "page_content", "") or "")[:1200] for f in fragments)
-    # La consigne de proportion n'est pas une politesse d'invite : sans elle,
-    # le modèle répondait à « une liste, c'est quoi ? » par un chapitre complet
-    # sur les collections. Une réponse trop longue n'est pas lue, et ce qui
-    # n'est pas lu n'apprend rien.
-    invite = _(
-        "Compétence : %(competence)s.\n"
-        "Demande de l'apprenant : %(question)s\n\n"
-        "Documentation de référence :\n%(extraits)s\n\n"
-        "Réponds en français, en t'appuyant sur cette documentation.\n"
-        "Règle de longueur : ta réponse doit être PROPORTIONNÉE à la demande. "
-        "Une question courte appelle une réponse courte — quelques phrases et "
-        "un exemple s'il éclaire. Ne rédige un développement en plusieurs "
-        "parties que si l'apprenant demande explicitement un cours ou une "
-        "explication complète. N'ajoute ni plan, ni introduction, ni "
-        "conclusion à une réponse brève."
-    ) % {"competence": competence.intitule, "question": question,
-         "extraits": extraits}
+        [_("Compétence travaillée : %(competence)s.")
+         % {"competence": competence.intitule}]
+        + [(getattr(f, "page_content", "") or "")[:1200] for f in fragments]
+    )
 
     orchestrateur = get_orchestrator(apprenant)
     # Le parcours ne facture pas : l'apprenant n'a rien demandé.
     facture = origine != AjoutDeFiche.PARCOURS
-    reponse = orchestrateur.answer_question(invite, sans_quota=not facture)
+    # Les extraits sont fournis, donc aucune seconde recherche n'a lieu.
+    #
+    # Compétence visée : C10 (épreuve E3)
+    # L'invite entière partait auparavant comme `question`, et `RetrievalQA`
+    # s'en servait comme requête de recherche : on cherchait des documents avec
+    # un texte qui en contenait déjà quatre. Les fragments ainsi ramenés
+    # venaient de surcroît d'une AUTRE collection que celle citée en sources.
+    # Voir `AIOrchestrator.answer_question`.
+    reponse = orchestrateur.answer_question(
+        question, sans_quota=not facture, extraits=extraits)
     contenu = reponse.get("answer") or reponse.get("reponse") or ""
 
     return AjoutDeFiche.objects.create(

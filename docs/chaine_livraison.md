@@ -245,8 +245,11 @@ depuis un `.env` local non versionné.
 |---|---|
 | `GROQ_API_KEY` | Clé du fournisseur ; son absence bascule sur le local |
 | `GROQ_MODEL`, `DEFAULT_LLM_MODEL` | Modèles par défaut |
-| `USE_LOCAL_LLM` | Force le repli local |
+| `USE_LOCAL_LLM` | Force le repli local. **Consulté en premier**, avant la clé : c'est un choix de l'exploitant, il prime sur la présence d'une clé |
+| `LLM_TIMEOUT_SECONDES` | Défaut 60 s — près de neuf fois la pire latence relevée au monitorage (6,96 s) |
+| `LLM_REPRISES` | Défaut 2 — reprises de transport, elles ne consomment aucun quota |
 | `OLLAMA_BASE_URL` | Défaut `http://127.0.0.1:11434` |
+| `OLLAMA_MODEL` | Modèle de **génération** local, défaut `mistral`. Distinct de `DEFAULT_LLM_MODEL`, qui porte un identifiant Groq qu'Ollama ne connaît pas |
 | `OLLAMA_EMBED_MODEL` | Modèle d'embarquement |
 | `OLLAMA_TIMEOUT` | Défaut 300 s — un embarquement local dépasse la minute sur machine chargée |
 | `STACKEXCHANGE_KEY` | Facultative ; relève le quota de l'extracteur S1 |

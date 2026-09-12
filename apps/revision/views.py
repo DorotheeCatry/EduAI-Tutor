@@ -77,8 +77,3 @@ def mes_erreurs(request):
         'questions': erreurs_a_rejouer(request.user, notions=notions),
         'notions_choisies': notions,
     })
-
-
-@login_required
-def review(request):
-    return render(request, 'revision/review.html')

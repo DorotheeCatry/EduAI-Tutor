@@ -739,6 +739,3 @@ def submit_quiz(request):
     resultat = orchestrator.submit_quiz_results(session_id, answers)
 
     return JsonResponse(resultat, status=200 if resultat.get("success") else 400)
-@login_required
-def quiz_result(request):
-    return render(request, 'quiz/quiz_result.html')

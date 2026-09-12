@@ -240,32 +240,6 @@ def course_detail(request, course_id):
     
     return render(request, 'courses/course_detail.html', context)
 
-@require_http_methods(["GET"])
-def get_modules_api(request):
-    """API to get list of available modules"""
-    modules = module_loader.get_available_modules()
-    return JsonResponse({'modules': modules})
-
-@require_http_methods(["GET"])
-def get_sections_api(request, module_id):
-    """API to get sections of a module"""
-    sections = module_loader.get_module_sections(module_id)
-    
-    # Format sections for API
-    formatted_sections = []
-    for section_key, files in sections.items():
-        formatted_sections.append({
-            'id': section_key,
-            'name': section_key.replace('_', ' ').replace(section_key.split('_')[0] + '_', '').title(),
-            'files_count': len(files),
-            'files': files
-        })
-    
-    return JsonResponse({
-        'module_id': module_id,
-        'sections': formatted_sections
-    })
-
 @login_required
 def my_courses(request):
     """List of user's saved courses"""

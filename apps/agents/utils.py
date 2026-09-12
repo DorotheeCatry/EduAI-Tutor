@@ -1,6 +1,8 @@
+import logging
 import re
 from importlib.resources import files
-from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 def load_prompt(name: str) -> str:
     """
@@ -70,7 +72,10 @@ def parse_text_quiz(text):
                 "explanation": explanation
             })
 
-    print("✅ Parsed questions:", questions)
+    # Journalisé plutôt qu'affiché : `print` écrit sur la sortie standard sans
+    # niveau ni horodatage, ce qui, sur l'hébergeur, rend la trace inexploitable
+    # — on ne peut ni la filtrer, ni la corréler à une requête.
+    logger.debug("Quiz analyse : %d questions extraites.", len(questions))
     return {"questions": questions}
 
 

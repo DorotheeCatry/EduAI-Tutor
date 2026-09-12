@@ -36,23 +36,20 @@ class Course(models.Model):
         self.view_count += 1
         self.save(update_fields=['view_count'])
 
-class CourseSection(models.Model):
-    """Course sections for better tracking"""
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-    order = models.PositiveIntegerField()
-    section_type = models.CharField(max_length=50, choices=[
-        ('introduction', 'Introduction'),
-        ('explanation', 'Explanation'),
-        ('examples', 'Examples'),
-        ('summary', 'Summary'),
-        ('advanced', 'Advanced'),
-    ])
-    
-    class Meta:
-        ordering = ['order']
-        unique_together = ['course', 'order']
+# `CourseSection` a été retirée le 12/09/2026.
+#
+# Compétence visée : C4 (épreuve E1), C17 (E4)
+#
+# Elle découpait un `Course` en sections typées — introduction, explication,
+# exemples, résumé. Rien ne l'a jamais écrite ni lue : sa table était vide, et
+# `course.sections` n'apparaissait dans aucune vue ni aucun gabarit. C'est un
+# reliquat d'avant la refonte en trois couches décrite ci-dessous, où le
+# découpage du cours est porté par `PartieDeCours`, rattachée au cours de
+# RÉFÉRENCE et non à la génération sur sujet libre.
+#
+# Un modèle Django non employé n'est pas inerte : il crée une table, une clé
+# étrangère et une contrainte d'unicité dans `eduai_app`, et il apparaît au
+# schéma comme si le dispositif existait.
 
 
 # ===========================================================================

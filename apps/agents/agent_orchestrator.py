@@ -2,7 +2,7 @@
 
 from .agent_researcher import get_researcher_chain
 from .agent_pedagogue import get_pedagogue_chain
-from .agent_coach import generate_quiz, generate_code_exercise
+from .agent_coach import GenerationImpossible, generate_quiz
 from .agent_watcher import LearningSession, get_watcher_agent
 from django.contrib.auth import get_user_model
 
@@ -60,9 +60,19 @@ class AIOrchestrator:
     @sous_agent("pedagogue")
     def generate_course(self, topic, difficulty="intermediate"):
         """
-        Generates a complete course using Researcher + Pedagogue
+        Engendre un cours complet avec le Pédagogue.
 
         Compétence visée : C13 (épreuve E3) — le quota est décompté ici.
+        Compétence concernée : C10 (E3) — répartition des rôles entre agents.
+
+        Cette docstring annonçait « using Researcher + Pedagogue ». La méthode
+        n'appelle que le Pédagogue — ce qui se vérifie en trente secondes, et
+        qu'un jury vérifiera. Le Pédagogue porte sa PROPRE chaîne RAG
+        (`get_pedagogue_chain`), avec son propre récupérateur : la recherche
+        documentaire a donc bien lieu, mais elle est faite par lui et non
+        déléguée au Chercheur. Corriger la phrase plutôt que de câbler un
+        second agent : la répartition actuelle fonctionne, et rien dans le
+        référentiel n'exige que deux agents interviennent sur un même geste.
         """
         # Hors du `try` ci-dessous, délibérément : ce bloc intercepte
         # `Exception` et renverrait le refus sous la forme d'une panne
@@ -71,7 +81,7 @@ class AIOrchestrator:
         self._decompter()
 
         try:
-            print(f"🎓 Generating course on: {topic}")
+            logger.info("Generation de cours sur %r.", topic)
             
             # Enhance prompt with module context
             enhanced_topic = topic
@@ -91,20 +101,29 @@ class AIOrchestrator:
                 content = course_result.get('result', course_result)
                 sources = [doc.metadata.get('source', 'Unknown') for doc in course_result.get('source_documents', [])]
             except Exception as e:
-                print(f"Error with RAG, using fallback: {e}")
+                logger.warning(
+                    "Cours sur %r : chaine RAG en echec (%s : %s), repli sans RAG.",
+                    topic, type(e).__name__, e,
+                )
                 # Fallback without RAG (direct LLM call instead of RetrievalQA)
                 try:
                     from apps.agents.tools.llm_loader import get_llm
+                    from apps.agents.tools.model_config import get_model_for
                     from apps.agents.utils import load_prompt
                     from langchain.prompts import PromptTemplate
-                    llm = get_llm()
+                    # Le repli emploie le MÊME modèle que la chaîne. `get_llm()`
+                    # sans nom retombe sur `DEFAULT_LLM_MODEL`, ce qui rendrait
+                    # `GROQ_MODEL_PEDAGOGUE` sans effet dès qu'on passe par ici :
+                    # le routage par agent (décision 001) ne vaut que partout.
+                    llm = get_llm(model_name=get_model_for("pedagogue"))
                     prompt_template = load_prompt("pedagogue")
                     prompt = PromptTemplate(input_variables=["context", "question"], template=prompt_template)
                     formatted_prompt = prompt.format(context="Pas de contexte disponible (RAG désactivé)", question=enhanced_topic)
                     course_result = llm.invoke(formatted_prompt)
                     content = course_result.content if hasattr(course_result, 'content') else str(course_result)
                 except Exception as inner_e:
-                    print(f"Fallback direct LLM error: {inner_e}")
+                    logger.exception(
+                        "Cours sur %r : le repli sans RAG a echoue lui aussi.", topic)
                     content = f"Désolé, une erreur technique est survenue: {inner_e}"
                 sources = ["Generative AI (Fallback)"]
             
@@ -118,7 +137,10 @@ class AIOrchestrator:
                         metadata={}
                     )
                 except Exception as e:
-                    print(f"⚠️ Tracking disabled (missing table): {e}")
+                    logger.warning(
+                        "Suivi de seance indisponible (%s : %s), generation poursuivie.",
+                        type(e).__name__, e,
+                    )
                     # Continue without tracking if tables don't exist yet
 
             # La séance se clôt ici, où la génération se termine.
@@ -133,7 +155,7 @@ class AIOrchestrator:
                 try:
                     self.watcher.end_session(session.id)
                 except Exception as fermeture:
-                    print(f"⚠️ Session non close : {fermeture}")
+                    logger.warning("Seance %s non close : %s", session.id, fermeture)
 
             return {
                 'success': True,
@@ -144,21 +166,50 @@ class AIOrchestrator:
             }
             
         except Exception as e:
-            print(f"Error during course generation: {e}")
-            import traceback
-            traceback.print_exc()
+            # `logger.exception` porte la pile complète, comme le faisait
+            # `traceback.print_exc()`, mais avec un niveau et un horodatage :
+            # sur l'hébergeur, une pile écrite sur la sortie standard ne peut
+            # être ni filtrée ni rattachée à la requête qui l'a produite.
+            logger.exception("Generation de cours sur %r en echec.", topic)
             return {
                 'success': False,
                 'error': str(e),
                 'topic': topic
             }
     
+    def _repondre_sur_extraits(self, question, extraits):
+        """
+        Appelle le modèle avec des extraits fournis, sans nouvelle recherche.
+
+        Compétence visée : C10 (épreuve E3)
+
+        Choix : le MÊME gabarit que la chaîne RAG, chargé depuis
+        `agent_researcher`. Motivation : deux chemins de réponse qui suivraient
+        deux consignes différentes finiraient par répondre différemment à la
+        même question, et la règle de proportion ne tiendrait que sur l'un des
+        deux. Un seul gabarit, deux façons de le remplir.
+
+        Choix : le modèle est résolu par `get_model_for("researcher")`, comme
+        celui de la chaîne. Motivation : `get_llm()` appelé sans nom retombe sur
+        `DEFAULT_LLM_MODEL`, ce qui rendrait `GROQ_MODEL_RESEARCHER` sans effet
+        sur ce chemin — le routage par agent (décision 001) ne vaut que s'il
+        vaut partout.
+        """
+        from apps.agents.agent_researcher import gabarit_de_reponse
+        from apps.agents.tools.llm_loader import get_llm
+        from apps.agents.tools.model_config import get_model_for
+
+        invite = gabarit_de_reponse().format(context=extraits, question=question)
+        reponse = get_llm(model_name=get_model_for("researcher")).invoke(invite)
+        return reponse.content if hasattr(reponse, 'content') else str(reponse)
+
     @sous_agent("researcher")
-    def answer_question(self, question, sans_quota=False):
+    def answer_question(self, question, sans_quota=False, extraits=None):
         """
         Answers a question using the RAG system
 
         Compétence visée : C13 (épreuve E3) — le quota est décompté ici.
+        Compétence concernée : C10 (E3) — ce qui part au modèle.
 
         Choix : `sans_quota` est faux par défaut, et le seul appelant qui le
         lève est l'enrichissement proposé par le parcours. Motivation :
@@ -166,6 +217,27 @@ class AIOrchestrator:
         de sa part ne se comprend qu'après l'avoir subi deux fois
         (décision 040). Le défaut reste le décompte : une dépense non imputée
         doit être un cas déclaré, jamais un oubli.
+
+        Choix : `extraits` permet à un appelant qui a DÉJÀ sa documentation de
+        la fournir, au lieu d'en faire chercher une seconde.
+
+        **Motivation constatée.** L'enrichissement de fiche interrogeait le
+        corpus documentaire — celui qui porte les licences et permet de citer
+        ses sources — collait les quatre fragments obtenus dans une invite, et
+        passait cette invite entière ici. Elle repartait alors dans
+        `RetrievalQA`, qui s'en servait comme REQUÊTE de recherche : on
+        cherchait des documents avec un texte de cinq mille caractères
+        contenant déjà des documents. Deux dégâts. Le premier : une requête
+        pareille ne ressemble à rien, et les fragments qui remontaient étaient
+        du bruit. Le second, plus grave : cette seconde recherche visait
+        `eduai_knowledge_base`, quand les sources affichées à l'apprenant
+        venaient de `eduai_corpus_documentaire`. La réponse ne s'appuyait donc
+        pas sur les sources qu'on lui montrait.
+
+        Quand `extraits` est fourni, aucune recherche n'a lieu : le modèle
+        reçoit le même gabarit que par la chaîne RAG, avec ces extraits-là pour
+        contexte. L'appel reste ici, au goulot qui décompte le quota et qui
+        déclare l'agent au monitorage.
         """
         # Voir generate_course : le décompte précède le `try` pour la même
         # raison. Cette méthode sert aussi bien le chat que la génération
@@ -174,28 +246,39 @@ class AIOrchestrator:
             self._decompter()
 
         try:
-            print(f"🔍 Searching for: {question}")
-            
+            logger.info("Question au chercheur : %.80r", question)
+
             # Use researcher to find and synthesize answer
             try:
-                result = self.researcher.invoke(question)
-                answer = result.get('result', result)
-                sources = [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])]
+                if extraits is not None:
+                    answer = self._repondre_sur_extraits(question, extraits)
+                    # Les sources sont celles de l'appelant, qui a fait la
+                    # recherche : les redire ici les dédoublerait.
+                    sources = []
+                else:
+                    result = self.researcher.invoke(question)
+                    answer = result.get('result', result)
+                    sources = [doc.metadata.get('source', 'Unknown') for doc in result.get('source_documents', [])]
             except Exception as e:
-                print(f"Error with RAG, using fallback: {e}")
+                logger.warning(
+                    "Question : chaine RAG en echec (%s : %s), repli sans RAG.",
+                    type(e).__name__, e,
+                )
                 # Fallback without RAG (direct LLM call instead of RetrievalQA)
                 try:
                     from apps.agents.tools.llm_loader import get_llm
+                    from apps.agents.tools.model_config import get_model_for
                     from apps.agents.utils import load_prompt
                     from langchain.prompts import PromptTemplate
-                    llm = get_llm()
+                    # Même modèle que la chaîne : voir le repli du Pédagogue.
+                    llm = get_llm(model_name=get_model_for("researcher"))
                     prompt_template = load_prompt("researcher")
                     prompt = PromptTemplate(input_variables=["question"], template=prompt_template)
                     formatted_prompt = prompt.format(question=question)
                     result = llm.invoke(formatted_prompt)
                     answer = result.content if hasattr(result, 'content') else str(result)
                 except Exception as inner_e:
-                    print(f"Fallback direct LLM error: {inner_e}")
+                    logger.exception("Question : le repli sans RAG a echoue lui aussi.")
                     answer = f"Je ne peux pas répondre pour le moment. Erreur technique: {inner_e}"
                 sources = ["Generative AI (Fallback)"]
             
@@ -209,7 +292,10 @@ class AIOrchestrator:
                         metadata={'question': question}
                     )
                 except Exception as e:
-                    print(f"⚠️ Tracking disabled (missing table): {e}")
+                    logger.warning(
+                        "Suivi de seance indisponible (%s : %s), reponse rendue tout de meme.",
+                        type(e).__name__, e,
+                    )
                     # Continue without tracking if tables don't exist yet
             
             return {
@@ -221,9 +307,7 @@ class AIOrchestrator:
             }
             
         except Exception as e:
-            print(f"Error answering question: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception("Reponse a la question en echec.")
             return {
                 'success': False,
                 'error': str(e),
@@ -247,6 +331,13 @@ class AIOrchestrator:
             if self.user and hasattr(self.user, 'language_preference'):
                 user_language = self.user.language_preference
             
+            # `generate_quiz` LÈVE désormais au lieu de rendre un faux quiz.
+            #
+            # Compétence visée : C10 (épreuve E3), C21 (E5)
+            # Il rendait auparavant un quiz d'exemple — « Question d'exemple
+            # sur X », quatre options « Option A » à « Option D », bonne
+            # réponse zéro — que l'application affichait comme un vrai. Voir
+            # l'en-tête de `agent_coach.py`.
             quiz_data = generate_quiz(topic, num_questions, user_language)
 
             # Session tracking (optional)
@@ -286,8 +377,22 @@ class AIOrchestrator:
                 "session_id": session.id if session else None
             }
 
+        except GenerationImpossible as echec:
+            # L'échec attendu : le modèle n'a rien produit d'exploitable. Il
+            # est distingué du reste parce qu'il n'a rien d'anormal — un
+            # fournisseur peut répondre hors format — et qu'il porte un motif
+            # lisible, à afficher tel quel plutôt qu'une trace technique.
+            logger.warning("Quiz sur %r non engendre : %s", topic, echec)
+            return {
+                "questions": [],
+                "error": str(echec),
+                "topic": topic
+            }
+
         except Exception as e:
-            print(f"Error creating quiz: {e}")
+            # Tout le reste : suivi de séance, base, erreur de programmation.
+            # La pile est conservée, parce qu'elle est ici le seul indice.
+            logger.exception("Creation du quiz sur %r en echec.", topic)
             return {
                 "questions": [],
                 "error": str(e),
@@ -436,7 +541,7 @@ class AIOrchestrator:
             }
             
         except Exception as e:
-            print(f"Error generating dashboard: {e}")
+            logger.exception("Tableau de bord non calculable.")
             return {
                 'success': False,
                 'error': str(e)

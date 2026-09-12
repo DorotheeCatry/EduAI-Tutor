@@ -269,7 +269,7 @@ async def rechercher(requete: str, nombre: int) -> dict[str, Any]:
     rythme des générations reviendrait à payer une protection dont elle n'a pas
     besoin.
     """
-    from langchain_community.vectorstores import Chroma
+    from langchain_chroma import Chroma
 
     from apps.monitoring.sondes import contexte_agent
     from apps.rag.utils import COLLECTION_DOCUMENTAIRE, load_embedding_function

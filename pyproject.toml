@@ -36,6 +36,15 @@ dependencies = [
     "fastapi>=0.115",
     "slowapi>=0.1.9",
     "whitenoise>=6.8,<7.0",
+    # Ajoutees le 12/09/2026 (decision 048). `ChatOllama`, `OllamaEmbeddings` et
+    # `Chroma` etaient importes depuis `langchain-community`, ou les trois sont
+    # deprecies et disparaissent en LangChain 1.0. Ce sont les paquets que
+    # LangChain designe lui-meme comme remplacants : aucune API n'a change, les
+    # deux collections du corpus relisent a l'identique (387 et 24 004
+    # fragments, metadonnees intactes) et la suite ne leve plus aucun
+    # avertissement de depreciation LangChain.
+    "langchain-ollama>=0.3.10",
+    "langchain-chroma>=0.2.6",
 ]
 
 # Dépendances du pipeline de données, hors du socle applicatif.
@@ -114,7 +123,22 @@ extend-exclude = [
 # douteuse.
 select = ["E4", "E7", "E9", "F", "W291", "W292", "W605"]
 ignore = [
-    # Les modules d'agents importent pour l'effet de bord de l'amorçage Django.
+    # Concession à l'existant, et non une règle qu'on défendrait.
+    #
+    # La justification précédente était : « les modules d'agents importent pour
+    # l'effet de bord de l'amorçage Django ». Elle décrivait un cas réel mais
+    # couvrait tout autre chose — un `import random` jamais employé dans l'agent
+    # Coach, entre autres. Une exemption justifiée par un motif qui ne la
+    # concerne pas est pire qu'une exemption assumée : elle fait croire que le
+    # sujet a été examiné.
+    #
+    # Le motif réel : 50 imports inutilisés subsistent dans du code antérieur à
+    # l'introduction du linter, répartis sur une quinzaine de fichiers dont des
+    # vues qu'aucun test ne couvre. Les retirer tous à l'approche du rendu est
+    # un risque sans contrepartie.
+    #
+    # La couche `apps/agents/`, elle, a été nettoyée le 12/09/2026 et passe
+    # `uv run ruff check apps/agents --select F401`.
     "F401",
 ]
 

@@ -167,22 +167,21 @@ def contexte_de_quiz(question, reponse_donnee=None):
     }
 
 
-def contexte_general():
-    """
-    Contexte des pages qui n'en ont pas : accueil, profil, le reste.
-
-    Compétence visée : C10 (épreuve E3)
-
-    Rendre une structure plutôt que `None` : le panneau affiche alors « aucun
-    contexte » explicitement, au lieu de laisser une bannière vide dont on ne
-    saurait pas si elle est absente ou en panne.
-    """
-    return {
-        "page": "general",
-        "resume": "",
-        "elements": [],
-        "charge": {},
-    }
+# Le cas « page sans contexte » est tenu par le panneau, pas par ce module.
+#
+# Compétence visée : C10 (épreuve E3), C18 (E4)
+#
+# Une fonction `contexte_general()` vivait ici, qui rendait la structure vide
+# `{"page": "general", "resume": "", "elements": [], "charge": {}}`. Elle
+# n'était appelée par personne : `templates/components/tuteur.html` porte déjà
+# ce défaut, en JavaScript, comme valeur initiale de sa variable `contexte` —
+# et c'est CELUI-LÀ qui s'exécute quand une page ne pose aucun bloc de
+# contexte.
+#
+# Deux formulations du même défaut, dont une seule vivante, finissent par
+# diverger. C'est précisément ce que l'en-tête de ce module cherche à éviter en
+# posant que la bannière et la requête lisent la même source. La formulation
+# morte est retirée.
 
 
 def composer_l_invite(message, contexte, historique=None):
