@@ -181,6 +181,98 @@ def test_l_ecart_d_aliasing_est_ecrit_dans_le_module():
     assert "append" in source, "et l'alternative fidèle à employer"
 
 
+# --- Les sorties de toutes les portées ------------------------------------
+
+
+@pytest.mark.parametrize("nom, code, attendu", [
+    ("niveau module", 'print("a")', "a"),
+    ("dans une fonction", 'def f():\n    print("b")\nf()', "b"),
+    ("module puis fonction", 'print("a")\ndef f():\n    print("b")\nf()', "a\nb"),
+    ("fonction imbriquée",
+     'def f():\n    def g():\n        print("c")\n    g()\nf()', "c"),
+    ("méthode de classe",
+     'class C:\n    def m(self):\n        print("d")\nC().m()', "d"),
+    ("deux appels de la même fonction",
+     'def f(n):\n    print(n)\nf(1)\nf(2)', "1\n2"),
+])
+def test_un_print_est_lu_quelle_que_soit_sa_portee(executeur, nom, code, attendu):
+    """
+    Ce que le code affiche est rendu, où qu'il l'affiche.
+
+    Compétence visée : C17 (épreuve E4), C21 (E5)
+
+    RestrictedPython injecte `_print = _print_(_getattr_)` en tête de CHAQUE
+    portée qui emploie `print` — le module, mais aussi chaque fonction. Avec
+    `PrintCollector` pour fabrique, chacune recevait son propre collecteur, et
+    l'exécuteur ne lisait que celui du module.
+
+    **Tout `print` appelé depuis une fonction était donc perdu**, et l'apprenant
+    lisait « Exécuté sans rien afficher, pensez à print() » pour un code qui
+    affichait bien. Sur une plateforme d'apprentissage de la programmation, où
+    la première chose qu'on écrit est une fonction qui affiche, c'est le défaut
+    le plus large possible.
+
+    L'ordre compte aussi : « module puis fonction » vérifie que les deux
+    écrivent dans le même tampon, dans l'ordre des appels.
+    """
+    resultat = executeur.execute_code(code)
+
+    assert resultat["success"], resultat["error"]
+    assert str(resultat["output"]).strip() == attendu
+
+
+def test_le_collecteur_de_sorties_est_unique_pour_toutes_les_portees(executeur):
+    """
+    Une seule instance, quelle que soit la portée qui la demande.
+
+    Compétence visée : C13 (épreuve E3), C18 (E4)
+
+    Ce test tient sur le mécanisme et non sur son effet : il empêche qu'un
+    correctif futur rétablisse une fabrique qui rend une instance neuve à
+    chaque appel, ce qui reproduirait le défaut sans qu'aucun cas ci-dessus ne
+    le montre nécessairement.
+    """
+    from apps.exercises.security import CLE_COLLECTEUR
+
+    globales = executeur._create_safe_globals()
+    fabrique = globales["_print_"]
+
+    assert fabrique() is fabrique(), (
+        "la fabrique doit rendre le MÊME collecteur à chaque portée"
+    )
+    assert globales[CLE_COLLECTEUR] is fabrique(), (
+        "et c'est celui que l'exécuteur lit"
+    )
+
+    # Deux exécutions successives ne partagent rien.
+    autres = executeur._create_safe_globals()
+    assert autres[CLE_COLLECTEUR] is not globales[CLE_COLLECTEUR]
+
+
+def test_les_trois_pages_passent_par_le_meme_executeur():
+    """
+    Carnet, Python Exercises et la cellule des cours : une seule correction.
+
+    Compétence visée : C17 (épreuve E4), C18 (E4)
+
+    Trois pages exécutent du code d'apprenant. Si l'une d'elles avait son
+    propre chemin, elle garderait le défaut après sa correction ailleurs — et
+    rien ne le signalerait, puisque les deux autres fonctionneraient.
+    """
+    carnet = Path("apps/exercises/views.py").read_text(encoding="utf-8")
+    cellule = Path("apps/courses/views.py").read_text(encoding="utf-8")
+
+    assert "SecurePythonExecutor().execute_code" in carnet, "le Carnet"
+    assert "secure_executor.run_tests" in carnet, "Python Exercises"
+    assert "executeur.execute_code" in cellule, "la cellule des pages de cours"
+
+    # Et aucune ne fabrique son propre chemin d'exécution.
+    for source, ou in ((carnet, "exercises"), (cellule, "courses")):
+        assert "exec(" not in source, (
+            f"{ou} ne doit pas exécuter du code hors de l'exécuteur"
+        )
+
+
 # --- 2. Un test attendant None passe ---------------------------------------
 
 

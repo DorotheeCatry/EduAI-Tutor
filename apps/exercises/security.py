@@ -34,6 +34,15 @@ class CodeExecutionError(Exception):
 #: sert qu'à lire une sortie, elle n'accorde aucun droit.
 MARQUE_RESULTAT = "__RESULT__="
 
+#: Clé sous laquelle l'exécuteur range le collecteur de sorties partagé.
+#:
+#: Compétence visée : C13 (épreuve E3), C17 (E4)
+#:
+#: Elle commence par un tiret bas, et c'est délibéré : RestrictedPython refuse
+#: à la compilation tout identifiant qui en porte un, si bien qu'aucun code
+#: d'apprenant ne peut désigner ce nom — ni le lire, ni l'écraser.
+CLE_COLLECTEUR = "_collecteur_de_sorties_"
+
 #: Nom de la variable qui porte le résultat dans le code de test assemblé.
 #:
 #: **Il ne peut pas commencer par un tiret bas.** RestrictedPython refuse à la
@@ -256,11 +265,35 @@ class SecurePythonExecutor:
             if valeur is not None:
                 globales["__builtins__"][nom] = valeur
 
+        # UN SEUL collecteur de sorties, partagé par toutes les portées.
+        #
+        # Compétence visée : C17 (épreuve E4), C21 (E5)
+        #
+        # **Le défaut que cela corrige.** RestrictedPython injecte
+        # `_print = _print_(_getattr_)` en tête de CHAQUE portée qui emploie
+        # `print` — le module, mais aussi chaque fonction. Avec `PrintCollector`
+        # pour fabrique, chacune recevait donc son propre collecteur, et
+        # l'exécuteur ne lisait que celui du module. **Tout `print` appelé
+        # depuis une fonction était perdu**, et l'apprenant lisait « Exécuté
+        # sans rien afficher, pensez à print() » pour un code qui affichait
+        # bien (incident 022).
+        #
+        # La fabrique rend ici toujours la même instance. Les portées
+        # imbriquées écrivent dans le même tampon, dans l'ordre des appels, et
+        # l'exécuteur n'a plus qu'un endroit à lire.
+        #
+        # L'instance est créée à chaque appel de cette méthode, donc à chaque
+        # exécution : deux exécutions successives ne partagent rien.
+        collecteur = PrintCollector(safer_getattr)
+
         # Les gardes. Sans elles, le code réécrit par RestrictedPython lève un
         # NameError à la première indexation ou boucle : ce ne sont pas des
         # options, ce sont les fonctions que le code compilé appelle.
         globales.update({
-            "_print_": PrintCollector,
+            CLE_COLLECTEUR: collecteur,
+            # La fabrique ignore le `_getattr_` que le code réécrit lui passe :
+            # le collecteur a déjà le sien, et c'est le même.
+            "_print_": lambda _getattr_=None: collecteur,
             "_getattr_": safer_getattr,      # refuse les attributs spéciaux
             "_getitem_": default_guarded_getitem,
             "_getiter_": default_guarded_getiter,
@@ -384,11 +417,23 @@ class SecurePythonExecutor:
                     exec(compiled_code, safe_globals, safe_locals)
                 
                 # `print` ne va pas sur la sortie standard : RestrictedPython
-                # le remplace par un collecteur, rangé dans `_print`. Sans
-                # cette lecture, tout code affichait un résultat vide — et la
-                # bibliothèque le signale d'ailleurs par un avertissement,
-                # « Prints, but never reads 'printed' variable ».
-                collecte = safe_locals.get("_print")
+                # le remplace par un collecteur. Sans cette lecture, tout code
+                # affichait un résultat vide — et la bibliothèque le signale
+                # d'ailleurs par un avertissement, « Prints, but never reads
+                # 'printed' variable ».
+                #
+                # On lit le collecteur PARTAGÉ, et non la variable `_print` de
+                # l'espace de noms du module.
+                #
+                # Compétence visée : C17 (épreuve E4), C21 (E5)
+                # Motivation constatée : `_print` est injecté par portée. Celui
+                # du module ne porte que les `print` écrits au premier niveau ;
+                # ceux d'une fonction vivaient dans une variable locale que
+                # rien ne lisait. Et quand un code n'imprime QUE depuis des
+                # fonctions, le module n'a même pas de `_print` — la lecture
+                # rendait alors `None` sur un code qui avait tout affiché.
+                # Voir `_create_safe_globals` et l'incident 022.
+                collecte = safe_globals.get(CLE_COLLECTEUR)
                 imprime = collecte() if collecte is not None else ""
                 result['output'] = output_buffer.getvalue() + imprime
                 result['success'] = True
