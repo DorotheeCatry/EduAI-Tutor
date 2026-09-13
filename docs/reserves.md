@@ -1189,6 +1189,31 @@ l'écart soit dit plutôt que découvert.
 
 **Composant :** `.github/workflows/integration-continue.yml`, services Railway
 **Nature :** dispositif décrit comme actif, mesuré inopérant
+**Statut : LEVÉE le 13/09/2026** — corrigée, et vérifiée sur une fusion réelle.
+
+> **La chaîne redéploie désormais, et on l'a constaté plutôt que déclaré.**
+>
+> L'étape a été réécrite : elle n'appelle plus une URL qui n'existe pas, elle
+> emploie le client en ligne de commande avec un jeton de projet, boucle sur
+> les trois services avec `--from-source`, et **échoue si l'un d'eux n'a pas
+> ouvert de nouveau déploiement**.
+>
+> Deux mesures, dans cet ordre. D'abord un lancement manuel depuis la branche,
+> qui a redéployé sans rien publier — les trois étapes de publication sautées,
+> `:main` préservée. Puis la fusion dans `main` (`9c5f640`), sans aucune
+> intervention :
+>
+> | Service | Avant la fusion | Après |
+> |---|---|---|
+> | `web` | `fddffe5d` | **`b01b917b`** |
+> | `service-ai` | `fc7b1388` | **`a67ef282`** |
+> | `embarquement` | `fe5cb5ff` | **`21ab2648`** |
+>
+> Et les images servies sont bien celles du commit fusionné : au registre,
+> `:main` et `:9c5f6405` portent la même empreinte pour les trois.
+>
+> Le corps de cette réserve est conservé : il documente ce qui avait été
+> cherché, et pourquoi le vert de la chaîne ne prouvait rien.
 
 Le dossier d'incident 020 laissait une réserve ouverte : l'étape « Demander le
 redéploiement à l'hébergeur » **réussit aussi lorsque le secret

@@ -20,6 +20,27 @@
 # critère C19 demande — l'étape de livraison s'exécute « une fois la ou les
 # étapes de packaging validées », donc après, et seulement si elles passent.
 
+# Versions des actions — relevé du 13/09/2026.
+#
+# Compétence visée : C18 (épreuve E4), C19 (E5)
+#
+# `actions/checkout` et `astral-sh/setup-uv` étaient restées en v4 et v5, qui
+# ciblent Node 20. GitHub a déprécié cet environnement et forçait ces actions
+# sur Node 24 en l'annonçant à chaque exécution : rien n'échouait, mais le
+# repli disparaîtra.
+#
+# Les ruptures des versions intermédiaires ont été lues avant de monter, et non
+# supposées :
+#
+#   - `checkout` v5 à v7 durcissent le retrait de sources sur `pull_request_target`
+#     et `workflow_run` — deux déclencheurs que ce fichier n'emploie pas. Aucune
+#     de ses quatre utilisations ne passe d'argument.
+#   - `setup-uv` v8 **cesse de publier les tags majeurs mobiles** : `@v10`
+#     n'existe pas, il faut une version complète. v9 fait passer `prune-cache`
+#     de vrai à faux, ce qui augmente l'occupation du cache sans rien casser.
+#     v10 désactive le cache sur les événements sensibles, qu'on n'emploie pas
+#     davantage. Le seul argument passé ici, `enable-cache`, est inchangé.
+
 name: Intégration continue
 
 on:
@@ -40,10 +61,13 @@ jobs:
     name: Qualité du code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Installer uv
-        uses: astral-sh/setup-uv@v5
+        # Version COMPLÈTE, et non `@v10` : depuis la version 8, ce dépôt ne
+        # publie plus de tag majeur ni mineur mobile. Écrire `@v10` ne
+        # résoudrait rien et la chaîne échouerait à l'installation.
+        uses: astral-sh/setup-uv@v10.1.0
         with:
           enable-cache: true
 
@@ -96,10 +120,13 @@ jobs:
       MONITORAGE_ACTIF: "false"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Installer uv
-        uses: astral-sh/setup-uv@v5
+        # Version COMPLÈTE, et non `@v10` : depuis la version 8, ce dépôt ne
+        # publie plus de tag majeur ni mineur mobile. Écrire `@v10` ne
+        # résoudrait rien et la chaîne échouerait à l'installation.
+        uses: astral-sh/setup-uv@v10.1.0
         with:
           enable-cache: true
 
@@ -164,7 +191,7 @@ jobs:
             fichier: Dockerfile
             etiquette: eduai/web:controle
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Préparer Buildx
         uses: docker/setup-buildx-action@v3
@@ -272,7 +299,7 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Préparer Buildx
         uses: docker/setup-buildx-action@v3
