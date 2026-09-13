@@ -178,8 +178,15 @@ l'écart entre demandé et rendu révèle le problème.
 
 **Comment la lire.** Un histogramme dont la masse se concentre en dessous du `k`
 configuré signale un corpus trop petit ou un filtre trop restrictif — non une
-panne. C'est la situation actuelle du projet : la collection du corpus
-documentaire est vide, l'indexation étant écrite mais pas encore exécutée.
+panne.
+
+**Ce paragraphe décrivait, jusqu'au 13/09/2026, un corpus documentaire vide,
+« l'indexation étant écrite mais pas encore exécutée ».** Ce n'est plus le cas
+et ne l'est plus depuis le 2 septembre : `eduai_corpus_documentaire` porte
+**24 004 fragments**, et `eduai_knowledge_base` 387. Les deux sont servies en
+production — la sonde de santé du service IA les restitue. La phrase est
+corrigée ici plutôt que supprimée : elle sous-estimait le travail fait, ce qui
+est le sens d'erreur le moins visible et le plus coûteux.
 
 ---
 

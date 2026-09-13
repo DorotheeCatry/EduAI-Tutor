@@ -1,6 +1,8 @@
 # Réserves connues
 
-**Date de mise à jour :** 29 août 2026
+**Date de mise à jour :** 13 septembre 2026 — **26 réserves**, dont deux levées
+sur mesure les 12 et 13 septembre (24, l'image déployée ; 26, le redéploiement
+automatique).
 
 Ce document recense ce qui, dans le dépôt, **ne fait pas ce qu'il a l'air de
 faire**, ou ne le fait qu'en partie. Il ne remplace ni le journal de décisions,

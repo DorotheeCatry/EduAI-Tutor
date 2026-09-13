@@ -3,7 +3,7 @@
 **Date :** 26/08/2026
 **Compétence visée :** C4 (épreuve E1) — base de données conçue dans le respect
 du RGPD
-**Portée :** la base `eduai_data` et les cinq sources qui l'alimentent. La base
+**Portée :** la base `eduai_data` et les **six sources** qui l'alimentent — six sources pour cinq types, `s2` et `s6` étant deux scrapings distincts. La base
 applicative `eduai_app` est traitée au paragraphe 8, pour les points qui la
 lient à celle-ci.
 
