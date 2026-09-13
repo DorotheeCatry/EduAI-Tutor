@@ -14,7 +14,7 @@ et récupération documentaire, pour un organisme de formation professionnelle.
 ![Python](https://img.shields.io/badge/Python-3.13-4CAF50?style=for-the-badge&logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/Django-5.2-4CAF50?style=for-the-badge&logo=django&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-007ACC?style=for-the-badge&logo=postgresql&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-394%20passent-4CAF50?style=for-the-badge)
+![Tests](https://img.shields.io/badge/tests-514%20passent-4CAF50?style=for-the-badge)
 ![Corpus](https://img.shields.io/badge/corpus-7%20868%20documents-007ACC?style=for-the-badge)
 ![Licence](https://img.shields.io/badge/licence-tous%20droits%20réservés-C586C0?style=for-the-badge)
 
@@ -24,8 +24,8 @@ et récupération documentaire, pour un organisme de formation professionnelle.
 
 > Ce dépôt sert de support d'évaluation pour la certification **RNCP 37827 —
 > Développeur en intelligence artificielle** (Simplon, titre 2026). Les chiffres
-> qui suivent sont **relevés sur l'installation**, datés du 4 septembre 2026, et
-> non repris d'une version antérieure de ce document.
+> qui suivent sont **relevés sur l'installation**, datés du 13 septembre 2026,
+> et non repris d'une version antérieure de ce document.
 
 ---
 
@@ -260,7 +260,7 @@ volume persistant et mis à jour hors ligne (décision 023).
 ## Tests et intégration continue
 
 ```bash
-DJANGO_DEBUG=False uv run pytest        # 394 tests
+DJANGO_DEBUG=False uv run pytest        # 514 tests
 uv run ruff check .
 ```
 
@@ -269,9 +269,14 @@ tout appel en clair vers HTTPS, et un test qui ne simule pas la requête sécuri
 n'atteint jamais la vue.
 
 La chaîne GitHub Actions compte **cinq travaux** — qualité, tests, construction
-et contrôle des deux images, publication au registre avec déclenchement du
-déploiement. Elle s'exécute à chaque poussée ; la publication ne se fait que
-depuis `main`.
+et contrôle des deux images, publication au registre puis redéploiement. Elle
+s'exécute à chaque poussée ; la publication ne se fait que depuis `main`.
+
+**Elle déploie réellement, et le vérifie.** L'étape de déploiement redéploie les
+trois services de l'hébergeur, relève leur identifiant de déploiement avant et
+après, et **échoue si l'un d'eux n'a pas changé**. Elle se contentait jusqu'au
+13/09 d'appeler un crochet qui n'existe pas chez cet hébergeur, et rendait un
+succès sans rien livrer — voir la réserve 26.
 
 <table>
 <tr>
@@ -432,9 +437,9 @@ n'était lu par personne pour l'affichage.
 | Document | Ce qu'il porte |
 |---|---|
 | [`docs/traceabilite.md`](docs/traceabilite.md) | La matrice des 21 compétences : verdict, preuve, emplacement |
-| [`docs/decisions/`](docs/decisions/) | **45 décisions** d'architecture : contexte, options, choix, raison |
-| [`docs/incidents/`](docs/incidents/) | **18 incidents** : symptôme, cause, correction, garde posée |
-| [`docs/reserves.md`](docs/reserves.md) | **23 réserves** — ce qui est connu, assumé et non corrigé |
+| [`docs/decisions/`](docs/decisions/) | **50 décisions** d'architecture : contexte, options, choix, raison |
+| [`docs/incidents/`](docs/incidents/) | **24 incidents** : symptôme, cause, correction, garde posée |
+| [`docs/reserves.md`](docs/reserves.md) | **26 réserves** — ce qui est connu, assumé et non corrigé |
 | [`docs/motifs_incidents.md`](docs/motifs_incidents.md) | Les familles de défauts qui reviennent dans ce projet |
 | [`docs/mcd_eduai_data.md`](docs/mcd_eduai_data.md) · [`mld`](docs/mld_eduai_data.md) · [`dictionnaire`](docs/dictionnaire_donnees_eduai_data.md) | Modélisation de `eduai_data` |
 | [`docs/rgpd_eduai_data.md`](docs/rgpd_eduai_data.md) | Minimisation, conservation, effacement |

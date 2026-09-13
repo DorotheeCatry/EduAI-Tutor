@@ -1,7 +1,11 @@
 # EduAI Tutor — état des lieux au regard du référentiel RNCP 37827
 
+**Relevé initial : 28 août 2026. Chiffres du vector store et du pipeline repris
+le 13 septembre 2026.** Les autres valeurs datent du relevé initial et le
+disent là où elles apparaissent.
+
 Document de contexte. Il décrit l'état réel du dépôt à la date de rédaction,
-mesuré contre les exigences de `docs/cahier-des-charges.md`, et distingue **ce qui est vérifié**
+mesuré contre les exigences de `docs/archive/cahier-des-charges.md`, et distingue **ce qui est vérifié**
 de ce qui est simplement constaté par lecture du code.
 
 Toutes les données chiffrées ci-dessous ont été obtenues par exécution ou par
@@ -44,7 +48,7 @@ machine). Après `uv sync` :
 | Dérive modèles / migrations | `makemigrations --check` → `No changes detected` |
 | Pages HTTP | **13 pages authentifiées répondent en 200**, aucune 500 |
 | Données réelles | 19 utilisateurs, 4 cours, 5 exercices, 22 salles de quiz |
-| Vector store | Chroma opérationnel, **387 documents** dans `eduai_knowledge_base` |
+| Vector store | Chroma opérationnel — **387 fragments** dans `eduai_knowledge_base` (supports de cours) et **24 004** dans `eduai_corpus_documentaire` (corpus du pipeline, indexé le 02/09) |
 | Corpus | `data/contents/` — **95 Mo**, 41 `.md`, 21 `.pdf`, 12 `.avif`, 1 `.ipynb`, 1 `.pptx`, sur 11 modules |
 
 Pages contrôlées en 200 : accueil, générateur de cours, mes cours, lobby quiz,
@@ -122,7 +126,7 @@ de provenance.
   `serializers|ViewSet|APIView|@api_view|Router` dans tout le code applicatif →
   **0 hit**. La seule trace est la ligne `'rest_framework',` dans
   `INSTALLED_APPS` (`settings.py:83`). **C9 est donc absent**, et la séparation
-  API données / API service IA exigée par `docs/cahier-des-charges.md` reste sans objet.
+  API données / API service IA exigée par `docs/archive/cahier-des-charges.md` reste sans objet.
 - Les 5 points de terminaison JSON sont artisanaux (`JsonResponse` +
   `json.loads(request.body)`) : **3 désactivent la CSRF** (`@csrf_exempt`),
   **2 sont ouverts aux anonymes** (`apps/courses/views.py:154-179`), **aucun
@@ -146,7 +150,7 @@ de provenance.
   pas. **`pytest` n'apparaît pas dans `uv.lock`** et il n'existe aucun groupe de
   dépendances de développement dans `pyproject.toml`. Pas de `conftest.py`.
   **Pas de `.github/`**, donc pas de CI. **Pas de Dockerfile ni de
-  `docker-compose.yml`**, alors que `docs/cahier-des-charges.md` documente `docker compose up -d`.
+  `docker-compose.yml`**, alors que `docs/archive/cahier-des-charges.md` documente `docker compose up -d`.
 - **Accessibilité** (transversale à C6, C9, C10, C14, C17, C19, C20) :
   **0 attribut `aria-*`, 0 `role=`** dans les templates. Hiérarchie de titres
   non séquentielle (deux `<h1>` dans `chat.html`, sauts h1→h3 ailleurs).
@@ -159,13 +163,13 @@ de provenance.
 - **Aucun dossier `docs/`** avant ce document. Ni journal de décisions
   (`docs/decisions/`), ni notes quotidiennes (`docs/journal/`), ni matrice de
   traçabilité, ni schéma d'architecture.
-- **0 docstring `Compétence visée`** dans tout le code, alors que `docs/cahier-des-charges.md`
+- **0 docstring `Compétence visée`** dans tout le code, alors que `docs/archive/cahier-des-charges.md`
   l'exige pour toute fonction servant de preuve, accompagnée d'une ligne
   « Choix » justifiant l'implémentation.
 - **0 commit portant un tag `[Cx]`** sur 353 commits. Environ 14 % seulement
   suivent un format conventionnel ; beaucoup sont des messages auto-générés par
   l'éditeur web GitHub (« Updated views.py »).
-- **Logs :** `docs/cahier-des-charges.md` impose `logging` plutôt que `print`. Résultat :
+- **Logs :** `docs/archive/cahier-des-charges.md` impose `logging` plutôt que `print`. Résultat :
   **0 `import logging`** dans `apps/`, et **~86 appels à `print`** répartis sur
   10 fichiers.
 
@@ -227,7 +231,7 @@ lui, est intact.
 3. **`docs/`** : matrice de traçabilité des 21 compétences, `docs/decisions/`
    rétroactif sur les choix déjà faits (multi-agents, Groq/Ollama, Chroma, uv,
    bac à sable maison, SQLite), `docs/journal/`.
-4. **Bloc 1 de bout en bout** : 5 sources → transformation → PostgreSQL avec
+4. **Bloc 1 de bout en bout** : 6 sources pour 5 types → transformation → PostgreSQL avec
    MCD/MPD → requêtes SQL et Spark SQL → API données (C5).
 5. **API du service IA (C9)** en DRF, distincte de l'API données, avec
    authentification et throttling.

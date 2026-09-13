@@ -88,8 +88,9 @@ conditionne le droit de redistribuer.
 
 ### SOURCE
 
-Les cinq sources exigées par le référentiel. Table de faible cardinalité (5
-lignes) mais structurante : c'est elle qui rend la couverture des cinq types
+Les sources qui alimentent la base : **six lignes pour les cinq types**
+exigés par le référentiel — `s2` et `s6` sont deux scrapings distincts
+(décision 039). Table de faible cardinalité mais structurante : c'est elle qui rend la couverture des cinq types
 vérifiable par une seule requête.
 
 | Attribut | Nature | Rôle |

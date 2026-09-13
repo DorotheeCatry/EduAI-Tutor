@@ -586,7 +586,7 @@ et une erreur de modélisation.
 
 | Table | Lignes attendues | Origine du chiffre |
 |---|---|---|
-| `source` | 5 | Les cinq types du référentiel |
+| `source` | 6 | Les six sources, couvrant les cinq types du référentiel |
 | `licence` | 4 | Licences distinctes observées |
 | `extraction` | 3 puis +1 par exécution | |
 | `document` | 1 888 | 1 928 bruts − 40 doublons de collecte |

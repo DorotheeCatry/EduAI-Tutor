@@ -14,7 +14,7 @@ La base compte **13 tables**.
 |---|---|---|
 | `type_source` | 3 | Les cinq types de sources exigés par le référentiel RNCP 37827 (C1). |
 | `licence` | 6 | Conditions de réutilisation des contenus collectés. |
-| `source` | 6 | Les cinq sources du pipeline. |
+| `source` | 6 | Les **six** sources du pipeline, couvrant les cinq types. |
 | `mot_cle` | 2 | Mots-clés qualifiant les documents, tous sources confondues. |
 | `extraction` | 8 | Une exécution d'un extracteur. |
 | `document` | 11 | Unité de contenu collectée, quelle que soit la source : une question et sa réponse acceptée, une section de documentation, une section de cours. |
@@ -66,7 +66,9 @@ Conditions de réutilisation des contenus collectés. Une licence couvre plusieu
 
 ## `source`
 
-Les cinq sources du pipeline. Table de faible cardinalité mais structurante : elle rend la couverture des cinq types vérifiable par une requête.
+Les **six** sources du pipeline, couvrant les **cinq types** exigés par C1. Table de faible cardinalité mais structurante : elle rend la couverture des cinq types vérifiable par une requête.
+
+Six pour cinq, parce que `s2` et `s6` sont deux scrapings distincts — la documentation Python d'un côté, celle des bibliothèques de l'autre (décision 039). C'est ce qui a imposé de rattacher un document à sa source par son **code** et non par son type.
 
 | Colonne | Type | Clé | Obligatoire | Description |
 |---|---|---|---|---|

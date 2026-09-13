@@ -1,6 +1,7 @@
 # Démarche de conduite du projet
 
 **Date :** 28 août 2026
+**Chiffres repris le :** 13 septembre 2026
 **Compétence visée :** C16 (épreuve E4) — démarche de gestion de projet
 **Compétences concernées :** C19 (E4) — traçabilité ; C18 (E4)
 
@@ -22,8 +23,8 @@ agile complète.
 
 ## 1. Le rythme réel
 
-L'historique compte **474 commits**, répartis en deux phases séparées par une
-interruption de treize mois.
+L'historique compte **719 commits** au 13/09/2026, répartis en deux phases
+séparées par une interruption de treize mois.
 
 | Phase | Période | Commits | Objet |
 |---|---|---|---|
@@ -126,9 +127,9 @@ interroge.
 
 | Mécanisme | Effet |
 |---|---|
-| **78 tests `pytest`** | Rejoués à chaque poussée |
-| **Intégration continue à trois travaux** | Qualité du code, tests sur PostgreSQL réel, construction et inspection de l'image. Aucun en `continue-on-error` |
-| **4 dossiers d'incident** | Déclenchement, périmètre, diagnostic, résolution, tests en succès |
+| **514 tests `pytest`** | Rejoués à chaque poussée |
+| **Intégration continue à cinq travaux** | Qualité du code, tests sur PostgreSQL réel, construction et inspection de deux images, publication et déploiement. Aucun en `continue-on-error` |
+| **24 dossiers d'incident** | Déclenchement, périmètre, diagnostic, résolution, tests en succès |
 | **Contrôles de non-régression** | Chaque incident produit un test qui le garde de revenir |
 
 Le lien entre incident et test est le point le plus proche d'une **rétrospective**
@@ -187,8 +188,8 @@ pratiques appliquées depuis le début ne montrerait pas.
 
 | Document | Contenu |
 |---|---|
-| `decisions/` | Les 17 arbitrages, avec options écartées |
+| `decisions/` | Les 50 arbitrages, avec options écartées |
 | `journal/` | Les notes de session |
-| `incidents/` | Les 4 dossiers, et les rétrospectives par défaut qu'ils constituent |
+| `incidents/` | Les 24 dossiers, et les rétrospectives par défaut qu'ils constituent |
 | `traceabilite.md` | L'instrument de priorisation |
 | `cadre_technique.md` | L'outillage évoqué au § 4 |

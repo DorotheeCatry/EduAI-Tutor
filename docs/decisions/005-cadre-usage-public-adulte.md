@@ -34,7 +34,7 @@ donnée à caractère personnel par construction.
 
 ## Documents portant encore l'hypothèse périmée
 
-`docs/cahier-des-charges.md` (§ Sécurité, RGPD, accessibilité), `docs/etat-des-lieux.md`,
+`docs/archive/cahier-des-charges.md` (§ Sécurité, RGPD, accessibilité), `docs/etat-des-lieux.md`,
 `docs/decisions/001` et `docs/decisions/004`.
 
 Les deux entrées du journal de décisions ne sont pas corrigées : une entrée

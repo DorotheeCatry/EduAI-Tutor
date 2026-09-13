@@ -69,8 +69,8 @@ qu'après.
 | Écarté | Raison |
 |---|---|
 | **L'interaction adaptative sur les cours** — un cours qui se reconfigure selon les réponses de l'apprenant | Arbitrage de délai. C'était la fonction la plus ambitieuse et la plus incertaine ; la livrer à moitié aurait coûté la couverture d'autres compétences |
-| **L'extension du corpus RAG aux onze modules** | Arbitrage de délai. **11 modules sont présents** dans `data/contents/courses/`, **3 index sont construits** — Python, science des données, ressources |
-| **L'indexation du corpus documentaire dans le vector store** | Écrite (`apps/rag/indexation_corpus.py`), **pas encore exécutée**. Les 6 836 documents de PostgreSQL ne sont pas interrogeables par les agents à la date de ce document |
+| **L'extension du corpus RAG aux onze modules** | Arbitrage de délai. **11 répertoires de modules existent** dans `data/contents/courses/`, mais **un seul porte des supports** : `01_python`, 42 fichiers. `03_sql` en contient un, au format `.pptx`. **Deux index sont exploitables** — Python et ressources ; `data_science_index.json` est présent et **vide**. Relevé du 13/09, voir la réserve 25 |
+| ~~**L'indexation du corpus documentaire dans le vector store**~~ — **écartée à la date de ce document, faite depuis.** Elle était écrite et non exécutée le 28/08 ; `apps/rag/indexation_corpus.py` a été lancée le 02/09 et `eduai_corpus_documentaire` porte **24 004 fragments**, servis en production. C'est l'enrichissement de fiche qui les interroge |
 | **L'entraînement d'un modèle** | Hors périmètre par construction : le projet **intègre** des modèles, il n'en entraîne aucun |
 | **Un juge automatique de qualité** | Écarté délibérément, voir § 5 |
 
@@ -155,6 +155,12 @@ avait soi-même imposé — un raisonnement circulaire.
 |---|---|
 | `eduai_knowledge_base` — corpus de cours | **387** |
 | `eduai_corpus_documentaire` — corpus du pipeline | **0** — indexation écrite, non exécutée |
+
+> **Suite, relevé du 13/09/2026.** L'indexation a été exécutée le 2 septembre.
+> `eduai_corpus_documentaire` porte **24 004 fragments**, servis en production.
+> La projection ci-dessous — « environ 23 000 » — s'est révélée juste à 4 %
+> près, ce qui est la seule chose qu'un essai à blanc de vingt documents
+> pouvait raisonnablement promettre.
 
 Projection pour la seconde : environ 23 000 fragments, estimée sur un essai à
 blanc de 20 documents ayant produit 69 fragments. **C'est une projection, pas
@@ -281,9 +287,11 @@ couvrent, et qu'aucune ne la contredit.
 
 ### Ce que cette décision engage
 
-1. **Exécuter l'indexation du corpus documentaire.** Tant qu'elle n'a pas
-   tourné, les 6 836 documents du pipeline restent hors de portée des agents, et
-   la moitié « données » du projet ne sert pas la moitié « IA ».
+1. ~~**Exécuter l'indexation du corpus documentaire.**~~ **Fait le 02/09.**
+   Tant qu'elle n'avait pas tourné, les documents du pipeline restaient hors de
+   portée des agents, et la moitié « données » du projet ne servait pas la
+   moitié « IA ». Elle a tourné : 24 004 fragments, interrogés par
+   l'enrichissement de fiche.
 2. **Faire la notation en aveugle.** C'est la seule chose qui puisse déplacer la
    décision, et d'une seule manière : si le modèle rapide se révélait nettement
    plus faible sur les prompts de l'agent Coach, l'écart de coût de 0,10 $ pour

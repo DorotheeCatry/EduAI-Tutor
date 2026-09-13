@@ -1,3 +1,25 @@
+> # Document archivé
+>
+> **Ce cahier des charges est le cadre initial du projet, arrêté le
+> 13 septembre 2026, à la veille de la soutenance.** Il est conservé tel qu'il
+> a servi, échéances au présent comprises : c'est la trace de ce qui avait été
+> décidé avant de commencer, et c'est à ce titre qu'il documente la démarche
+> (C16, C19).
+>
+> **Ce qu'il ne faut plus y chercher.** Son tableau « État d'avancement » est un
+> relevé daté, et il vieillit par construction — il le dit lui-même. L'état réel
+> du dépôt se lit dans `docs/traceabilite.md`, qui porte les commandes
+> produisant ses chiffres, et dans `docs/reserves.md` pour ce qui ne fait pas ce
+> qu'il a l'air de faire.
+>
+> **Ce qui y reste en vigueur.** Les règles de travail — conventions Git,
+> docstrings portant la compétence, journal de décisions, notes de séance,
+> structure des scripts d'extraction — n'ont pas d'autre domicile et continuent
+> de s'appliquer. Elles sont la partie de ce document qui ne dépendait pas d'une
+> échéance.
+
+---
+
 # Cahier des charges — EduAI Tutor
 
 ## Contexte et contrainte de temps
@@ -32,7 +54,7 @@ absente.
 
 ## État d'avancement
 
-Relevé du 04/09/2026. Il vaut pour ce jour-là : un tableau tenu à la main vieillit d'autant plus vite que le projet avance, et la matrice de `docs/traceabilite.md` fait foi en cas d'écart. **À lire avant de commencer : ne pas
+Relevé du 13/09/2026. Il vaut pour ce jour-là : un tableau tenu à la main vieillit d'autant plus vite que le projet avance, et la matrice de `docs/traceabilite.md` fait foi en cas d'écart. **À lire avant de commencer : ne pas
 refaire ce qui existe.**
 
 | Chantier | État |
@@ -43,13 +65,13 @@ refaire ce qui existe.**
 | Transformation (C3) | **En place** — `data_pipeline/transform/`, trois modules distincts, rapport de qualité. 7 910 entrants, 42 doublons retirés, 7 868 sortants |
 | Chargement (C4) | **En place** — `data_pipeline/load/chargeur.py`, 7 868 documents en base, 1 211 mots-clés, 20 545 rattachements, 0 rejet |
 | Monitorage du service IA (C20) | **En place et en service** — `apps/monitoring/`, JSON Lines hors base, seuils d'alerte, rapport d'analyse |
-| Journal de décisions (C19) | **45 entrées** dans `docs/decisions/` |
-| Dossiers d'incident (C21) | **18 entrées** dans `docs/incidents/` |
-| Pipeline complet | **Bout en bout** — extraction (5 sources) → transformation → chargement, rejouable et idempotent à chaque étape |
+| Journal de décisions (C19) | **50 entrées** dans `docs/decisions/` |
+| Dossiers d'incident (C21) | **24 entrées** dans `docs/incidents/` |
+| Pipeline complet | **Bout en bout** — extraction (**6 sources, 5 types**) → transformation → chargement, rejouable et idempotent à chaque étape. S6 est branchée au point de lancement depuis le 12/09 : le flux orchestré sait désormais reproduire le jeu de données qu'il a chargé |
 | Requêtes (C2) | **Deux langages couverts** — SQL PostgreSQL (schéma dans `data_pipeline/load/sql/`, collecte S4 dans `data_pipeline/extract/sql/`), Spark SQL pour S5 |
 | API données DRF (C5) | **En place** — `apps/api_data`, 7 points de terminaison en lecture seule sur `eduai_data`, 7 759 documents exposés, OpenAPI à `/api/docs/` |
 | API service IA FastAPI (C9) | **En place** — `service_ia/`, 6 points de terminaison, OpenAPI à `/ai/docs`, conteneur déclaré (image non construite) |
-| Tests et CI (C18) | **En place** — 394 tests `pytest`, ruff, et une chaîne GitHub Actions à cinq travaux, verte |
+| Tests et CI (C18) | **En place** — 514 tests `pytest`, ruff, et une chaîne GitHub Actions à cinq travaux, verte. La chaîne **déploie réellement** depuis le 13/09 : elle redéploie les trois services et échoue si l'un d'eux n'a pas ouvert de nouveau déploiement (réserve 26) |
 | Matrice de traçabilité | **En place** — `docs/traceabilite.md`, les 21 compétences |
 
 Ce tableau vieillit. En cas de doute, vérifier l'état réel plutôt que le croire.
@@ -143,10 +165,27 @@ Gestionnaire de paquets : **uv**.
 
 ---
 
-## Les 5 sources de données (C1)
+## Les sources de données (C1)
 
 Le référentiel exige un mix d'au moins **cinq types** de sources : service web
 (API REST), scraping, fichier de données, base de données, système big data.
+
+**Le dépôt en compte six, pour cinq types.** La distinction est à tenir, parce
+qu'elle est exacte et qu'elle se vérifie par une requête :
+
+| Source | Type | Documents |
+|---|---|---|
+| `s1` Stack Overflow | `api_rest` | 1 273 |
+| `s2` Documentation Python | `scraping` | 235 |
+| `s3` Corpus pédagogique | `fichier` | 381 |
+| `s4` Productions des apprenants | `base_donnees` | 27 |
+| `s5` Dumps Stack Exchange | `big_data` | 4 948 |
+| `s6` Documentation des bibliothèques | `scraping` | 1 005 |
+
+S6 est un **second** scraping (décision 039). Elle n'ajoute pas un sixième
+type ; elle établit que deux sources peuvent partager un type, ce qui a
+d'ailleurs imposé de rattacher un document à sa source par son code et non par
+son type (incident du 02/09).
 
 Chaque type vit dans son propre fichier, nommé explicitement, pour que le jury
 identifie la couverture d'un coup d'œil. Ne pas réduire ce nombre, ne pas

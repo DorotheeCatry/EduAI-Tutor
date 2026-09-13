@@ -1,6 +1,7 @@
 # Chaîne d'installation, de configuration, de test et de livraison
 
-**Date :** 28 août 2026, complété le 30 août 2026 (déploiement)
+**Date :** 28 août 2026, complété le 30 août (déploiement) puis le
+13 septembre 2026 (redéploiement réel, chiffres repris)
 **Compétence visée :** C13 (épreuve E3) — conteneurisation et déploiement
 **Compétence visée :** C19 (épreuve E4) — documentation technique de la chaîne
 **Compétences concernées :** C18 (E4) — tests en intégration continue
@@ -287,7 +288,7 @@ uv run pytest -m "not integration"   # sans PostgreSQL
 uv run ruff check .        # analyse statique
 ```
 
-**87 tests.** Trois marqueurs déclarés, et `--strict-markers` refuse tout
+**514 tests** au 13/09/2026. Trois marqueurs déclarés, et `--strict-markers` refuse tout
 marqueur inconnu — un marqueur mal orthographié ferait silencieusement sauter un
 test.
 
@@ -508,8 +509,9 @@ ce que le critère C19 demande de démontrer.
 | 3 | Publier l'application web | `ghcr.io/<dépôt>/web:main` et `:<empreinte du commit>` |
 | 4 | Publier le service IA | `ghcr.io/<dépôt>/service-ia:main` et `:<empreinte du commit>` |
 | 5 | Publier le serveur d'embarquement | `ghcr.io/<dépôt>/embarquement:main` et `:<empreinte du commit>` |
-| 6 | Demander le redéploiement | POST sur le crochet `RAILWAY_CROCHET_DEPLOIEMENT`, s'il est configuré |
-| 7 | Écrire le récapitulatif | Déclencheur, commit livré, images, état du déploiement — lisible sans dérouler les journaux |
+| 6 | Installer le client de l'hébergeur | `@railway/cli`, version épinglée |
+| 7 | Redéployer les trois services | `railway redeploy --service <s> --from-source --yes`, avec le jeton de projet `RAILWAY_TOKEN`. L'étape **constate** que chaque service a ouvert un nouveau déploiement, et **échoue** sinon. Il n'y a pas de « crochet » chez cet hébergeur : ses webhooks sont sortants — voir § 7.0 et la réserve 26 |
+| 8 | Écrire le récapitulatif | Déclencheur, commit livré, images, état du déploiement — lisible sans dérouler les journaux |
 
 **Deux étiquettes par image, deux usages.** `:main` est ce que l'hébergeur
 déploie ; l'empreinte de commit est ce qui permet de dire quelle version tourne
