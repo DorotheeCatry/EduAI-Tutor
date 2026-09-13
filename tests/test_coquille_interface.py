@@ -37,7 +37,10 @@ PAGES_AUTONOMES = (
 HORS_TAILWIND = {
     "action-enrichir", "avatar-option", "language-python", "prose", "prose-invert", "python",
     "question-scroll-container", "tab-button", "tab-content",
-    "test-actual", "test-result", "test-status", "tuteur-dock",
+    # `test-error` et `test-error-message` rejoignent les trois précédentes :
+    # ce sont des accroches que le script interroge, pas des classes de style.
+    "test-actual", "test-error", "test-error-message", "test-result",
+    "test-status", "tuteur-dock",
 }
 
 

@@ -109,6 +109,20 @@
                                 </div>
                                 <div class="test-result hidden">
                                     <div class="text-xs text-gray-400">{% trans "Got:" %} <code class="test-actual"></code></div>
+                                    {% comment %}
+                                       Le message d'erreur du test, quand il y en a un.
+
+                                       Compétence visée : C17 (épreuve E4), C21 (E5)
+                                       Le lanceur remplissait déjà `error` pour chaque test,
+                                       et rien ne l'affichait : une erreur d'exécution se
+                                       lisait comme une absence de sortie. L'apprenant
+                                       n'avait aucun moyen de savoir que son code
+                                       avait levé.
+                                    {% endcomment %}
+                                    <div class="test-error text-xs text-red-400 mt-1 hidden"
+                                         role="status">
+                                        <code class="test-error-message"></code>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -192,6 +206,20 @@
     </div>
 </div>
 
+{% comment %}
+   Les traductions employées par le script sont déclarées ICI, en dehors du
+   bloc de script, et réinsérées échappées.
+
+   Compétence visée : C17 (épreuve E4), C13 (E3)
+   Une apostrophe dans une traduction casserait le script entier. La règle du
+   projet — et le test qui la tient — veut que la balise de traduction reste
+   au dehors, et que seule sa variable, filtrée par `escapejs`, y entre.
+
+   Ce commentaire ne cite volontairement aucune balise en toutes lettres : le
+   contrôle repère les ouvertures de script par lecture du texte, et une balise
+   écrite dans un commentaire lui ferait croire qu'un script commence ici.
+{% endcomment %}
+{% trans "aucun résultat" as msg_sans_resultat %}
 <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -357,6 +385,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    {% comment %}
+       La traduction est posée en variable de gabarit puis échappée, jamais
+       insérée telle quelle dans le script.
+
+       Compétence visée : C17 (épreuve E4), C13 (E3)
+       Une apostrophe dans une traduction — « aucun résultat » en a une dans
+       d'autres langues — casserait le script entier. `escapejs` la neutralise.
+    {% endcomment %}
+    const msgSansResultat = "{{ msg_sans_resultat|escapejs }}";
+
     async function animateTestResults(testResults) {
         for (let i = 0; i < testResults.length; i++) {
             const testCase = document.querySelector(`[data-test-index="${i}"]`);
@@ -391,7 +429,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            if (actualEl) actualEl.textContent = result.actual || 'Aucune sortie';
+            // Ce que le test a rendu, et ce qui a échoué s'il a échoué.
+            //
+            // Compétence visée : C17 (épreuve E4), C21 (E5)
+            // La ligne posée ici retombait sur un message d'absence de
+            // sortie dès que le résultat était vide, et `result.error`
+            // n'était lu nulle part. Une erreur d'exécution — une NameError,
+            // une division par zéro — s'affichait donc comme rien. Le lanceur
+            // connaissait pourtant la cause et la transmettait.
+            //
+            // Un test tient sur la source de ce fichier et échoue si l'ancien
+            // repli revient : il cherche la forme littérale de cette ligne,
+            // c'est pourquoi elle n'est pas recopiée ici.
+            if (actualEl) {
+                actualEl.textContent = result.actual !== '' && result.actual != null
+                    ? result.actual
+                    : msgSansResultat;
+            }
+
+            const errorEl = testCase.querySelector('.test-error');
+            const errorMsgEl = testCase.querySelector('.test-error-message');
+            if (errorEl && errorMsgEl) {
+                if (result.error) {
+                    errorMsgEl.textContent = result.error;
+                    errorEl.classList.remove('hidden');
+                } else {
+                    errorEl.classList.add('hidden');
+                }
+            }
+
             if (resultDiv) resultDiv.classList.remove('hidden');
 
             await new Promise(r => setTimeout(r, 250));

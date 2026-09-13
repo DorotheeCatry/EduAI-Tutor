@@ -1054,6 +1054,21 @@ le besoin de volume persistant.
 
 **Composant :** `service_ia/`, image `eduai/service-ia`
 **Nature :** écart possible entre le code du dépôt et ce qui tourne
+**Statut : LEVÉE le 12/09/2026** — mesure faite sur l'hébergeur.
+
+> Le contrôle que cette réserve réclamait a été passé sur l'URL publique :
+>
+> ```
+> $ curl -s https://service-ai-production.up.railway.app/ai/sante
+> "collection": "eduai_corpus_documentaire"
+> "eduai_corpus_documentaire": 24004 fragments
+> "eduai_knowledge_base": 387 fragments
+> ```
+>
+> La production interroge bien la collection documentaire et ses 24 004
+> fragments, et non les 387 des supports de formation. L'empreinte du corpus
+> déployé concorde avec celle du poste. Le reste de cette réserve est conservé
+> tel quel : c'est l'état qui l'a motivée, et il documente ce qui a été cherché.
 
 Le conteneur `eduai_service_ia` du poste tourne l'image `eduai/service-ia:1.0.0`,
 **construite le 29/08/2026 à 19 h 13**. Le correctif qui branche la recherche
@@ -1167,3 +1182,97 @@ seule la lecture de la base le montre.
 **Ce n'est pas un défaut de code**, et aucun correctif ne le résout : il manque
 de la matière pédagogique, pas une fonction. La réserve existe pour que
 l'écart soit dit plutôt que découvert.
+
+---
+
+## 26. Aucun crochet de déploiement n'est configuré chez l'hébergeur
+
+**Composant :** `.github/workflows/integration-continue.yml`, services Railway
+**Nature :** dispositif décrit comme actif, mesuré inopérant
+
+Le dossier d'incident 020 laissait une réserve ouverte : l'étape « Demander le
+redéploiement à l'hébergeur » **réussit aussi lorsque le secret
+`RAILWAY_CROCHET_DEPLOIEMENT` est absent**, par un choix délibéré de la chaîne.
+Son succès ne prouvait donc pas qu'un crochet existe, et le relevé du 07/09 ne
+permettait pas de trancher. L'incident concluait que seule la prochaine fusion
+dans `main` le dirait.
+
+**Cette fusion a eu lieu le 12/09/2026, et la mesure est nette.**
+
+| Service | Déploiement avant la poussée | Après la chaîne verte |
+|---|---|---|
+| `web` | `4156c1cc…` | `4156c1cc…` |
+| `service-ai` | `763060ff…` | `763060ff…` |
+| `embarquement` | `430433cc…` | `430433cc…` |
+
+La chaîne a publié les trois images — empreintes de `:main` et de
+`4d8f8769…` identiques au registre, vérifié — l'étape de déploiement a rendu
+`success`, et **aucun des trois services n'a bougé**. Le redéploiement a dû être
+demandé à la main :
+
+```bash
+railway redeploy --service <service> --from-source --yes
+```
+
+**Deux conclusions distinctes.**
+
+La première : aucun crochet n'est configuré, ou celui qui l'est ne vise aucun
+des trois services. Rien ne se met à jour tout seul.
+
+La seconde, plus gênante : **la chaîne annonce en vert une étape qui n'a rien
+fait**. C'est le quatrième dispositif de ce projet décrit comme actif sans
+l'être, et c'est exactement le motif qui a produit l'incident 020 — lequel avait
+été diagnostiqué, corrigé, et dont la réserve pointait déjà ce silence.
+
+**La cause est plus profonde qu'un secret oublié : le crochet n'existe pas.**
+
+Vérifié dans la documentation de l'hébergeur le 12/09/2026. Les webhooks de
+Railway sont **sortants** — « the URL you provide will receive a webhook payload
+when any service's deployment status changes » : Railway appelle votre URL pour
+vous notifier. **Aucune URL entrante ne permet de déclencher un déploiement.**
+Des « service deploy hooks » figurent sur le forum de l'hébergeur comme une
+fonctionnalité *demandée*, pas disponible.
+
+L'étape de la chaîne attend donc un secret qui ne peut pas exister :
+
+```yaml
+CROCHET: ${{ secrets.RAILWAY_CROCHET_DEPLOIEMENT }}
+...
+curl --request POST "${CROCHET}"
+```
+
+Le dossier d'incident 020 porte la même erreur d'hypothèse — « un crochet
+Railway porte sur **un** service ». Il n'est pas réécrit : un dossier d'incident
+est la trace de ce qui a été compris au moment des faits, et la corriger après
+coup effacerait la démarche. Cette réserve est l'endroit où l'erreur est
+relevée.
+
+**Ce qu'il faut à la place.** Railway ne surveille aucun registre externe, donc
+la chaîne doit lui parler. Deux chemins seulement :
+
+1. **Le client en ligne de commande, avec un jeton de projet.** Un seul secret,
+   `RAILWAY_TOKEN`, créé depuis les réglages du projet (onglet *Tokens*). Sa
+   portée est **un seul environnement d'un seul projet**, et il ne peut mener
+   que des actions de déploiement : une compromission de la chaîne d'intégration
+   expose cet environnement, pas le compte. La chaîne appelle ensuite, pour
+   chacun des trois services :
+
+   ```bash
+   railway redeploy --service <service> --from-source --yes
+   ```
+
+   `--from-source` est indispensable — sans lui, la commande rejoue le
+   déploiement existant, donc l'image existante. **Chemin vérifié** : c'est
+   exactement la commande qui a redéployé les trois services le 12/09.
+
+2. **L'API GraphQL**, mutation `serviceInstanceRedeploy`, appelée en `curl` avec
+   l'en-tête `Project-Access-Token`. Même jeton, même portée, sans dépendre du
+   client en ligne de commande.
+
+Le jeton de compte (`RAILWAY_API_TOKEN`) est à écarter : sa portée est
+l'ensemble des ressources et des espaces de travail.
+
+Et l'étape ne devrait pas rendre `success` en silence. Que le secret manque ou
+que la fonctionnalité n'existe pas, une livraison qui ne déploie rien doit se
+lire dans le récapitulatif — c'est ce silence qui a produit l'incident 020, puis
+la mesure de cette réserve.

@@ -246,7 +246,22 @@ jobs:
   publication:
     name: Publication des images et déclenchement du déploiement
     needs: [qualite, tests, image]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # Deux déclencheurs, et ils ne font pas la même chose.
+    #
+    # Une poussée sur `main` publie les images ET redéploie : c'est la
+    # livraison. Un lancement manuel, depuis n'importe quelle branche,
+    # redéploie SANS publier — les étapes de publication sont gardées plus bas
+    # sur `main`. Motivation : `:main` doit rester l'image de `main`. Publier
+    # cette étiquette depuis une branche ferait servir en production du code
+    # qui n'est pas sur `main`, ce qui est précisément le genre d'écart que ce
+    # dépôt a déjà documenté deux fois.
+    #
+    # Le lancement manuel sert donc à deux choses : éprouver le redéploiement
+    # avant de fusionner, et remettre en ligne l'image courante sans attendre
+    # une livraison.
+    if: >-
+      (github.ref == 'refs/heads/main' && github.event_name == 'push')
+      || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     # Droits au strict nécessaire : lire le dépôt, écrire les paquets. Le
@@ -284,6 +299,9 @@ jobs:
           echo "embarquement=ghcr.io/${DEPOT}/embarquement" >> "$GITHUB_OUTPUT"
 
       - name: Publier l'image de l'application web
+        # Sur `main` seulement : voir la condition du job. Un lancement manuel
+        # depuis une branche redéploie l'image en place, il n'en publie pas.
+        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -303,6 +321,9 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Publier l'image du service IA
+        # Sur `main` seulement : voir la condition du job. Un lancement manuel
+        # depuis une branche redéploie l'image en place, il n'en publie pas.
+        if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -318,6 +339,9 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Publier l'image du serveur d'embarquement
+        # Sur `main` seulement : voir la condition du job. Un lancement manuel
+        # depuis une branche redéploie l'image en place, il n'en publie pas.
+        if: github.ref == 'refs/heads/main'
         # Troisième image, et la plus stable : Ollama figé en 0.32.15 avec
         # `mxbai-embed-large` téléchargé à la construction. Elle ne change que
         # si son Dockerfile change, et le cache de la chaîne la reconstruit
@@ -342,56 +366,151 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Demander le redéploiement à l'hébergeur
-        # Dernière étape de la livraison : prévenir Railway qu'une nouvelle
-        # image est publiée.
+      - name: Installer le client de l'hébergeur
+        # Version épinglée, comme toutes les actions de cette chaîne : un
+        # client qui change de comportement entre deux livraisons rendrait
+        # irreproductible l'étape la plus conséquente du fichier.
+        run: npm install --global @railway/cli@5.54.0
+
+      - name: Redéployer les services de l'hébergeur
+        # L'étape qui met réellement en ligne. Elle a été réécrite le
+        # 12/09/2026, et le dossier d'incident 020 puis la réserve 26 disent
+        # pourquoi — ce qui vivait ici ne déployait rien.
         #
-        # Choix : un crochet de déploiement (URL secrète appelée en POST), et
-        # non les identifiants du compte d'hébergement. Motivation : le
-        # crochet ne peut faire qu'une chose, redéployer ce service. Des
-        # identifiants pourraient tout faire, y compris supprimer le projet.
+        # Ce qu'elle faisait : un POST sur une URL secrète, un « crochet de
+        # déploiement ». **Railway n'a pas cette fonctionnalité.** Ses webhooks
+        # sont SORTANTS : l'hébergeur appelle votre URL pour vous notifier d'un
+        # changement d'état. Aucune URL entrante ne déclenche un déploiement ;
+        # des « service deploy hooks » figurent sur son forum comme une
+        # fonctionnalité demandée, pas disponible. Le secret attendu ne pouvait
+        # donc pas exister, et l'étape réussissait en silence.
         #
-        # Choix : l'absence du secret n'échoue PAS. Motivation : les images
-        # sont alors publiées et vérifiées — la livraison a eu lieu. Ce qui
-        # manque est le déclenchement automatique du déploiement, et le
-        # récapitulatif le dit en clair plutôt que de laisser croire à un
-        # déploiement qui n'a pas été demandé.
+        # Mesuré le 12/09 : trois images publiées, cette étape en `success`, et
+        # les trois identifiants de déploiement inchangés chez l'hébergeur.
+        #
+        # Choix : un jeton de PROJET (`RAILWAY_TOKEN`), pas un jeton de compte
+        # (`RAILWAY_API_TOKEN`). Motivation : sa portée est un seul
+        # environnement d'un seul projet, et il ne peut mener que des actions
+        # de déploiement. Une compromission de la chaîne expose cet
+        # environnement, pas le compte ni les autres projets.
+        #
+        # Choix : `--from-source`, sans quoi `railway redeploy` rejoue le
+        # déploiement EXISTANT, donc l'image existante. C'est le mécanisme même
+        # qui avait rendu l'incident 020 invisible.
+        #
+        # Choix : l'étape ÉCHOUE si rien n'a été déployé. Motivation : c'est la
+        # correction de fond. L'ancienne rendait 0 quand le secret manquait,
+        # « pour ne pas laisser croire à un déploiement qui n'a pas eu lieu » —
+        # sauf qu'un travail vert laisse croire exactement cela. Une livraison
+        # qui ne livre pas est un échec, et doit se voir comme tel.
         env:
-          CROCHET: ${{ secrets.RAILWAY_CROCHET_DEPLOIEMENT }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           set -euo pipefail
-          if [ -z "${CROCHET}" ]; then
-            echo "Aucun crochet de déploiement configuré." >&2
-            echo "Les images sont publiées ; le déploiement est à déclencher" >&2
-            echo "depuis l'interface de l'hébergeur." >&2
-            echo "DEPLOIEMENT=manuel" >> "$GITHUB_ENV"
-            exit 0
+
+          if [ -z "${RAILWAY_TOKEN:-}" ]; then
+            echo "::error::RAILWAY_TOKEN absent : aucun service ne peut être redéployé."
+            echo "Créer un jeton de PROJET depuis les réglages du projet chez" >&2
+            echo "l'hébergeur (onglet Tokens), puis le déposer dans les secrets" >&2
+            echo "du dépôt sous le nom RAILWAY_TOKEN." >&2
+            exit 1
           fi
-          # --fail : sans lui, curl rend 0 sur une réponse 4xx ou 5xx, et la
-          # chaîne annoncerait un déploiement demandé alors que l'hébergeur
-          # l'a refusé. Le projet documente déjà cinq incidents de ce motif.
-          CODE=$(curl --silent --show-error --fail --request POST \
-                      --write-out '%{http_code}' --output /dev/null \
-                      --max-time 30 "${CROCHET}")
-          echo "L'hébergeur a répondu ${CODE}."
-          echo "DEPLOIEMENT=demande" >> "$GITHUB_ENV"
+
+          # L'identifiant du déploiement courant d'un service.
+          #
+          # Le client peut écrire une bannière de mise à jour sur la sortie :
+          # on ne lit le JSON qu'à partir de sa première accolade.
+          identifiant_deploiement() {
+            railway service status --service "$1" --json 2>/dev/null \
+              | sed -n '/^[[:space:]]*{/,$p' \
+              | python3 -c 'import sys, json; print(json.load(sys.stdin).get("deploymentId", ""))'
+          }
+
+          echecs=0
+          lignes=""
+
+          for service in web service-ai embarquement; do
+            avant=$(identifiant_deploiement "$service" || true)
+            echo "── ${service} : déploiement courant ${avant:-inconnu}"
+
+            if ! railway redeploy --service "$service" --from-source --yes; then
+              echo "::error::${service} : la demande de redéploiement a échoué."
+              lignes="${lignes}| \`${service}\` | demande refusée |"$'\n'
+              echecs=$((echecs + 1))
+              continue
+            fi
+
+            # On ne croit pas la commande sur parole : on constate que
+            # l'hébergeur a bien ouvert un NOUVEAU déploiement. C'est
+            # exactement le contrôle dont l'absence a coûté l'incident 020.
+            apres="${avant}"
+            for _ in $(seq 1 20); do
+              sleep 6
+              apres=$(identifiant_deploiement "$service" || true)
+              [ -n "${apres}" ] && [ "${apres}" != "${avant}" ] && break
+            done
+
+            if [ -z "${apres}" ] || [ "${apres}" = "${avant}" ]; then
+              echo "::error::${service} : aucun nouveau déploiement après la demande."
+              lignes="${lignes}| \`${service}\` | **inchangé** — rien n'a été déployé |"$'\n'
+              echecs=$((echecs + 1))
+            else
+              echo "${service} : nouveau déploiement ${apres}"
+              lignes="${lignes}| \`${service}\` | \`${apres}\` |"$'\n'
+            fi
+          done
+
+          {
+            echo "SERVICES<<FIN_DES_SERVICES"
+            printf '%s' "${lignes}"
+            echo "FIN_DES_SERVICES"
+          } >> "$GITHUB_ENV"
+
+          if [ "${echecs}" -gt 0 ]; then
+            echo "DEPLOIEMENT=échoué sur ${echecs} service(s)" >> "$GITHUB_ENV"
+            exit 1
+          fi
+          echo "DEPLOIEMENT=trois services redéployés" >> "$GITHUB_ENV"
 
       - name: Récapitulatif de la livraison
-        # Ce que la chaîne vient de faire, écrit là où le jury le lira sans
-        # dérouler les journaux.
+        # Ce que la chaîne vient de faire, écrit là où on le lira sans dérouler
+        # les journaux.
+        #
+        # Choix : le récapitulatif dit si les images ont été PUBLIÉES, et ne se
+        # contente pas de les nommer. Motivation constatée sur son premier
+        # lancement manuel : il listait les trois étiquettes `:main` sous un
+        # titre « Livraison », alors que les trois publications avaient été
+        # sautées — un lecteur en concluait qu'elles venaient d'être produites.
+        # Ce dépôt a documenté assez d'étapes vertes disant autre chose que ce
+        # qu'elles faisaient pour ne pas en ajouter une.
         if: always()
+        env:
+          IMAGES_PUBLIEES: ${{ github.ref == 'refs/heads/main' }}
         run: |
+          if [ "${IMAGES_PUBLIEES}" = "true" ]; then
+            etat_images="publiées par ce lancement"
+          else
+            etat_images="**non publiées** — lancement hors \`main\`, les services sont redéployés depuis l'étiquette en place"
+          fi
           {
             echo "## Livraison"
             echo
             echo "| Élément | Valeur |"
             echo "|---|---|"
             echo "| Déclencheur | \`${{ github.event_name }}\` sur \`${{ github.ref_name }}\` |"
-            echo "| Commit livré | \`${{ github.sha }}\` |"
+            echo "| Commit de ce lancement | \`${{ github.sha }}\` |"
+            echo "| Images | ${etat_images} |"
             echo "| Image application web | \`${{ steps.noms.outputs.web }}:main\` |"
             echo "| Image service IA | \`${{ steps.noms.outputs.service_ia }}:main\` |"
             echo "| Image serveur d'embarquement | \`${{ steps.noms.outputs.embarquement }}:main\` |"
             echo "| Déploiement | ${DEPLOIEMENT:-non atteint} |"
+            echo
+            if [ -n "${SERVICES:-}" ]; then
+              echo "| Service | Déploiement ouvert |"
+              echo "|---|---|"
+              printf '%s' "${SERVICES}"
+              echo
+            fi
             echo
             echo "Le corpus vectoriel n'est PAS dans ces images : il est monté"
             echo "depuis un volume persistant, et se met à jour hors ligne."
