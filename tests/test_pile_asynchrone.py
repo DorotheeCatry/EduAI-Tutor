@@ -28,10 +28,49 @@ from pathlib import Path
 import pytest
 from asgiref.sync import async_to_sync
 from django.conf import settings
-from django.test import RequestFactory
+from django.test import RequestFactory, override_settings
 from django.utils.module_loading import import_string
 
-FICHIER_STATIQUE = "/static/koda/koda_angry.png"
+#: Un fichier assez gros pour être découpé en plusieurs blocs de 4 096 octets.
+#: Les animations réelles du projet pèsent jusqu'à 1,4 Mo ; 40 Ko suffisent à
+#: éprouver le découpage sans alourdir la suite.
+CONTENU_D_ESSAI = bytes(range(256)) * 160
+
+CHEMIN_D_ESSAI = "/static/essai/animation.bin"
+
+
+@pytest.fixture
+def couche_statique(tmp_path):
+    """
+    Une couche WhiteNoise servant un fichier fabriqué pour le test.
+
+    Compétence visée : C18 (épreuve E4)
+
+    **Pourquoi ne pas lire un fichier de `staticfiles/`.** Ce répertoire est
+    produit par `collectstatic` et **n'est pas versionné** — `.gitignore` le
+    porte. Il existe sur un poste de développement et pas dans un clone neuf,
+    ni dans l'intégration continue, qui ne lance pas `collectstatic`.
+
+    Des tests qui s'appuieraient dessus passeraient ici et échoueraient là-bas.
+    C'est précisément le motif que le registre d'incidents range en famille A —
+    « un fichier présent sans être versionné » — et il a été commis puis
+    corrigé sur ces tests mêmes.
+    """
+    from eduai_project.statiques import WhiteNoiseAsynchrone
+
+    racine = tmp_path / "statiques"
+    (racine / "essai").mkdir(parents=True)
+    (racine / "essai" / "animation.bin").write_bytes(CONTENU_D_ESSAI)
+
+    async def _jamais_appelee(request):  # pragma: no cover
+        raise AssertionError("un fichier statique ne doit pas traverser la vue")
+
+    # WhiteNoise lit STATIC_ROOT et STATIC_URL À LA CONSTRUCTION, puis indexe
+    # le répertoire une fois pour toutes. La substitution doit donc envelopper
+    # l'instanciation, pas seulement l'appel.
+    with override_settings(STATIC_ROOT=str(racine), STATIC_URL="/static/",
+                           WHITENOISE_AUTOREFRESH=False):
+        yield WhiteNoiseAsynchrone(_jamais_appelee)
 
 
 # --- La structure de la chaîne ---------------------------------------------
@@ -80,7 +119,7 @@ def test_aucune_couche_ne_fait_retomber_la_chaine_en_synchrone():
 # --- Le service des fichiers statiques -------------------------------------
 
 
-def test_un_fichier_statique_est_rendu_par_un_iterateur_asynchrone():
+def test_un_fichier_statique_est_rendu_par_un_iterateur_asynchrone(couche_statique):
     """
     La réponse porte un itérateur asynchrone, donc Django la diffuse.
 
@@ -94,15 +133,8 @@ def test_un_fichier_statique_est_rendu_par_un_iterateur_asynchrone():
     Les animations de ce projet pèsent jusqu'à 1,4 Mo, et le service tourne
     avec un seul travailleur.
     """
-    from eduai_project.statiques import WhiteNoiseAsynchrone
-
-    async def _jamais_appelee(request):  # pragma: no cover - la couche court-circuite
-        raise AssertionError("un fichier statique ne doit pas traverser la vue")
-
-    couche = WhiteNoiseAsynchrone(_jamais_appelee)
-    requete = RequestFactory().get(FICHIER_STATIQUE)
-
-    reponse = async_to_sync(couche.__acall__)(requete)
+    reponse = async_to_sync(couche_statique.__acall__)(
+        RequestFactory().get(CHEMIN_D_ESSAI))
 
     assert reponse.status_code == 200
     assert reponse.streaming, "un fichier est servi en flux"
@@ -111,34 +143,30 @@ def test_un_fichier_statique_est_rendu_par_un_iterateur_asynchrone():
     )
 
 
-def test_le_contenu_du_fichier_est_rendu_intact():
+def test_le_contenu_du_fichier_est_rendu_intact(couche_statique):
     """
     La conversion en flux asynchrone ne perd ni ne modifie un octet.
 
     Compétence visée : C13 (épreuve E3), C21 (E5)
 
     Une correction de performance qui abîmerait le contenu servi serait bien
-    pire que le défaut qu'elle corrige.
+    pire que le défaut qu'elle corrige. Le fichier d'essai fait plusieurs blocs
+    de 4 096 octets : le découpage est donc réellement éprouvé, et pas
+    seulement le cas d'un fichier tenant en un seul bloc.
     """
-    from eduai_project.statiques import WhiteNoiseAsynchrone
-
-    async def _jamais_appelee(request):  # pragma: no cover
-        raise AssertionError
-
-    chemin = Path(settings.STATIC_ROOT) / "koda" / "koda_angry.png"
-    if not chemin.exists():
-        pytest.skip("statiques non collectés sur cette machine")
-
-    couche = WhiteNoiseAsynchrone(_jamais_appelee)
-    reponse = async_to_sync(couche.__acall__)(RequestFactory().get(FICHIER_STATIQUE))
+    reponse = async_to_sync(couche_statique.__acall__)(
+        RequestFactory().get(CHEMIN_D_ESSAI))
 
     async def _lire():
         return b"".join([bloc async for bloc in reponse.streaming_content])
 
-    assert async_to_sync(_lire)() == chemin.read_bytes()
+    rendu = async_to_sync(_lire)()
+
+    assert rendu == CONTENU_D_ESSAI
+    assert len(rendu) > 4096, "le fichier doit dépasser un bloc"
 
 
-def test_servir_un_statique_n_avertit_plus():
+def test_servir_un_statique_n_avertit_plus(couche_statique):
     """
     L'avertissement de Django a disparu, et il a disparu pour la bonne raison.
 
@@ -149,17 +177,12 @@ def test_servir_un_statique_n_avertit_plus():
     d'avertissements pour masquer le symptôme, puisqu'il vérifie d'abord
     `is_async`.
     """
-    from eduai_project.statiques import WhiteNoiseAsynchrone
-
-    async def _jamais_appelee(request):  # pragma: no cover
-        raise AssertionError
-
-    couche = WhiteNoiseAsynchrone(_jamais_appelee)
-
     with warnings.catch_warnings(record=True) as captures:
         warnings.simplefilter("always")
-        reponse = async_to_sync(couche.__acall__)(
-            RequestFactory().get(FICHIER_STATIQUE))
+        reponse = async_to_sync(couche_statique.__acall__)(
+            RequestFactory().get(CHEMIN_D_ESSAI))
+
+        assert reponse.is_async, "la condition, avant l'absence d'avertissement"
 
         async def _consommer():
             async for _bloc in reponse:
