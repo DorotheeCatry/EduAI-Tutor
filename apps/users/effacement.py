@@ -103,8 +103,16 @@ def _compteurs(identifiant: int) -> dict[str, int]:
     donnerait l'illusion de l'exhaustivité tout en manquant ce qui n'est pas
     déclaré comme relation — les sessions et les fichiers, précisément les deux
     choses qu'une cascade oublie. Une liste explicite se relit et se complète.
+
+    **Ce qu'une liste explicite coûte, en revanche**, c'est qu'on peut y
+    oublier une table. Les séances d'apprentissage et les erreurs de quiz y
+    manquaient : l'apprenant confirmait donc un effacement sans que rien ne lui
+    dise que son historique de travail en faisait partie. Découvert le
+    13/09/2026 en même temps que l'échec de la cascade (incident 024), et par
+    le même test — le premier à créer une séance avant d'effacer.
     """
-    from apps.courses.models import Course
+    from apps.agents.agent_watcher import LearningSession, UserMistake
+    from apps.courses.models import AjoutDeFiche, Course, FicheDApprenant
     from apps.exercises.models import (
         Exercise,
         ExerciseSubmission,
@@ -124,6 +132,20 @@ def _compteurs(identifiant: int) -> dict[str, int]:
         "salles_hebergees": GameRoom.objects.filter(host_id=identifiant).count(),
         "participations_quiz": GameParticipant.objects.filter(
             user_id=identifiant).count(),
+        # L'historique de travail. Il porte ce que l'apprenant a fait, pas ce
+        # qu'il a produit : séances ouvertes, notions manquées. C'est une
+        # donnée personnelle au même titre que le reste, et elle doit être
+        # annoncée avant d'être effacée.
+        "seances_apprentissage": LearningSession.objects.filter(
+            user_id=identifiant).count(),
+        "erreurs_relevees": UserMistake.objects.filter(
+            user_id=identifiant).count(),
+        # Les fiches de compétence et leurs enrichissements : ce que l'apprenant
+        # a demandé à Koda, et les réponses conservées.
+        "fiches_de_competence": FicheDApprenant.objects.filter(
+            apprenant_id=identifiant).count(),
+        "ajouts_de_fiche": AjoutDeFiche.objects.filter(
+            fiche__apprenant_id=identifiant).count(),
         "sessions": _compter_sessions(identifiant),
     }
 
