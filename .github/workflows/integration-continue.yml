@@ -40,6 +40,24 @@
 #     de vrai à faux, ce qui augmente l'occupation du cache sans rien casser.
 #     v10 désactive le cache sur les événements sensibles, qu'on n'emploie pas
 #     davantage. Le seul argument passé ici, `enable-cache`, est inchangé.
+#
+# Deuxième passe, le 13/09 également : les trois actions `docker/` ciblaient
+# elles aussi Node 20, et la première montée les avait manquées — elle n'avait
+# traité que les deux que l'avertissement nommait, au lieu de faire l'inventaire
+# du fichier. C'est le même réflexe qui avait laissé une garde de
+# RestrictedPython absente pendant des semaines (incident 021).
+#
+#   - `build-push-action` v6 → v7, `setup-buildx-action` v3 → v4,
+#     `login-action` v3 → v4. Les trois passent à Node 24 dans leur version
+#     majeure suivante et **exigent un exécuteur 2.327.1 ou plus récent**, ce
+#     que les machines hébergées par GitHub dépassent largement.
+#   - Ce qui disparaît ne nous concerne pas : l'entrée `install` de
+#     `setup-buildx-action`, les variables `DOCKER_BUILD_NO_SUMMARY` et
+#     `DOCKER_BUILD_EXPORT_RETENTION_DAYS` de `build-push-action` — vérifié,
+#     aucune n'est employée ici. Les sept entrées que ce fichier passe ont été
+#     relues une par une dans les `action.yml` des versions cibles.
+#   - Ces trois-là gardent leurs tags majeurs mobiles, contrairement à
+#     `setup-uv` : `@v7` et `@v4` se résolvent normalement.
 
 name: Intégration continue
 
@@ -194,14 +212,14 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Préparer Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Construire l'image — ${{ matrix.nom }}
         # Construction seule, sans publication. C'est l'étape de PACKAGING au
         # sens du critère C19 : elle valide que le Dockerfile reste correct et
         # que les dépendances s'installent. La publication, elle, est un
         # travail distinct qui attend celui-ci — voir `publication`.
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ${{ matrix.fichier }}
@@ -302,13 +320,13 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Préparer Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Ouvrir une session au registre
         # GHCR plutôt qu'un registre tiers : le jeton de la chaîne y donne
         # accès sans qu'aucun secret n'ait à être créé ni renouvelé. Un secret
         # qu'on n'a pas à gérer est un secret qui ne fuit pas.
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -329,7 +347,7 @@ jobs:
         # Sur `main` seulement : voir la condition du job. Un lancement manuel
         # depuis une branche redéploie l'image en place, il n'en publie pas.
         if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
@@ -351,7 +369,7 @@ jobs:
         # Sur `main` seulement : voir la condition du job. Un lancement manuel
         # depuis une branche redéploie l'image en place, il n'en publie pas.
         if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: service_ia/Dockerfile
@@ -379,7 +397,7 @@ jobs:
         # serait une pièce dont personne ne saurait dire de quelle source elle
         # provient. C'est le service qui embarque chaque requête du RAG — sans
         # lui, aucune recherche documentaire n'aboutit chez l'hébergeur.
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: docker/ollama
           file: docker/ollama/Dockerfile
