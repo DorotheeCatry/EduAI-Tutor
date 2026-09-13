@@ -169,7 +169,14 @@ MIDDLEWARE = [
     # l'exige. Plus haut, il court-circuiterait la redirection HTTPS ; plus
     # bas, chaque fichier statique traverserait sessions, authentification et
     # messages pour rien.
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    #
+    # Choix : `WhiteNoiseAsynchrone`, sous-classe locale, et non la classe de
+    # la bibliothèque. Motivation : WhiteNoise n'a aucun chemin asynchrone, et
+    # Django compose sa chaîne de bas en haut — une couche sync rend sync tout
+    # ce qui la surmonte et accepte ce mode. Le service en ASGI matérialisait
+    # donc chaque fichier statique en mémoire au lieu de le diffuser. Voir
+    # `eduai_project/statiques.py`.
+    'eduai_project.statiques.WhiteNoiseAsynchrone',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
