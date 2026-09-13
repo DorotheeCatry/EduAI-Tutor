@@ -473,17 +473,33 @@ jobs:
           echo "DEPLOIEMENT=trois services redéployés" >> "$GITHUB_ENV"
 
       - name: Récapitulatif de la livraison
-        # Ce que la chaîne vient de faire, écrit là où le jury le lira sans
-        # dérouler les journaux.
+        # Ce que la chaîne vient de faire, écrit là où on le lira sans dérouler
+        # les journaux.
+        #
+        # Choix : le récapitulatif dit si les images ont été PUBLIÉES, et ne se
+        # contente pas de les nommer. Motivation constatée sur son premier
+        # lancement manuel : il listait les trois étiquettes `:main` sous un
+        # titre « Livraison », alors que les trois publications avaient été
+        # sautées — un lecteur en concluait qu'elles venaient d'être produites.
+        # Ce dépôt a documenté assez d'étapes vertes disant autre chose que ce
+        # qu'elles faisaient pour ne pas en ajouter une.
         if: always()
+        env:
+          IMAGES_PUBLIEES: ${{ github.ref == 'refs/heads/main' }}
         run: |
+          if [ "${IMAGES_PUBLIEES}" = "true" ]; then
+            etat_images="publiées par ce lancement"
+          else
+            etat_images="**non publiées** — lancement hors \`main\`, les services sont redéployés depuis l'étiquette en place"
+          fi
           {
             echo "## Livraison"
             echo
             echo "| Élément | Valeur |"
             echo "|---|---|"
             echo "| Déclencheur | \`${{ github.event_name }}\` sur \`${{ github.ref_name }}\` |"
-            echo "| Commit livré | \`${{ github.sha }}\` |"
+            echo "| Commit de ce lancement | \`${{ github.sha }}\` |"
+            echo "| Images | ${etat_images} |"
             echo "| Image application web | \`${{ steps.noms.outputs.web }}:main\` |"
             echo "| Image service IA | \`${{ steps.noms.outputs.service_ia }}:main\` |"
             echo "| Image serveur d'embarquement | \`${{ steps.noms.outputs.embarquement }}:main\` |"
